@@ -1,2 +1,2 @@
-export * from "./merchant.ts";
-export * from "./order.ts";
+export * from "./merchant.js";
+export * from "./order.js";

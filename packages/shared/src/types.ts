@@ -1,4 +1,4 @@
-import type { OrderStatus } from "./schemas/order.ts";
+import type { OrderStatus } from "./schemas/order.js";
 
 export type Network = "testnet" | "mainnet";
 
