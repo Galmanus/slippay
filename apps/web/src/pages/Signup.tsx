@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/auth.tsx";
+import { Logo } from "../components/Logo.tsx";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
       <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
-        <Link to="/" className="text-sm tracking-tight font-medium">slippay</Link>
+        <Logo />
         <Link to="/login" className="text-xs uppercase tracking-[0.18em] hover:opacity-60">
           Have an account? Log in
         </Link>

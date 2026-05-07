@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
+import { Logo } from "../components/Logo.tsx";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a]">
       <header className="max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
-        <div className="text-sm tracking-tight font-medium">slippay</div>
+        <Logo />
         <nav className="flex items-center gap-8 text-xs uppercase tracking-[0.18em]">
           <a href="#how" className="hover:opacity-60">How it works</a>
           <a href="#stack" className="hover:opacity-60">Stack</a>
@@ -16,19 +17,19 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-20 md:pt-32 pb-32 md:pb-48 relative">
+      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-16 md:pt-24 pb-24 md:pb-32 relative">
         <div className="text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-12 flex items-center gap-3">
           <span className="inline-block w-3 h-3 bg-[#b5e853]" />
           Confidential · Pre-launch · 2026
         </div>
-        <h1 className="text-[14vw] md:text-[10vw] font-medium leading-[0.88] tracking-[-0.04em] max-w-[14ch]">
+        <h1 className="text-[10vw] md:text-[5.5vw] font-medium leading-[0.92] tracking-[-0.035em] max-w-[18ch]">
           USDC checkout for Brazilian e‑commerce.
         </h1>
         <div className="grid md:grid-cols-2 gap-12 md:gap-32 mt-20 md:mt-32">
           <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
             001. The thesis
           </div>
-          <p className="text-2xl md:text-3xl leading-[1.3] tracking-tight max-w-[28ch]">
+          <p className="text-lg md:text-xl leading-[1.5] tracking-tight max-w-[44ch] text-[#0a0a0a]/80">
             Non-custodial payment gateway built on Stellar. Settles in roughly five seconds.
             Merchants never wait, buyers never give up custody.
           </p>
@@ -53,21 +54,21 @@ export default function Home() {
             </div>
             <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
               <div>
-                <div className="text-7xl md:text-8xl font-medium tabular-nums tracking-tighter">~5s</div>
+                <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-tighter">~5s</div>
                 <div className="mt-6 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Settlement</div>
                 <p className="mt-4 text-sm leading-relaxed text-[#0a0a0a]/70 max-w-[28ch]">
                   No batch windows, no T+1, no T+2. Confirmation lands in the next ledger.
                 </p>
               </div>
               <div>
-                <div className="text-7xl md:text-8xl font-medium tabular-nums tracking-tighter">0%</div>
+                <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-tighter">0%</div>
                 <div className="mt-6 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Custody</div>
                 <p className="mt-4 text-sm leading-relaxed text-[#0a0a0a]/70 max-w-[28ch]">
                   Funds move from buyer wallet to merchant wallet. Private keys never leave the user.
                 </p>
               </div>
               <div>
-                <div className="text-7xl md:text-8xl font-medium tabular-nums tracking-tighter">1%</div>
+                <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-tighter">1%</div>
                 <div className="mt-6 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Platform fee</div>
                 <p className="mt-4 text-sm leading-relaxed text-[#0a0a0a]/70 max-w-[28ch]">
                   Charged in the same atomic transaction as the merchant payment. Either both succeed, or neither does.
@@ -85,7 +86,7 @@ export default function Home() {
               003. How it works
             </div>
             <div className="md:col-span-9">
-              <h2 className="text-5xl md:text-7xl font-medium tracking-[-0.03em] leading-[0.95] max-w-[18ch]">
+              <h2 className="text-4xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[22ch]">
                 Four moving parts. One atomic transaction.
               </h2>
               <div className="mt-20 grid md:grid-cols-2 gap-x-16 gap-y-16">
@@ -110,10 +111,10 @@ export default function Home() {
               004. Regulatory
             </div>
             <div className="md:col-span-9">
-              <h2 className="text-5xl md:text-7xl font-medium tracking-[-0.03em] leading-[0.95] max-w-[20ch]">
+              <h2 className="text-4xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
                 Built for the window that just opened.
               </h2>
-              <p className="mt-12 text-xl leading-relaxed text-[#0a0a0a]/70 max-w-[60ch]">
+              <p className="mt-12 text-base md:text-lg leading-relaxed text-[#0a0a0a]/70 max-w-[60ch]">
                 BCB Resoluções 519/520/521 (effective February 2026) created the first
                 complete framework for virtual-asset service providers in Brazil. SlipPay
                 operates as a technology provider — atomic settlement, no custody, no money
@@ -134,10 +135,10 @@ export default function Home() {
       <section className="border-t border-[#0a0a0a]/10">
         <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-32 md:py-48 relative">
           <span className="inline-block w-3 h-3 bg-[#b5e853] mb-12" />
-          <h2 className="text-[14vw] md:text-[10vw] font-medium tracking-[-0.04em] leading-[0.88] max-w-[12ch]">
+          <h2 className="text-[10vw] md:text-[5.5vw] font-medium tracking-[-0.035em] leading-[0.92] max-w-[14ch]">
             Ready when your store is.
           </h2>
-          <p className="mt-12 text-xl text-[#0a0a0a]/70 max-w-[40ch]">
+          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/70 max-w-[44ch]">
             Sign up, drop your Stellar receive address, copy your API key.
             First order in under five minutes.
           </p>
