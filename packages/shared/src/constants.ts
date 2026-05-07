@@ -2,11 +2,15 @@ export const NETWORK = {
   testnet: {
     horizon: "https://horizon-testnet.stellar.org",
     passphrase: "Test SDF Network ; September 2015",
+    // Circle USDC issuer on Stellar testnet — verified 2026-05-07
+    // https://developers.circle.com/stablecoins/stellar
     usdc_issuer: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
   },
   mainnet: {
     horizon: "https://horizon.stellar.org",
     passphrase: "Public Global Stellar Network ; September 2015",
+    // Circle USDC issuer on Stellar mainnet — verified 2026-05-07
+    // https://developers.circle.com/stablecoins/stellar
     usdc_issuer: "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
   },
 } as const;
