@@ -5,7 +5,7 @@ export function PayButton({ onConnected }: { onConnected: (addr: string) => void
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   return (
-    <div className="mt-6">
+    <div>
       <button
         disabled={loading}
         onClick={async () => {
@@ -20,11 +20,11 @@ export function PayButton({ onConnected }: { onConnected: (addr: string) => void
             setLoading(false);
           }
         }}
-        className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black py-3 font-semibold disabled:opacity-50"
+        className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50"
       >
-        {loading ? "connecting..." : "connect wallet"}
+        {loading ? "Connecting..." : "Connect wallet"}
       </button>
-      {error && <div className="mt-2 text-sm text-red-400">{error}</div>}
+      {error && <div className="mt-3 text-xs uppercase tracking-[0.18em] text-red-700 border-l-2 border-red-700 pl-3">{error}</div>}
     </div>
   );
 }

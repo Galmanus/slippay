@@ -23,7 +23,6 @@ export default function DashboardSettings() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    // reveal key from sessionStorage if just created
     const k = sessionStorage.getItem("slippay.fresh_api_key");
     if (k) { setRevealedKey(k); sessionStorage.removeItem("slippay.fresh_api_key"); }
   }, []);
@@ -41,18 +40,33 @@ export default function DashboardSettings() {
     }
   }, [ctx]);
 
-  if (!merchant) return <div className="text-zinc-400">loading...</div>;
+  if (!merchant) {
+    return <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Loading...</div>;
+  }
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">settings</h1>
+    <div className="max-w-3xl">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3">001. Settings</div>
+      <h1 className="text-5xl md:text-7xl font-medium tracking-[-0.04em] leading-[0.95] mb-16">
+        Configuration.
+      </h1>
 
       {revealedKey && (
-        <div className="mb-6 p-4 rounded bg-emerald-900/20 border border-emerald-700">
-          <div className="text-emerald-300 font-semibold text-sm">your API key — copy it now, won't be shown again</div>
-          <code className="block mt-2 break-all text-xs text-emerald-100">{revealedKey}</code>
+        <div className="mb-12 border-2 border-[#b5e853] bg-[#b5e853]/10 p-6">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-3 h-3 bg-[#b5e853]" />
+            <div className="text-xs uppercase tracking-[0.18em]">Your API key</div>
+          </div>
+          <p className="text-sm text-[#0a0a0a]/70 mt-2">
+            Copy it now. It will not be shown again — only the prefix is stored.
+          </p>
+          <code className="block mt-4 p-4 bg-[#0a0a0a] text-[#f1eee7] text-xs font-mono break-all">
+            {revealedKey}
+          </code>
           <button onClick={() => navigator.clipboard.writeText(revealedKey)}
-            className="mt-2 text-xs text-emerald-300 hover:underline">copy</button>
+            className="mt-3 text-xs uppercase tracking-[0.18em] hover:opacity-60">
+            Copy ↗
+          </button>
         </div>
       )}
 
@@ -75,72 +89,96 @@ export default function DashboardSettings() {
           const j = await r.json();
           setErr(j.detail || j.error || "save failed");
         }
-      }} className="space-y-4">
+      }} className="space-y-12">
 
-        <div>
-          <label className="text-xs text-zinc-500 block mb-1">display name</label>
-          <input value={merchant.display_name} disabled
-            className="w-full bg-zinc-900 rounded px-3 py-2 opacity-60" />
-        </div>
+        <Section title="Identity" eyebrow="002">
+          <ReadOnly label="Display name" value={merchant.display_name} />
+          <ReadOnly label="Email" value={merchant.email} />
+          <ReadOnly label="Network" value={merchant.network} />
+        </Section>
 
-        <div>
-          <label className="text-xs text-zinc-500 block mb-1">email</label>
-          <input value={merchant.email} disabled
-            className="w-full bg-zinc-900 rounded px-3 py-2 opacity-60" />
-        </div>
+        <Section title="On-chain" eyebrow="003">
+          <Editable label="Stellar receive address" value={stellarAddress} onChange={setStellarAddress}
+            placeholder="GABC..." mono
+            hint="USDC payments land here. Must have USDC trustline." />
+        </Section>
 
-        <div>
-          <label className="text-xs text-zinc-500 block mb-1">network</label>
-          <input value={merchant.network} disabled
-            className="w-full bg-zinc-900 rounded px-3 py-2 opacity-60" />
-        </div>
-
-        <div>
-          <label className="text-xs text-zinc-500 block mb-1">stellar receive address</label>
-          <input value={stellarAddress} onChange={e => setStellarAddress(e.target.value)}
-            placeholder="GABC...XYZ"
-            className="w-full bg-zinc-900 rounded px-3 py-2 font-mono text-sm" />
-          <div className="text-xs text-zinc-600 mt-1">USDC payments land here. must have USDC trustline.</div>
-        </div>
-
-        <div>
-          <label className="text-xs text-zinc-500 block mb-1">webhook URL</label>
-          <input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)}
+        <Section title="Webhook" eyebrow="004">
+          <Editable label="Endpoint URL" value={webhookUrl} onChange={setWebhookUrl}
             placeholder="https://yourshop.com/webhooks/slippay"
-            className="w-full bg-zinc-900 rounded px-3 py-2" />
-          <div className="text-xs text-zinc-600 mt-1">https only on mainnet. signed with x-slippay-signature header.</div>
-        </div>
+            hint="HTTPS only on mainnet. Signed with x-slippay-signature header (HMAC-SHA256)." />
+        </Section>
 
-        <div>
-          <label className="text-xs text-zinc-500 block mb-1">API key (prefix)</label>
-          <div className="flex items-center gap-3">
-            <input value={`${merchant.api_key_prefix}...`} disabled
-              className="flex-1 bg-zinc-900 rounded px-3 py-2 font-mono text-sm opacity-60" />
-            <button type="button"
-              onClick={async () => {
-                if (!confirm("rotate API key? old key stops working immediately.")) return;
-                const r = await authFetch("/v1/merchants/me/rotate-key", { method: "POST" });
-                if (r.ok) {
-                  const j = await r.json();
-                  setRevealedKey(j.api_key);
-                  // refresh merchant prefix
-                  const m = await authFetch("/v1/merchants/me");
-                  if (m.ok) {
-                    const mj = await m.json();
-                    setMerchant(mj.merchant);
+        <Section title="API key" eyebrow="005">
+          <div>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 block mb-2">Current key</span>
+            <div className="flex items-center gap-4">
+              <code className="flex-1 font-mono text-sm py-3 border-b border-[#0a0a0a]/30">{merchant.api_key_prefix}...</code>
+              <button type="button"
+                onClick={async () => {
+                  if (!confirm("Rotate API key? Old key stops working immediately.")) return;
+                  const r = await authFetch("/v1/merchants/me/rotate-key", { method: "POST" });
+                  if (r.ok) {
+                    const j = await r.json();
+                    setRevealedKey(j.api_key);
+                    const m = await authFetch("/v1/merchants/me");
+                    if (m.ok) {
+                      const mj = await m.json();
+                      setMerchant(mj.merchant);
+                    }
                   }
-                }
-              }}
-              className="text-xs text-amber-300 hover:underline">rotate</button>
+                }}
+                className="text-[10px] uppercase tracking-[0.18em] border border-[#0a0a0a]/30 px-4 py-2 hover:bg-[#0a0a0a] hover:text-[#f1eee7]">
+                Rotate
+              </button>
+            </div>
           </div>
-        </div>
+        </Section>
 
-        <div className="pt-2">
-          <button className="bg-emerald-500 text-black px-4 py-2 rounded font-semibold">save</button>
-          {saved && <span className="ml-3 text-sm text-emerald-400">saved</span>}
-          {err && <span className="ml-3 text-sm text-red-400">{err}</span>}
+        <div className="pt-8 flex items-center gap-6">
+          <button className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-4 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a]">
+            Save changes
+          </button>
+          {saved && <span className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/70 flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" /> Saved
+          </span>}
+          {err && <span className="text-xs uppercase tracking-[0.18em] text-red-700">{err}</span>}
         </div>
       </form>
+    </div>
+  );
+}
+
+function Section({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
+  return (
+    <div className="grid md:grid-cols-12 gap-6 md:gap-12 border-t border-[#0a0a0a]/10 pt-8">
+      <div className="md:col-span-3">
+        <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">{eyebrow}. {title}</div>
+      </div>
+      <div className="md:col-span-9 space-y-6">{children}</div>
+    </div>
+  );
+}
+
+function ReadOnly({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 block mb-2">{label}</span>
+      <div className="text-base py-3 border-b border-[#0a0a0a]/10 text-[#0a0a0a]/70">{value}</div>
+    </div>
+  );
+}
+
+function Editable({ label, value, onChange, placeholder, hint, mono }: {
+  label: string; value: string; onChange: (v: string) => void;
+  placeholder?: string; hint?: string; mono?: boolean;
+}) {
+  return (
+    <div>
+      <span className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 block mb-2">{label}</span>
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
+        className={`w-full bg-transparent border-b border-[#0a0a0a]/30 py-3 ${mono ? "font-mono text-sm" : "text-base"} tracking-tight focus:outline-none focus:border-[#0a0a0a] transition-colors`} />
+      {hint && <p className="text-xs text-[#0a0a0a]/55 mt-2">{hint}</p>}
     </div>
   );
 }

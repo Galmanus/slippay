@@ -5,26 +5,72 @@ import { supabase } from "../lib/auth.tsx";
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [err, setErr] = useState<string | null>(null);
+  const [msg, setMsg] = useState<{ kind: "err" | "info"; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+
   return (
-    <main className="max-w-sm mx-auto p-8">
-      <h1 className="text-2xl font-semibold mb-6">sign up</h1>
-      <form onSubmit={async (e) => {
-        e.preventDefault(); setErr(null); setLoading(true);
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        setLoading(false);
-        if (error) { setErr(error.message); return; }
-        if (data.session) nav("/dashboard");
-        else setErr("check your email to confirm");
-      }} className="space-y-3">
-        <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="email" required className="w-full bg-zinc-900 rounded px-3 py-2" />
-        <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="password" required minLength={8} className="w-full bg-zinc-900 rounded px-3 py-2" />
-        <button disabled={loading} className="w-full bg-emerald-500 disabled:opacity-50 text-black py-2 rounded font-semibold">{loading ? "..." : "sign up"}</button>
-        {err && <div className="text-amber-400 text-sm">{err}</div>}
-      </form>
-      <Link to="/login" className="text-sm text-zinc-400 mt-4 block">already have an account? log in</Link>
-    </main>
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
+      <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
+        <Link to="/" className="text-sm tracking-tight font-medium">slippay</Link>
+        <Link to="/login" className="text-xs uppercase tracking-[0.18em] hover:opacity-60">
+          Have an account? Log in
+        </Link>
+      </header>
+
+      <main className="flex-1 flex items-center">
+        <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-16 py-16">
+          <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+            <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+            001. Create account
+          </div>
+          <div className="md:col-span-6">
+            <h1 className="text-6xl md:text-8xl font-medium tracking-[-0.04em] leading-[0.9]">
+              Start accepting USDC.
+            </h1>
+            <p className="mt-8 text-xl text-[#0a0a0a]/70 max-w-[44ch]">
+              First order in under five minutes. No custody, no escrow.
+              Buyer signs once, funds settle direct to your wallet.
+            </p>
+            <form onSubmit={async (e) => {
+              e.preventDefault(); setMsg(null); setLoading(true);
+              const { data, error } = await supabase.auth.signUp({ email, password });
+              setLoading(false);
+              if (error) { setMsg({ kind: "err", text: error.message }); return; }
+              if (data.session) nav("/dashboard");
+              else setMsg({ kind: "info", text: "Check your email to confirm." });
+            }} className="mt-16 max-w-md space-y-8">
+              <Field label="Email" type="email" value={email} onChange={setEmail} required autoFocus />
+              <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={8} />
+              <button disabled={loading}
+                className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
+                {loading ? "..." : "Sign up"}
+              </button>
+              {msg && (
+                <div className={`text-sm border-l-2 pl-3 ${msg.kind === "err" ? "text-red-700 border-red-700" : "text-[#0a0a0a]/70 border-[#0a0a0a]/30"}`}>
+                  {msg.text}
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function Field({ label, type, value, onChange, required, autoFocus, minLength }: {
+  label: string; type: string; value: string; onChange: (v: string) => void;
+  required?: boolean; autoFocus?: boolean; minLength?: number;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 block mb-2">{label}</span>
+      <input
+        type={type} value={value} onChange={e => onChange(e.target.value)}
+        required={required} autoFocus={autoFocus} minLength={minLength}
+        className="w-full bg-transparent border-b border-[#0a0a0a]/30 py-3 text-lg tracking-tight focus:outline-none focus:border-[#0a0a0a] transition-colors"
+      />
+    </label>
   );
 }

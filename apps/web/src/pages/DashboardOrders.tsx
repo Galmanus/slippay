@@ -12,13 +12,13 @@ interface OrderRow {
   tx_hash: string | null;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  pending: "text-amber-400 bg-amber-900/30",
-  paid: "text-emerald-400 bg-emerald-900/30",
-  underpaid: "text-orange-400 bg-orange-900/30",
-  expired: "text-zinc-500 bg-zinc-800",
-  cancelled: "text-zinc-500 bg-zinc-800",
-  dead: "text-red-400 bg-red-900/30",
+const STATUS_DOT: Record<string, string> = {
+  pending: "bg-amber-500",
+  paid: "bg-[#b5e853]",
+  underpaid: "bg-orange-500",
+  expired: "bg-[#0a0a0a]/30",
+  cancelled: "bg-[#0a0a0a]/30",
+  dead: "bg-red-500",
 };
 
 export default function DashboardOrders() {
@@ -37,42 +37,64 @@ export default function DashboardOrders() {
     return () => { alive = false; clearInterval(id); };
   }, []);
 
-  if (orders === null) return <div className="text-zinc-400">loading...</div>;
+  if (orders === null) {
+    return <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Loading...</div>;
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-6">orders</h1>
+    <div className="max-w-6xl">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3">001. Orders</div>
+      <h1 className="text-5xl md:text-7xl font-medium tracking-[-0.04em] leading-[0.95] mb-16">
+        {orders.length} {orders.length === 1 ? "order" : "orders"}
+      </h1>
+
       {orders.length === 0
-        ? <div className="text-zinc-500 text-sm">no orders yet. POST to /v1/orders with your API key to create one.</div>
+        ? (
+          <div className="border border-[#0a0a0a]/10 p-8">
+            <div className="text-base">No orders yet.</div>
+            <p className="text-sm text-[#0a0a0a]/55 mt-2 max-w-[60ch]">
+              Create one with a POST to /v1/orders using your API key from settings.
+              Orders show up here in real time.
+            </p>
+          </div>
+        )
         : (
-          <table className="w-full text-sm">
-            <thead className="text-zinc-500 text-left">
-              <tr>
-                <th className="py-2">id</th>
-                <th>ref</th>
-                <th>BRL</th>
-                <th>USDC</th>
-                <th>status</th>
-                <th>created</th>
-                <th>tx</th>
+          <table className="w-full">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 text-left border-b border-[#0a0a0a]/20">
+                <th className="py-4 font-normal">ID</th>
+                <th className="font-normal">Ref</th>
+                <th className="font-normal">BRL</th>
+                <th className="font-normal">USDC</th>
+                <th className="font-normal">Status</th>
+                <th className="font-normal">Created</th>
+                <th className="font-normal">Tx</th>
               </tr>
             </thead>
             <tbody>
               {orders.map(o => (
-                <tr key={o.id} className="border-t border-zinc-800">
-                  <td className="py-2 font-mono text-xs text-zinc-400">{o.id.slice(0,8)}</td>
-                  <td className="text-zinc-400">{o.external_ref ?? "—"}</td>
-                  <td>R$ {Number(o.brl_amount).toFixed(2)}</td>
-                  <td className="tabular-nums">{o.usdc_amount}</td>
+                <tr key={o.id} className="border-b border-[#0a0a0a]/10 hover:bg-[#0a0a0a]/[0.02]">
+                  <td className="py-4 font-mono text-xs text-[#0a0a0a]/70">{o.id.slice(0,8)}</td>
+                  <td className="text-sm text-[#0a0a0a]/70">{o.external_ref ?? "—"}</td>
+                  <td className="text-sm tabular-nums">R$ {Number(o.brl_amount).toFixed(2)}</td>
+                  <td className="text-sm tabular-nums">{o.usdc_amount}</td>
                   <td>
-                    <span className={`px-2 py-0.5 rounded text-xs ${STATUS_COLOR[o.status] ?? ""}`}>{o.status}</span>
+                    <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.18em]">
+                      <span className={`inline-block w-1.5 h-1.5 ${STATUS_DOT[o.status] ?? "bg-[#0a0a0a]/30"}`} />
+                      {o.status}
+                    </span>
                   </td>
-                  <td className="text-zinc-500 text-xs">{new Date(o.created_at).toLocaleString()}</td>
+                  <td className="text-xs text-[#0a0a0a]/55 tabular-nums">
+                    {new Date(o.created_at).toLocaleString()}
+                  </td>
                   <td className="font-mono text-xs">
                     {o.tx_hash
-                      ? <a href={`https://stellar.expert/explorer/testnet/tx/${o.tx_hash}`} target="_blank" rel="noreferrer"
-                           className="text-emerald-400 hover:underline">{o.tx_hash.slice(0,8)}</a>
-                      : "—"}
+                      ? <a href={`https://stellar.expert/explorer/testnet/tx/${o.tx_hash}`}
+                           target="_blank" rel="noreferrer"
+                           className="border-b border-[#0a0a0a] hover:border-[#b5e853]">
+                          {o.tx_hash.slice(0,8)}
+                        </a>
+                      : <span className="text-[#0a0a0a]/30">—</span>}
                   </td>
                 </tr>
               ))}
