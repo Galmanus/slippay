@@ -4,6 +4,12 @@ const TTL_MS = 60_000;
 export function _resetCacheForTest() { cache = null; }
 
 export async function getBrlPerUsdc(): Promise<number> {
+  // Allow a fixed override in tests/CI to avoid hitting CoinGecko.
+  const override = Deno.env.get("RATE_BRL_USDC");
+  if (override) {
+    const v = parseFloat(override);
+    if (v > 0) return v;
+  }
   if (cache && cache.expires > Date.now()) return cache.value;
   const value = await fetchCoinGecko();
   cache = { value, expires: Date.now() + TTL_MS };
