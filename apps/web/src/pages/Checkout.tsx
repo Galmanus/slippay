@@ -9,6 +9,18 @@ import { signTx } from "../lib/wallet.ts";
 
 type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "paid" | "error";
 
+function isEmbedded(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("embed") === "1") return true;
+  try { return window.parent !== window && window.parent != null; } catch { return true; }
+}
+
+function postToParent(msg: Record<string, unknown>) {
+  if (!isEmbedded() || typeof window === "undefined") return;
+  try { window.parent.postMessage(msg, "*"); } catch {}
+}
+
 export default function Checkout() {
   const { order_id } = useParams<{ order_id: string }>();
   const [order, setOrder] = useState<PublicOrder | null>(null);
@@ -16,6 +28,7 @@ export default function Checkout() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [txHash, setTxHash] = useState<string | null>(null);
+  const embedded = isEmbedded();
 
   useEffect(() => {
     if (!order_id) return;
@@ -31,11 +44,25 @@ export default function Checkout() {
         if (fresh.status === "paid") {
           clearInterval(id);
           setSubmitState("paid");
+        } else if (fresh.status === "expired") {
+          clearInterval(id);
+          postToParent({ type: "slippay:expired", orderId: order_id });
         }
       } catch {}
     }, 2000);
     return () => clearInterval(id);
   }, [submitState, order_id]);
+
+  // notify parent (SDK) on terminal states
+  useEffect(() => {
+    if (submitState === "paid" && order_id && txHash) {
+      postToParent({ type: "slippay:paid", orderId: order_id, txHash });
+    }
+  }, [submitState, order_id, txHash]);
+
+  useEffect(() => {
+    if (error) postToParent({ type: "slippay:error", orderId: order_id, message: error });
+  }, [error, order_id]);
 
   if (error) {
     return (
@@ -65,12 +92,14 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
-      <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
-        <Logo />
-        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-          Checkout · {order.id.slice(0, 8)}
-        </div>
-      </header>
+      {!embedded && (
+        <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
+          <Logo />
+          <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+            Checkout · {order.id.slice(0, 8)}
+          </div>
+        </header>
+      )}
 
       <main className="flex-1 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
@@ -166,11 +195,13 @@ export default function Checkout() {
         </div>
       </main>
 
-      <footer className="border-t border-[#0a0a0a]/10">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-          Non-custodial · Powered by Stellar · USDC by Circle
-        </div>
-      </footer>
+      {!embedded && (
+        <footer className="border-t border-[#0a0a0a]/10">
+          <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+            Non-custodial · Powered by Stellar · USDC by Circle
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Signup from "./pages/Signup.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardOrders from "./pages/DashboardOrders.tsx";
 import DashboardSettings from "./pages/DashboardSettings.tsx";
+import Demo from "./pages/Demo.tsx";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/checkout/:order_id" element={<Checkout />} />
+      <Route path="/demo" element={<Demo />} />
       <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<Navigate to="orders" replace />} />
         <Route path="orders" element={<DashboardOrders />} />
