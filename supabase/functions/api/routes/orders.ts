@@ -61,14 +61,22 @@ r.get("/", requireApiKey, async (c) => {
   return c.json({ orders });
 });
 
-const PUBLIC_FIELDS = "id,merchant_id,brl_amount,usdc_amount,memo,status,expires_at,paid_at,tx_hash,created_at,external_ref";
-
 r.get("/:id", async (c) => {
   const id = c.req.param("id");
   const sb = serviceClient();
-  const { data, error } = await sb.from("orders").select(PUBLIC_FIELDS).eq("id", id).maybeSingle();
+  const { data, error } = await sb.from("orders")
+    .select(`
+      id, merchant_id, brl_amount, usdc_amount, memo, status,
+      expires_at, paid_at, tx_hash, created_at, external_ref,
+      merchants ( stellar_address )
+    `)
+    .eq("id", id).maybeSingle();
   if (error || !data) return c.json({ error: "not_found" }, 404);
-  return c.json({ order: data });
+  const merchantSubrow = (data as unknown as { merchants?: { stellar_address: string | null } | null }).merchants;
+  const merchant_stellar_address = merchantSubrow?.stellar_address ?? null;
+  // strip the embedded relation; flatten to a single field
+  const { merchants: _ignored, ...rest } = data as unknown as Record<string, unknown> & { merchants?: unknown };
+  return c.json({ order: { ...rest, merchant_stellar_address } });
 });
 
 r.post("/:id/cancel", requireApiKey, async (c) => {

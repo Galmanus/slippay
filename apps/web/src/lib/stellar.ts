@@ -1,6 +1,7 @@
 import {
   Account,
   Asset,
+  Horizon,
   Memo,
   Networks,
   Operation,
@@ -8,6 +9,24 @@ import {
   BASE_FEE,
 } from "@stellar/stellar-sdk";
 import { USDC_ASSET_CODE } from "@slippay/shared";
+
+const HORIZON: Record<string, string> = {
+  TESTNET: "https://horizon-testnet.stellar.org",
+  PUBLIC:  "https://horizon.stellar.org",
+};
+
+export async function fetchSequence(network: "TESTNET" | "PUBLIC", publicKey: string): Promise<string> {
+  const server = new Horizon.Server(HORIZON[network]!);
+  const account = await server.loadAccount(publicKey);
+  return account.sequence;
+}
+
+export async function submitSignedTx(network: "TESTNET" | "PUBLIC", signedXdr: string): Promise<{ hash: string }> {
+  const server = new Horizon.Server(HORIZON[network]!);
+  const tx = TransactionBuilder.fromXDR(signedXdr, PASSPHRASES[network]!);
+  const res = await server.submitTransaction(tx);
+  return { hash: (res as { hash: string }).hash };
+}
 
 const ISSUERS: Record<string, string> = {
   TESTNET: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
