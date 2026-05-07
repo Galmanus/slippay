@@ -6,7 +6,7 @@ import { PayButton } from "../components/PayButton.tsx";
 import { buildAtomicTx, fetchSequence, submitSignedTx } from "../lib/stellar.ts";
 import { signTx } from "../lib/wallet.ts";
 
-type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "error";
+type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "paid" | "error";
 
 export default function Checkout() {
   const { order_id } = useParams<{ order_id: string }>();
@@ -20,6 +20,21 @@ export default function Checkout() {
     if (!order_id) return;
     fetchOrder(order_id).then(setOrder).catch(e => setError(e.message));
   }, [order_id]);
+
+  useEffect(() => {
+    if (submitState !== "submitted" || !order_id) return;
+    const id = setInterval(async () => {
+      try {
+        const fresh = await fetchOrder(order_id);
+        setOrder(fresh);
+        if (fresh.status === "paid") {
+          clearInterval(id);
+          setSubmitState("paid");
+        }
+      } catch {}
+    }, 2000);
+    return () => clearInterval(id);
+  }, [submitState, order_id]);
 
   if (error) return <div className="p-8 text-red-400">{error}</div>;
   if (!order) return <div className="p-8 text-zinc-400">loading...</div>;
@@ -80,15 +95,27 @@ export default function Checkout() {
                submitState === "building" ? "preparing..." :
                submitState === "signing" ? "waiting for wallet..." :
                submitState === "submitting" ? "submitting..." :
-               "submitted"}
+               submitState === "submitted" ? "awaiting confirmation..." :
+               "paid"}
             </button>
-            {submitState === "submitted" && txHash && (
+            {(submitState === "submitted" || submitState === "paid") && txHash && (
               <div className="mt-4 rounded-lg bg-emerald-900/30 border border-emerald-700 p-3 text-sm">
-                <div className="text-emerald-300 font-semibold">tx submitted</div>
+                <div className="text-emerald-300 font-semibold">tx submitted, awaiting confirmation</div>
                 <a className="text-xs text-emerald-200/70 hover:underline mt-1 block break-all"
                    href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
                   {txHash}
                 </a>
+              </div>
+            )}
+            {submitState === "paid" && (
+              <div className="mt-6 rounded-lg bg-emerald-900/30 border border-emerald-700 p-4">
+                <div className="text-emerald-300 font-semibold">payment confirmed</div>
+                {txHash && (
+                  <a className="text-xs text-emerald-200/70 hover:underline mt-1 block break-all"
+                     href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                    {txHash}
+                  </a>
+                )}
               </div>
             )}
           </div>
