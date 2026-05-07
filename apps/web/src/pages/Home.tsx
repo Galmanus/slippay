@@ -3,10 +3,10 @@ import { Logo } from "../components/Logo.tsx";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a]">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
       <header className="max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
-        <nav className="flex items-center gap-8 text-xs uppercase tracking-[0.18em]">
+        <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em]">
           <a href="#how" className="hover:opacity-60">How it works</a>
           <a href="#stack" className="hover:opacity-60">Stack</a>
           <Link to="/login" className="hover:opacity-60">Log in</Link>
@@ -17,145 +17,203 @@ export default function Home() {
         </nav>
       </header>
 
-      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-16 md:pt-24 pb-24 md:pb-32 relative">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/55 mb-12 flex items-center gap-3">
-          <span className="inline-block w-3 h-3 bg-[#b5e853]" />
-          Confidential · Pre-launch · 2026
-        </div>
-        <h1 className="text-[10vw] md:text-[5.5vw] font-medium leading-[0.92] tracking-[-0.035em] max-w-[18ch]">
-          USDC checkout for Brazilian e‑commerce.
-        </h1>
-        <div className="grid md:grid-cols-2 gap-12 md:gap-32 mt-20 md:mt-32">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-            001. The thesis
+      {/* HERO */}
+      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-12 md:pt-16 pb-24 md:pb-32 relative">
+        <div className="grid grid-cols-12 gap-6 items-end">
+          <div className="col-span-12 md:col-span-3">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 flex items-center gap-3">
+              <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+              Pre-launch
+            </div>
+            <div className="mt-4 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
+              <span className="tabular-nums">2026 · v0.0.3</span>
+            </div>
           </div>
-          <p className="text-lg md:text-xl leading-[1.5] tracking-tight max-w-[44ch] text-[#0a0a0a]/80">
-            Non-custodial payment gateway built on Stellar. Settles in roughly five seconds.
-            Merchants never wait, buyers never give up custody.
-          </p>
+          <div className="col-span-12 md:col-span-9">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-4 font-mono">
+              ╱╱  Issue 001
+            </div>
+            <h1 className="text-[12vw] md:text-[5.2vw] font-medium leading-[0.95] tracking-[-0.04em] max-w-[20ch]">
+              USDC checkout<br/>
+              for Brazilian<br/>
+              <em className="not-italic relative">
+                e‑commerce
+                <span className="inline-block align-middle ml-3 w-2.5 h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
+              </em>
+            </h1>
+          </div>
         </div>
-        <div className="mt-20 md:mt-32 flex flex-col sm:flex-row gap-4">
-          <Link to="/signup"
-            className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] text-center">
-            Start accepting USDC
-          </Link>
-          <Link to="/login"
-            className="border border-[#0a0a0a] text-[#0a0a0a] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] text-center">
-            Merchant log in
-          </Link>
-        </div>
-      </section>
 
-      <section className="border-t border-[#0a0a0a]/10">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
-          <div className="grid md:grid-cols-12 gap-8 md:gap-16 items-start">
-            <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-              002. Numbers
+        <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
+          <div className="col-span-12 md:col-span-3">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
+              ┃ The thesis
             </div>
-            <div className="md:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
-              <div>
-                <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-tighter">~5s</div>
-                <div className="mt-6 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Settlement</div>
-                <p className="mt-4 text-sm leading-relaxed text-[#0a0a0a]/70 max-w-[28ch]">
-                  No batch windows, no T+1, no T+2. Confirmation lands in the next ledger.
-                </p>
-              </div>
-              <div>
-                <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-tighter">0%</div>
-                <div className="mt-6 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Custody</div>
-                <p className="mt-4 text-sm leading-relaxed text-[#0a0a0a]/70 max-w-[28ch]">
-                  Funds move from buyer wallet to merchant wallet. Private keys never leave the user.
-                </p>
-              </div>
-              <div>
-                <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-tighter">1%</div>
-                <div className="mt-6 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Platform fee</div>
-                <p className="mt-4 text-sm leading-relaxed text-[#0a0a0a]/70 max-w-[28ch]">
-                  Charged in the same atomic transaction as the merchant payment. Either both succeed, or neither does.
-                </p>
-              </div>
-            </div>
+          </div>
+          <div className="col-span-12 md:col-span-6">
+            <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[50ch]">
+              <em className="font-light">Non-custodial</em> payment gateway built on Stellar.
+              Settles in roughly five seconds.
+              Merchants never wait, buyers never give up custody.
+            </p>
+          </div>
+          <div className="col-span-12 md:col-span-3 flex md:justify-end items-end">
+            <Link to="/signup"
+              className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
+              Start accepting USDC <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
           </div>
         </div>
       </section>
 
-      <section id="how" className="border-t border-[#0a0a0a]/10">
+      {/* NUMBERS */}
+      <section className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
-          <div className="grid md:grid-cols-12 gap-8 md:gap-16">
-            <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-              003. How it works
+          <div className="grid grid-cols-12 gap-6 mb-16">
+            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+              ┃ Numbers
             </div>
-            <div className="md:col-span-9">
-              <h2 className="text-4xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[22ch]">
-                Four moving parts. One atomic transaction.
+            <div className="col-span-12 md:col-span-9 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
+              002 · The economics
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
+            <Stat n="~5s" label="Settlement"
+              body="No batch windows. No T+1. Confirmation lands in the next ledger close." />
+            <Stat n="0%" label="Custody"
+              body="Funds move from buyer wallet to merchant wallet. Private keys never leave the user." />
+            <Stat n="1%" label="Platform fee"
+              body="Charged in the same atomic transaction as the merchant payment. Both succeed, or neither does." />
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section id="how" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+              ┃ Mechanics
+            </div>
+            <div className="col-span-12 md:col-span-9">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
+                003 · How it works
+              </div>
+              <h2 className="text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
+                Four moving parts.<br/>One <em className="font-light">atomic</em> transaction.
               </h2>
-              <div className="mt-20 grid md:grid-cols-2 gap-x-16 gap-y-16">
-                <Step n="001" title="Merchant calls POST /v1/orders"
+              <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
+                <Step n="01" title="Merchant calls POST /v1/orders"
                   body="BRL amount in. Checkout URL, memo hash, USDC amount out. Rate locked at order creation." />
-                <Step n="002" title="Buyer connects wallet, signs once"
-                  body="Freighter, Lobstr, xBull, Albedo, Hana. One signature covers merchant payment AND platform fee in a single Stellar transaction." />
-                <Step n="003" title="Listener confirms on-chain"
-                  body="Horizon stream watches the merchant address, matches by memo, validates the amount, writes status=paid within the next ledger close." />
-                <Step n="004" title="Webhook fires, signed with HMAC"
-                  body="Merchant endpoint receives an order.paid event with x-slippay-signature. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, then dead." />
+                <Step n="02" title="Buyer connects wallet, signs once"
+                  body="Freighter, Lobstr, xBull, Albedo, Hana. One signature covers merchant payment AND platform fee." />
+                <Step n="03" title="Listener confirms on-chain"
+                  body="Horizon stream watches the merchant address, matches by memo, validates the amount, writes status=paid." />
+                <Step n="04" title="Webhook fires, signed with HMAC"
+                  body="Merchant endpoint receives an order.paid event. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead." />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="stack" className="border-t border-[#0a0a0a]/10">
+      {/* REGULATORY / STACK */}
+      <section id="stack" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
-          <div className="grid md:grid-cols-12 gap-8 md:gap-16">
-            <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-              004. Regulatory
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+              ┃ Position
             </div>
-            <div className="md:col-span-9">
-              <h2 className="text-4xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
-                Built for the window that just opened.
+            <div className="col-span-12 md:col-span-9">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
+                004 · Regulatory
+              </div>
+              <h2 className="text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch]">
+                Built for the window<br/>that <em className="font-light">just opened</em>.
               </h2>
-              <p className="mt-12 text-base md:text-lg leading-relaxed text-[#0a0a0a]/70 max-w-[60ch]">
+              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[64ch]">
                 BCB Resoluções 519/520/521 (effective February 2026) created the first
                 complete framework for virtual-asset service providers in Brazil. SlipPay
-                operates as a technology provider — atomic settlement, no custody, no money
-                transmission — partnering with licensed VASPs for the regulated layer.
+                operates as a <em className="font-light">technology provider</em> — atomic settlement,
+                no custody, no money transmission — partnering with licensed VASPs for the regulated layer.
               </p>
 
-              <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10">
+              <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
                 <Cell label="Chain" value="Stellar" />
-                <Cell label="Asset" value="USDC (Circle)" />
+                <Cell label="Asset" value="USDC · Circle" />
                 <Cell label="Wallets" value="5 supported" />
-                <Cell label="Finality" value="~5 seconds" />
+                <Cell label="Finality" value="~5s" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-[#0a0a0a]/10">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-32 md:py-48 relative">
-          <span className="inline-block w-3 h-3 bg-[#b5e853] mb-12" />
-          <h2 className="text-[10vw] md:text-[5.5vw] font-medium tracking-[-0.035em] leading-[0.92] max-w-[14ch]">
-            Ready when your store is.
+      {/* CTA */}
+      <section className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-32 md:py-40 relative">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
+            005 · Onboard <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
+          </div>
+          <h2 className="text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch]">
+            Ready when<br/><em className="font-light">your store is</em>.
           </h2>
-          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/70 max-w-[44ch]">
-            Sign up, drop your Stellar receive address, copy your API key.
+          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[44ch]">
+            Sign up. Drop your Stellar receive address. Copy your API key.
             First order in under five minutes.
           </p>
           <Link to="/signup"
-            className="inline-block mt-16 bg-[#0a0a0a] text-[#f1eee7] px-12 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a]">
-            Create merchant account
+            className="inline-flex items-center gap-3 mt-12 bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
+            Create merchant account <span>→</span>
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-[#0a0a0a]/10">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-          <div>© 2026 slippay · pre-launch · confidential</div>
-          <div className="flex gap-8">
-            <a href="#" className="hover:text-[#0a0a0a]">Terms</a>
-            <a href="#" className="hover:text-[#0a0a0a]">Privacy</a>
-            <a href="#" className="hover:text-[#0a0a0a]">Docs</a>
+      {/* FOOTER — oversized wordmark, editorial */}
+      <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-12 pt-20 pb-8">
+          <div className="grid grid-cols-12 gap-6 pb-16 border-b border-[#f1eee7]/15">
+            <div className="col-span-12 md:col-span-4">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
+                ┃ Product
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/signup" className="hover:opacity-60">Sign up</Link></li>
+                <li><Link to="/login" className="hover:opacity-60">Log in</Link></li>
+                <li><a href="#how" className="hover:opacity-60">How it works</a></li>
+              </ul>
+            </div>
+            <div className="col-span-12 md:col-span-4">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
+                ┃ Resources
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:opacity-60">API docs</a></li>
+                <li><a href="#" className="hover:opacity-60">Webhook guide</a></li>
+                <li><a href="#" className="hover:opacity-60">Security</a></li>
+              </ul>
+            </div>
+            <div className="col-span-12 md:col-span-4">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
+                ┃ Legal
+              </div>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:opacity-60">Terms</a></li>
+                <li><a href="#" className="hover:opacity-60">Privacy</a></li>
+                <li className="text-[#f1eee7]/55">CNPJ 66.381.800/0001-08</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-16 pb-8 leading-none">
+            <span className="block text-[#f1eee7] text-[20vw] md:text-[14vw] font-medium tracking-[-0.05em] -mb-4">
+              slippay<span className="text-[#b5e853]">.</span>
+            </span>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
+            <div>© 2026 · Bluewave AI · Pre-launch · Confidential</div>
+            <div>Blumenau · BR · America/Sao_Paulo</div>
           </div>
         </div>
       </footer>
@@ -163,21 +221,37 @@ export default function Home() {
   );
 }
 
+function Stat({ n, label, body }: { n: string; label: string; body: string }) {
+  return (
+    <div className="bg-[#f1eee7] p-8 md:p-10">
+      <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-[-0.04em] leading-none">{n}</div>
+      <div className="mt-6 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
+      <p className="mt-4 text-sm leading-[1.6] text-[#0a0a0a]/75 max-w-[28ch]">{body}</p>
+    </div>
+  );
+}
+
 function Step({ n, title, body }: { n: string; title: string; body: string }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 tabular-nums">{n}.</div>
-      <div className="mt-3 text-2xl tracking-tight font-medium leading-[1.2]">{title}</div>
-      <p className="mt-4 text-base leading-relaxed text-[#0a0a0a]/70 max-w-[40ch]">{body}</p>
+    <div className="grid grid-cols-12 gap-4">
+      <div className="col-span-2 md:col-span-1">
+        <div className="text-3xl md:text-4xl font-medium tabular-nums tracking-tight text-[#0a0a0a]/30 leading-none font-mono">
+          {n}
+        </div>
+      </div>
+      <div className="col-span-10 md:col-span-11">
+        <div className="text-xl md:text-2xl tracking-tight font-medium leading-[1.2]">{title}</div>
+        <p className="mt-3 text-sm md:text-base leading-[1.65] text-[#0a0a0a]/75 max-w-[48ch]">{body}</p>
+      </div>
     </div>
   );
 }
 
 function Cell({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#f1eee7] p-6">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">{label}</div>
-      <div className="mt-2 text-base font-medium tracking-tight">{value}</div>
+    <div className="bg-[#f1eee7] p-6 md:p-8">
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
+      <div className="mt-3 text-base md:text-lg font-medium tracking-tight">{value}</div>
     </div>
   );
 }
