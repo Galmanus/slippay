@@ -48,6 +48,9 @@ importers:
       '@stellar/stellar-sdk':
         specifier: ^15.1.0
         version: 15.1.0
+      '@supabase/supabase-js':
+        specifier: ^2.45.4
+        version: 2.105.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
       react:
         specifier: ^18.3.0
         version: 18.3.1
