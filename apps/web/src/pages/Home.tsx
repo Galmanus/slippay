@@ -28,7 +28,7 @@ export default function Home() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
         <div className="absolute bottom-6 right-8 md:right-12 z-10 inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-4 py-2 text-[10px] uppercase tracking-[0.22em] font-mono">
           <span>slippay · etiqueta do produto</span>
           <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
