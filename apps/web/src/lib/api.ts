@@ -12,6 +12,7 @@ export interface PublicOrder {
   created_at: string;
   external_ref: string | null;
   merchant_id: string;
+  merchant_stellar_address: string | null;
 }
 
 export async function fetchOrder(id: string): Promise<PublicOrder> {

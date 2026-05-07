@@ -72,6 +72,7 @@ Deno.test("GET /v1/orders/:id returns public limited fields without auth", { san
   const body = await res.json();
   assertEquals(body.order.id, order.id);
   assertEquals("api_key_hash" in body.order, false);
+  assert(typeof body.order.merchant_stellar_address === "string" || body.order.merchant_stellar_address === null);
 });
 
 Deno.test("POST /v1/orders/:id/cancel marks status cancelled", { sanitizeOps: false, sanitizeResources: false }, async () => {
