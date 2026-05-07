@@ -1,0 +1,67 @@
+import {
+  Account,
+  Asset,
+  Memo,
+  Networks,
+  Operation,
+  TransactionBuilder,
+  BASE_FEE,
+} from "@stellar/stellar-sdk";
+import { USDC_ASSET_CODE } from "@slippay/shared";
+
+const ISSUERS: Record<string, string> = {
+  TESTNET: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+  PUBLIC:  "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+};
+
+const PASSPHRASES: Record<string, string> = {
+  TESTNET: Networks.TESTNET,
+  PUBLIC:  Networks.PUBLIC,
+};
+
+export interface BuildAtomicTxArgs {
+  buyerPublicKey: string;
+  buyerSequence: string;
+  merchantAddress: string;
+  platformAddress: string;
+  usdcAmount: string;
+  platformFeeBp: number;
+  memo: string;
+  network: "TESTNET" | "PUBLIC";
+  maxTime: number;
+}
+
+export async function buildAtomicTx(args: BuildAtomicTxArgs): Promise<string> {
+  const total = Number(args.usdcAmount);
+  if (!isFinite(total) || total <= 0) throw new Error("invalid_amount");
+  const fee = total * (args.platformFeeBp / 10_000);
+  const merchantShare = (total - fee).toFixed(7);
+  const feeShare = fee.toFixed(7);
+
+  const issuer = ISSUERS[args.network];
+  const usdc = new Asset(USDC_ASSET_CODE, issuer);
+
+  const account = new Account(args.buyerPublicKey, args.buyerSequence);
+  const memoBytes = Buffer.from(args.memo, "hex");
+  if (memoBytes.length !== 32) throw new Error("invalid_memo");
+
+  const tx = new TransactionBuilder(account, {
+    fee: BASE_FEE,
+    networkPassphrase: PASSPHRASES[args.network],
+    memo: Memo.hash(memoBytes),
+    timebounds: { minTime: 0, maxTime: args.maxTime },
+  })
+    .addOperation(Operation.payment({
+      destination: args.merchantAddress,
+      asset: usdc,
+      amount: merchantShare,
+    }))
+    .addOperation(Operation.payment({
+      destination: args.platformAddress,
+      asset: usdc,
+      amount: feeShare,
+    }))
+    .build();
+
+  return tx.toXDR();
+}

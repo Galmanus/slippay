@@ -13,6 +13,7 @@
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
     "@slippay/shared": "workspace:*",
+    "@stellar/stellar-sdk": "^15.1.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.26.0"
