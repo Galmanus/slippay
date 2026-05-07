@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { SupabaseClient } from "supabase";
-import { CreateMerchantInputSchema, type Merchant } from "@slippay/shared";
+import { CreateMerchantInputSchema, PatchMerchantInputSchema, type Merchant } from "@slippay/shared";
 import { requireJwt } from "../middleware/auth_jwt.ts";
 import { generateApiKey, hashApiKey, prefixOf } from "../lib/apikey.ts";
 
@@ -45,6 +45,37 @@ r.get("/me", requireJwt, async (c) => {
   if (error || !data) return c.json({ error: "not_found" }, 404);
   const { api_key_hash: _h, webhook_secret: _s, ...safe } = data;
   return c.json({ merchant: safe as Merchant });
+});
+
+r.patch("/me", requireJwt, async (c) => {
+  const user = c.get("user");
+  const sb = c.get("supabase");
+  const input = PatchMerchantInputSchema.parse(await c.req.json());
+  const { data, error } = await sb
+    .from("merchants")
+    .update(input)
+    .eq("auth_user_id", user.id)
+    .select("*")
+    .single();
+  if (error) return c.json({ error: "update_failed", detail: error.message }, 400);
+  const { api_key_hash, webhook_secret, ...safe } = data;
+  return c.json({ merchant: safe });
+});
+
+r.post("/me/rotate-key", requireJwt, async (c) => {
+  const user = c.get("user");
+  const sb = c.get("supabase");
+  const apiKey = generateApiKey();
+  const hash = await hashApiKey(apiKey.plain);
+  const prefix = prefixOf(apiKey.plain);
+  const { error } = await sb
+    .from("merchants")
+    .update({ api_key_hash: hash, api_key_prefix: prefix })
+    .eq("auth_user_id", user.id)
+    .select("id")
+    .single();
+  if (error) return c.json({ error: "rotate_failed", detail: error.message }, 400);
+  return c.json({ api_key: apiKey.plain });
 });
 
 export default r;
