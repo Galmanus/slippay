@@ -9,6 +9,7 @@ export default function Home() {
         <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7] mix-blend-difference">
           <a href="#how" className="hover:opacity-60">How it works</a>
           <a href="#stack" className="hover:opacity-60">Stack</a>
+          <Link to="/demo" className="hover:opacity-60">SDK</Link>
           <Link to="/login" className="hover:opacity-60">Log in</Link>
           <Link to="/signup"
             className="bg-[#0a0a0a] text-[#f1eee7] px-5 py-2.5 hover:bg-[#1a1a1a] mix-blend-normal">
