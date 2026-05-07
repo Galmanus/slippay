@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchOrder, type PublicOrder } from "../lib/api.ts";
 import { Countdown } from "../components/Countdown.tsx";
+import { PayButton } from "../components/PayButton.tsx";
 
 export default function Checkout() {
   const { order_id } = useParams<{ order_id: string }>();
   const [order, setOrder] = useState<PublicOrder | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   useEffect(() => {
     if (!order_id) return;
@@ -27,9 +29,9 @@ export default function Checkout() {
           expires in <Countdown expiresAt={order.expires_at} />
         </div>
       </div>
-      <button disabled className="mt-6 w-full rounded-lg bg-zinc-800 text-zinc-500 py-3">
-        connect wallet (Task 4)
-      </button>
+      {!walletAddress
+        ? <PayButton onConnected={setWalletAddress} />
+        : <div className="mt-6 text-sm text-zinc-400">connected: {walletAddress.slice(0, 8)}...{walletAddress.slice(-4)}</div>}
     </main>
   );
 }
