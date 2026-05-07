@@ -6,13 +6,14 @@ COPY packages/shared ./packages/shared
 COPY apps/listener/package.json ./apps/listener/
 RUN pnpm install --frozen-lockfile
 COPY apps/listener ./apps/listener
-RUN pnpm --filter @slippay/listener build
+RUN pnpm --filter @slippay/shared build && pnpm --filter @slippay/listener build
 
 FROM node:22-alpine
 WORKDIR /app
 RUN corepack enable
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
 COPY --from=builder /app/apps/listener/dist ./apps/listener/dist
 COPY --from=builder /app/apps/listener/package.json ./apps/listener/
 WORKDIR /app/apps/listener
