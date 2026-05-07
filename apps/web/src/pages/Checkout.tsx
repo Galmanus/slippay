@@ -36,90 +36,140 @@ export default function Checkout() {
     return () => clearInterval(id);
   }, [submitState, order_id]);
 
-  if (error) return <div className="p-8 text-red-400">{error}</div>;
-  if (!order) return <div className="p-8 text-zinc-400">loading...</div>;
-
-  return (
-    <main className="max-w-md mx-auto p-8">
-      <h1 className="text-2xl font-semibold">pay with crypto</h1>
-      <div className="mt-8 rounded-lg bg-zinc-900 p-6">
-        <div className="text-sm text-zinc-500">amount due</div>
-        <div className="text-3xl font-semibold mt-1">R$ {Number(order.brl_amount).toFixed(2)}</div>
-        <div className="text-zinc-500 mt-2 tabular-nums">{order.usdc_amount} USDC</div>
-        <div className="mt-6 text-sm text-zinc-500">
-          expires in <Countdown expiresAt={order.expires_at} />
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex items-center">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-16">
+          <div className="text-xs uppercase tracking-[0.18em] text-red-700 mb-3">Error</div>
+          <div className="text-3xl tracking-tight">{error}</div>
         </div>
       </div>
+    );
+  }
+  if (!order) {
+    return (
+      <div className="min-h-screen bg-[#f1eee7] flex items-center justify-center">
+        <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Loading...</div>
+      </div>
+    );
+  }
 
-      {!walletAddress
-        ? <PayButton onConnected={setWalletAddress} />
-        : (
-          <div className="mt-6">
-            <div className="text-xs text-zinc-500 mb-2">connected: {walletAddress.slice(0,8)}...{walletAddress.slice(-4)}</div>
-            <button
-              disabled={submitState !== "idle" && submitState !== "error"}
-              onClick={async () => {
-                setError(null);
-                setSubmitState("building");
-                try {
-                  if (!order.merchant_stellar_address) throw new Error("merchant has no stellar_address");
-                  const platformAddress = import.meta.env.VITE_PLATFORM_ADDRESS;
-                  if (!platformAddress) throw new Error("VITE_PLATFORM_ADDRESS not configured");
-                  const network = (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as "TESTNET" | "PUBLIC";
-                  const seq = await fetchSequence(network, walletAddress);
-                  const xdr = await buildAtomicTx({
-                    buyerPublicKey: walletAddress,
-                    buyerSequence: seq,
-                    merchantAddress: order.merchant_stellar_address,
-                    platformAddress,
-                    usdcAmount: order.usdc_amount,
-                    platformFeeBp: 100,
-                    memo: order.memo,
-                    network,
-                    maxTime: Math.floor(new Date(order.expires_at).getTime() / 1000),
-                  });
-                  setSubmitState("signing");
-                  const signed = await signTx(xdr);
-                  setSubmitState("submitting");
-                  const { hash } = await submitSignedTx(network, signed);
-                  setTxHash(hash);
-                  setSubmitState("submitted");
-                } catch (e: unknown) {
-                  setSubmitState("error");
-                  setError(e instanceof Error ? e.message : "unknown error");
-                }
-              }}
-              className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black py-3 font-semibold disabled:opacity-50"
-            >
-              {submitState === "idle" || submitState === "error" ? `pay ${order.usdc_amount} USDC` :
-               submitState === "building" ? "preparing..." :
-               submitState === "signing" ? "waiting for wallet..." :
-               submitState === "submitting" ? "submitting..." :
-               submitState === "submitted" ? "awaiting confirmation..." :
-               "paid"}
-            </button>
-            {(submitState === "submitted" || submitState === "paid") && txHash && (
-              <div className="mt-4 rounded-lg bg-emerald-900/30 border border-emerald-700 p-3 text-sm">
-                <div className="text-emerald-300 font-semibold">tx submitted, awaiting confirmation</div>
-                <a className="text-xs text-emerald-200/70 hover:underline mt-1 block break-all"
-                   href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
-                  {txHash}
-                </a>
-              </div>
-            )}
-            {submitState === "paid" && (
-              <div className="mt-6 rounded-lg bg-emerald-900/30 border border-emerald-700 p-4">
-                <div className="text-emerald-300 font-semibold">payment confirmed</div>
-                {txHash && (
-                  <a className="text-xs text-emerald-200/70 hover:underline mt-1 block break-all"
-                     href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
-                    {txHash}
-                  </a>
-                )}
-              </div>
-            )}
+  const buttonLabel =
+    submitState === "idle" || submitState === "error" ? `Pay ${order.usdc_amount} USDC` :
+    submitState === "building" ? "Preparing..." :
+    submitState === "signing" ? "Waiting for wallet..." :
+    submitState === "submitting" ? "Submitting..." :
+    submitState === "submitted" ? "Awaiting confirmation..." :
+    "Paid";
+
+  return (
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
+      <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
+        <div className="text-sm tracking-tight font-medium">slippay</div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+          Checkout · {order.id.slice(0, 8)}
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center">
+        <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
+          <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+            <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+            001. Pay with crypto
           </div>
-        )}
-    </main>
+
+          <div className="md:col-span-9">
+            <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-4">Amount due</div>
+            <div className="text-7xl md:text-9xl font-medium tabular-nums tracking-[-0.04em] leading-[0.9]">
+              R$ {Number(order.brl_amount).toFixed(2)}
+            </div>
+            <div className="mt-6 flex items-baseline gap-6">
+              <div className="text-2xl tabular-nums text-[#0a0a0a]/70">{order.usdc_amount} USDC</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+                Expires in <span className="text-[#0a0a0a] tabular-nums"><Countdown expiresAt={order.expires_at} /></span>
+              </div>
+            </div>
+
+            <div className="mt-16 max-w-md">
+              {!walletAddress
+                ? <PayButton onConnected={setWalletAddress} />
+                : (
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3">
+                      Connected · <span className="font-mono normal-case tracking-normal">{walletAddress.slice(0,8)}...{walletAddress.slice(-4)}</span>
+                    </div>
+                    <button
+                      disabled={submitState !== "idle" && submitState !== "error"}
+                      onClick={async () => {
+                        setError(null);
+                        setSubmitState("building");
+                        try {
+                          if (!order.merchant_stellar_address) throw new Error("merchant has no stellar_address");
+                          const platformAddress = import.meta.env.VITE_PLATFORM_ADDRESS;
+                          if (!platformAddress) throw new Error("VITE_PLATFORM_ADDRESS not configured");
+                          const network = (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as "TESTNET" | "PUBLIC";
+                          const seq = await fetchSequence(network, walletAddress);
+                          const xdr = await buildAtomicTx({
+                            buyerPublicKey: walletAddress,
+                            buyerSequence: seq,
+                            merchantAddress: order.merchant_stellar_address,
+                            platformAddress,
+                            usdcAmount: order.usdc_amount,
+                            platformFeeBp: 100,
+                            memo: order.memo,
+                            network,
+                            maxTime: Math.floor(new Date(order.expires_at).getTime() / 1000),
+                          });
+                          setSubmitState("signing");
+                          const signed = await signTx(xdr);
+                          setSubmitState("submitting");
+                          const { hash } = await submitSignedTx(network, signed);
+                          setTxHash(hash);
+                          setSubmitState("submitted");
+                        } catch (e: unknown) {
+                          setSubmitState("error");
+                          setError(e instanceof Error ? e.message : "unknown error");
+                        }
+                      }}
+                      className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50"
+                    >
+                      {buttonLabel}
+                    </button>
+                    {submitState === "submitted" && txHash && (
+                      <div className="mt-6 border-l-2 border-amber-500 pl-4">
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/70">Tx submitted · awaiting confirmation</div>
+                        <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
+                           href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                          {txHash}
+                        </a>
+                      </div>
+                    )}
+                    {submitState === "paid" && (
+                      <div className="mt-6 border-l-2 border-[#b5e853] pl-4">
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a] flex items-center gap-2">
+                          <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" />
+                          Payment confirmed
+                        </div>
+                        {txHash && (
+                          <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
+                             href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                            {txHash}
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer className="border-t border-[#0a0a0a]/10">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+          Non-custodial · Powered by Stellar · USDC by Circle
+        </div>
+      </footer>
+    </div>
   );
 }
