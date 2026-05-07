@@ -45,3 +45,44 @@ Deno.test("POST /v1/orders rejects invalid amount", { sanitizeOps: false, saniti
   });
   assertEquals(res.status, 400);
 });
+
+Deno.test("GET /v1/orders lists own orders only", { sanitizeOps: false, sanitizeResources: false }, async () => {
+  const a = await createMerchant();
+  const b = await createMerchant();
+  await req("/v1/orders", { method: "POST",
+    headers: { authorization: `Bearer ${a.api_key}`, "content-type": "application/json" },
+    body: JSON.stringify({ brl_amount: "10.00" }) });
+  await req("/v1/orders", { method: "POST",
+    headers: { authorization: `Bearer ${b.api_key}`, "content-type": "application/json" },
+    body: JSON.stringify({ brl_amount: "20.00" }) });
+  const res = await req("/v1/orders", { headers: { authorization: `Bearer ${a.api_key}` } });
+  const body = await res.json();
+  assertEquals(body.orders.length, 1);
+  assertEquals(body.orders[0].brl_amount, "10.00");
+});
+
+Deno.test("GET /v1/orders/:id returns public limited fields without auth", { sanitizeOps: false, sanitizeResources: false }, async () => {
+  const m = await createMerchant();
+  const c = await req("/v1/orders", { method: "POST",
+    headers: { authorization: `Bearer ${m.api_key}`, "content-type": "application/json" },
+    body: JSON.stringify({ brl_amount: "50.00" }) });
+  const { order } = await c.json();
+  const res = await req(`/v1/orders/${order.id}`);
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.order.id, order.id);
+  assertEquals("api_key_hash" in body.order, false);
+});
+
+Deno.test("POST /v1/orders/:id/cancel marks status cancelled", { sanitizeOps: false, sanitizeResources: false }, async () => {
+  const m = await createMerchant();
+  const c = await req("/v1/orders", { method: "POST",
+    headers: { authorization: `Bearer ${m.api_key}`, "content-type": "application/json" },
+    body: JSON.stringify({ brl_amount: "5.00" }) });
+  const { order } = await c.json();
+  const res = await req(`/v1/orders/${order.id}/cancel`, { method: "POST",
+    headers: { authorization: `Bearer ${m.api_key}` } });
+  assertEquals(res.status, 200);
+  const body = await res.json();
+  assertEquals(body.order.status, "cancelled");
+});

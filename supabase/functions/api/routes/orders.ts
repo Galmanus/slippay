@@ -4,6 +4,7 @@ import { CreateOrderInputSchema, ORDER_DEFAULT_EXPIRY_MINUTES } from "@slippay/s
 import { requireApiKey } from "../middleware/auth_apikey.ts";
 import { generateMemo } from "../lib/memo.ts";
 import { getBrlPerUsdc } from "../lib/rate.ts";
+import { serviceClient } from "../lib/supabase.ts";
 
 type Vars = { merchant: { id: string; [k: string]: unknown }; supabase: SupabaseClient };
 const r = new Hono<{ Variables: Vars }>();
@@ -39,6 +40,47 @@ r.post("/", requireApiKey, async (c) => {
     order: data,
     checkout_url: `${CHECKOUT_BASE}/checkout/${data.id}`,
   }, 201);
+});
+
+r.get("/", requireApiKey, async (c) => {
+  const merchant = c.get("merchant");
+  const sb = c.get("supabase");
+  const status = c.req.query("status");
+  const limit = Math.min(parseInt(c.req.query("limit") ?? "50"), 200);
+  let q = sb.from("orders").select("*").eq("merchant_id", merchant.id)
+    .order("created_at", { ascending: false }).limit(limit);
+  if (status) q = q.eq("status", status);
+  const { data, error } = await q;
+  if (error) return c.json({ error: "list_failed", detail: error.message }, 400);
+  const orders = (data ?? []).map((o: Record<string, unknown>) => ({
+    ...o,
+    brl_amount: typeof o.brl_amount === "number"
+      ? o.brl_amount.toFixed(2)
+      : o.brl_amount,
+  }));
+  return c.json({ orders });
+});
+
+const PUBLIC_FIELDS = "id,merchant_id,brl_amount,usdc_amount,memo,status,expires_at,paid_at,tx_hash,created_at,external_ref";
+
+r.get("/:id", async (c) => {
+  const id = c.req.param("id");
+  const sb = serviceClient();
+  const { data, error } = await sb.from("orders").select(PUBLIC_FIELDS).eq("id", id).maybeSingle();
+  if (error || !data) return c.json({ error: "not_found" }, 404);
+  return c.json({ order: data });
+});
+
+r.post("/:id/cancel", requireApiKey, async (c) => {
+  const merchant = c.get("merchant");
+  const sb = c.get("supabase");
+  const id = c.req.param("id");
+  const { data, error } = await sb.from("orders")
+    .update({ status: "cancelled" })
+    .eq("id", id).eq("merchant_id", merchant.id).eq("status", "pending")
+    .select("*").maybeSingle();
+  if (error || !data) return c.json({ error: "cannot_cancel" }, 400);
+  return c.json({ order: data });
 });
 
 export default r;
