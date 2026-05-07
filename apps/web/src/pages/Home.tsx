@@ -4,21 +4,39 @@ import { Logo } from "../components/Logo.tsx";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
-      <header className="max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
+      <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
-        <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em]">
+        <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7] mix-blend-difference">
           <a href="#how" className="hover:opacity-60">How it works</a>
           <a href="#stack" className="hover:opacity-60">Stack</a>
           <Link to="/login" className="hover:opacity-60">Log in</Link>
           <Link to="/signup"
-            className="bg-[#0a0a0a] text-[#f1eee7] px-5 py-2.5 hover:bg-[#1a1a1a]">
+            className="bg-[#0a0a0a] text-[#f1eee7] px-5 py-2.5 hover:bg-[#1a1a1a] mix-blend-normal">
             Sign up
           </Link>
         </nav>
       </header>
 
-      {/* HERO */}
-      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-12 md:pt-16 pb-24 md:pb-32 relative">
+      {/* HERO IMAGE — full-bleed, no caption per S02 recipe */}
+      <div
+        className="relative w-full bg-[#0a0a0a]"
+        style={{
+          height: "min(100vh, 880px)",
+          backgroundImage: "url('/hero.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center 25%",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
+        <div className="absolute bottom-6 right-8 md:right-12 z-10 inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-4 py-2 text-[10px] uppercase tracking-[0.22em] font-mono">
+          <span>slippay · etiqueta do produto</span>
+          <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
+        </div>
+      </div>
+
+      {/* HERO TEXT */}
+      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-16 md:pt-24 pb-24 md:pb-32 relative">
         <div className="grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 flex items-center gap-3">
