@@ -1,5 +1,6 @@
+import type { OrderStatus } from "./schemas/order.ts";
+
 export type Network = "testnet" | "mainnet";
-export type OrderStatus = "pending" | "paid" | "underpaid" | "expired" | "cancelled" | "dead";
 
 export interface Merchant {
   id: string;

@@ -13,3 +13,4 @@ export const OrderStatusSchema = z.enum([
 ]);
 
 export type CreateOrderInput = z.infer<typeof CreateOrderInputSchema>;
+export type OrderStatus = z.infer<typeof OrderStatusSchema>;

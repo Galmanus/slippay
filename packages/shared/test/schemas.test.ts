@@ -21,6 +21,14 @@ describe("CreateMerchantInputSchema", () => {
     })).toThrow();
   });
 
+  it("rejects stellar address containing 0/1/8/9 (not in base32 alphabet)", () => {
+    const bad = "G" + "0".repeat(55);
+    expect(() => CreateMerchantInputSchema.parse({
+      display_name: "Acme",
+      stellar_address: bad,
+    })).toThrow();
+  });
+
   it("rejects non-https webhook", () => {
     expect(() => CreateMerchantInputSchema.parse({
       display_name: "Acme",
