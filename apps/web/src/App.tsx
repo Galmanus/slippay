@@ -1,8 +1,11 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
+import DashboardOrders from "./pages/DashboardOrders.tsx";
+import DashboardSettings from "./pages/DashboardSettings.tsx";
 
 export default function App() {
   return (
@@ -11,6 +14,11 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/checkout/:order_id" element={<Checkout />} />
+      <Route path="/dashboard" element={<Dashboard />}>
+        <Route index element={<Navigate to="orders" replace />} />
+        <Route path="orders" element={<DashboardOrders />} />
+        <Route path="settings" element={<DashboardSettings />} />
+      </Route>
       <Route path="*" element={<div className="p-8">not found</div>} />
     </Routes>
   );
