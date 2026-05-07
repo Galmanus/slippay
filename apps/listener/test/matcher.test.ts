@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { matchPaymentToOrder, type StellarPaymentEvent } from "../src/matcher.js";
 
 const order = {
@@ -21,6 +21,8 @@ const validEvent: StellarPaymentEvent = {
 };
 
 describe("matchPaymentToOrder", () => {
+  afterEach(() => { delete process.env.STELLAR_USDC_ISSUER_OVERRIDE; });
+
   it("matches valid USDC payment with correct memo + amount", () => {
     expect(matchPaymentToOrder(validEvent, order, "TESTNET")).toEqual({ outcome: "paid" });
   });
@@ -43,5 +45,18 @@ describe("matchPaymentToOrder", () => {
   it("ignores unsuccessful tx", () => {
     const e = { ...validEvent, successful: false };
     expect(matchPaymentToOrder(e, order, "TESTNET").outcome).toBe("ignore");
+  });
+
+  it("matches when STELLAR_USDC_ISSUER_OVERRIDE overrides expected issuer", () => {
+    const customIssuer = "GCUSTOM" + "X".repeat(49);
+    process.env.STELLAR_USDC_ISSUER_OVERRIDE = customIssuer;
+    const e = { ...validEvent, asset_issuer: customIssuer };
+    expect(matchPaymentToOrder(e, order, "TESTNET")).toEqual({ outcome: "paid" });
+  });
+
+  it("ignores when issuer doesnt match override", () => {
+    process.env.STELLAR_USDC_ISSUER_OVERRIDE = "GCUSTOM" + "X".repeat(49);
+    // validEvent still has the Circle testnet issuer, not the override
+    expect(matchPaymentToOrder(validEvent, order, "TESTNET").outcome).toBe("ignore");
   });
 });

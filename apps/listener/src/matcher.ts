@@ -33,7 +33,8 @@ export function matchPaymentToOrder(
   if (ev.memo_type !== "hash") return { outcome: "ignore", reason: "memo_type" };
   if (ev.asset_code !== USDC_ASSET_CODE) return { outcome: "ignore", reason: "asset_code" };
 
-  const expectedIssuer = network === "PUBLIC" ? NETWORK.mainnet.usdc_issuer : NETWORK.testnet.usdc_issuer;
+  const expectedIssuer = process.env.STELLAR_USDC_ISSUER_OVERRIDE
+    ?? (network === "PUBLIC" ? NETWORK.mainnet.usdc_issuer : NETWORK.testnet.usdc_issuer);
   if (ev.asset_issuer !== expectedIssuer) return { outcome: "ignore", reason: "asset_issuer" };
 
   if (ev.to !== order.merchant_stellar_address) return { outcome: "ignore", reason: "destination" };
