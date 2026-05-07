@@ -2,6 +2,7 @@ import { Outlet, NavLink, Navigate, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth, supabase } from "../lib/auth.tsx";
 import { authFetch } from "../lib/apiAuth.ts";
+import { Logo } from "../components/Logo.tsx";
 
 interface MerchantSummary {
   id: string;
@@ -42,7 +43,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
         <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8">
-          <Link to="/" className="text-sm tracking-tight font-medium">slippay</Link>
+          <Logo />
         </header>
         <main className="flex-1 flex items-center">
           <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-16 py-16">
@@ -95,7 +96,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex bg-[#f1eee7] text-[#0a0a0a]">
       <aside className="w-64 bg-[#0a0a0a] text-[#f1eee7] p-8 flex flex-col">
-        <Link to="/" className="text-sm tracking-tight font-medium">slippay</Link>
+        <Logo variant="bone" />
         {merchant && (
           <div className="mt-6 mb-12">
             <div className="text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/55">Merchant</div>

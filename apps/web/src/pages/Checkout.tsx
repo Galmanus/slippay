@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { fetchOrder, type PublicOrder } from "../lib/api.ts";
 import { Countdown } from "../components/Countdown.tsx";
 import { PayButton } from "../components/PayButton.tsx";
+import { Logo } from "../components/Logo.tsx";
 import { buildAtomicTx, fetchSequence, submitSignedTx } from "../lib/stellar.ts";
 import { signTx } from "../lib/wallet.ts";
 
@@ -65,7 +66,7 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
       <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
-        <div className="text-sm tracking-tight font-medium">slippay</div>
+        <Logo />
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
           Checkout · {order.id.slice(0, 8)}
         </div>
