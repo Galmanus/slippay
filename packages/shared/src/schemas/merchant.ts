@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { STELLAR_ADDRESS_LENGTH } from "../constants.js";
+import { STELLAR_ADDRESS_LENGTH } from "../constants.ts";
 
 const stellarAddress = z.string().length(STELLAR_ADDRESS_LENGTH).regex(/^G[A-Z2-7]{55}$/);
 const httpsUrl = z.string().url().regex(/^https:\/\//);

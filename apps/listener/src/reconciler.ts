@@ -37,11 +37,15 @@ export async function reconcileMatch(
     },
   };
 
-  await db.from("webhook_deliveries").insert({
+  const { error: webhookError } = await db.from("webhook_deliveries").insert({
     order_id: order.id,
     type: payload.type,
     payload,
   });
+
+  if (webhookError) {
+    log("error", "webhook_insert_failed", { order_id: order.id, error: webhookError.message });
+  }
 
   log("info", "order_reconciled", { order_id: order.id, status: newStatus, tx_hash: txHash });
 }

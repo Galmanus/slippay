@@ -1,3 +1,3 @@
-export * from "./types.js";
-export * from "./constants.js";
-export * from "./schemas/index.js";
+export * from "./types.ts";
+export * from "./constants.ts";
+export * from "./schemas/index.ts";
