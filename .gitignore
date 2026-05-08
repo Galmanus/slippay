@@ -9,3 +9,4 @@ supabase/.temp
 .vercel
 .fly
 *.tsbuildinfo
+.env.docker
