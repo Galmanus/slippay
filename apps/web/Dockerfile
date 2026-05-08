@@ -19,7 +19,9 @@ RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json ./
 COPY packages/shared/package.json ./packages/shared/
 COPY apps/web/package.json ./apps/web/
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts: skip native postinstall (e.g. usb/hid modules pulled
+# transitively by some wallet-kit deps but never used in the browser bundle).
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 COPY packages/shared ./packages/shared
 COPY apps/web ./apps/web

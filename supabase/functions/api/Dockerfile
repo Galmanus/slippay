@@ -12,8 +12,9 @@ COPY supabase/functions/api ./supabase/functions/api
 
 WORKDIR /app/supabase/functions/api
 
-# Pre-cache npm: deps so cold start is fast
-RUN deno cache index.ts
+# Drop any host-generated lockfile (newer Deno may emit v5 which 2.1.4 can't parse)
+# and pre-cache npm deps so cold start is fast.
+RUN rm -f deno.lock && deno cache index.ts
 
 EXPOSE 8000
 ENV PORT=8000
