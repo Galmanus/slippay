@@ -19,3 +19,4 @@ Cargo.lock.bak
 
 # Test scaffolding
 /tmp/e2e-keys.json
+contracts/*/test_snapshots/

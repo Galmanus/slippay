@@ -113,6 +113,10 @@ export default function Dashboard() {
             className={({ isActive }) => `px-3 py-2 text-sm uppercase tracking-[0.18em] text-[10px] ${isActive ? "bg-[#f1eee7]/10 text-[#f1eee7]" : "text-[#f1eee7]/55 hover:text-[#f1eee7]"}`}>
             Orders
           </NavLink>
+          <NavLink to="/dashboard/subscriptions"
+            className={({ isActive }) => `px-3 py-2 text-sm uppercase tracking-[0.18em] text-[10px] ${isActive ? "bg-[#f1eee7]/10 text-[#f1eee7]" : "text-[#f1eee7]/55 hover:text-[#f1eee7]"}`}>
+            Subscriptions
+          </NavLink>
           <NavLink to="/dashboard/settings"
             className={({ isActive }) => `px-3 py-2 text-sm uppercase tracking-[0.18em] text-[10px] ${isActive ? "bg-[#f1eee7]/10 text-[#f1eee7]" : "text-[#f1eee7]/55 hover:text-[#f1eee7]"}`}>
             Settings

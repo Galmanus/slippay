@@ -5,6 +5,7 @@ import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import DashboardOrders from "./pages/DashboardOrders.tsx";
+import DashboardSubscriptions from "./pages/DashboardSubscriptions.tsx";
 import DashboardSettings from "./pages/DashboardSettings.tsx";
 import Demo from "./pages/Demo.tsx";
 
@@ -19,6 +20,7 @@ export default function App() {
       <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<Navigate to="orders" replace />} />
         <Route path="orders" element={<DashboardOrders />} />
+        <Route path="subscriptions" element={<DashboardSubscriptions />} />
         <Route path="settings" element={<DashboardSettings />} />
       </Route>
       <Route path="*" element={<div className="p-8">not found</div>} />
