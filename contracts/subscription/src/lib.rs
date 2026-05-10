@@ -17,7 +17,7 @@
 #![no_std]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype,
-    Address, BytesN, Env, Symbol, IntoVal,
+    Address, BytesN, Env, Symbol,
     token,
 };
 
@@ -108,9 +108,10 @@ impl SubscriptionContract {
             max_periods,
             expires_at,
             charges_done: 0,
-            // Initialize last_charge_at so that first charge is immediately
-            // chargeable (caller decides whether to invoice now or wait).
-            last_charge_at: env.ledger().timestamp().saturating_sub(period_seconds),
+            // 0 = sentinel "never charged" — first charge is always allowed.
+            // We avoid saturating_sub here because period > now would underflow
+            // and require_period_elapsed below would block the first charge.
+            last_charge_at: 0,
             status: Status::Active,
         };
 
@@ -141,7 +142,8 @@ impl SubscriptionContract {
             env.storage().persistent().set(&key, &sub);
             panic_with_error!(&env, Error::Expired);
         }
-        if now < sub.last_charge_at.saturating_add(sub.period_seconds) {
+        // last_charge_at == 0 → never charged → first charge always allowed.
+        if sub.last_charge_at != 0 && now < sub.last_charge_at.saturating_add(sub.period_seconds) {
             panic_with_error!(&env, Error::PeriodNotElapsed);
         }
         if sub.max_periods != 0 && sub.charges_done >= sub.max_periods {
