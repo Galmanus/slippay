@@ -21,17 +21,35 @@ r.post("/", requireApiKey, async (c) => {
     const issues = (e as { issues?: unknown }).issues ?? (e as { errors?: unknown }).errors ?? [];
     return c.json({ error: "validation_error", issues }, 400);
   }
-  const rate = await getBrlPerUsdc();
-  const usdc = (parseFloat(input.brl_amount) / rate).toFixed(7);
+
+  // USD-denominated path: USDC is USD-pegged 1:1, no CoinGecko round trip.
+  // BRL-denominated path: convert via current BRL/USDC rate.
+  let usdc: string;
+  let brl_amount: string | null = null;
+  let usd_amount: string | null = null;
+  let rate_brl_usdc: string | null = null;
+
+  if (input.usd_amount) {
+    usd_amount = input.usd_amount;
+    usdc = parseFloat(input.usd_amount).toFixed(7);
+  } else {
+    brl_amount = input.brl_amount!;
+    const rate = await getBrlPerUsdc();
+    usdc = (parseFloat(input.brl_amount!) / rate).toFixed(7);
+    rate_brl_usdc = rate.toFixed(7);
+  }
+
   const memo = await generateMemo();
   const minutes = input.expires_in_minutes ?? ORDER_DEFAULT_EXPIRY_MINUTES;
   const expiresAt = new Date(Date.now() + minutes * 60_000).toISOString();
+
   const { data, error } = await sb.from("orders").insert({
     merchant_id: merchant.id,
     external_ref: input.external_ref ?? null,
-    brl_amount: input.brl_amount,
+    brl_amount,
+    usd_amount,
     usdc_amount: usdc,
-    rate_brl_usdc: rate.toFixed(7),
+    rate_brl_usdc,
     memo,
     expires_at: expiresAt,
   }).select("*").single();
