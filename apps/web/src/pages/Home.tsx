@@ -6,9 +6,11 @@ export default function Home() {
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
       <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
-        <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7] mix-blend-difference">
+        <nav className="flex items-center gap-6 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7] mix-blend-difference">
+          <span className="text-[#f1eee7]/40 hidden md:inline">┃ for buyers</span>
+          <Link to="/preview" className="hover:opacity-60">See it live</Link>
+          <span className="text-[#f1eee7]/40 hidden md:inline ml-2">┃ for merchants</span>
           <a href="#how" className="hover:opacity-60">How it works</a>
-          <a href="#stack" className="hover:opacity-60">Stack</a>
           <Link to="/demo" className="hover:opacity-60">SDK</Link>
           <Link to="/login" className="hover:opacity-60">Log in</Link>
           <Link to="/signup"
