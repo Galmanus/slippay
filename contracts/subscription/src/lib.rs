@@ -132,6 +132,13 @@ impl SubscriptionContract {
         let mut sub: Subscription = env.storage().persistent().get(&key)
             .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
 
+        // Buyer must authorize each charge in v0.1 (anyone can submit the tx
+        // but the buyer's signature is required at the top invocation; this
+        // makes the nested SAC.transfer auth chain valid in production —
+        // tests use mock_all_auths_allowing_non_root_auth which bypasses
+        // this top-level requirement). v0.2 will replace this with pre-auth.
+        sub.buyer.require_auth();
+
         if sub.status != Status::Active {
             panic_with_error!(&env, Error::NotActive);
         }

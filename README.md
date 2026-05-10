@@ -4,13 +4,28 @@ Stellar-native checkout SDK for Brazilian merchants billing globally. Pix in,
 USDC or PYUSD out, optional cash-out via MoneyGram in 180+ countries. Six-second
 deterministic finality, no chargebacks, non-custodial settlement to merchant.
 
-**Status**: testnet live · mainnet planned 2026-Q3 · partnership-with-licensed-VASP architecture
+**Status**: testnet live · mainnet planned 2026-Q3 · Soroban subscription contract deployed · partnership-with-licensed-VASP architecture
 
 ```
 backend       https://api.slippay.cc/api/health -> {"ok":true}
 landing live  https://api.slippay.cc/  (app.slippay.cc soon, after vhost+SSL)
 preview demo  https://api.slippay.cc/preview
+contract      CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA  (Stellar testnet)
+              https://stellar.expert/explorer/testnet/contract/CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA
 ```
+
+### Live on-chain proof (Stellar testnet)
+
+A merchant subscription primitive on Soroban — created and charged on chain:
+
+| step | tx | event |
+|---|---|---|
+| deploy | [fbfdbb66...](https://stellar.expert/explorer/testnet/tx/fbfdbb66b8894539f8db2a928f8925f3bb47903ede65d4541b939d6568b545df) | contract instantiated |
+| `create()` | [8ed4fa21...](https://stellar.expert/explorer/testnet/tx/8ed4fa21923d5433c31663a5e6b43cea8490844682682ba91e228683beedea4a) | `subscription_created` |
+| `charge()` | [688c985a...](https://stellar.expert/explorer/testnet/tx/688c985a4508ce9599a6430b1a004e265e7d60ca20eb28f4b605700b0dd5980b) | `transfer` (native SAC) + `subscription_charged` |
+
+Buyer balance dropped 1.002 XLM (1.0 payment + 0.002 fee). Merchant balance
+rose exactly 1.0 XLM. End-to-end on chain, no off-chain reconciliation.
 
 ---
 
@@ -246,7 +261,7 @@ fingerprinted in DB). JWT routes require a Supabase auth session.
 | Merchant dashboard (orders + subscriptions + settings) | live | `apps/web/src/pages/Dashboard*.tsx`     |
 | Hosted checkout SPA + drop-in SDK         | live     | `apps/web/src/pages/Checkout.tsx`, `public/sdk.js` |
 | Buyer-flow preview (Netshoes-style mock)  | live     | `apps/web/src/pages/Preview.tsx`               |
-| Soroban subscription contract scaffold    | scaffold | `contracts/subscription/`                      |
+| Soroban subscription contract             | **deployed Stellar testnet** | `contracts/subscription/` · contract `CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA` · 5/5 unit tests pass · live charge verified on chain |
 | PYUSD asset config                        | structural, issuer pending verify | `packages/shared/src/constants.ts` |
 | BR anchor partnership (Pix in)            | pending, intro path being shaped via Stellar Brasil program | `docs/outreach/{transfero,bitso}.md` (drafts on file; warm intro preferred over cold email) |
 
