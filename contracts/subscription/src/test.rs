@@ -21,7 +21,10 @@ struct Fixture<'a> {
 
 fn setup<'a>() -> Fixture<'a> {
     let env = Env::default();
-    env.mock_all_auths();
+    // mock_all_auths_allowing_non_root_auth permits nested contract auth like
+    // SAC.transfer requiring the buyer's auth — mock_all_auths alone only
+    // mocks root-level calls and rejects sub-invocations.
+    env.mock_all_auths_allowing_non_root_auth();
 
     let buyer = Address::generate(&env);
     let merchant = Address::generate(&env);
@@ -152,11 +155,19 @@ fn expiry_terminates_subscription() {
 
     f.contract.charge(&id);
     f.env.ledger().with_mut(|l| { l.timestamp = expires_at + 1; });
+
+    // charge() panics with Expired but cannot persist status (panic reverts).
     let res = f.contract.try_charge(&id);
     assert!(res.is_err());
 
+    // Sub status remains Active in storage; explicit mark_expired() persists.
+    let changed = f.contract.mark_expired(&id);
+    assert!(changed);
     let sub = f.contract.get(&id);
     assert_eq!(sub.status, Status::Expired);
+
+    // mark_expired is idempotent.
+    assert!(!f.contract.mark_expired(&id));
 }
 
 #[test]

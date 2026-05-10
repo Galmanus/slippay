@@ -248,7 +248,7 @@ fingerprinted in DB). JWT routes require a Supabase auth session.
 | Buyer-flow preview (Netshoes-style mock)  | live     | `apps/web/src/pages/Preview.tsx`               |
 | Soroban subscription contract scaffold    | scaffold | `contracts/subscription/`                      |
 | PYUSD asset config                        | structural, issuer pending verify | `packages/shared/src/constants.ts` |
-| BR anchor partnership (Pix in)            | drafted, not signed | `docs/outreach/{transfero,bitso}.md` |
+| BR anchor partnership (Pix in)            | pending, intro path being shaped via Stellar Brasil program | `docs/outreach/{transfero,bitso}.md` (drafts on file; warm intro preferred over cold email) |
 
 ---
 
@@ -293,8 +293,8 @@ slippay/
   contracts/
     subscription/    rust soroban contract (compiles to wasm32, 1/5 tests pass on M1)
   docs/
-    outreach/        partnership pitch drafts (transfero, bitso)
-    scf/             SCF grant proposal v0.1
+    outreach/        partnership pitch drafts (warm-intro path preferred)
+    scf/             internal Soroban subscription planning (superseded by program sprint deliverables)
     deploy-secrets.md, mainnet-readiness.md, superpowers/
   scripts/
     platform-setup.mjs     testnet keypair + friendbot + USDC trustline
@@ -411,48 +411,48 @@ should be flagged, not glossed over.
   at app.rwa.xyz/assets/BRZ), confirming that BR-Stellar is functionally
   greenfield for the foreseeable window.
 
-### Soroban subscription contract (M1-M4 deliverables)
+### Soroban subscription contract — internal planning
 
-See `docs/scf/soroban-subscription-proposal.md` for milestone-locked tranche
-plan and audit prep. Summary:
-
-- M1 (weeks 1-3, contract spec + scaffold + 30+ unit tests on testnet)
-- M2 (weeks 4-6, mainnet-ready code + JS/TS SDK + wallet matrix)
-- M3 (weeks 7-9, mainnet deployment + 5 demo merchants + slippay backend)
-- M4 (weeks 10-16, third-party audit + open-source release + dev rel)
+`docs/scf/soroban-subscription-proposal.md` is an internal planning document
+laying out a possible Soroban subscription contract roadmap. It is **not**
+the source of the active program deliverables — the live deliverables come
+from the sprint-gated Stellar Brasil program slippay is enrolled in (see
+above).
 
 ---
 
 ## Honest disclosures
 
+Slippay is currently in execution under a Stellar Brasil ecosystem program
+with sprint-gated milestone deliverables. Grant disbursement is tied to
+hitting those milestones; this repo is the working artifact.
+
 The "non-custodial" property is precise: slippay never holds buyer funds at
 any instant. But under BCB Resolução 521, the BRL -> USDC leg is FX-classified
-and requires a licensed counterparty. Slippay sits on top of a licensed BR
-anchor (Transfero, Bitso, or equivalent) that handles the regulated flow.
-Slippay handles the merchant API, settlement matching, webhook delivery, and
-hosted checkout. Without that partnership in place, mainnet launch is blocked
-by regulation, not by code.
+and requires a licensed counterparty. Mainnet launch is gated on a partnership
+with a licensed BR VASP that handles the regulated FX leg; slippay handles
+the merchant API, settlement matching, webhook delivery, and hosted checkout.
 
 The "Stellar + MoneyGram cash-out 180+ countries" line is structural, not
 volume-based. MoneyGram-on-Stellar processes roughly \$30M cumulative since
 2022 launch — small in absolute terms but unique to Stellar. No EVM-based
 competitor has comparable cash rails.
 
-The competitive landscape is honestly crowded:
+Competitive landscape (Stellar-native merchant gateways are sparse but not empty):
 
-- Coinbase Commerce ships 1% non-custodial USDC (sunsetting their international
-  self-custodial product in 2025, which is the open window).
-- Yodl runs 0.2% non-custodial EVM checkout — 5x cheaper than slippay.
-- Stripe (Bridge.xyz, $1.1B Feb 2025) ships USDC checkout to Shopify in 34
-  countries.
-- Circle Payments Network (CPN, launched May 2025) is becoming the rails of
-  rails; slippay needs to be a CPN node when CPN opens.
-- PayKit (`usepaykit/stellartools`) is a direct Stellar-native competitor in
-  pre-GTM stage; we're racing the same niche.
-
-If the partnership and SCF tracks both stall, slippay collapses to "yet another
-crypto checkout" and competes on price against opponents with 100x the
-distribution. The bet is that the partnership lands within 90 days.
+- **PayKit (`usepaykit/stellartools`)** — global Stellar-native gateway with
+  a richer SDK ecosystem (7 framework adapters, plugin SDK, Soroban
+  subscription engine). Slippay is differentiated by explicit BR positioning,
+  Pix-in path via licensed anchor, and BR-export merchant ICP — not by
+  generic "non-custodial USDC checkout".
+- **Coinbase Commerce** ships 1% non-custodial USDC and is sunsetting their
+  international self-custodial product in 2025 — open capture window for
+  international merchants who want to keep their own keys.
+- **Stripe (Bridge.xyz, $1.1B Feb 2025)** ships USDC checkout to Shopify in
+  34 countries; collides on segments where merchants want fiat conversion.
+- **Circle Payments Network (CPN)**, launched May 2025, is becoming the
+  rails-of-rails; slippay should evaluate becoming a CPN node when the
+  network opens to non-bank participants.
 
 ---
 
@@ -464,5 +464,7 @@ will be relicensed when the commercial wrapper is finalized (currently
 unlicensed in this repo, treat as source-available for review purposes).
 
 For partnership conversations (BR anchors, Stellar ecosystem, audit firms),
-see `docs/outreach/` for outreach drafts and contact below.
+see `docs/outreach/` for outreach drafts. Slippay is currently routing
+partnership intros through the Stellar Brasil program rather than cold
+outreach where possible.
 

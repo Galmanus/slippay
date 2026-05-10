@@ -1,12 +1,14 @@
-# SCF Proposal · Soroban Subscription Contract for Stellar Payments
+# Soroban Subscription Contract — internal planning document
 
-**Project name:** Slippay Subscriptions — open-source Soroban subscription primitive
-**Project lead:** Manuel Galmanus (founder, Bluewave AI · CNPJ 66.381.800/0001-08)
-**Contact:** manuel@bluewaveai.online · +55 47 9745-5602 · Blumenau, BR
-**Slippay status:** live on testnet at api.slippay.cc · mainnet planned 2026-Q3
-**Grant request:** ~$105,000 USD-equivalent in XLM, milestone-locked
-**Timeline:** 16 weeks from grant approval (4 milestones)
-**License:** Apache-2.0 (contract + SDK + reference integration)
+> **Status (2026-05-10): superseded for grant purposes.** Slippay is enrolled
+> in a Stellar Brasil ecosystem program with its own sprint-gated milestone
+> deliverables. This document remains as **internal product planning** for a
+> possible Soroban subscription contract roadmap; it is **not** the active
+> grant proposal. Live deliverables come from the program's sprint board.
+
+**Document type:** internal planning / future SCF candidate
+**Slippay status:** live on testnet at api.slippay.cc
+**License:** Apache-2.0 (contract + SDK + reference integration, when shipped)
 
 ---
 

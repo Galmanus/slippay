@@ -137,9 +137,12 @@ impl SubscriptionContract {
         }
 
         let now = env.ledger().timestamp();
+        // NOTE: panics in Soroban revert state changes. We therefore do NOT
+        // try to set status=Expired before panicking — the change would be
+        // rolled back. Callers who want to observe the terminal state should
+        // call mark_expired(id), which mutates state without panicking when
+        // the expiry conditions hold.
         if sub.expires_at != 0 && now >= sub.expires_at {
-            sub.status = Status::Expired;
-            env.storage().persistent().set(&key, &sub);
             panic_with_error!(&env, Error::Expired);
         }
         // last_charge_at == 0 → never charged → first charge always allowed.
@@ -147,8 +150,6 @@ impl SubscriptionContract {
             panic_with_error!(&env, Error::PeriodNotElapsed);
         }
         if sub.max_periods != 0 && sub.charges_done >= sub.max_periods {
-            sub.status = Status::Expired;
-            env.storage().persistent().set(&key, &sub);
             panic_with_error!(&env, Error::MaxPeriodsReached);
         }
 
@@ -227,6 +228,33 @@ impl SubscriptionContract {
     pub fn get(env: Env, id: BytesN<32>) -> Subscription {
         env.storage().persistent().get(&DataKey::Sub(id))
             .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound))
+    }
+
+    /// Mark a subscription as Expired if its terminal conditions hold
+    /// (expires_at passed OR max_periods reached). Anyone can call;
+    /// idempotent. Returns true if state was changed, false otherwise.
+    /// This exists because charge() cannot persist a status change while
+    /// also panicking — Soroban panics revert state.
+    pub fn mark_expired(env: Env, id: BytesN<32>) -> bool {
+        let key = DataKey::Sub(id.clone());
+        let mut sub: Subscription = env.storage().persistent().get(&key)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
+        if sub.status == Status::Expired || sub.status == Status::Cancelled {
+            return false;
+        }
+        let now = env.ledger().timestamp();
+        let expired_by_time = sub.expires_at != 0 && now >= sub.expires_at;
+        let expired_by_count = sub.max_periods != 0 && sub.charges_done >= sub.max_periods;
+        if !expired_by_time && !expired_by_count {
+            return false;
+        }
+        sub.status = Status::Expired;
+        env.storage().persistent().set(&key, &sub);
+        env.events().publish(
+            (Symbol::new(&env, "subscription_expired"), sub.buyer.clone()),
+            id,
+        );
+        true
     }
 }
 
