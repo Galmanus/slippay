@@ -125,6 +125,5 @@ Then activate from WordPress admin.
 - SlipPay backend: https://api.slippay.cc/api/health
 - SlipPay docs: https://api.slippay.cc/ (landing) / https://api.slippay.cc/demo (SDK demo)
 - Repo issues: https://github.com/Galmanus/slippay/issues
-- Email: manuel@bluewaveai.online
 
 License: Apache-2.0.

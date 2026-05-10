@@ -113,6 +113,20 @@ to localhost:8080.
 
 ---
 
+## Documentation
+
+Full docs are in [`docs/`](./docs/README.md). Highlights:
+
+- [Quickstart](./docs/quickstart.md) — first paid order in five minutes
+- [API reference](./docs/README.md#api-reference) — orders, subscriptions, merchants, webhooks
+- [Architecture](./docs/concepts/architecture.md) — the three-process picture
+- [Non-custodial settlement](./docs/concepts/non-custodial-settlement.md) — what we mean precisely
+- [Regulatory framing](./docs/concepts/regulatory.md) — BCB Res 519/520/521 and the partnership-with-VASP model
+- [Drop-in SDK guide](./docs/guides/drop-in-sdk.md) — two lines of JS
+- [Recurring billing](./docs/guides/recurring-billing.md) — subscriptions end-to-end
+- [WooCommerce plugin](./docs/guides/woocommerce.md) — install, configure, ship
+- [Webhook handler](./docs/guides/webhooks-handler.md) — verify HMAC, idempotency, retries
+
 ## Quickstart
 
 ### Create an order (one-shot payment)
@@ -452,9 +466,3 @@ unlicensed in this repo, treat as source-available for review purposes).
 For partnership conversations (BR anchors, Stellar ecosystem, audit firms),
 see `docs/outreach/` for outreach drafts and contact below.
 
----
-
-## Contact
-
-Manuel Galmanus  ·  founder, Bluewave AI (CNPJ 66.381.800/0001-08)
-manuel@bluewaveai.online  ·  +55 47 9745-5602  ·  Blumenau, SC, BR
