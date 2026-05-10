@@ -10,3 +10,12 @@ supabase/.temp
 .fly
 *.tsbuildinfo
 .env.docker
+
+# Rust / Soroban build artifacts
+target/
+**/target/
+*.wasm.opt
+Cargo.lock.bak
+
+# Test scaffolding
+/tmp/e2e-keys.json
