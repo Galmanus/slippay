@@ -53,10 +53,10 @@ export default function Home() {
               ╱╱  Issue 001
             </div>
             <h1 className="text-[12vw] md:text-[5.2vw] font-medium leading-[0.95] tracking-[-0.04em] max-w-[20ch]">
-              USDC checkout<br/>
-              for Brazilian<br/>
+              Pix in.<br/>
+              Dollars out.<br/>
               <em className="not-italic relative">
-                e‑commerce
+                Cash anywhere
                 <span className="inline-block align-middle ml-3 w-2.5 h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
               </em>
             </h1>
@@ -70,16 +70,17 @@ export default function Home() {
             </div>
           </div>
           <div className="col-span-12 md:col-span-6">
-            <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[50ch]">
-              <em className="font-light">Non-custodial</em> payment gateway built on Stellar.
-              Settles in roughly five seconds.
-              Merchants never wait, buyers never give up custody.
+            <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch]">
+              Checkout for Brazilian merchants billing globally. Buyer pays in Pix.
+              Merchant settles in <em className="font-light">USDC or PYUSD</em> on Stellar.
+              Optional cash-out via MoneyGram in 180+ countries.
+              Six-second finality. Zero chargebacks.
             </p>
           </div>
           <div className="col-span-12 md:col-span-3 flex md:justify-end items-end">
             <Link to="/signup"
               className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              Start accepting USDC <span className="group-hover:translate-x-1 transition-transform">→</span>
+              Get the dollar rail <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>
@@ -97,12 +98,12 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-            <Stat n="~5s" label="Settlement"
-              body="No batch windows. No T+1. Confirmation lands in the next ledger close." />
-            <Stat n="0%" label="Custody"
-              body="Funds move from buyer wallet to merchant wallet. Private keys never leave the user." />
-            <Stat n="1%" label="Platform fee"
-              body="Charged in the same atomic transaction as the merchant payment. Both succeed, or neither does." />
+            <Stat n="180+" label="Cash-out countries"
+              body="Merchants withdraw USDC as local cash via MoneyGram retail in 180+ countries. Stellar-only — no EVM gateway has this rail." />
+            <Stat n="6s" label="On-chain finality"
+              body="Deterministic settlement on Stellar. No T+1, no batch windows, no chargebacks. Confirmation lands in the next ledger close." />
+            <Stat n="2 assets" label="Settlement options"
+              body="USDC (Circle) or PYUSD (PayPal). Merchant picks per-store. Buyer never sees the asset — pays Pix in BRL." />
           </div>
         </div>
       </section>
@@ -123,13 +124,13 @@ export default function Home() {
               </h2>
               <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
                 <Step n="01" title="Merchant calls POST /v1/orders"
-                  body="BRL amount in. Checkout URL, memo hash, USDC amount out. Rate locked at order creation." />
-                <Step n="02" title="Buyer connects wallet, signs once"
-                  body="Freighter, Lobstr, xBull, Albedo, Hana. One signature covers merchant payment AND platform fee." />
+                  body="BRL amount in. Checkout URL, memo hash, USDC or PYUSD amount out. FX locked at order creation." />
+                <Step n="02" title="Buyer pays Pix in BRL"
+                  body="Standard Pix QR or copy-paste key. Licensed BR anchor receives BRL, mints USDC/PYUSD on Stellar against the merchant address — slippay never holds fiat." />
                 <Step n="03" title="Listener confirms on-chain"
                   body="Horizon stream watches the merchant address, matches by memo, validates the amount, writes status=paid." />
                 <Step n="04" title="Webhook fires, signed with HMAC"
-                  body="Merchant endpoint receives an order.paid event. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead." />
+                  body="Merchant endpoint receives an order.paid event. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead. Optional MoneyGram cash payout in any of 180+ countries." />
               </div>
             </div>
           </div>
@@ -151,17 +152,19 @@ export default function Home() {
                 Built for the window<br/>that <em className="font-light">just opened</em>.
               </h2>
               <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[64ch]">
-                BCB Resoluções 519/520/521 (effective February 2026) created the first
-                complete framework for virtual-asset service providers in Brazil. SlipPay
-                operates as a <em className="font-light">technology provider</em> — atomic settlement,
-                no custody, no money transmission — partnering with licensed VASPs for the regulated layer.
+                BCB Resoluções 519/520/521 (effective February 2026) reclassified BRL ↔ stablecoin flow as
+                <em className="font-light"> operações de câmbio</em>. SlipPay operates as a technology layer
+                on top of licensed BR VASPs — the anchor handles BRL custody and FX,
+                slippay handles the merchant API, settlement matching, and webhook delivery.
+                Merchant funds remain on Stellar in the merchant&rsquo;s own wallet from the moment
+                of payment forward. Non-custodial where it matters.
               </p>
 
               <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
                 <Cell label="Chain" value="Stellar" />
-                <Cell label="Asset" value="USDC · Circle" />
-                <Cell label="Wallets" value="5 supported" />
-                <Cell label="Finality" value="~5s" />
+                <Cell label="Assets" value="USDC · PYUSD" />
+                <Cell label="Buyer rail" value="Pix · BRL" />
+                <Cell label="Cash payout" value="MoneyGram · 180+ countries" />
               </div>
             </div>
           </div>
@@ -177,9 +180,9 @@ export default function Home() {
           <h2 className="text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch]">
             Ready when<br/><em className="font-light">your store is</em>.
           </h2>
-          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[44ch]">
-            Sign up. Drop your Stellar receive address. Copy your API key.
-            First order in under five minutes.
+          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[48ch]">
+            Sign up. Drop your Stellar receive address. Pick USDC or PYUSD.
+            Copy your API key. First Pix-to-dollar order in under five minutes.
           </p>
           <Link to="/signup"
             className="inline-flex items-center gap-3 mt-12 bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
