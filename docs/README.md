@@ -28,6 +28,7 @@ Pix in, USDC or PYUSD out, no chargebacks.
 
 | | |
 |---|---|
+| [BR-export merchants](./guides/br-export-merchants.md) | Stop the 6% leak: invoice in USD, settle in USDC. |
 | [Drop-in checkout SDK](./guides/drop-in-sdk.md) | Two lines of JavaScript on your site. |
 | [Recurring billing](./guides/recurring-billing.md) | Subscriptions end-to-end. |
 | [WooCommerce plugin](./guides/woocommerce.md) | Install + configure on any WC store. |

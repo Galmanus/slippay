@@ -1,12 +1,20 @@
 import { z } from "zod";
 
-const brlAmount = z.string().regex(/^\d{1,9}\.\d{2}$/, "must be string with 2 decimals");
+const fiatAmount = z.string().regex(/^\d{1,9}\.\d{2}$/, "must be string with 2 decimals");
 
+// Either brl_amount OR usd_amount must be set, not both. usd_amount lets
+// BR-export merchants invoice global customers in USD without going through
+// a BRL conversion round-trip — usdc_amount = usd_amount (1:1, USDC is a
+// USD-pegged stablecoin, ignoring CoinGecko spread).
 export const CreateOrderInputSchema = z.object({
-  brl_amount: brlAmount.refine(v => parseFloat(v) > 0, "must be > 0"),
+  brl_amount: fiatAmount.refine(v => parseFloat(v) > 0, "must be > 0").optional(),
+  usd_amount: fiatAmount.refine(v => parseFloat(v) > 0, "must be > 0").optional(),
   external_ref: z.string().max(120).optional(),
   expires_in_minutes: z.number().int().min(5).max(1440).optional(),
-});
+}).refine(
+  (d) => (d.brl_amount && !d.usd_amount) || (!d.brl_amount && d.usd_amount),
+  { message: "exactly one of brl_amount or usd_amount must be set" },
+);
 
 export const OrderStatusSchema = z.enum([
   "pending","paid","underpaid","expired","cancelled","dead",

@@ -52,13 +52,13 @@ export default function Home() {
           </div>
           <div className="col-span-12 md:col-span-9">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-4 font-mono">
-              ╱╱  Issue 001
+              ╱╱  Issue 001 · for BR exporters
             </div>
             <h1 className="text-[12vw] md:text-[5.2vw] font-medium leading-[0.95] tracking-[-0.04em] max-w-[20ch]">
-              Pix in.<br/>
-              Dollars out.<br/>
+              Bill the world<br/>
+              from Brazil.<br/>
               <em className="not-italic relative">
-                Cash anywhere
+                Get paid in dollars
                 <span className="inline-block align-middle ml-3 w-2.5 h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
               </em>
             </h1>
@@ -73,16 +73,17 @@ export default function Home() {
           </div>
           <div className="col-span-12 md:col-span-6">
             <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch]">
-              Checkout for Brazilian merchants billing globally. Buyer pays in Pix.
-              Merchant settles in <em className="font-light">USDC or PYUSD</em> on Stellar.
-              Optional cash-out via MoneyGram in 180+ countries.
-              Six-second finality. Zero chargebacks.
+              Brazilian SaaS, agencies, and digital exporters lose roughly
+              <em className="font-light"> 6% per international invoice</em> — Stripe 4.4%, IOF 0.38%,
+              FX spread 1-2%. SlipPay charges <em className="font-light">1%</em>, settles to your wallet
+              in USDC or PYUSD on Stellar in six seconds, no chargebacks. You hold dollars
+              until you choose to convert.
             </p>
           </div>
           <div className="col-span-12 md:col-span-3 flex md:justify-end items-end">
             <Link to="/signup"
               className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              Get the dollar rail <span className="group-hover:translate-x-1 transition-transform">→</span>
+              Stop the 6% leak <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>
@@ -100,12 +101,12 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-            <Stat n="180+" label="Cash-out countries"
-              body="Merchants withdraw USDC as local cash via MoneyGram retail in 180+ countries. Stellar-only — no EVM gateway has this rail." />
+            <Stat n="~6%" label="What Stripe + IOF takes"
+              body="Stripe 4.4% on international cards, IOF 0.38% on FX out, plus 1-2% bank spread. Per-invoice leakage that compounds across the year." />
+            <Stat n="1%" label="What SlipPay takes"
+              body="Single platform fee, charged in USDC at settlement. No FX spread, no IOF (USDC stays USDC). You convert when you want, where you want." />
             <Stat n="6s" label="On-chain finality"
               body="Deterministic settlement on Stellar. No T+1, no batch windows, no chargebacks. Confirmation lands in the next ledger close." />
-            <Stat n="2 assets" label="Settlement options"
-              body="USDC (Circle) or PYUSD (PayPal). Merchant picks per-store. Buyer never sees the asset — pays Pix in BRL." />
           </div>
         </div>
       </section>
@@ -125,14 +126,14 @@ export default function Home() {
                 Four moving parts.<br/>One <em className="font-light">atomic</em> transaction.
               </h2>
               <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
-                <Step n="01" title="Merchant calls POST /v1/orders"
-                  body="BRL amount in. Checkout URL, memo hash, USDC or PYUSD amount out. FX locked at order creation." />
-                <Step n="02" title="Buyer pays Pix in BRL"
-                  body="Standard Pix QR or copy-paste key. Licensed BR anchor receives BRL, mints USDC/PYUSD on Stellar against the merchant address — slippay never holds fiat." />
+                <Step n="01" title="Invoice the customer in USD or BRL"
+                  body="POST /v1/orders with usd_amount (BR-export flow) or brl_amount (domestic). USDC denominated 1:1 against USD; no FX round-trip." />
+                <Step n="02" title="Customer pays via wallet or Pix"
+                  body="Global customer signs USDC payment from a Stellar wallet. Brazilian customer pays Pix BRL via licensed anchor (when partnership lands), anchor mints USDC against your address." />
                 <Step n="03" title="Listener confirms on-chain"
-                  body="Horizon stream watches the merchant address, matches by memo, validates the amount, writes status=paid." />
+                  body="Horizon stream watches your merchant address, matches the payment by memo, validates amount and asset issuer, marks status=paid in 6s deterministic finality." />
                 <Step n="04" title="Webhook fires, signed with HMAC"
-                  body="Merchant endpoint receives an order.paid event. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead. Optional MoneyGram cash payout in any of 180+ countries." />
+                  body="Your endpoint receives an order.paid (or subscription.charged) event. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead. USDC sits in your wallet until you decide to convert." />
               </div>
             </div>
           </div>
