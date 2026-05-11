@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
+import { AskSlippay } from "../components/AskSlippay.tsx";
 
 export default function Home() {
   return (
@@ -242,6 +243,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <AskSlippay />
     </div>
   );
 }
