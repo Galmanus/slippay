@@ -27,7 +27,15 @@ export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
           fill="none"
         />
       </svg>
-      <span className={`${text} tracking-tight font-medium leading-none`} style={{ color: fgText }}>
+      <span
+        className={`${text} tracking-tight font-medium leading-none`}
+        style={{
+          color: fgText,
+          // Drop-shadow only on the bone variant, where wordmark sits on
+          // photo hero backgrounds and needs guaranteed legibility.
+          textShadow: variant === "bone" ? "0 1px 3px rgba(0,0,0,0.6)" : "none",
+        }}
+      >
         slippay
       </span>
     </span>

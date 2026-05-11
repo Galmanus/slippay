@@ -5,17 +5,18 @@ import { AskSlippay } from "../components/AskSlippay.tsx";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
-      {/* Top scrim — guarantees nav legibility regardless of hero pixels underneath */}
-      <div className="fixed top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/30 to-transparent z-10 pointer-events-none" />
-
       <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-6 flex items-center justify-between">
         <Logo variant="bone" />
-        <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]">
+        <nav
+          className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
+        >
           <Link to="/preview" className="hover:opacity-60 transition-opacity hidden md:inline">See it live</Link>
           <a href="#how" className="hover:opacity-60 transition-opacity hidden md:inline">How it works</a>
           <Link to="/demo" className="hover:opacity-60 transition-opacity hidden md:inline">SDK</Link>
           <Link to="/login" className="hover:opacity-60 transition-opacity">Log in</Link>
           <Link to="/signup"
+            style={{ textShadow: "none" }}
             className="bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] transition-colors text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
             <span className="inline-block w-1 h-1 bg-[#0a0a0a]" />
             Sign up
@@ -44,11 +45,6 @@ export default function Home() {
           <span className="hidden md:inline">etiqueta do produto</span>
           <span className="text-[#0a0a0a]/55">·</span>
           <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
-        </div>
-        {/* Scroll cue — only on mobile, only on first viewport */}
-        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-10 md:hidden flex flex-col items-center gap-1.5 text-[#f1eee7] pointer-events-none animate-bounce">
-          <span className="text-[9px] uppercase tracking-[0.28em] font-mono opacity-80">scroll</span>
-          <span className="text-base leading-none opacity-80">↓</span>
         </div>
       </div>
 
