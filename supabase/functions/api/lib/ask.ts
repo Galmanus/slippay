@@ -13,29 +13,56 @@
 //   - 100-500 questions/day fits easily inside subscription cap
 //   - No ANTHROPIC_API_KEY to manage
 
-const SYSTEM_PROMPT = `You are an AI assistant for SlipPay, a Stellar-native USDC/PYUSD payment gateway for Brazilian merchants billing globally.
+// Concierge agent identity (Bluewave SSL v7 architecture, MIT spec).
+// The soul file at agents/concierge/concierge.ssl is loaded at boot and
+// becomes the head of the system prompt. The model behaves under its
+// formal cognitive constraints — identity, values, voice, decision engine,
+// pre_mortem checklist, audit chain.
+const FALLBACK_SYSTEM_PROMPT = `You are Concierge — the doc-grounded customer-facing agent for slippay.
 
-Answer questions strictly using the slippay documentation provided. Every factual claim must be grounded in the docs.
+Operate under the slippay docs as your only source of truth. Answer in the
+visitor's language. Cite every factual claim inline as [docs/<path>.md] and
+finish with a ## Sources section listing each doc once. If the docs lack the
+signal, reply "I don't have information about that in the slippay
+documentation." Never claim mainnet-live or partnership-signed — slippay is
+testnet-only and the BR VASP partnership is pending. No marketing language,
+no preamble, no emoji.
 
-Rules:
-- If the answer isn't in the docs, say "I don't have information about that in the slippay documentation" — do NOT make up details.
-- For pricing, fees, contract addresses, API endpoints: quote the docs verbatim where possible.
-- Be concise. 2-4 sentences for most questions. Longer for technical setup walkthroughs.
-- Match the user's language (Portuguese or English).
-- For sensitive operational claims (regulatory status, partnership signed, mainnet live): use the exact hedging from docs/concepts/regulatory.md and the README "Honest disclosures" section. Slippay is currently in execution under a Stellar Brasil ecosystem program; mainnet is testnet-only; partnership-with-VASP not yet signed.
-
-Citation format:
-- Cite docs inline as [docs/<path>.md] when stating a specific fact (e.g. "The platform fee is 1% [docs/api-reference/orders.md]").
-- At the end of your answer, output a "## Sources" section with each referenced doc on its own line as a bullet:
-  ## Sources
-  - docs/api-reference/orders.md
-  - docs/concepts/regulatory.md
-
-Operational facts to remember:
-- Soroban subscription contract deployed Stellar testnet: CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA
-- Backend live: https://api.slippay.cc/api/health
-- Network: testnet only; mainnet pending anchor partnership
+Operational facts:
+- Soroban contract on testnet: CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA
+- Backend health: https://api.slippay.cc/api/health
 - Repo: https://github.com/Galmanus/slippay`;
+
+const CONCIERGE_SSL_PATH = Deno.env.get("SLIPPAY_CONCIERGE_SSL") ??
+  new URL("../../../../agents/concierge/concierge.ssl", import.meta.url).pathname;
+const CONCIERGE_AUDIT_PATH = Deno.env.get("SLIPPAY_CONCIERGE_AUDIT") ??
+  new URL("../../../../agents/concierge/concierge_audit.jsonl", import.meta.url).pathname;
+
+let cachedSystemPrompt: string | null = null;
+async function loadSystemPrompt(): Promise<string> {
+  if (cachedSystemPrompt) return cachedSystemPrompt;
+  try {
+    const ssl = await Deno.readTextFile(CONCIERGE_SSL_PATH);
+    cachedSystemPrompt =
+      `You are Concierge — the slippay customer-facing agent. Your cognition is governed by the soul specification below (Bluewave SSL v7, MIT). Treat every directive in it as binding.\n\n` +
+      `══════════════════ SOUL SPEC ══════════════════\n\n${ssl}\n\n══════════════════ END SOUL SPEC ══════════════════\n\n` +
+      `The documentation corpus follows in the next system block.`;
+    console.log(`[concierge] loaded SSL from ${CONCIERGE_SSL_PATH} (${ssl.length} chars)`);
+  } catch (e) {
+    console.warn(`[concierge] SSL load failed (${e}); falling back to inline prompt`);
+    cachedSystemPrompt = FALLBACK_SYSTEM_PROMPT;
+  }
+  return cachedSystemPrompt;
+}
+
+async function auditFleetRun(record: Record<string, unknown>): Promise<void> {
+  try {
+    const line = JSON.stringify({ ts: new Date().toISOString(), ...record }) + "\n";
+    await Deno.writeTextFile(CONCIERGE_AUDIT_PATH, line, { append: true });
+  } catch (e) {
+    console.warn(`[concierge] audit write failed: ${e}`);
+  }
+}
 
 const DOC_FILES = [
   "README.md",
@@ -96,6 +123,8 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
   const token = Deno.env.get("CLAUDE_CODE_OAUTH_TOKEN");
   if (!token) throw new Error("CLAUDE_CODE_OAUTH_TOKEN not set");
 
+  const t0 = Date.now();
+  const systemPrompt = await loadSystemPrompt();
   const docsPath = await ensureDocsBundle();
 
   // Build the user prompt. Include history as context.
@@ -118,7 +147,7 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
         cwd: CLAUDE_CWD,
         args: [
           "-p", userInput,
-          "--append-system-prompt", SYSTEM_PROMPT,
+          "--append-system-prompt", systemPrompt,
           "--append-system-prompt-file", docsPath,
           "--output-format", "stream-json",
           "--include-partial-messages",
@@ -159,6 +188,12 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
       const decoder = new TextDecoder();
       const reader = child.stdout.getReader();
       let buffer = "";
+      let responseText = "";  // accumulate for audit chain (concierge.ssl @audit_chain)
+      const sendWithTrace = (data: unknown) => {
+        const d = data as { type?: string; text?: string };
+        if (d.type === "text" && typeof d.text === "string") responseText += d.text;
+        send(data);
+      };
 
       try {
         while (true) {
@@ -172,7 +207,7 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
             if (!trimmed) continue;
             try {
               const evt = JSON.parse(trimmed);
-              forwardEvent(evt, send);
+              forwardEvent(evt, sendWithTrace);
             } catch {
               // Not JSON — likely a status line; ignore
             }
@@ -182,17 +217,42 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
         if (buffer.trim()) {
           try {
             const evt = JSON.parse(buffer.trim());
-            forwardEvent(evt, send);
+            forwardEvent(evt, sendWithTrace);
           } catch { /* ignore */ }
         }
         const status = await child.status;
-        if (status.code !== 0) {
-          send({ type: "error", error: `claude exited code ${status.code}` });
-        } else {
-          send({ type: "done" });
-        }
+        const success = status.code === 0;
+        if (success) send({ type: "done" });
+        else send({ type: "error", error: `claude exited code ${status.code}` });
+
+        // Audit fleet run (concierge.ssl @audit_chain). Best-effort, non-blocking.
+        const citedDocs = Array.from(responseText.matchAll(/\[docs\/([^\]]+\.md)\]/g))
+          .map(m => `docs/${m[1]}`);
+        const dedupedCites = Array.from(new Set(citedDocs));
+        const lang = /[áàâãéêíóôõúçÀÂÃÉÊÍÓÔÕÚÇ]/.test(req.question) ? "pt" : "en";
+        const action = success ? (responseText.toLowerCase().includes("i don't have information") ? "unknown" : "respond") : "error";
+        await auditFleetRun({
+          agent: "concierge",
+          soul_version: "1.0.0-concierge",
+          question_preview: req.question.slice(0, 100),
+          response_preview: responseText.slice(0, 200),
+          docs_cited: dedupedCites,
+          action_taken: action,
+          latency_ms: Date.now() - t0,
+          response_chars: responseText.length,
+          language: lang,
+          history_turns: req.history?.length ?? 0,
+        });
       } catch (e: unknown) {
         send({ type: "error", error: String((e as Error).message ?? e) });
+        await auditFleetRun({
+          agent: "concierge",
+          soul_version: "1.0.0-concierge",
+          question_preview: req.question.slice(0, 100),
+          action_taken: "error",
+          error: String((e as Error).message ?? e),
+          latency_ms: Date.now() - t0,
+        });
       } finally {
         controller.close();
       }
