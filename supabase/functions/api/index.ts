@@ -4,6 +4,7 @@ import { errorMiddleware } from "./middleware/error.ts";
 import merchants from "./routes/merchants.ts";
 import orders from "./routes/orders.ts";
 import subscriptions from "./routes/subscriptions.ts";
+import ask from "./routes/ask.ts";
 
 const api = new Hono().basePath("/api");
 api.use("*", errorMiddleware);
@@ -13,6 +14,7 @@ api.get("/health", (c) => c.json({ ok: true }));
 api.route("/v1/merchants", merchants);
 api.route("/v1/orders", orders);
 api.route("/v1/subscriptions", subscriptions);
+api.route("/v1/ask", ask);
 
 const app = new Hono();
 app.route("/", api);
