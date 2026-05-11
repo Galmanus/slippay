@@ -38,9 +38,39 @@ const MIME: Record<string, string> = {
   webp: "image/webp",
 };
 
+// Canonical hostnames:
+//   - app.slippay.cc  → landing + SPA (static files from apps/web/dist)
+//   - api.slippay.cc  → REST API only; non-/api/* requests redirect to app.
+//
+// Nginx aliases both hostnames to this Deno backend on :8080 (Mario's vhost
+// edit). Routing by Host header here splits the surface cleanly without
+// requiring two nginx vhosts.
+const APP_HOST   = "app.slippay.cc";
+const API_HOST   = "api.slippay.cc";
+const APP_ORIGIN = "https://app.slippay.cc";
+
 app.get("*", async (c) => {
+  const host = (c.req.header("host") ?? "").toLowerCase();
   const path = c.req.path === "/" ? "/index.html" : c.req.path;
   const ext = (path.split(".").pop() ?? "").toLowerCase();
+
+  // api.slippay.cc — serve API only. Non-/api/* paths get a 301 to the app
+  // origin. GET / returns service-info JSON for crawlers / health checks.
+  if (host === API_HOST || host.startsWith(API_HOST + ":")) {
+    if (c.req.path === "/" || c.req.path === "/index.html") {
+      return c.json({
+        service: "slippay-api",
+        status: "ok",
+        canonical_app: APP_ORIGIN,
+        health: "/api/health",
+        repo: "https://github.com/Galmanus/slippay",
+      });
+    }
+    // Any other non-/api/* path on api.slippay.cc → redirect to app origin.
+    return c.redirect(`${APP_ORIGIN}${c.req.path}`, 301);
+  }
+
+  // app.slippay.cc (and any other host alias) — serve static + SPA fallback.
   try {
     const file = await Deno.readFile(`${WEB_DIST}${path}`);
     return new Response(file, {
