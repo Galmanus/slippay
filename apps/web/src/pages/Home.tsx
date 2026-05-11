@@ -9,7 +9,7 @@ export default function Home() {
       <div className="fixed top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/30 to-transparent z-10 pointer-events-none" />
 
       <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-6 flex items-center justify-between">
-        <Logo />
+        <Logo variant="bone" />
         <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]">
           <Link to="/preview" className="hover:opacity-60 transition-opacity hidden md:inline">See it live</Link>
           <a href="#how" className="hover:opacity-60 transition-opacity hidden md:inline">How it works</a>
