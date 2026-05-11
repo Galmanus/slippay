@@ -8,7 +8,7 @@ export default function Home() {
       {/* Top scrim — guarantees nav legibility regardless of hero pixels underneath */}
       <div className="fixed top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/30 to-transparent z-10 pointer-events-none" />
 
-      <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
+      <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-6 flex items-center justify-between">
         <Logo />
         <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]">
           <Link to="/preview" className="hover:opacity-60 transition-opacity hidden md:inline">See it live</Link>
@@ -23,30 +23,32 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* HERO IMAGE — full-bleed */}
+      {/* HERO IMAGE — full-bleed. Different bg-position on mobile (portrait
+          screens crop sides heavily, favor showing face/blindfold focal area
+          higher up) vs desktop (wider, can show full bust including jaw). */}
       <div
-        className="relative w-full bg-[#0a0a0a]"
+        className="relative w-full bg-[#0a0a0a] bg-[position:center_30%] md:bg-[position:center_40%]"
         style={{
           height: "min(100vh, 880px)",
           backgroundImage: "url('/hero.png')",
           backgroundSize: "cover",
-          backgroundPosition: "center 25%",
           backgroundRepeat: "no-repeat",
         }}
       >
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
-        {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher on the right */}
-        <div className="absolute bottom-6 left-6 md:left-10 z-10 inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-4 py-2 text-[10px] uppercase tracking-[0.22em] font-mono">
+        {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher.
+            Shorter on mobile (no "etiqueta do produto" mid-segment) to avoid wrapping. */}
+        <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
           <span>slippay</span>
-          <span className="text-[#0a0a0a]/55">·</span>
-          <span>etiqueta do produto</span>
+          <span className="text-[#0a0a0a]/55 hidden md:inline">·</span>
+          <span className="hidden md:inline">etiqueta do produto</span>
           <span className="text-[#0a0a0a]/55">·</span>
           <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
         </div>
       </div>
 
       {/* HERO TEXT */}
-      <section className="max-w-[1400px] mx-auto px-8 md:px-12 pt-16 md:pt-24 pb-24 md:pb-32 relative">
+      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-24 md:pb-32 relative">
         <div className="grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 flex items-center gap-3">
@@ -61,12 +63,12 @@ export default function Home() {
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-4 font-mono">
               ╱╱  Issue 001 · for BR exporters
             </div>
-            <h1 className="text-[12vw] md:text-[5.2vw] font-medium leading-[0.95] tracking-[-0.04em] max-w-[20ch]">
+            <h1 className="text-[14vw] sm:text-[12vw] md:text-[5.2vw] font-medium leading-[0.95] tracking-[-0.04em] max-w-[20ch]">
               Bill the world<br/>
               from Brazil.<br/>
               <em className="not-italic relative">
                 Get paid in dollars
-                <span className="inline-block align-middle ml-3 w-2.5 h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
+                <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
               </em>
             </h1>
           </div>
@@ -98,7 +100,7 @@ export default function Home() {
 
       {/* NUMBERS */}
       <section className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6 mb-16">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               ┃ Numbers
@@ -120,7 +122,7 @@ export default function Home() {
 
       {/* HOW IT WORKS */}
       <section id="how" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               ┃ Mechanics
@@ -149,7 +151,7 @@ export default function Home() {
 
       {/* REGULATORY / STACK */}
       <section id="stack" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-20 md:py-32">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               ┃ Position
@@ -183,7 +185,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-32 md:py-40 relative">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
             005 · Onboard <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
           </div>
@@ -203,7 +205,7 @@ export default function Home() {
 
       {/* FOOTER — oversized wordmark, editorial */}
       <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 pt-20 pb-8">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 pt-20 pb-8">
           <div className="grid grid-cols-12 gap-6 pb-16 border-b border-[#f1eee7]/15">
             <div className="col-span-12 md:col-span-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">

@@ -165,12 +165,17 @@ export function AskSlippay() {
 
   return (
     <>
-      {/* Floating launcher — bluewave-style chip */}
+      {/* Floating launcher — bluewave-style chip with safe-area inset for iOS */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          style={{ background: INK, color: BONE }}
-          className="fixed bottom-6 right-6 z-50 px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)]"
+          style={{
+            background: INK,
+            color: BONE,
+            bottom: "max(1.25rem, env(safe-area-inset-bottom))",
+            right:  "max(1rem, env(safe-area-inset-right))",
+          }}
+          className="fixed z-50 px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)] active:scale-95"
           aria-label="Ask Slippay"
         >
           <span style={{ background: KLEIN }} className="inline-block w-1.5 h-1.5" />
