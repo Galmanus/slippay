@@ -5,23 +5,25 @@ import { AskSlippay } from "../components/AskSlippay.tsx";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
-      <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
+      {/* Top scrim — guarantees nav legibility regardless of hero pixels underneath */}
+      <div className="fixed top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#0a0a0a]/70 via-[#0a0a0a]/30 to-transparent z-10 pointer-events-none" />
+
+      <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between">
         <Logo />
-        <nav className="flex items-center gap-6 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7] mix-blend-difference">
-          <span className="text-[#f1eee7]/40 hidden md:inline">┃ for buyers</span>
-          <Link to="/preview" className="hover:opacity-60">See it live</Link>
-          <span className="text-[#f1eee7]/40 hidden md:inline ml-2">┃ for merchants</span>
-          <a href="#how" className="hover:opacity-60">How it works</a>
-          <Link to="/demo" className="hover:opacity-60">SDK</Link>
-          <Link to="/login" className="hover:opacity-60">Log in</Link>
+        <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]">
+          <Link to="/preview" className="hover:opacity-60 transition-opacity hidden md:inline">See it live</Link>
+          <a href="#how" className="hover:opacity-60 transition-opacity hidden md:inline">How it works</a>
+          <Link to="/demo" className="hover:opacity-60 transition-opacity hidden md:inline">SDK</Link>
+          <Link to="/login" className="hover:opacity-60 transition-opacity">Log in</Link>
           <Link to="/signup"
-            className="bg-[#0a0a0a] text-[#f1eee7] px-5 py-2.5 hover:bg-[#1a1a1a] mix-blend-normal">
+            className="bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] transition-colors text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
+            <span className="inline-block w-1 h-1 bg-[#0a0a0a]" />
             Sign up
           </Link>
         </nav>
       </header>
 
-      {/* HERO IMAGE — full-bleed, no caption per S02 recipe */}
+      {/* HERO IMAGE — full-bleed */}
       <div
         className="relative w-full bg-[#0a0a0a]"
         style={{
@@ -32,9 +34,13 @@ export default function Home() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
-        <div className="absolute bottom-6 right-8 md:right-12 z-10 inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-4 py-2 text-[10px] uppercase tracking-[0.22em] font-mono">
-          <span>slippay · etiqueta do produto</span>
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
+        {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher on the right */}
+        <div className="absolute bottom-6 left-6 md:left-10 z-10 inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-4 py-2 text-[10px] uppercase tracking-[0.22em] font-mono">
+          <span>slippay</span>
+          <span className="text-[#0a0a0a]/55">·</span>
+          <span>etiqueta do produto</span>
+          <span className="text-[#0a0a0a]/55">·</span>
           <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
         </div>
       </div>
