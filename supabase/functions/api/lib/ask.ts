@@ -1,37 +1,42 @@
-// "Ask Slippay" — Claude API integration with prompt-cached docs + citations.
+// "Ask Slippay" — Claude Code as engine (subprocess via OAuth subscription).
 //
 // Architecture:
-//   - System prompt: small, stable instructions (cached)
-//   - User message: docs as document blocks at front (cached) + question at end
-//   - cache_control breakpoint on last document block → docs cached, question varies
-//   - Citations API enabled per document → Claude returns char-range citations
-//   - Streaming SSE → real-time response
+//   - Bundle all docs into a single file at boot (/tmp/slippay-docs-bundle.md)
+//   - Each question spawns `claude -p ... --append-system-prompt-file <bundle>`
+//   - --output-format stream-json --include-partial-messages → streaming
+//   - Auth via CLAUDE_CODE_OAUTH_TOKEN env (uses Pro/Max subscription, no
+//     per-token billing)
+//   - --bare skips CLAUDE.md / local skills (deterministic context)
 //
-// Cost (estimate, Sonnet 4.6 at $3/$15 per 1M):
-//   First request:  ~$0.56 (writes ~150k token cache)
-//   Subsequent:     ~$0.05/question (reads cache at 0.1x)
-
-import Anthropic from "npm:@anthropic-ai/sdk@0.71.0";
-
-const MODEL = "claude-sonnet-4-6";
-const MAX_TOKENS = 4096;
+// Why subprocess over Anthropic API direct:
+//   - Uses operator's Claude Max subscription instead of metered API
+//   - 100-500 questions/day fits easily inside subscription cap
+//   - No ANTHROPIC_API_KEY to manage
 
 const SYSTEM_PROMPT = `You are an AI assistant for SlipPay, a Stellar-native USDC/PYUSD payment gateway for Brazilian merchants billing globally.
 
-Answer questions strictly using the provided documentation. Cite sources using the Citations API — every factual claim must be grounded in a doc.
+Answer questions strictly using the slippay documentation provided. Every factual claim must be grounded in the docs.
 
 Rules:
 - If the answer isn't in the docs, say "I don't have information about that in the slippay documentation" — do NOT make up details.
 - For pricing, fees, contract addresses, API endpoints: quote the docs verbatim where possible.
 - Be concise. 2-4 sentences for most questions. Longer for technical setup walkthroughs.
-- Match the user's language. If they ask in Portuguese, respond in Portuguese.
-- Don't mention "the documentation" — just answer with citations underneath.
-- For sensitive operational claims (regulatory status, partnership signed, mainnet live): use the exact hedging from docs/concepts/regulatory.md and the README "Honest disclosures" section.
+- Match the user's language (Portuguese or English).
+- For sensitive operational claims (regulatory status, partnership signed, mainnet live): use the exact hedging from docs/concepts/regulatory.md and the README "Honest disclosures" section. Slippay is currently in execution under a Stellar Brasil ecosystem program; mainnet is testnet-only; partnership-with-VASP not yet signed.
 
-Slippay is currently in execution under a Stellar Brasil ecosystem program. Mainnet is testnet-live; the Soroban subscription contract is deployed on testnet at CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA.`;
+Citation format:
+- Cite docs inline as [docs/<path>.md] when stating a specific fact (e.g. "The platform fee is 1% [docs/api-reference/orders.md]").
+- At the end of your answer, output a "## Sources" section with each referenced doc on its own line as a bullet:
+  ## Sources
+  - docs/api-reference/orders.md
+  - docs/concepts/regulatory.md
 
-// Doc files included as document blocks (relative to /opt/slippay-backend/docs/).
-// Order: foundational concepts first (cached prefix), then references, then guides.
+Operational facts to remember:
+- Soroban subscription contract deployed Stellar testnet: CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA
+- Backend live: https://api.slippay.cc/api/health
+- Network: testnet only; mainnet pending anchor partnership
+- Repo: https://github.com/Galmanus/slippay`;
+
 const DOC_FILES = [
   "README.md",
   "quickstart.md",
@@ -53,30 +58,33 @@ const DOC_FILES = [
 
 const DOCS_ROOT = Deno.env.get("SLIPPAY_DOCS_ROOT") ??
   new URL("../../../../docs/", import.meta.url).pathname;
+const DOCS_BUNDLE = Deno.env.get("SLIPPAY_DOCS_BUNDLE") ?? "/tmp/slippay-docs-bundle.md";
+const CLAUDE_BIN = Deno.env.get("CLAUDE_BIN") ?? "claude";
+const CLAUDE_CWD = Deno.env.get("CLAUDE_CWD") ?? "/tmp";
 
-interface CachedDoc {
-  path: string;
-  title: string;
-  content: string;
-}
+let bundlePromise: Promise<string> | null = null;
 
-let cachedDocs: CachedDoc[] | null = null;
-
-async function loadDocs(): Promise<CachedDoc[]> {
-  if (cachedDocs) return cachedDocs;
-  const docs: CachedDoc[] = [];
-  for (const rel of DOC_FILES) {
-    try {
-      const full = `${DOCS_ROOT}${rel}`;
-      const content = await Deno.readTextFile(full);
-      docs.push({ path: rel, title: rel, content });
-    } catch (e) {
-      console.warn(`[ask] failed to load ${rel}:`, String(e));
+async function ensureDocsBundle(): Promise<string> {
+  if (bundlePromise) return bundlePromise;
+  bundlePromise = (async () => {
+    let bundled = "# SlipPay Documentation\n\n" +
+      "The following files compose the slippay documentation set. " +
+      "When citing, reference them by their relative path (e.g. " +
+      "`docs/api-reference/orders.md`).\n\n---\n";
+    for (const rel of DOC_FILES) {
+      try {
+        const full = `${DOCS_ROOT}${rel}`;
+        const content = await Deno.readTextFile(full);
+        bundled += `\n\n## docs/${rel}\n\n${content}\n\n---\n`;
+      } catch (e) {
+        console.warn(`[ask] doc bundle skip ${rel}:`, String(e));
+      }
     }
-  }
-  cachedDocs = docs;
-  console.log(`[ask] loaded ${docs.length} docs, ${docs.reduce((s, d) => s + d.content.length, 0)} chars total`);
-  return docs;
+    await Deno.writeTextFile(DOCS_BUNDLE, bundled);
+    console.log(`[ask] docs bundle ready at ${DOCS_BUNDLE} (${bundled.length} chars)`);
+    return DOCS_BUNDLE;
+  })();
+  return bundlePromise;
 }
 
 export interface AskRequest {
@@ -84,129 +92,157 @@ export interface AskRequest {
   history?: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
-export interface AskCitation {
-  doc_path: string;
-  doc_title: string;
-  cited_text: string;
-  start_char_index?: number;
-  end_char_index?: number;
-}
+export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<Uint8Array>> {
+  const token = Deno.env.get("CLAUDE_CODE_OAUTH_TOKEN");
+  if (!token) throw new Error("CLAUDE_CODE_OAUTH_TOKEN not set");
 
-export async function askSlippayStream(
-  req: AskRequest,
-): Promise<ReadableStream<Uint8Array>> {
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY not set");
-  }
+  const docsPath = await ensureDocsBundle();
 
-  const docs = await loadDocs();
-  const client = new Anthropic({ apiKey });
-
-  // Build user message content: docs as document blocks + question at end.
-  // cache_control on the LAST document block → caches the doc prefix.
-  type ContentBlock = {
-    type: "document";
-    source: { type: "text"; media_type: "text/plain"; data: string };
-    title: string;
-    citations: { enabled: true };
-    cache_control?: { type: "ephemeral" };
-  } | {
-    type: "text";
-    text: string;
-  };
-
-  const docBlocks: ContentBlock[] = docs.map((d, i) => ({
-    type: "document",
-    source: { type: "text", media_type: "text/plain", data: d.content },
-    title: d.title,
-    citations: { enabled: true },
-    ...(i === docs.length - 1 ? { cache_control: { type: "ephemeral" } as const } : {}),
-  }));
-
-  // Build messages array. History (if any) comes first as plain text turns.
-  // Final user turn has docs + the current question.
-  const messages: Anthropic.MessageParam[] = [];
+  // Build the user prompt. Include history as context.
+  let userInput = req.question;
   if (req.history && req.history.length > 0) {
-    for (const h of req.history) {
-      messages.push({ role: h.role, content: h.content });
-    }
+    const hist = req.history
+      .map(h => `### ${h.role === "user" ? "User" : "You answered"}\n${h.content}`)
+      .join("\n\n");
+    userInput = `## Prior conversation\n\n${hist}\n\n---\n\n## Current question\n\n${req.question}`;
   }
-  messages.push({
-    role: "user",
-    content: [
-      ...docBlocks,
-      { type: "text", text: req.question },
-    ] as unknown as Anthropic.ContentBlockParam[],
-  });
 
   const encoder = new TextEncoder();
-  const stream = new ReadableStream<Uint8Array>({
+  return new ReadableStream<Uint8Array>({
     async start(controller) {
       const send = (data: unknown) => {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      try {
-        const apiStream = client.messages.stream({
-          model: MODEL,
-          max_tokens: MAX_TOKENS,
-          system: SYSTEM_PROMPT,
-          messages,
-        });
+      const cmd = new Deno.Command(CLAUDE_BIN, {
+        cwd: CLAUDE_CWD,
+        args: [
+          "-p", userInput,
+          "--append-system-prompt", SYSTEM_PROMPT,
+          "--append-system-prompt-file", docsPath,
+          "--output-format", "stream-json",
+          "--include-partial-messages",
+          "--bare",
+        ],
+        env: {
+          CLAUDE_CODE_OAUTH_TOKEN: token,
+          HOME: Deno.env.get("HOME") ?? "/home/manuel",
+          PATH: Deno.env.get("PATH") ?? "/usr/bin:/usr/local/bin",
+        },
+        stdout: "piped",
+        stderr: "piped",
+      });
 
-        for await (const event of apiStream) {
-          if (event.type === "content_block_delta") {
-            const delta = event.delta;
-            if (delta.type === "text_delta") {
-              send({ type: "text", text: delta.text });
-            } else if (delta.type === "citations_delta") {
-              const c = delta.citation as {
-                type?: string;
-                cited_text?: string;
-                document_index?: number;
-                document_title?: string;
-                start_char_index?: number;
-                end_char_index?: number;
-              };
-              const docIdx = typeof c.document_index === "number" ? c.document_index : -1;
-              const matchedDoc = docIdx >= 0 && docIdx < docs.length ? docs[docIdx] : null;
-              send({
-                type: "citation",
-                citation: {
-                  doc_path: matchedDoc?.path ?? c.document_title ?? "unknown",
-                  doc_title: matchedDoc?.title ?? c.document_title ?? "unknown",
-                  cited_text: c.cited_text ?? "",
-                  start_char_index: c.start_char_index,
-                  end_char_index: c.end_char_index,
-                },
-              });
+      let child;
+      try {
+        child = cmd.spawn();
+      } catch (e: unknown) {
+        send({ type: "error", error: `spawn failed: ${(e as Error).message ?? e}` });
+        controller.close();
+        return;
+      }
+
+      // Drain stderr in background (errors surface; non-fatal warnings get logged)
+      (async () => {
+        const decoder = new TextDecoder();
+        const reader = child.stderr.getReader();
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const txt = decoder.decode(value);
+            if (txt.trim()) console.warn("[claude stderr]", txt);
+          }
+        } catch { /* ignore */ }
+      })();
+
+      const decoder = new TextDecoder();
+      const reader = child.stdout.getReader();
+      let buffer = "";
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            try {
+              const evt = JSON.parse(trimmed);
+              forwardEvent(evt, send);
+            } catch {
+              // Not JSON — likely a status line; ignore
             }
-          } else if (event.type === "message_delta") {
-            // contains stop_reason + usage
-            if (event.usage) {
-              send({
-                type: "usage",
-                usage: {
-                  input_tokens: event.usage.input_tokens,
-                  output_tokens: event.usage.output_tokens,
-                  cache_creation_input_tokens: (event.usage as { cache_creation_input_tokens?: number }).cache_creation_input_tokens ?? 0,
-                  cache_read_input_tokens: (event.usage as { cache_read_input_tokens?: number }).cache_read_input_tokens ?? 0,
-                },
-              });
-            }
-          } else if (event.type === "message_stop") {
-            send({ type: "done" });
           }
         }
-
-        controller.close();
+        // flush last buffered line if any
+        if (buffer.trim()) {
+          try {
+            const evt = JSON.parse(buffer.trim());
+            forwardEvent(evt, send);
+          } catch { /* ignore */ }
+        }
+        const status = await child.status;
+        if (status.code !== 0) {
+          send({ type: "error", error: `claude exited code ${status.code}` });
+        } else {
+          send({ type: "done" });
+        }
       } catch (e: unknown) {
         send({ type: "error", error: String((e as Error).message ?? e) });
+      } finally {
         controller.close();
       }
     },
   });
+}
 
-  return stream;
+// Parse the various event shapes that `claude --output-format stream-json
+// --include-partial-messages` may emit. We only forward text deltas, errors,
+// and usage hints to the frontend. Citations from the model's [docs/...]
+// inline markers are extracted by the frontend from the streamed text.
+function forwardEvent(evt: unknown, send: (data: unknown) => void): void {
+  const e = evt as Record<string, unknown>;
+  // Pattern A: top-level stream_event wrapping an Anthropic API event
+  if (e?.type === "stream_event") {
+    const inner = e.event as Record<string, unknown> | undefined;
+    if (!inner) return;
+    if (inner.type === "content_block_delta") {
+      const delta = inner.delta as Record<string, unknown> | undefined;
+      if (delta?.type === "text_delta" && typeof delta.text === "string") {
+        send({ type: "text", text: delta.text });
+      }
+    } else if (inner.type === "message_delta") {
+      const usage = inner.usage as Record<string, number> | undefined;
+      if (usage) send({ type: "usage", usage });
+    }
+    return;
+  }
+  // Pattern B: assistant message with text content (non-streaming chunk)
+  if (e?.type === "assistant" || e?.role === "assistant") {
+    const content = (e.content ?? e.message) as unknown;
+    if (typeof content === "string") {
+      send({ type: "text", text: content });
+    } else if (Array.isArray(content)) {
+      for (const b of content) {
+        const block = b as Record<string, unknown>;
+        if (block.type === "text" && typeof block.text === "string") {
+          send({ type: "text", text: block.text });
+        }
+      }
+    }
+    return;
+  }
+  // Pattern C: result envelope at end of run
+  if (e?.type === "result" && typeof e.result === "string") {
+    // already streamed via stream_event; ignore to avoid duplication
+    return;
+  }
+  // Pattern D: error envelope
+  if (e?.type === "error" && typeof e.message === "string") {
+    send({ type: "error", error: e.message });
+  }
 }

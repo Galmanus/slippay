@@ -37,8 +37,8 @@ r.post("/", async (c) => {
     stream = await askSlippayStream({ question, history });
   } catch (e: unknown) {
     const msg = String((e as Error).message ?? e);
-    if (msg.includes("ANTHROPIC_API_KEY")) {
-      return c.json({ error: "service_unavailable", detail: "Ask Slippay is not configured. Contact admin." }, 503);
+    if (msg.includes("CLAUDE_CODE_OAUTH_TOKEN") || msg.includes("ANTHROPIC_API_KEY")) {
+      return c.json({ error: "service_unavailable", detail: "Ask Slippay engine not configured. Contact admin." }, 503);
     }
     return c.json({ error: "stream_failed", detail: msg }, 500);
   }
