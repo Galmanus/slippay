@@ -7,7 +7,10 @@ interface LogoProps {
 }
 
 export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
-  const fg = variant === "ink" ? "#0a0a0a" : "#f1eee7";
+  // The arrow inside the KLEIN square is always INK — keeps contrast with
+  // the lime green regardless of background. Only the wordmark recolors.
+  const fgSquare = "#0a0a0a";
+  const fgText   = variant === "ink" ? "#0a0a0a" : "#f1eee7";
   const dim = size === "sm" ? 22 : 30;
   const text = size === "sm" ? "text-base" : "text-xl";
   const gap = size === "sm" ? "gap-2.5" : "gap-3";
@@ -18,13 +21,13 @@ export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
         <rect x="0" y="0" width="24" height="24" fill="#b5e853" />
         <path
           d="M7 8 Q12 8 12 12 Q12 16 17 16"
-          stroke={fg}
+          stroke={fgSquare}
           strokeWidth="2.8"
           strokeLinecap="square"
           fill="none"
         />
       </svg>
-      <span className={`${text} tracking-tight font-medium leading-none`} style={{ color: fg }}>
+      <span className={`${text} tracking-tight font-medium leading-none`} style={{ color: fgText }}>
         slippay
       </span>
     </span>
