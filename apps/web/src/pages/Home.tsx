@@ -23,13 +23,13 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* HERO IMAGE — full-bleed. Different bg-position on mobile (portrait
-          screens crop sides heavily, favor showing face/blindfold focal area
-          higher up) vs desktop (wider, can show full bust including jaw). */}
+      {/* HERO IMAGE — full-bleed. Mobile uses ~72vh so the headline below
+          peeks above the fold (signaling "more here"). Desktop keeps full
+          monumental presence. Position Y differs: 30% on mobile favors
+          face/blindfold; 40% on desktop reveals full jaw. */}
       <div
-        className="relative w-full bg-[#0a0a0a] bg-[position:center_30%] md:bg-[position:center_40%]"
+        className="relative w-full bg-[#0a0a0a] bg-[position:center_30%] md:bg-[position:center_40%] h-[72vh] md:h-[min(100vh,880px)]"
         style={{
-          height: "min(100vh, 880px)",
           backgroundImage: "url('/hero.png')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
@@ -45,10 +45,15 @@ export default function Home() {
           <span className="text-[#0a0a0a]/55">·</span>
           <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
         </div>
+        {/* Scroll cue — only on mobile, only on first viewport */}
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-10 md:hidden flex flex-col items-center gap-1.5 text-[#f1eee7] pointer-events-none animate-bounce">
+          <span className="text-[9px] uppercase tracking-[0.28em] font-mono opacity-80">scroll</span>
+          <span className="text-base leading-none opacity-80">↓</span>
+        </div>
       </div>
 
       {/* HERO TEXT */}
-      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-24 md:pb-32 relative">
+      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-10 md:pt-24 pb-20 md:pb-32 relative">
         <div className="grid grid-cols-12 gap-6 items-end">
           <div className="col-span-12 md:col-span-3">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 flex items-center gap-3">
