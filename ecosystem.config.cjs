@@ -47,8 +47,23 @@ const listenerEnv = {
   MERCHANT_POLL_MS: env.MERCHANT_POLL_MS || "30000",
 };
 
+const PULSE_PYTHON = path.join(ROOT, "agents/pulse/.venv/bin/python");
+const PULSE_SCRIPT = path.join(ROOT, "agents/pulse/pulse.py");
+const pulseAvailable = fs.existsSync(PULSE_PYTHON) && fs.existsSync(path.join(ROOT, "agents/pulse/.env"));
+
 module.exports = {
   apps: [
+    ...(pulseAvailable ? [{
+      name: "slippay-pulse",
+      cwd: path.join(ROOT, "agents/pulse"),
+      script: PULSE_SCRIPT,
+      interpreter: PULSE_PYTHON,
+      restart_delay: 5000,
+      max_memory_restart: "200M",
+      out_file: path.join(ROOT, "logs/pulse.out.log"),
+      error_file: path.join(ROOT, "logs/pulse.err.log"),
+      time: true,
+    }] : []),
     {
       name: "slippay-api",
       cwd: path.join(ROOT, "supabase/functions/api"),
