@@ -1,18 +1,30 @@
 //! Slippay Subscription Contract — Soroban primitive for recurring payments on Stellar.
 //!
-//! The buyer pre-authorizes the contract to debit a fixed amount of a SEP-41
-//! token from their account at a configured period. Anyone can call `charge`
-//! at or after the next due timestamp; the contract enforces:
+//! **v0.1 operating model.** The buyer must sign each `charge` invocation
+//! (see `charge()` below — calls `buyer.require_auth()`). An off-chain
+//! scheduler alone cannot trigger a charge; it must coordinate with the
+//! buyer's wallet (smart-wallet session signer, WalletConnect, or equivalent)
+//! to produce a fresh signature for every period. v0.2 will introduce a
+//! pre-authorization primitive so the scheduler can charge autonomously
+//! within a buyer-defined allowance — see audit-002 F4 for the rationale.
+//!
+//! The contract enforces:
 //!   - status = Active
 //!   - current ledger time >= last_charge_at + period_seconds
 //!   - charges_done < max_periods (if set)
 //!   - current ledger time < expiry (if set)
-//!   - the buyer's auth chain on the underlying token.transfer
+//!   - the buyer's auth chain on `charge` itself AND on the nested SEP-41
+//!     `token.transfer` invocation
 //!
 //! Only the buyer can `cancel`. Only the merchant can `pause` / `resume`.
 //!
-//! v0.1 — single-asset, single-merchant subscription. v0.2 will add multi-asset
-//! routing and pause-with-prorate.
+//! TTL: every persistent `set` is followed by `extend_ttl` so a long-period
+//! subscription survives idle gaps between charges (audit-002 F1). The
+//! network host clamps to its protocol maximum; subs with periods longer
+//! than that maximum require an external touch to keep the entry alive.
+//!
+//! v0.1 — single-asset, single-merchant subscription. v0.2 will add
+//! pre-auth, multi-asset routing, and pause-with-prorate.
 
 #![no_std]
 use soroban_sdk::{
@@ -20,6 +32,13 @@ use soroban_sdk::{
     Address, BytesN, Env, Symbol,
     token,
 };
+
+// Audit-002 F1: TTL constants for persistent storage extension.
+// Threshold: refresh when remaining lifetime drops below ~1 day of ledgers
+// (5s ledger close). Target: extend to ~31 days — the host clamps to the
+// network maximum so passing a larger value is safe.
+const TTL_THRESHOLD_LEDGERS: u32 = 17_280;   // ~1 day at 5s/ledger
+const TTL_TARGET_LEDGERS: u32 = 535_000;     // ~31 days at 5s/ledger (clamped by host)
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 #[contracttype]
@@ -116,27 +135,34 @@ impl SubscriptionContract {
         };
 
         env.storage().persistent().set(&key, &sub);
+        // Audit-002 F1: extend TTL so long-period subs survive idle gaps.
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+        // Audit-002 F8: include merchant, token, max_periods, expires_at so
+        // indexers don't need a follow-up `get(id)` to reconstruct state.
         env.events().publish(
             (Symbol::new(&env, "subscription_created"), buyer),
-            (nonce.clone(), sub.amount, sub.period_seconds),
+            (nonce.clone(), sub.amount, sub.period_seconds, sub.merchant.clone(), sub.token.clone(), sub.max_periods, sub.expires_at),
         );
         nonce
     }
 
-    /// Trigger the next charge. Anyone can call (including off-chain
-    /// schedulers like the slippay backend), but the underlying
-    /// token.transfer requires the buyer's auth — the buyer's pre-auth
-    /// signature provides this when invoked via auth_as_buyer.
+    /// Trigger the next charge.
+    ///
+    /// **v0.1 auth model (audit-002 F4):** the buyer must sign every charge.
+    /// `buyer.require_auth()` is called below. An off-chain scheduler can
+    /// submit the transaction, but the buyer must produce a fresh signature
+    /// each time — via smart-wallet session, WalletConnect, or equivalent.
+    /// v0.2 will replace this with a pre-auth allowance primitive.
     pub fn charge(env: Env, id: BytesN<32>) -> u64 {
         let key = DataKey::Sub(id.clone());
         let mut sub: Subscription = env.storage().persistent().get(&key)
             .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
 
-        // Buyer must authorize each charge in v0.1 (anyone can submit the tx
-        // but the buyer's signature is required at the top invocation; this
-        // makes the nested SAC.transfer auth chain valid in production —
-        // tests use mock_all_auths_allowing_non_root_auth which bypasses
-        // this top-level requirement). v0.2 will replace this with pre-auth.
+        // Audit-002 F4 / F5: v0.1 requires the buyer to sign every charge.
+        // Tests use mock_all_auths_allowing_non_root_auth which bypasses this
+        // top-level requirement; mainnet sign-off must include at least one
+        // end-to-end testnet charge with a real wallet signature to prove the
+        // nested SAC.transfer auth chain works.
         sub.buyer.require_auth();
 
         if sub.status != Status::Active {
@@ -167,7 +193,11 @@ impl SubscriptionContract {
         let client = token::Client::new(&env, &sub.token);
         client.transfer(&sub.buyer, &sub.merchant, &sub.amount);
 
-        sub.charges_done += 1;
+        // Audit-002 F3: checked_add even with overflow-checks=true in release
+        // — defends against future profile changes that flip the flag.
+        sub.charges_done = sub.charges_done
+            .checked_add(1)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::InvalidConfig));
         sub.last_charge_at = now;
         let next_due = now.saturating_add(sub.period_seconds);
 
@@ -177,6 +207,8 @@ impl SubscriptionContract {
         }
 
         env.storage().persistent().set(&key, &sub);
+        // Audit-002 F1: roll the TTL window forward on every successful charge.
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
         env.events().publish(
             (Symbol::new(&env, "subscription_charged"), sub.buyer.clone(), sub.merchant.clone()),
             (id, sub.amount, sub.charges_done, next_due),
@@ -189,11 +221,15 @@ impl SubscriptionContract {
         let mut sub: Subscription = env.storage().persistent().get(&key)
             .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
         sub.buyer.require_auth();
-        if sub.status == Status::Cancelled {
+        // Audit-002 F6: cancel only transitions from Active or Paused. Both
+        // Cancelled and Expired are terminal and must not emit a second event
+        // or rewrite state.
+        if sub.status != Status::Active && sub.status != Status::Paused {
             return;
         }
         sub.status = Status::Cancelled;
         env.storage().persistent().set(&key, &sub);
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
         env.events().publish(
             (Symbol::new(&env, "subscription_cancelled"), sub.buyer.clone()),
             id,
@@ -210,6 +246,7 @@ impl SubscriptionContract {
         }
         sub.status = Status::Paused;
         env.storage().persistent().set(&key, &sub);
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
         env.events().publish(
             (Symbol::new(&env, "subscription_paused"), sub.merchant.clone()),
             id,
@@ -226,6 +263,7 @@ impl SubscriptionContract {
         }
         sub.status = Status::Active;
         env.storage().persistent().set(&key, &sub);
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
         env.events().publish(
             (Symbol::new(&env, "subscription_resumed"), sub.merchant.clone()),
             id,
@@ -257,6 +295,7 @@ impl SubscriptionContract {
         }
         sub.status = Status::Expired;
         env.storage().persistent().set(&key, &sub);
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
         env.events().publish(
             (Symbol::new(&env, "subscription_expired"), sub.buyer.clone()),
             id,

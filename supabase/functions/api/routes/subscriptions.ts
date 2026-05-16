@@ -8,11 +8,20 @@ import {
 import { requireApiKey } from "../middleware/auth_apikey.ts";
 import { generateMemo } from "../lib/memo.ts";
 import { getBrlPerUsdc } from "../lib/rate.ts";
+import { buildChargeTransaction } from "../lib/soroban.ts";
+import { signCheckoutToken } from "../lib/checkout-token.ts";
+import { mapDbError } from "../lib/db-error.ts";
 
 type Vars = { merchant: { id: string; [k: string]: unknown }; supabase: SupabaseClient };
 const r = new Hono<{ Variables: Vars }>();
 
 const CHECKOUT_BASE = Deno.env.get("CHECKOUT_BASE_URL") ?? "http://localhost:5173";
+
+const SOROBAN_NETWORK = (Deno.env.get("STELLAR_NETWORK")?.toLowerCase() ?? "testnet") as
+  "testnet" | "mainnet";
+const SOROBAN_CONTRACT_DEFAULT =
+  Deno.env.get("SLIPPAY_SUBSCRIPTION_CONTRACT_TESTNET") ??
+  Deno.env.get("SLIPPAY_SUBSCRIPTION_CONTRACT_MAINNET") ?? null;
 
 // POST /v1/subscriptions — create a subscription
 r.post("/", requireApiKey, async (c) => {
@@ -39,7 +48,7 @@ r.post("/", requireApiKey, async (c) => {
     metadata: input.metadata ?? {},
     next_charge_at: new Date().toISOString(),
   }).select("*").single();
-  if (error) return c.json({ error: "create_failed", detail: error.message }, 400);
+  if (error) { const m = mapDbError(error); return c.json({ error: m.code }, m.status as 400 | 409); }
   return c.json({ subscription: data }, 201);
 });
 
@@ -53,7 +62,7 @@ r.get("/", requireApiKey, async (c) => {
     .order("created_at", { ascending: false }).limit(limit);
   if (status) q = q.eq("status", status);
   const { data, error } = await q;
-  if (error) return c.json({ error: "list_failed", detail: error.message }, 400);
+  if (error) { const m = mapDbError(error); return c.json({ error: m.code }, m.status as 400 | 409); }
   return c.json({ subscriptions: data ?? [] });
 });
 
@@ -84,13 +93,18 @@ r.patch("/:id", requireApiKey, async (c) => {
   if (input.status !== undefined) patch.status = input.status;
   if (input.webhook_url !== undefined) patch.webhook_url = input.webhook_url;
   if (input.metadata !== undefined) patch.metadata = input.metadata;
+  if (input.soroban_contract_id !== undefined) patch.soroban_contract_id = input.soroban_contract_id;
+  if (input.soroban_subscription_id !== undefined) patch.soroban_subscription_id = input.soroban_subscription_id;
   if (Object.keys(patch).length === 0) {
     return c.json({ error: "empty_update" }, 400);
   }
   const { data, error } = await sb.from("subscriptions")
     .update(patch).eq("id", id).eq("merchant_id", merchant.id)
     .select("*").maybeSingle();
-  if (error || !data) return c.json({ error: "update_failed", detail: error?.message }, 400);
+  if (error || !data) {
+    if (error) { const m = mapDbError(error); return c.json({ error: m.code }, m.status as 400 | 409); }
+    return c.json({ error: "not_found" }, 404);
+  }
   return c.json({ subscription: data });
 });
 
@@ -122,9 +136,10 @@ r.post("/:id/charge", requireApiKey, async (c) => {
     .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (openOrder) {
+    const openToken = await signCheckoutToken(openOrder.id as string);
     return c.json({
       order: openOrder,
-      checkout_url: `${CHECKOUT_BASE}/checkout/${openOrder.id}`,
+      checkout_url: `${CHECKOUT_BASE}/checkout/${openOrder.id}?t=${openToken}`,
       idempotent: true,
     }, 200);
   }
@@ -145,7 +160,7 @@ r.post("/:id/charge", requireApiKey, async (c) => {
     memo,
     expires_at: expiresAt,
   }).select("*").single();
-  if (orderErr) return c.json({ error: "order_create_failed", detail: orderErr.message }, 400);
+  if (orderErr) { const m = mapDbError(orderErr); return c.json({ error: m.code }, m.status as 400 | 409); }
 
   // Bump subscription bookkeeping; charges_done is incremented on payment in
   // the listener (see matcher.ts), not here, since this is just an invoice.
@@ -154,9 +169,10 @@ r.post("/:id/charge", requireApiKey, async (c) => {
     next_charge_at: nextChargeAt,
   }).eq("id", id);
 
+  const orderToken = await signCheckoutToken(order.id as string);
   return c.json({
     order,
-    checkout_url: `${CHECKOUT_BASE}/checkout/${order.id}`,
+    checkout_url: `${CHECKOUT_BASE}/checkout/${order.id}?t=${orderToken}`,
     idempotent: false,
   }, 201);
 });
@@ -172,6 +188,73 @@ r.post("/:id/cancel", requireApiKey, async (c) => {
     .select("*").maybeSingle();
   if (error || !data) return c.json({ error: "cannot_cancel" }, 400);
   return c.json({ subscription: data });
+});
+
+// POST /v1/subscriptions/:id/onchain-charge — build an unsigned Soroban
+// charge transaction. The api never holds the buyer's secret; it returns
+// the unsigned XDR for the buyer to sign externally (Freighter, Lab) and
+// submit. After submission, the contract emits subscription_charged event
+// and the buyer's balance is debited atomically by the SAC.
+//
+// Requires:
+//   - subscription.soroban_contract_id set (or env-default contract)
+//   - subscription.soroban_subscription_id set (32-byte hex nonce)
+//   - request body: { buyer_address: "G..." }
+r.post("/:id/onchain-charge", requireApiKey, async (c) => {
+  const merchant = c.get("merchant");
+  const sb = c.get("supabase");
+  const id = c.req.param("id");
+
+  let body: { buyer_address?: string } = {};
+  try { body = await c.req.json(); } catch { /* empty body OK */ }
+  const buyer = body.buyer_address ?? null;
+  if (!buyer || buyer.length !== 56 || !buyer.startsWith("G")) {
+    return c.json({ error: "invalid_buyer_address", detail: "expected 56-char Stellar pubkey" }, 400);
+  }
+
+  const { data: sub, error: fetchErr } = await sb.from("subscriptions")
+    .select("*").eq("id", id).eq("merchant_id", merchant.id).maybeSingle();
+  if (fetchErr || !sub) return c.json({ error: "not_found" }, 404);
+  if (sub.status !== "active") {
+    return c.json({ error: "not_active", status: sub.status }, 409);
+  }
+
+  const contractId = sub.soroban_contract_id ?? SOROBAN_CONTRACT_DEFAULT;
+  if (!contractId) {
+    return c.json({
+      error: "no_onchain_contract",
+      detail: "subscription has no soroban_contract_id and SLIPPAY_SUBSCRIPTION_CONTRACT_TESTNET env not set",
+    }, 409);
+  }
+  if (!sub.soroban_subscription_id) {
+    return c.json({
+      error: "no_onchain_id",
+      detail: "subscription.soroban_subscription_id (32-byte hex nonce) not set; PATCH it first",
+    }, 409);
+  }
+
+  let result;
+  try {
+    result = await buildChargeTransaction({
+      contractId,
+      subscriptionNonce: sub.soroban_subscription_id,
+      buyerAddress: buyer,
+      network: SOROBAN_NETWORK,
+    });
+  } catch (e: unknown) {
+    return c.json({ error: "build_failed", detail: String((e as Error).message ?? e) }, 400);
+  }
+
+  return c.json({
+    onchain_charge: result,
+    instructions: [
+      "1. Buyer signs the unsigned_xdr with their Stellar wallet (Freighter, Lab, or stellar-sdk).",
+      "2. Submit the signed XDR via SorobanRpc sendTransaction at rpc_url.",
+      "3. The contract emits subscription_charged on success; SAC debits buyer + credits merchant atomically.",
+      "4. Optionally call this api with the resulting tx_hash to update slippay's charges_done counter (TBD endpoint).",
+    ],
+    contract_explorer: `https://stellar.expert/explorer/${SOROBAN_NETWORK === "mainnet" ? "public" : "testnet"}/contract/${contractId}`,
+  }, 200);
 });
 
 export default r;

@@ -89,7 +89,8 @@ class WC_Slippay_Gateway extends WC_Payment_Gateway {
             'webhook_secret' => [
                 'title'       => __( 'Webhook secret', 'woocommerce-slippay' ),
                 'type'        => 'password',
-                'description' => __( 'Optional but strongly recommended. Set the same secret in your SlipPay merchant settings under webhook_url. Plugin verifies HMAC-SHA256 on each delivery.', 'woocommerce-slippay' ),
+                'description' => __( 'Required. Minimum 32 characters. Must match the secret set in your SlipPay merchant settings. Plugin verifies HMAC-SHA256 with timestamp and replay protection on each delivery. Empty secret blocks all webhook deliveries (503).', 'woocommerce-slippay' ),
+                'custom_attributes' => [ 'required' => 'required', 'minlength' => 32 ],
             ],
         ];
     }
@@ -107,6 +108,26 @@ class WC_Slippay_Gateway extends WC_Payment_Gateway {
 
         if ( empty( $this->api_key ) ) {
             wc_add_notice( __( 'SlipPay API key not configured.', 'woocommerce-slippay' ), 'error' );
+            return [ 'result' => 'fail' ];
+        }
+
+        // Audit-006 W1: api_key prefix must match the configured environment.
+        // A merchant who toggles to mainnet while still holding an sk_test_
+        // key would otherwise post real orders to production with a
+        // credential that can never authenticate — silent fail in admin UI
+        // and visible-only-to-attacker probing on the API side.
+        $env = $this->environment === 'mainnet' ? 'live' : 'test';
+        $expected_prefix = 'sk_' . $env . '_';
+        if ( strpos( $this->api_key, $expected_prefix ) !== 0 ) {
+            wc_add_notice( __( 'SlipPay configuration error: API key environment does not match the selected environment. Use a key matching the selected testnet/mainnet mode.', 'woocommerce-slippay' ), 'error' );
+            return [ 'result' => 'fail' ];
+        }
+
+        // Audit-006 W2: api_base allowlist. By default only *.slippay.cc is
+        // accepted. Self-hosters set WC_SLIPPAY_ALLOW_CUSTOM_API in wp-config
+        // to opt out of this guard explicitly — operator-visible, not silent.
+        if ( ! $this->is_api_base_allowed( $this->api_base ) ) {
+            wc_add_notice( __( 'SlipPay configuration error: API base host is not allowed.', 'woocommerce-slippay' ), 'error' );
             return [ 'result' => 'fail' ];
         }
 
@@ -129,7 +150,9 @@ class WC_Slippay_Gateway extends WC_Payment_Gateway {
         ] );
 
         if ( is_wp_error( $response ) ) {
-            $order->add_order_note( 'SlipPay request error: ' . $response->get_error_message() );
+            // Audit-006 W3: escape values pulled from external sources before
+            // interpolating into order notes (WC renders notes as HTML in admin).
+            $order->add_order_note( 'SlipPay request error: ' . esc_html( $response->get_error_message() ) );
             wc_add_notice( __( 'Payment service unreachable. Try again.', 'woocommerce-slippay' ), 'error' );
             return [ 'result' => 'fail' ];
         }
@@ -139,8 +162,19 @@ class WC_Slippay_Gateway extends WC_Payment_Gateway {
 
         if ( $code !== 201 || empty( $data['order']['id'] ) || empty( $data['checkout_url'] ) ) {
             $detail = isset( $data['detail'] ) ? $data['detail'] : ( isset( $data['error'] ) ? $data['error'] : 'unknown' );
-            $order->add_order_note( 'SlipPay order create failed (' . $code . '): ' . $detail );
+            $order->add_order_note( 'SlipPay order create failed (' . intval( $code ) . '): ' . esc_html( (string) $detail ) );
             wc_add_notice( __( 'Payment failed to initiate. Please try again.', 'woocommerce-slippay' ), 'error' );
+            return [ 'result' => 'fail' ];
+        }
+
+        // Audit-006 W2: validate the redirect host actually belongs to the
+        // configured api_base before sending the customer there. A compromised
+        // api_base that returns checkout_url=https://phishing/... would
+        // otherwise silently exfiltrate buyers.
+        $checkout_url = (string) $data['checkout_url'];
+        if ( ! $this->is_checkout_url_safe( $checkout_url, $this->api_base ) ) {
+            $order->add_order_note( 'SlipPay rejected redirect to untrusted host: ' . esc_html( $checkout_url ) );
+            wc_add_notice( __( 'Payment failed: untrusted checkout host.', 'woocommerce-slippay' ), 'error' );
             return [ 'result' => 'fail' ];
         }
 
@@ -154,16 +188,68 @@ class WC_Slippay_Gateway extends WC_Payment_Gateway {
 
         return [
             'result'   => 'success',
-            'redirect' => $data['checkout_url'],
+            'redirect' => $checkout_url,
         ];
     }
 
     /**
-     * Hide gateway from BRL <0.01 carts (SlipPay schema requires positive amount).
+     * Audit-006 W6: refunds are not supported on-chain in v0.1 (non-custodial
+     * settlement — the merchant holds USDC directly, refunds happen wallet-to-
+     * wallet manually). Return a clear WP_Error so WC admins see a real
+     * message instead of a silently failing "Refund" button.
+     */
+    public function process_refund( $order_id, $amount = null, $reason = '' ) {
+        return new WP_Error(
+            'slippay_no_onchain_refund',
+            __( 'SlipPay v0.1 does not support automated refunds. Send USDC back to the buyer wallet manually and add an order note.', 'woocommerce-slippay' )
+        );
+    }
+
+    /**
+     * Audit-006 W1+W2 helpers.
+     */
+    private function is_api_base_allowed( $url ) {
+        $parts = wp_parse_url( $url );
+        if ( ! is_array( $parts ) || empty( $parts['host'] ) ) return false;
+        if ( ( $parts['scheme'] ?? '' ) !== 'https' ) return false;
+        $host = strtolower( $parts['host'] );
+        // Default allowlist: *.slippay.cc and slippay.cc itself.
+        $allowed = $host === 'slippay.cc' || (bool) preg_match( '/\.slippay\.cc$/', $host );
+        if ( $allowed ) return true;
+        return defined( 'WC_SLIPPAY_ALLOW_CUSTOM_API' ) && WC_SLIPPAY_ALLOW_CUSTOM_API;
+    }
+
+    private function is_checkout_url_safe( $checkout_url, $api_base ) {
+        $cu = wp_parse_url( $checkout_url );
+        $ab = wp_parse_url( $api_base );
+        if ( ! is_array( $cu ) || ! is_array( $ab ) ) return false;
+        if ( ( $cu['scheme'] ?? '' ) !== 'https' ) return false;
+        if ( empty( $cu['host'] ) || empty( $ab['host'] ) ) return false;
+        $cu_host = strtolower( $cu['host'] );
+        $ab_host = strtolower( $ab['host'] );
+        // Same registrable domain as api_base. Strict equality on the
+        // hostname OR sibling under *.slippay.cc when api_base is on slippay.cc.
+        if ( $cu_host === $ab_host ) return true;
+        if ( preg_match( '/\.slippay\.cc$/', $ab_host ) && preg_match( '/\.slippay\.cc$/', $cu_host ) ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Audit-006 W8: BRL currency gate. SlipPay's order create endpoint
+     * accepts brl_amount as the wire currency; submitting a USD/EUR cart
+     * total under that label would silently miscalculate the conversion.
+     * Hide the gateway when cart currency is not BRL.
+     *
+     * Also audit-006 W6 baseline: hide on zero-total carts.
      */
     public function is_available() {
         if ( 'yes' !== $this->enabled )       return false;
         if ( empty( $this->api_key ) )        return false;
+        if ( function_exists( 'get_woocommerce_currency' ) && get_woocommerce_currency() !== 'BRL' ) {
+            return false;
+        }
         if ( WC()->cart && WC()->cart->total <= 0 ) return false;
         return parent::is_available();
     }

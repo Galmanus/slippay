@@ -20,3 +20,7 @@ Cargo.lock.bak
 # Test scaffolding
 /tmp/e2e-keys.json
 contracts/*/test_snapshots/
+
+# Hero image backups (local-only; kept out of git for size)
+apps/web/public/hero.png.bak*
+apps/web/public/hero.png.*_rejected

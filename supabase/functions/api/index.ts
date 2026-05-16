@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { errorMiddleware } from "./middleware/error.ts";
+import { rateLimit } from "./middleware/rate_limit.ts";
 import merchants from "./routes/merchants.ts";
 import orders from "./routes/orders.ts";
 import subscriptions from "./routes/subscriptions.ts";
@@ -8,7 +9,24 @@ import ask from "./routes/ask.ts";
 
 const api = new Hono().basePath("/api");
 api.use("*", errorMiddleware);
-api.use("*", cors({ origin: "*", allowMethods: ["GET", "POST", "PATCH", "OPTIONS"] }));
+// Audit-004 · M2: CORS allowlist (was "*"). The web app + landing on
+// app.slippay.cc / slippay.cc need access; everything else stays denied so
+// that the unauthenticated public endpoints (e.g. /v1/orders/:id?t=...) can't
+// be invoked from random origins.
+const ALLOWED_ORIGINS = new Set([
+  "https://app.slippay.cc",
+  "https://slippay.cc",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]);
+api.use("*", cors({
+  origin: (origin) => (origin && ALLOWED_ORIGINS.has(origin)) ? origin : "",
+  allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
+  allowHeaders: ["authorization", "content-type"],
+}));
+// Audit-004 · C6: global token-bucket per IP applied to every /api/* request
+// as the outer guardrail. Per-route limiters (e.g. /v1/ask) compose on top.
+api.use("*", rateLimit({ capacity: 120, refillPerSec: 2, scope: "global" }));
 
 api.get("/health", (c) => c.json({ ok: true }));
 api.route("/v1/merchants", merchants);

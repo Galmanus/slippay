@@ -3,7 +3,7 @@
  * Plugin Name:       SlipPay for WooCommerce
  * Plugin URI:        https://api.slippay.cc/
  * Description:       Accept USDC and PYUSD payments on Stellar with instant 6-second settlement, no chargebacks, non-custodial. Buyers pay in BRL via Pix, merchants receive stablecoins directly.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Author:            Bluewave AI
  * Author URI:        https://api.slippay.cc/
  * License:           Apache-2.0
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WC_SLIPPAY_VERSION', '0.1.0' );
+define( 'WC_SLIPPAY_VERSION', '0.2.0' );
 define( 'WC_SLIPPAY_PLUGIN_FILE', __FILE__ );
 define( 'WC_SLIPPAY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
@@ -69,10 +69,5 @@ add_action( 'before_woocommerce_init', function () {
     }
 } );
 
-register_activation_hook( __FILE__, function () {
-    flush_rewrite_rules();
-} );
-
-register_deactivation_hook( __FILE__, function () {
-    flush_rewrite_rules();
-} );
+// Audit-006 W9: flush_rewrite_rules() removed — this plugin registers no
+// rewrite rules; the webhook endpoint is a query-var (wc-api), not a permalink.

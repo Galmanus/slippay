@@ -17,8 +17,16 @@ export async function verifyWebhook(secret: string, body: string, header: string
   const t = Number(parts.t);
   if (!isFinite(t) || Math.abs(nowSec - t) > TOLERANCE_S) return false;
   const expected = await signWebhook(secret, body, t);
-  if (expected.length !== header.length) return false;
-  let diff = 0;
-  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ header.charCodeAt(i);
+  // Audit-003 L7: always run the constant-time loop, even on length mismatch.
+  // The length of `expected` is deterministic given the secret/hash, so the
+  // pre-check leaks only attacker-controlled header length — but the
+  // asymmetry is a code smell that the PHP receiver's `hash_equals` avoids.
+  const len = Math.max(expected.length, header.length);
+  let diff = expected.length ^ header.length;
+  for (let i = 0; i < len; i++) {
+    const a = i < expected.length ? expected.charCodeAt(i) : 0;
+    const b = i < header.length ? header.charCodeAt(i) : 0;
+    diff |= a ^ b;
+  }
   return diff === 0;
 }

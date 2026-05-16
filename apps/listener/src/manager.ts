@@ -2,8 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { watchAccount } from "./horizon.js";
 import { log } from "./log.js";
 import { config } from "./config.js";
+import { acquireLease } from "./lease.js";
 
-interface Active { stop: () => void; }
+interface Active { stop: () => void; releaseLease: () => Promise<void>; }
 
 export function startManager(db: SupabaseClient) {
   const active = new Map<string, Active>();
@@ -15,18 +16,28 @@ export function startManager(db: SupabaseClient) {
 
     for (const addr of desired) {
       if (!active.has(addr)) {
+        // audit-003 L2: serialize watchAccount on a per-account lease so two
+        // pods can never run Horizon streams against the same merchant.
+        const lease = await acquireLease(db, addr);
+        if (!lease.acquired) {
+          log("info", "manager_lease_held_elsewhere", { addr, heldBy: lease.heldBy, expiresAt: lease.expiresAt });
+          continue;
+        }
         try {
           const stop = await watchAccount({ db, network: config.network, accountId: addr });
-          active.set(addr, { stop });
+          active.set(addr, { stop, releaseLease: lease.release });
           log("info", "manager_started", { addr });
         } catch (e) {
           log("error", "manager_start_failed", { addr, error: String(e) });
+          await lease.release();
         }
       }
     }
     for (const addr of [...active.keys()]) {
       if (!desired.has(addr)) {
-        active.get(addr)?.stop();
+        const a = active.get(addr);
+        a?.stop();
+        await a?.releaseLease();
         active.delete(addr);
         log("info", "manager_stopped", { addr });
       }
@@ -36,9 +47,12 @@ export function startManager(db: SupabaseClient) {
   tick();
   const id = setInterval(tick, config.merchantPollMs);
 
-  return () => {
+  return async () => {
     clearInterval(id);
-    for (const a of active.values()) a.stop();
+    for (const a of active.values()) {
+      a.stop();
+      await a.releaseLease();
+    }
     active.clear();
   };
 }

@@ -29,14 +29,14 @@ export default function Home() {
           monumental presence. Position Y differs: 30% on mobile favors
           face/blindfold; 40% on desktop reveals full jaw. */}
       <div
-        className="relative w-full bg-[#0a0a0a] bg-[position:center_30%] md:bg-[position:center_40%] h-[72vh] md:h-[min(100vh,880px)]"
+        className="relative w-full bg-[#0a0a0a] bg-[position:center_55%] md:bg-[position:center_60%] h-[72vh] md:h-[min(100vh,880px)]"
         style={{
-          backgroundImage: "url('/hero.png')",
+          backgroundImage: "url('/hero.png?v=hermes2')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-[#f1eee7] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-64 md:h-48 bg-gradient-to-b from-transparent from-0% via-[#f1eee7]/75 via-55% to-[#f1eee7] to-85% pointer-events-none" />
         {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher.
             Shorter on mobile (no "etiqueta do produto" mid-segment) to avoid wrapping. */}
         <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
@@ -64,14 +64,21 @@ export default function Home() {
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-4 font-mono">
               ╱╱  Issue 001 · for BR exporters
             </div>
-            <h1 className="text-[14vw] sm:text-[12vw] md:text-[5.2vw] font-medium leading-[0.95] tracking-[-0.04em] max-w-[20ch]">
-              Bill the world<br/>
-              from Brazil.<br/>
-              <em className="not-italic relative">
-                Get paid in dollars
-                <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
-              </em>
+            <h1 className="text-[11vw] sm:text-[9vw] md:text-[4.2vw] font-medium leading-[1.02] tracking-[-0.035em] max-w-[24ch]">
+              Stripe takes <span className="tabular-nums">7-8%</span>.<br/>
+              <em className="not-italic">1 in 5 transactions silently fails.</em>
+              <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
             </h1>
+            <p className="mt-6 md:mt-8 text-base md:text-xl leading-[1.45] text-[#0a0a0a]/80 max-w-[52ch]">
+              SlipPay settles in 6 seconds on Stellar. No IOF. No card declines.
+              You hold USDC, you choose when to convert.
+            </p>
+            <div className="mt-8 md:mt-10">
+              <Link to="/signup"
+                className="inline-flex items-center gap-3 bg-[#0a0a0a] text-[#f1eee7] px-8 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
+                Join the waitlist <span>→</span>
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -84,16 +91,18 @@ export default function Home() {
           <div className="col-span-12 md:col-span-6">
             <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch]">
               Brazilian SaaS, agencies, and digital exporters lose roughly
-              <em className="font-light"> 6% per international invoice</em> — Stripe 4.4%, IOF 0.38%,
-              FX spread 1-2%. SlipPay charges <em className="font-light">1%</em>, settles to your wallet
-              in USDC or PYUSD on Stellar in six seconds, no chargebacks. You hold dollars
-              until you choose to convert.
+              <em className="font-light"> 7-8% per international invoice</em> — Stripe BR 0.7% +
+              3.99% + R$0.50, plus IOF 3.5% on cross-border FX (raised May 2025).
+              On top of that, <em className="font-light">15-25%</em> of LATAM card transactions
+              decline silently. Revenue you never see in the dashboard. SlipPay routes
+              the same payment via Stellar in six seconds — no IOF, no decline, no chargeback.
+              You hold USDC, you convert when you want.
             </p>
           </div>
           <div className="col-span-12 md:col-span-3 flex md:justify-end items-end">
             <Link to="/signup"
               className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              Stop the 6% leak <span className="group-hover:translate-x-1 transition-transform">→</span>
+              Join the waitlist <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>
@@ -111,12 +120,60 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-            <Stat n="~6%" label="What Stripe + IOF takes"
-              body="Stripe 4.4% on international cards, IOF 0.38% on FX out, plus 1-2% bank spread. Per-invoice leakage that compounds across the year." />
-            <Stat n="1%" label="What SlipPay takes"
-              body="Single platform fee, charged in USDC at settlement. No FX spread, no IOF (USDC stays USDC). You convert when you want, where you want." />
-            <Stat n="6s" label="On-chain finality"
-              body="Deterministic settlement on Stellar. No T+1, no batch windows, no chargebacks. Confirmation lands in the next ledger close." />
+            <Stat n="7-8%" label="Stripe BR + IOF takes"
+              body="Stripe BR 0.7% + 3.99% + R$0.50 per international transaction. IOF 3.5% on cross-border FX (raised from 0.38% in May 2025). Compounds across every invoice." />
+            <Stat n="1 in 5" label="LATAM card decline rate"
+              body="Cross-border card failure 15-25% across LATAM (Rapyd, 2025). Revenue that never reaches your dashboard. Stellar settlement removes the card rail entirely." />
+            <Stat n="6s" label="Stellar finality"
+              body="Deterministic on-chain settlement. No T+1, no batch windows, no chargebacks. Network fee: 0.00001 XLM (~$0.000001), auditable by anyone." />
+          </div>
+        </div>
+      </section>
+
+      {/* PROOF · verifiable on-chain */}
+      <section id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55">
+              ┃ Proof
+            </div>
+            <div className="col-span-12 md:col-span-9">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
+                002b · Verifiable on-chain
+              </div>
+              <h2 className="text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[24ch]">
+                Not a deck.<br/><em className="font-light">A working contract.</em>
+              </h2>
+              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[58ch]">
+                Subscription primitive deployed on Stellar testnet. Every charge is an
+                atomic on-chain transfer with deterministic finality. Mainnet deploy in
+                Sprint&nbsp;4 — until then, the testnet artifact is publicly auditable.
+              </p>
+              <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
+                <div className="bg-[#0a0a0a] p-6 md:p-7">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Contract · testnet</div>
+                  <a href="https://stellar.expert/explorer/testnet/contract/CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA"
+                     target="_blank" rel="noopener noreferrer"
+                     className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
+                    CBWJ3LQG...XQMSHRHA
+                  </a>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban · v0.1</div>
+                </div>
+                <div className="bg-[#0a0a0a] p-6 md:p-7">
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Charge tx · testnet</div>
+                  <a href="https://stellar.expert/explorer/testnet/tx/688c985a4508ce9599a6430b1a004e265e7d60ca20eb28f4b605700b0dd5980b"
+                     target="_blank" rel="noopener noreferrer"
+                     className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
+                    688c985a...0dd5980b
+                  </a>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Buyer → Merchant · 1.0 unit · fee 0.00001 XLM</div>
+                </div>
+              </div>
+              <div className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
+                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                Building on Stellar
+              </div>
+            </div>
           </div>
         </div>
       </section>

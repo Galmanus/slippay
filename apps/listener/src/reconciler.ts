@@ -12,10 +12,18 @@ export async function reconcileMatch(
 
   const newStatus = outcome.outcome === "paid" ? "paid" : "underpaid";
 
+  // Allow underpaid → paid transition (audit-003 L3). Without this, a partial
+  // payment followed by a top-up leaves the order stuck in underpaid forever
+  // and silently drops the second event. The transition matrix here is
+  // explicit: only forward transitions, never backward.
+  const allowedPriorStatuses = newStatus === "paid"
+    ? ["pending", "underpaid"]
+    : ["pending"];
+
   const { data, error } = await db.from("orders")
     .update({ status: newStatus, tx_hash: txHash, paid_at: newStatus === "paid" ? new Date().toISOString() : null })
     .eq("id", order.id)
-    .eq("status", "pending")
+    .in("status", allowedPriorStatuses)
     .select("*").single();
 
   if (error || !data) {
@@ -70,7 +78,15 @@ export async function reconcileMatch(
   });
 
   if (webhookError) {
-    log("error", "webhook_insert_failed", { order_id: order.id, error: webhookError.message });
+    // 23505 = unique_violation. With the partial unique index on
+    // webhook_deliveries(order_id, type) for terminal types, duplicate
+    // inserts on Horizon stream replay are expected and silent (audit-003 L3).
+    const code = (webhookError as { code?: string }).code;
+    if (code === "23505") {
+      log("info", "webhook_insert_dedup", { order_id: order.id, type: payload.type });
+    } else {
+      log("error", "webhook_insert_failed", { order_id: order.id, error: webhookError.message });
+    }
   }
 
   log("info", "order_reconciled", {

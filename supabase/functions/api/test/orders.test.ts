@@ -61,16 +61,34 @@ Deno.test("GET /v1/orders lists own orders only", { sanitizeOps: false, sanitize
   assertEquals(body.orders[0].brl_amount, "10.00");
 });
 
-Deno.test("GET /v1/orders/:id returns public limited fields without auth", { sanitizeOps: false, sanitizeResources: false }, async () => {
+Deno.test("GET /v1/orders/:id requires signed token (audit-004 C2)", { sanitizeOps: false, sanitizeResources: false }, async () => {
   const m = await createMerchant();
   const c = await req("/v1/orders", { method: "POST",
     headers: { authorization: `Bearer ${m.api_key}`, "content-type": "application/json" },
     body: JSON.stringify({ brl_amount: "50.00" }) });
-  const { order } = await c.json();
-  const res = await req(`/v1/orders/${order.id}`);
-  assertEquals(res.status, 200);
-  const body = await res.json();
+  const cbody = await c.json();
+  const { order } = cbody;
+
+  // Without token → 401
+  const unauth = await req(`/v1/orders/${order.id}`);
+  assertEquals(unauth.status, 401);
+
+  // With invalid token → 401
+  const bad = await req(`/v1/orders/${order.id}?t=deadbeef`);
+  assertEquals(bad.status, 401);
+
+  // checkout_url carries the valid token; using it returns 200 with PII stripped
+  const url = new URL(cbody.checkout_url);
+  const token = url.searchParams.get("t");
+  assert(token && token.length > 16);
+  const ok = await req(`/v1/orders/${order.id}?t=${token}`);
+  assertEquals(ok.status, 200);
+  const body = await ok.json();
   assertEquals(body.order.id, order.id);
+  // PII strip: these fields must NOT appear in the public response
+  assertEquals("merchant_id" in body.order, false);
+  assertEquals("external_ref" in body.order, false);
+  assertEquals("tx_hash" in body.order, false);
   assertEquals("api_key_hash" in body.order, false);
   assert(typeof body.order.merchant_stellar_address === "string" || body.order.merchant_stellar_address === null);
 });
