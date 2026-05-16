@@ -1,6 +1,20 @@
-# Slippay Subscription Contract — deployed Stellar testnet
+# Slippay Subscription Contract — deployed
 
-## v0.2 (current)
+## v0.2 · MAINNET (PRODUCTION · 2026-05-16)
+
+**Contract address**: `CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN`
+**Stellar.expert**: https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN
+**Wasm hash**: `1dbda19a2c9962cf798b62557f7c6388a3ea3c7c506ddb7aafbd549843510c6b`
+**Upload tx**: [`b031a631...`](https://stellar.expert/explorer/public/tx/b031a6315595d45bb655d9a05680df475547d5c02b3e5435563d032bc77a65a3)
+**Deploy tx**: [`cb90fccd...`](https://stellar.expert/explorer/public/tx/cb90fccdc7b6c4d7cea33d5bc22ecc9083d4ac1c4e22c9e3cfd4f7d57f170d81)
+**Deployer**: `GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P`
+**Funding tx (Mario → deployer, 64.35 XLM)**: [`ac2e5647...`](https://stellar.expert/explorer/public/tx/ac2e564714e017b8a951244e23aebbb851fb3ea238c136aca8d3b9efc28af2a9)
+
+Same wasm hash as testnet v0.2 — identical bytecode promoted from
+testnet after F5 (audit-002) closed with real-wallet end-to-end charge.
+No code differences between testnet v0.2 and mainnet.
+
+## v0.2 · TESTNET (for development/demo)
 
 **Deployed**: 2026-05-16
 **Contract address**: `CBN3M7IAKNSCSDQIUUGDBHSFUQDOFAQQQK6UXJZYGGIWERQGT24VBTFQ`
