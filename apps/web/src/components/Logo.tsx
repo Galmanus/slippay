@@ -21,7 +21,7 @@ export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
   const inner = (
     <span className={`inline-flex items-center ${gap} group`}>
       <img
-        src="/slippay-mark.png"
+        src="/slippay-mark.png?v=trim2"
         alt=""
         width={dim}
         height={dim}
