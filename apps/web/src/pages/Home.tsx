@@ -141,37 +141,46 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
                 002b · Verifiable on-chain
               </div>
-              <h2 className="text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[24ch]">
-                Not a deck.<br/><em className="font-light">A working contract.</em>
+              <h2 className="text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch]">
+                Not a deck. Not a mock.<br/><em className="font-light">A working contract.</em>
               </h2>
-              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[58ch]">
-                Subscription primitive deployed on Stellar testnet. Every charge is an
-                atomic on-chain transfer with deterministic finality. Mainnet deploy in
-                Sprint&nbsp;4 — until then, the testnet artifact is publicly auditable.
+              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch]">
+                Subscription primitive v0.2 deployed on Stellar testnet. Every
+                transaction below is signed by a real wallet, settles in 6 seconds,
+                and is publicly auditable on stellar.expert. The auth chain
+                buyer&nbsp;→&nbsp;contract&nbsp;→&nbsp;SAC.transfer was exercised
+                end&#8209;to&#8209;end (audit-002 F5 closed).
               </p>
               <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
                 <div className="bg-[#0a0a0a] p-6 md:p-7">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Contract · testnet</div>
-                  <a href="https://stellar.expert/explorer/testnet/contract/CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA"
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Contract · testnet v0.2</div>
+                  <a href="https://stellar.expert/explorer/testnet/contract/CBN3M7IAKNSCSDQIUUGDBHSFUQDOFAQQQK6UXJZYGGIWERQGT24VBTFQ"
                      target="_blank" rel="noopener noreferrer"
                      className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                    CBWJ3LQG...XQMSHRHA
+                    CBN3M7IA...GT24VBTFQ
                   </a>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban · v0.1</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · audit-002 fixed</div>
                 </div>
                 <div className="bg-[#0a0a0a] p-6 md:p-7">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Charge tx · testnet</div>
-                  <a href="https://stellar.expert/explorer/testnet/tx/688c985a4508ce9599a6430b1a004e265e7d60ca20eb28f4b605700b0dd5980b"
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Real-wallet charge · F5 proof</div>
+                  <a href="https://stellar.expert/explorer/testnet/tx/eee0d71f2f2100da1b97c971cec98fe367e89758c0b8b91c29ef6d5e84a602ff"
                      target="_blank" rel="noopener noreferrer"
                      className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                    688c985a...0dd5980b
+                    eee0d71f...4a602ff
                   </a>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Buyer → Merchant · 1.0 unit · fee 0.00001 XLM</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Buyer 1000→990 USDC · merchant 0→10 USDC</div>
                 </div>
               </div>
-              <div className="mt-8 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                Building on Stellar
+              <div className="mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
+                <div className="flex items-center gap-3">
+                  <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                  Building on Stellar
+                </div>
+                <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
+                   target="_blank" rel="noopener noreferrer"
+                   className="hover:text-[#b5e853]">
+                  6 audits · 8 critical + 14 high closed →
+                </a>
               </div>
             </div>
           </div>
