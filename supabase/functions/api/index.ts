@@ -6,6 +6,7 @@ import merchants from "./routes/merchants.ts";
 import orders from "./routes/orders.ts";
 import subscriptions from "./routes/subscriptions.ts";
 import ask from "./routes/ask.ts";
+import x402 from "./routes/x402.ts";
 
 const api = new Hono().basePath("/api");
 api.use("*", errorMiddleware);
@@ -33,6 +34,10 @@ api.route("/v1/merchants", merchants);
 api.route("/v1/orders", orders);
 api.route("/v1/subscriptions", subscriptions);
 api.route("/v1/ask", ask);
+// x402 protocol surface — both merchant-side resource management and the
+// unauthenticated payer-side gated GET share this base path.
+api.route("/v1/x402-resources", x402);
+api.route("/v1/x402", x402);
 
 const app = new Hono();
 app.route("/", api);
