@@ -43,6 +43,9 @@ export default function Docs() {
   const nav = useNavigate();
   const scrolled = useScrolled(80);
   const groups = useMemo(() => getDocsByCategory(), []);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Auto-close on slug change
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
   // Parse slug from /docs/<everything-after>
   const pathSlug = location.pathname.replace(/^\/docs\/?/, "").replace(/\/$/, "");
@@ -106,9 +109,23 @@ export default function Docs() {
         </div>
       </header>
 
-      <div className="max-w-[1600px] mx-auto px-5 md:px-10 pt-32 md:pt-40 pb-24 grid grid-cols-12 gap-6 md:gap-10">
-        {/* Sidebar · sticky on desktop */}
-        <aside className="col-span-12 md:col-span-3 md:sticky md:top-32 md:self-start md:max-h-[calc(100vh-9rem)] md:overflow-y-auto pr-2">
+      {/* Mobile · "Browse docs" toggle button (visible only on mobile, below nav) */}
+      <div className="md:hidden fixed top-[60px] left-0 right-0 z-20 bg-[#f1eee7]/85 backdrop-blur-md border-b border-[#0a0a0a]/10">
+        <button
+          onClick={() => setSidebarOpen(v => !v)}
+          className="w-full px-5 py-3 flex items-center justify-between text-[10px] uppercase tracking-[0.22em] font-mono"
+        >
+          <span>┃ {sidebarOpen ? "Hide" : "Browse"} docs</span>
+          <span className={"transition-transform " + (sidebarOpen ? "rotate-180" : "")}>▾</span>
+        </button>
+      </div>
+
+      <div className="max-w-[1600px] mx-auto px-5 md:px-10 pt-[110px] md:pt-40 pb-24 grid grid-cols-12 gap-6 md:gap-10">
+        {/* Sidebar · sticky on desktop, drawer on mobile */}
+        <aside className={
+          (sidebarOpen ? "block " : "hidden ") +
+          "md:block col-span-12 md:col-span-3 md:sticky md:top-32 md:self-start md:max-h-[calc(100vh-9rem)] md:overflow-y-auto pr-2 mb-8 md:mb-0"
+        }>
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6">
             ┃ Documentation
           </div>
