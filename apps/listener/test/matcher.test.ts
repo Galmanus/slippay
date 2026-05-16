@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { matchPaymentToOrder, type StellarPaymentEvent } from "../src/matcher.js";
+import { matchPaymentToOrder, stellarToStroops, stroopsToStellar, type StellarPaymentEvent } from "../src/matcher.js";
 
 const order = {
   id: "ord-1",
@@ -58,5 +58,47 @@ describe("matchPaymentToOrder", () => {
     process.env.STELLAR_USDC_ISSUER_OVERRIDE = "GCUSTOM" + "X".repeat(49);
     // validEvent still has the Circle testnet issuer, not the override
     expect(matchPaymentToOrder(validEvent, order, "TESTNET").outcome).toBe("ignore");
+  });
+
+  it("BigInt path: 1 stroop short is underpaid (FP would round to paid)", () => {
+    const o = { ...order, usdc_amount: "1.0000001", platform_fee_bp: 25 };
+    // expected = 10000001 * 9975 / 10000 = 9975000 (truncated). Send 1 stroop less.
+    const e = { ...validEvent, amount: "0.9974999" };
+    expect(matchPaymentToOrder(e, o, "TESTNET").outcome).toBe("underpaid");
+  });
+
+  it("BigInt path: exact expected stroop count is paid", () => {
+    const o = { ...order, usdc_amount: "1.0000001", platform_fee_bp: 25 };
+    const e = { ...validEvent, amount: "0.9975000" };
+    expect(matchPaymentToOrder(e, o, "TESTNET")).toEqual({ outcome: "paid" });
+  });
+
+  it("rejects malformed amount as ignore", () => {
+    const e = { ...validEvent, amount: "10.99999999" }; // 8 fractional digits
+    expect(matchPaymentToOrder(e, order, "TESTNET").outcome).toBe("ignore");
+  });
+
+  it("rejects fee_bp >= 10000 as ignore (would zero merchant share)", () => {
+    const o = { ...order, platform_fee_bp: 10_000 };
+    expect(matchPaymentToOrder(validEvent, o, "TESTNET").outcome).toBe("ignore");
+  });
+});
+
+describe("stellarToStroops · stroopsToStellar", () => {
+  it("round-trips canonical amounts", () => {
+    for (const s of ["0.0000001", "1.0000000", "10.9999999", "9999999.9999999"]) {
+      expect(stroopsToStellar(stellarToStroops(s))).toBe(s);
+    }
+  });
+
+  it("normalizes short fractional", () => {
+    expect(stellarToStroops("1.5")).toBe(15_000_000n);
+    expect(stroopsToStellar(15_000_000n)).toBe("1.5000000");
+  });
+
+  it("rejects negative, scientific, more than 7 fractional digits", () => {
+    expect(() => stellarToStroops("-1")).toThrow();
+    expect(() => stellarToStroops("1e2")).toThrow();
+    expect(() => stellarToStroops("1.00000001")).toThrow();
   });
 });

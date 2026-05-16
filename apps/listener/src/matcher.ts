@@ -42,9 +42,44 @@ export function matchPaymentToOrder(
   const evMemoHex = Buffer.from(ev.memo_b64, "base64").toString("hex");
   if (evMemoHex !== order.memo) return { outcome: "ignore", reason: "memo_mismatch" };
 
-  const total = Number(order.usdc_amount);
-  const expectedMerchantShare = (total * (1 - order.platform_fee_bp / 10_000)).toFixed(7);
-  if (Number(ev.amount) >= Number(expectedMerchantShare)) return { outcome: "paid" };
-
+  // Money math runs in stroops (BigInt) to avoid IEEE-754 boundary errors at
+  // the 7th decimal. Audit-003 L4. Stellar amounts are decimal strings with
+  // up to 7 fractional digits; we normalize both sides into integer stroops
+  // before compare, then format the merchant share back for the outcome row.
+  let totalStroops: bigint;
+  let receivedStroops: bigint;
+  try {
+    totalStroops = stellarToStroops(order.usdc_amount);
+    receivedStroops = stellarToStroops(ev.amount);
+  } catch {
+    return { outcome: "ignore", reason: "amount_parse" };
+  }
+  if (order.platform_fee_bp < 0 || order.platform_fee_bp >= 10_000) {
+    return { outcome: "ignore", reason: "fee_bp_invalid" };
+  }
+  // Floor division here is conservative: integer division truncates toward
+  // zero, so the merchant receives at most the mathematically correct amount.
+  const expectedStroops = (totalStroops * BigInt(10_000 - order.platform_fee_bp)) / 10_000n;
+  const expectedMerchantShare = stroopsToStellar(expectedStroops);
+  if (receivedStroops >= expectedStroops) return { outcome: "paid" };
   return { outcome: "underpaid", expected: expectedMerchantShare, received: ev.amount };
+}
+
+/**
+ * Parse a Stellar amount string ("1234.5678901") into BigInt stroops. Rejects
+ * negatives, non-finite forms, and anything past 7 fractional digits.
+ */
+export function stellarToStroops(s: string): bigint {
+  if (!/^\d+(\.\d{1,7})?$/.test(s)) throw new Error(`bad_amount:${s}`);
+  const [intPart, fracPartRaw = ""] = s.split(".");
+  const fracPart = fracPartRaw.padEnd(7, "0");
+  return BigInt(intPart!) * 10_000_000n + BigInt(fracPart);
+}
+
+export function stroopsToStellar(n: bigint): string {
+  const sign = n < 0n ? "-" : "";
+  const abs = n < 0n ? -n : n;
+  const intPart = abs / 10_000_000n;
+  const fracPart = abs % 10_000_000n;
+  return `${sign}${intPart}.${fracPart.toString().padStart(7, "0")}`;
 }

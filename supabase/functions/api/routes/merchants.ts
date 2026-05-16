@@ -3,6 +3,7 @@ import type { SupabaseClient } from "supabase";
 import { CreateMerchantInputSchema, PatchMerchantInputSchema, type Merchant } from "@slippay/shared";
 import { requireJwt } from "../middleware/auth_jwt.ts";
 import { generateApiKey, hashApiKey, prefixOf } from "../lib/apikey.ts";
+import { mapDbError } from "../lib/db-error.ts";
 
 // Hono v4 requires Variables typed on the instance for c.get/c.set.
 // Using a typed Hono instance avoids `c.get("key")` returning `never`.
@@ -34,7 +35,10 @@ r.post("/", requireJwt, async (c) => {
     })
     .select("*")
     .single();
-  if (error) return c.json({ error: "create_failed", detail: error.message }, 400);
+  if (error) {
+    const m = mapDbError(error);
+    return c.json({ error: m.code }, m.status as 400 | 409);
+  }
   const { api_key_hash: _h, webhook_secret: _s, ...safe } = data;
   return c.json({ merchant: safe as Merchant, api_key: apiKey.plain }, 201);
 });
@@ -57,7 +61,10 @@ r.patch("/me", requireJwt, async (c) => {
     .eq("auth_user_id", user.id)
     .select("*")
     .single();
-  if (error) return c.json({ error: "update_failed", detail: error.message }, 400);
+  if (error) {
+    const m = mapDbError(error);
+    return c.json({ error: m.code }, m.status as 400 | 409);
+  }
   const { api_key_hash, webhook_secret, ...safe } = data;
   return c.json({ merchant: safe });
 });
@@ -74,7 +81,10 @@ r.post("/me/rotate-key", requireJwt, async (c) => {
     .eq("auth_user_id", user.id)
     .select("id")
     .single();
-  if (error) return c.json({ error: "rotate_failed", detail: error.message }, 400);
+  if (error) {
+    const m = mapDbError(error);
+    return c.json({ error: m.code }, m.status as 400 | 409);
+  }
   return c.json({ api_key: apiKey.plain });
 });
 

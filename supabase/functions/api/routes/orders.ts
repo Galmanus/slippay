@@ -5,6 +5,8 @@ import { requireApiKey } from "../middleware/auth_apikey.ts";
 import { generateMemo } from "../lib/memo.ts";
 import { getBrlPerUsdc } from "../lib/rate.ts";
 import { serviceClient } from "../lib/supabase.ts";
+import { signCheckoutToken, verifyCheckoutToken } from "../lib/checkout-token.ts";
+import { mapDbError } from "../lib/db-error.ts";
 
 type Vars = { merchant: { id: string; [k: string]: unknown }; supabase: SupabaseClient };
 const r = new Hono<{ Variables: Vars }>();
@@ -53,10 +55,11 @@ r.post("/", requireApiKey, async (c) => {
     memo,
     expires_at: expiresAt,
   }).select("*").single();
-  if (error) return c.json({ error: "create_failed", detail: error.message }, 400);
+  if (error) return c.json({ error: "create_failed" }, 400);
+  const token = await signCheckoutToken(data.id as string);
   return c.json({
     order: data,
-    checkout_url: `${CHECKOUT_BASE}/checkout/${data.id}`,
+    checkout_url: `${CHECKOUT_BASE}/checkout/${data.id}?t=${token}`,
   }, 201);
 });
 
@@ -69,7 +72,10 @@ r.get("/", requireApiKey, async (c) => {
     .order("created_at", { ascending: false }).limit(limit);
   if (status) q = q.eq("status", status);
   const { data, error } = await q;
-  if (error) return c.json({ error: "list_failed", detail: error.message }, 400);
+  if (error) {
+    const m = mapDbError(error);
+    return c.json({ error: m.code }, m.status as 400 | 409);
+  }
   const orders = (data ?? []).map((o: Record<string, unknown>) => ({
     ...o,
     brl_amount: typeof o.brl_amount === "number"
@@ -79,20 +85,30 @@ r.get("/", requireApiKey, async (c) => {
   return c.json({ orders });
 });
 
+// Audit-004 · C2: this endpoint is reached by the customer's browser during
+// checkout, so it cannot require an API key. Instead, the order creator gets
+// a signed `?t=` token at order creation, and the customer can only read the
+// order if they have the token. Without it: 401. PII fields that the checkout
+// page does NOT need (merchant_id, external_ref, tx_hash) are stripped from
+// the response so a leaked token only reveals what the customer already needs
+// to pay.
 r.get("/:id", async (c) => {
   const id = c.req.param("id");
+  const token = c.req.query("t") ?? "";
+  const ok = await verifyCheckoutToken(id, token);
+  if (!ok) return c.json({ error: "unauthorized" }, 401);
+
   const sb = serviceClient();
   const { data, error } = await sb.from("orders")
     .select(`
-      id, merchant_id, brl_amount, usdc_amount, memo, status,
-      expires_at, paid_at, tx_hash, created_at, external_ref,
+      id, brl_amount, usd_amount, usdc_amount, memo, status,
+      expires_at, paid_at, created_at,
       merchants ( stellar_address )
     `)
     .eq("id", id).maybeSingle();
   if (error || !data) return c.json({ error: "not_found" }, 404);
   const merchantSubrow = (data as unknown as { merchants?: { stellar_address: string | null } | null }).merchants;
   const merchant_stellar_address = merchantSubrow?.stellar_address ?? null;
-  // strip the embedded relation; flatten to a single field
   const { merchants: _ignored, ...rest } = data as unknown as Record<string, unknown> & { merchants?: unknown };
   return c.json({ order: { ...rest, merchant_stellar_address } });
 });

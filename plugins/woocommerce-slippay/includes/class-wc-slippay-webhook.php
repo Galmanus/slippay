@@ -28,23 +28,59 @@ class WC_Slippay_Webhook {
         }
 
         $gateway = $this->get_gateway();
-        $secret  = $gateway ? $gateway->get_option( 'webhook_secret' ) : '';
+        $secret  = $gateway ? (string) $gateway->get_option( 'webhook_secret' ) : '';
 
-        // HMAC verification (header name follows SlipPay convention; falls back
-        // to common alternatives if the upstream chooses a different label).
-        if ( ! empty( $secret ) ) {
-            $sig = $this->get_signature_header();
-            if ( empty( $sig ) ) {
-                status_header( 401 );
-                echo wp_json_encode( [ 'error' => 'missing signature header' ] );
+        // Webhook secret is mandatory. Empty config is treated as misconfiguration,
+        // not as "skip verification" — closing the auth-bypass vector from audit-001.
+        if ( strlen( $secret ) < 32 ) {
+            status_header( 503 );
+            echo wp_json_encode( [ 'error' => 'webhook_not_configured' ] );
+            exit;
+        }
+
+        $sig = $this->get_signature_header();
+        if ( empty( $sig ) ) {
+            status_header( 401 );
+            echo wp_json_encode( [ 'error' => 'missing signature header' ] );
+            exit;
+        }
+
+        // Listener emits "t=<unix>,v1=<hex>" over HMAC-SHA256(secret, "<t>.<body>").
+        // Reference: apps/listener/src/crypto.ts:3-13.
+        if ( ! preg_match( '/^t=(\d+),v1=([a-f0-9]{64})$/', $sig, $m ) ) {
+            status_header( 401 );
+            echo wp_json_encode( [ 'error' => 'malformed signature' ] );
+            exit;
+        }
+        $t  = (int) $m[1];
+        $v1 = $m[2];
+
+        if ( abs( time() - $t ) > 300 ) {
+            status_header( 401 );
+            echo wp_json_encode( [ 'error' => 'stale signature' ] );
+            exit;
+        }
+
+        $expected = hash_hmac( 'sha256', $t . '.' . $raw, $secret );
+        if ( ! hash_equals( $expected, $v1 ) ) {
+            status_header( 401 );
+            echo wp_json_encode( [ 'error' => 'invalid signature' ] );
+            exit;
+        }
+
+        // Replay protection. Listener sends a per-delivery uuid in x-slippay-delivery-id
+        // (apps/listener/src/webhook.ts:35). Reject duplicates within a 24h window.
+        $delivery_id = isset( $_SERVER['HTTP_X_SLIPPAY_DELIVERY_ID'] )
+            ? sanitize_text_field( $_SERVER['HTTP_X_SLIPPAY_DELIVERY_ID'] )
+            : '';
+        if ( $delivery_id !== '' ) {
+            $seen_key = 'slippay_seen_' . md5( $delivery_id );
+            if ( get_transient( $seen_key ) ) {
+                status_header( 409 );
+                echo wp_json_encode( [ 'error' => 'duplicate delivery' ] );
                 exit;
             }
-            $computed = hash_hmac( 'sha256', $raw, $secret );
-            if ( ! hash_equals( $computed, $sig ) ) {
-                status_header( 401 );
-                echo wp_json_encode( [ 'error' => 'invalid signature' ] );
-                exit;
-            }
+            set_transient( $seen_key, 1, DAY_IN_SECONDS );
         }
 
         $payload = json_decode( $raw, true );
@@ -65,6 +101,10 @@ class WC_Slippay_Webhook {
             exit;
         }
 
+        // Audit-006 W3: every value interpolated into add_order_note /
+        // update_status notes is wrapped in esc_html. WC renders notes as
+        // HTML in admin; a compromised api_base / payload field could
+        // inject markup otherwise.
         switch ( $type ) {
             case 'order.paid':
             case 'subscription.charged':
@@ -74,16 +114,18 @@ class WC_Slippay_Webhook {
                 $wc_order->payment_complete( $tx_hash );
                 $wc_order->add_order_note( sprintf(
                     'SlipPay %s confirmed. tx: %s',
-                    $type,
-                    $tx_hash ?: 'n/a'
+                    esc_html( $type ),
+                    esc_html( $tx_hash ?: 'n/a' )
                 ) );
                 break;
 
             case 'order.underpaid':
+                $expected = isset( $payload['data']['expected'] ) ? (string) $payload['data']['expected'] : '?';
+                $received = isset( $payload['data']['received'] ) ? (string) $payload['data']['received'] : '?';
                 $wc_order->update_status( 'on-hold', sprintf(
                     'SlipPay underpayment. expected %s, received %s',
-                    isset( $payload['data']['expected'] ) ? $payload['data']['expected'] : '?',
-                    isset( $payload['data']['received'] ) ? $payload['data']['received'] : '?'
+                    esc_html( $expected ),
+                    esc_html( $received )
                 ) );
                 break;
 
@@ -96,7 +138,7 @@ class WC_Slippay_Webhook {
                 break;
 
             default:
-                $wc_order->add_order_note( 'SlipPay event received (no-op for this type): ' . $type );
+                $wc_order->add_order_note( 'SlipPay event received (no-op for this type): ' . esc_html( $type ) );
                 break;
         }
 
@@ -123,14 +165,10 @@ class WC_Slippay_Webhook {
             'meta_key'   => '_slippay_order_id',
             'meta_value' => $slippay_order_id,
         ] );
-        if ( empty( $orders ) ) {
-            // Fallback: external_ref pattern wc_<id>
-            if ( preg_match( '/^wc_(\d+)$/', $slippay_order_id, $m ) ) {
-                return wc_get_order( (int) $m[1] );
-            }
-            return null;
-        }
-        return $orders[0];
+        // Numeric-id fallback removed (audit-001): it converted the metadata-bound
+        // lookup into a guessable integer probe of WC orders. Require the
+        // _slippay_order_id meta to be set by the gateway at order creation time.
+        return empty( $orders ) ? null : $orders[0];
     }
 
     private function get_gateway() {
