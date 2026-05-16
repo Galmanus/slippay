@@ -78,14 +78,14 @@ export default function Home() {
           monumental presence. Position Y differs: 30% on mobile favors
           face/blindfold; 40% on desktop reveals full jaw. */}
       <div
-        className="relative w-full bg-[#0a0a0a] bg-[position:center_35%] md:bg-[position:center_40%] h-[72vh] md:h-[min(100vh,880px)]"
+        className="relative w-full bg-[#0a0a0a] bg-[position:center_42%] md:bg-[position:center_45%] h-[78vh] md:h-[min(100vh,920px)]"
         style={{
-          backgroundImage: "url('/hero.png?v=hermes2')",
+          backgroundImage: "url('/hero.png?v=liberty3')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="absolute bottom-0 left-0 right-0 h-32 md:h-28 bg-gradient-to-b from-transparent from-0% via-[#f1eee7]/35 via-50% to-[#f1eee7] to-95% pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 md:h-20 bg-gradient-to-b from-transparent from-0% via-[#f1eee7]/30 via-55% to-[#f1eee7] to-100% pointer-events-none" />
         {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher.
             Shorter on mobile (no "etiqueta do produto" mid-segment) to avoid wrapping. */}
         <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
