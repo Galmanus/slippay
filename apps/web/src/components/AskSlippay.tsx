@@ -295,13 +295,19 @@ export function AskSlippay() {
                         <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
                         <span>concierge</span>
                       </div>
-                      <div
-                        className="ask-md text-[15px] leading-[1.65] tracking-tight"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
-                        dangerouslySetInnerHTML={{ __html: renderMarkdown(parseInlineCitations(t.content)) }}
-                      />
-                      {streaming && i === turns.length - 1 && (
-                        <span style={{ background: INK }} className="inline-block w-[2px] h-[16px] ml-0.5 align-middle animate-pulse" />
+                      {streaming && i === turns.length - 1 && !t.content ? (
+                        <ThinkingIndicator />
+                      ) : (
+                        <>
+                          <div
+                            className="ask-md text-[15px] leading-[1.65] tracking-tight"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            dangerouslySetInnerHTML={{ __html: renderMarkdown(parseInlineCitations(t.content)) }}
+                          />
+                          {streaming && i === turns.length - 1 && (
+                            <span style={{ background: INK }} className="inline-block w-[2px] h-[16px] ml-0.5 align-middle animate-pulse" />
+                          )}
+                        </>
                       )}
                       {t.citations && t.citations.length > 0 && (
                         <div className="pt-5 -mx-7">
@@ -414,4 +420,40 @@ function dedupeCitations(citations: Citation[]): Citation[] {
     if (!seen.has(c.doc_path)) seen.set(c.doc_path, c);
   }
   return Array.from(seen.values());
+}
+
+// "Thinking…" indicator shown while the Concierge spawn is initializing
+// and before the first token streams. Rotates through 5 status phrases so
+// the user knows something is happening even on a 4-5s cold start.
+function ThinkingIndicator() {
+  const phrases = [
+    "loading the docs bundle",
+    "reading the slippay spec",
+    "checking the audit notes",
+    "cross-referencing citations",
+    "drafting a grounded answer",
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIdx(i => (i + 1) % phrases.length), 1400);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <div className="flex items-center gap-3 py-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      <div className="flex items-center gap-1.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853]" style={{ animation: "ask-pulse 1.2s ease-in-out infinite" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853] opacity-60" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853] opacity-30" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
+      </div>
+      <span className="text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
+        thinking · {phrases[idx]}
+      </span>
+      <style>{`
+        @keyframes ask-pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(0.6); opacity: 0.3; }
+        }
+      `}</style>
+    </div>
+  );
 }

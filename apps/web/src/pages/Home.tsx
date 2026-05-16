@@ -42,6 +42,12 @@ function MagneticCTA({ to, children }: { to: string; children: React.ReactNode }
 
 export default function Home() {
   const scrolled = useScrolled(80);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  // Lock body scroll while mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenu ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenu]);
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
       <header
@@ -50,16 +56,17 @@ export default function Home() {
           (scrolled ? "bg-[#f1eee7]/80 backdrop-blur-md border-b border-[#0a0a0a]/8" : "bg-transparent")
         }
       >
-        <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-6 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-4 md:py-6 flex items-center justify-between">
         <Logo variant="bone" />
+        {/* Desktop nav */}
         <nav
-          className={"flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] transition-colors duration-300 " +
+          className={"hidden md:flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] transition-colors duration-300 " +
             (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
           style={scrolled ? undefined : { textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
         >
-          <Link to="/x402-demo" className="hover:opacity-60 transition-opacity hidden md:inline">x402 demo</Link>
-          <Link to="/docs" className="hover:opacity-60 transition-opacity hidden md:inline">Docs</Link>
-          <a href="#how" className="hover:opacity-60 transition-opacity hidden md:inline">How it works</a>
+          <Link to="/x402-demo" className="hover:opacity-60 transition-opacity">x402 demo</Link>
+          <Link to="/docs" className="hover:opacity-60 transition-opacity">Docs</Link>
+          <a href="#how" className="hover:opacity-60 transition-opacity">How it works</a>
           <Link to="/login" className="hover:opacity-60 transition-opacity">Log in</Link>
           <Link to="/signup"
             style={{ textShadow: "none" }}
@@ -68,8 +75,64 @@ export default function Home() {
             Sign up
           </Link>
         </nav>
+        {/* Mobile hamburger */}
+        <button
+          aria-label="Open menu"
+          onClick={() => setMobileMenu(v => !v)}
+          className={"md:hidden flex flex-col gap-1.5 p-2 -mr-2 transition-colors " + (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
+          style={scrolled ? undefined : { filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))" }}
+        >
+          <span className="block w-6 h-[2px] bg-current" />
+          <span className="block w-6 h-[2px] bg-current" />
+          <span className="block w-4 h-[2px] bg-current ml-auto" />
+        </button>
         </div>
       </header>
+
+      {/* Mobile menu overlay */}
+      {mobileMenu && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-[#0a0a0a] text-[#f1eee7] flex flex-col"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex items-center justify-between px-5 py-4">
+            <Logo variant="bone" />
+            <button
+              aria-label="Close menu"
+              onClick={() => setMobileMenu(false)}
+              className="text-3xl leading-none px-2 py-1 -mr-2"
+            >×</button>
+          </div>
+          <nav className="flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
+            {[
+              { to: "/", label: "Home" },
+              { to: "/x402-demo", label: "x402 demo" },
+              { to: "/docs", label: "Docs" },
+              { to: "/login", label: "Log in" },
+            ].map(l => (
+              <Link
+                key={l.to} to={l.to}
+                onClick={() => setMobileMenu(false)}
+                className="py-4 text-3xl font-medium tracking-tight border-b border-[#f1eee7]/15"
+              >
+                {l.label}
+              </Link>
+            ))}
+            <Link
+              to="/signup"
+              onClick={() => setMobileMenu(false)}
+              className="mt-8 bg-[#b5e853] text-[#0a0a0a] py-4 text-center text-sm uppercase tracking-[0.22em] font-medium flex items-center justify-center gap-3"
+            >
+              <span className="inline-block w-1.5 h-1.5 bg-[#0a0a0a]" />
+              Sign up
+            </Link>
+          </nav>
+          <div className="px-5 py-6 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
+            Live on Stellar PUBLIC · contract CBJMQ6ZY…
+          </div>
+        </div>
+      )}
       {/* Spacer to offset the now-fixed header from the hero photo. */}
       <div className="h-0" />
 
@@ -77,15 +140,27 @@ export default function Home() {
           peeks above the fold (signaling "more here"). Desktop keeps full
           monumental presence. Position Y differs: 30% on mobile favors
           face/blindfold; 40% on desktop reveals full jaw. */}
-      <div
-        className="relative w-full bg-[#0a0a0a] bg-[position:center_42%] md:bg-[position:center_45%] h-[78vh] md:h-[min(100vh,920px)]"
-        style={{
-          backgroundImage: "url('/hero.png?v=liberty3')",
-          backgroundSize: "cover",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
-        <div className="absolute bottom-0 left-0 right-0 h-24 md:h-20 bg-gradient-to-b from-transparent from-0% via-[#f1eee7]/30 via-55% to-[#f1eee7] to-100% pointer-events-none" />
+      {/* Hero · img on desktop (shows the full 16:9 monumental frame),
+          bg-cover on mobile (uses the band as focal anchor so the wordmark
+          stays visible at portrait aspect). */}
+      <div className="relative w-full bg-[#0a0a0a]">
+        <img
+          src="/hero.png?v=liberty3"
+          alt="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
+          className="hidden md:block w-full h-auto"
+          loading="eager"
+          decoding="async"
+        />
+        <div
+          className="md:hidden w-full h-[68vh] min-h-[440px] bg-[position:center_35%]"
+          style={{
+            backgroundImage: "url('/hero.png?v=liberty3')",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+          }}
+          aria-label="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
+        />
+        <div className="absolute bottom-0 left-0 right-0 h-16 md:h-12 bg-gradient-to-b from-transparent via-[#f1eee7]/40 to-[#f1eee7] pointer-events-none" />
         {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher.
             Shorter on mobile (no "etiqueta do produto" mid-segment) to avoid wrapping. */}
         <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
