@@ -12,6 +12,26 @@
 **Source**: `contracts/subscription/src/lib.rs`
 **Unit tests**: 5/5 passing (`cargo test --release`)
 
+### F5 · real-wallet e2e charge · PASSED 2026-05-16
+
+Audit-002 F5 mandatory gate before mainnet: at least one charge() with a
+real wallet signature (not `mock_all_auths_*`). Run via patched
+`_f5-demo.mjs` from `apps/listener/` with fresh keypairs funded by
+friendbot, test USDC issuer, SAC wrapped inline, full submit through
+soroban RPC + Horizon. Buyer signs `create` AND `charge` invocations
+with their real secret key. Nested `SAC.transfer(buyer→merchant, 10)`
+auth chain confirmed end-to-end.
+
+| operation | tx hash | stellar.expert |
+|---|---|---|
+| SAC deploy (test USDC) | `38181c76...6ee217` | [tx](https://stellar.expert/explorer/testnet/tx/38181c76345038102081ebde7c0f90c27960a6a582566cbad44b8473b16ee217) |
+| `create()` | `43a56dc8...eacab6` | [tx](https://stellar.expert/explorer/testnet/tx/43a56dc83aa943d8ad70c776e057923c7072c4bbc8bd6deeb69ec10fffeacab6) |
+| `charge()` | `eee0d71f...a602ff` | [tx](https://stellar.expert/explorer/testnet/tx/eee0d71f2f2100da1b97c971cec98fe367e89758c0b8b91c29ef6d5e84a602ff) |
+
+**balance proof:** buyer 1000 → 990 USDC (-10), merchant 0 → 10 USDC (+10).
+Real value moved on chain, not mocked. v0.2 contract mainnet-ready
+from the auth-chain perspective.
+
 ### v0.2 changes vs v0.1 (audit-002 fixes)
 
 - **F1** · `extend_ttl` on every persistent `set` (create + charge + cancel + pause + resume + mark_expired) — long-period subs survive idle gaps that would otherwise archive the storage entry
