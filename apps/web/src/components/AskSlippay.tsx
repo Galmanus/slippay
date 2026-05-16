@@ -1,4 +1,19 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+
+// Render Concierge's streamed markdown as sanitized HTML so **bold**, lists,
+// code blocks, and `inline code` actually format properly in the widget.
+// marked is sync mode (no front-matter, no GFM tables needed mostly).
+marked.setOptions({ gfm: true, breaks: true });
+
+function renderMarkdown(src: string): string {
+  const html = marked.parse(src, { async: false }) as string;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ["p", "strong", "em", "code", "pre", "ul", "ol", "li", "h1", "h2", "h3", "h4", "blockquote", "br", "a", "hr", "table", "thead", "tbody", "tr", "th", "td"],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  });
+}
 
 interface Citation {
   doc_path: string;
@@ -280,12 +295,14 @@ export function AskSlippay() {
                         <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
                         <span>concierge</span>
                       </div>
-                      <div className="text-[15px] leading-[1.65] whitespace-pre-wrap tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        {parseInlineCitations(t.content)}
-                        {streaming && i === turns.length - 1 && (
-                          <span style={{ background: INK }} className="inline-block w-[2px] h-[16px] ml-0.5 align-middle animate-pulse" />
-                        )}
-                      </div>
+                      <div
+                        className="ask-md text-[15px] leading-[1.65] tracking-tight"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                        dangerouslySetInnerHTML={{ __html: renderMarkdown(parseInlineCitations(t.content)) }}
+                      />
+                      {streaming && i === turns.length - 1 && (
+                        <span style={{ background: INK }} className="inline-block w-[2px] h-[16px] ml-0.5 align-middle animate-pulse" />
+                      )}
                       {t.citations && t.citations.length > 0 && (
                         <div className="pt-5 -mx-7">
                           <div className="px-7 pb-2 text-[9px] uppercase tracking-[0.30em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>

@@ -58,8 +58,8 @@ export default function Home() {
           style={scrolled ? undefined : { textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
         >
           <Link to="/x402-demo" className="hover:opacity-60 transition-opacity hidden md:inline">x402 demo</Link>
+          <Link to="/docs" className="hover:opacity-60 transition-opacity hidden md:inline">Docs</Link>
           <a href="#how" className="hover:opacity-60 transition-opacity hidden md:inline">How it works</a>
-          <Link to="/demo" className="hover:opacity-60 transition-opacity hidden md:inline">SDK</Link>
           <Link to="/login" className="hover:opacity-60 transition-opacity">Log in</Link>
           <Link to="/signup"
             style={{ textShadow: "none" }}
@@ -78,20 +78,20 @@ export default function Home() {
           monumental presence. Position Y differs: 30% on mobile favors
           face/blindfold; 40% on desktop reveals full jaw. */}
       <div
-        className="relative w-full bg-[#0a0a0a] bg-[position:center_55%] md:bg-[position:center_60%] h-[72vh] md:h-[min(100vh,880px)]"
+        className="relative w-full bg-[#0a0a0a] bg-[position:center_35%] md:bg-[position:center_40%] h-[72vh] md:h-[min(100vh,880px)]"
         style={{
           backgroundImage: "url('/hero.png?v=hermes2')",
           backgroundSize: "cover",
           backgroundRepeat: "no-repeat",
         }}
       >
-        <div className="absolute bottom-0 left-0 right-0 h-64 md:h-48 bg-gradient-to-b from-transparent from-0% via-[#f1eee7]/75 via-55% to-[#f1eee7] to-85% pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 md:h-28 bg-gradient-to-b from-transparent from-0% via-[#f1eee7]/35 via-50% to-[#f1eee7] to-95% pointer-events-none" />
         {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher.
             Shorter on mobile (no "etiqueta do produto" mid-segment) to avoid wrapping. */}
         <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
           <span>slippay</span>
           <span className="text-[#0a0a0a]/55 hidden md:inline">·</span>
-          <span className="hidden md:inline">etiqueta do produto</span>
+          <span className="hidden md:inline">product label</span>
           <span className="text-[#0a0a0a]/55">·</span>
           <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
         </div>
@@ -201,36 +201,38 @@ export default function Home() {
                 The full audit posture (8 critical + 14 high findings closed) sits
                 behind the link below.
               </p>
-              <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
-                <div className="bg-[#0a0a0a] p-6 md:p-7">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Contract · MAINNET v0.2</div>
-                  <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
+              <div className="mt-10 border border-[#f1eee7]/15">
+                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#f1eee7]/15">
+                  <div className="p-6 md:p-8">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Contract · MAINNET v0.2</div>
+                    <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
+                       target="_blank" rel="noopener noreferrer"
+                       className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
+                      CBJMQ6ZY...DJKSEVQN
+                    </a>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · F5 closed pre-deploy</div>
+                  </div>
+                  <div className="p-6 md:p-8">
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">x402 payment · MAINNET</div>
+                    <a href="https://stellar.expert/explorer/public/tx/aa3304c93beffde1809ced4989b898cf419b8121e8ca9b50d01d407ccbf8326b"
+                       target="_blank" rel="noopener noreferrer"
+                       className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
+                      aa3304c9...0d407ccb
+                    </a>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0.05 USDC · buyer → merchant · 6s finality</div>
+                  </div>
+                </div>
+                <div className="border-t border-[#f1eee7]/15 px-6 md:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
+                    Live on Stellar PUBLIC
+                  </div>
+                  <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
                      target="_blank" rel="noopener noreferrer"
-                     className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                    CBJMQ6ZY...DJKSEVQN
+                     className="hover:text-[#b5e853]">
+                    6 audits · 8 critical + 14 high closed →
                   </a>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · F5 closed pre-deploy</div>
                 </div>
-                <div className="bg-[#0a0a0a] p-6 md:p-7">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">x402 payment · MAINNET</div>
-                  <a href="https://stellar.expert/explorer/public/tx/aa3304c93beffde1809ced4989b898cf419b8121e8ca9b50d01d407ccbf8326b"
-                     target="_blank" rel="noopener noreferrer"
-                     className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                    aa3304c9...0d407ccb
-                  </a>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0.05 USDC · buyer → merchant · 6s finality</div>
-                </div>
-              </div>
-              <div className="mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-                <div className="flex items-center gap-3">
-                  <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
-                  Live on Stellar PUBLIC
-                </div>
-                <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
-                   target="_blank" rel="noopener noreferrer"
-                   className="hover:text-[#b5e853]">
-                  6 audits · 8 critical + 14 high closed →
-                </a>
               </div>
             </div>
           </div>
@@ -351,7 +353,6 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#" className="hover:opacity-60">Terms</a></li>
                 <li><a href="#" className="hover:opacity-60">Privacy</a></li>
-                <li className="text-[#f1eee7]/55">CNPJ 66.381.800/0001-08</li>
               </ul>
             </div>
           </div>
@@ -390,13 +391,11 @@ function Stat({ n, label, body, count }: { n: string; label: string; body: strin
 
 function Step({ n, title, body }: { n: string; title: string; body: string }) {
   return (
-    <div className="grid grid-cols-12 gap-4">
-      <div className="col-span-2 md:col-span-1">
-        <div className="text-3xl md:text-4xl font-medium tabular-nums tracking-tight text-[#0a0a0a]/30 leading-none font-mono">
-          {n}
-        </div>
+    <div className="flex gap-5 md:gap-7">
+      <div className="shrink-0 w-10 md:w-14 text-3xl md:text-4xl font-medium tabular-nums tracking-tight text-[#0a0a0a]/30 leading-none font-mono">
+        {n}
       </div>
-      <div className="col-span-10 md:col-span-11">
+      <div className="flex-1 min-w-0">
         <div className="text-xl md:text-2xl tracking-tight font-medium leading-[1.2]">{title}</div>
         <p className="mt-3 text-sm md:text-base leading-[1.65] text-[#0a0a0a]/75 max-w-[48ch]">{body}</p>
       </div>
