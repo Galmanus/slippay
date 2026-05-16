@@ -1,12 +1,30 @@
 # Slippay Subscription Contract — deployed Stellar testnet
 
-**Deployed**: 2026-05-10
-**Contract address**: `CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA`
-**Stellar.expert**: https://stellar.expert/explorer/testnet/contract/CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA
-**Wasm hash**: `dbf7633d724ca1ed23d9ee1452fe182bd5da627ff6db73fe296ea0c55b09e465`
+## v0.2 (current)
+
+**Deployed**: 2026-05-16
+**Contract address**: `CBN3M7IAKNSCSDQIUUGDBHSFUQDOFAQQQK6UXJZYGGIWERQGT24VBTFQ`
+**Stellar.expert**: https://stellar.expert/explorer/testnet/contract/CBN3M7IAKNSCSDQIUUGDBHSFUQDOFAQQQK6UXJZYGGIWERQGT24VBTFQ
+**Wasm hash**: `1dbda19a2c9962cf798b62557f7c6388a3ea3c7c506ddb7aafbd549843510c6b`
+**Upload tx**: [`1db49c19...`](https://stellar.expert/explorer/testnet/tx/1db49c196cf95d48282292523586a118f7dcfae14cc7abc65a407bbc7a13b168)
+**Deploy tx**: [`8bbc3807...`](https://stellar.expert/explorer/testnet/tx/8bbc380771e8435e43155bb515f51611200a5325e88af06906dc13467fd5eb42)
 **Soroban SDK**: 26 · **Stellar protocol**: 26
 **Source**: `contracts/subscription/src/lib.rs`
 **Unit tests**: 5/5 passing (`cargo test --release`)
+
+### v0.2 changes vs v0.1 (audit-002 fixes)
+
+- **F1** · `extend_ttl` on every persistent `set` (create + charge + cancel + pause + resume + mark_expired) — long-period subs survive idle gaps that would otherwise archive the storage entry
+- **F3** · `charges_done.checked_add(1)` instead of `+= 1` — overflow defense even if release profile flags get flipped
+- **F4** · module doc rewritten: "v0.1 buyer signs every charge"; v0.2 will add pre-auth (next contract version)
+- **F6** · `cancel` only transitions from Active or Paused; refuses Cancelled / Expired (no duplicate event emission)
+- **F8** · `subscription_created` event now carries `merchant`, `token`, `max_periods`, `expires_at` so indexers don't need a follow-up `get(id)` round-trip
+
+## v0.1 (deprecated)
+
+**Contract address**: `CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA`
+**Wasm hash**: `dbf7633d724ca1ed23d9ee1452fe182bd5da627ff6db73fe296ea0c55b09e465`
+**Deployed**: 2026-05-10. Superseded by v0.2 on 2026-05-16. Kept on testnet for reference but the listener + API point at v0.2.
 
 ## Live demo proof
 
