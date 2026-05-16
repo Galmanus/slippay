@@ -220,7 +220,15 @@ export function AskSlippay() {
           <div>
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] opacity-60" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-              <span>concierge · ssl v7</span>
+              <span>concierge</span>
+              <span className="opacity-40">·</span>
+              <a
+                href="https://galmanus.github.io/ssl-spec/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-100 underline-offset-4 hover:underline transition-opacity"
+                title="Bluewave Soul Specification Language v7 · open spec"
+              >ssl v7 ↗</a>
               <span className="opacity-40">·</span>
               <span>fleet 001</span>
             </div>

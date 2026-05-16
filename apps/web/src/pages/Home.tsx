@@ -298,9 +298,16 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="border-t border-[#f1eee7]/15 px-6 md:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
-                    Live on Stellar PUBLIC
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
+                      Live on Stellar PUBLIC
+                    </div>
+                    <span className="opacity-40 hidden md:inline">·</span>
+                    <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
+                       className="hover:text-[#b5e853]">
+                      Agent · SSL v7 ↗
+                    </a>
                   </div>
                   <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
                      target="_blank" rel="noopener noreferrer"
@@ -416,9 +423,11 @@ export default function Home() {
                 ┃ Resources
               </div>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:opacity-60">API docs</a></li>
-                <li><a href="#" className="hover:opacity-60">Webhook guide</a></li>
-                <li><a href="#" className="hover:opacity-60">Security</a></li>
+                <li><Link to="/docs/api-reference/orders" className="hover:opacity-60">API docs</Link></li>
+                <li><Link to="/docs/api-reference/webhooks" className="hover:opacity-60">Webhook guide</Link></li>
+                <li><Link to="/docs/security/audit-001" className="hover:opacity-60">Security audits</Link></li>
+                <li><Link to="/docs/integrations/x402" className="hover:opacity-60">x402 protocol</Link></li>
+                <li><a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="hover:opacity-60">SSL spec ↗</a></li>
               </ul>
             </div>
             <div className="col-span-12 md:col-span-4">
