@@ -1,17 +1,63 @@
+import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
 import { AskSlippay } from "../components/AskSlippay.tsx";
+import { Reveal, CountUp } from "../components/Reveal.tsx";
+
+function useScrolled(threshold = 80) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+  return scrolled;
+}
+
+// Magnetic CTA · button follows cursor with a 6px max offset while hovered.
+// Cheap premium-fintech tell · no library needed.
+function MagneticCTA({ to, children }: { to: string; children: React.ReactNode }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  function onMove(e: React.MouseEvent<HTMLAnchorElement>) {
+    const el = ref.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    const mx = e.clientX - r.left - r.width / 2;
+    const my = e.clientY - r.top - r.height / 2;
+    el.style.transform = `translate(${(mx / r.width) * 8}px, ${(my / r.height) * 8}px)`;
+  }
+  function onLeave() {
+    const el = ref.current; if (!el) return;
+    el.style.transform = "translate(0,0)";
+  }
+  return (
+    <Link to={to} ref={ref as any}
+      onMouseMove={onMove} onMouseLeave={onLeave}
+      style={{ transition: "transform 200ms cubic-bezier(0.22,1,0.36,1)" }}
+      className="inline-flex items-center gap-3 bg-[#0a0a0a] text-[#f1eee7] px-8 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
+      {children}
+    </Link>
+  );
+}
 
 export default function Home() {
+  const scrolled = useScrolled(80);
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
-      <header className="absolute top-0 left-0 right-0 z-20 max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-6 flex items-center justify-between">
+      <header
+        className={
+          "fixed top-0 left-0 right-0 z-30 transition-colors duration-300 " +
+          (scrolled ? "bg-[#f1eee7]/80 backdrop-blur-md border-b border-[#0a0a0a]/8" : "bg-transparent")
+        }
+      >
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-6 flex items-center justify-between">
         <Logo variant="bone" />
         <nav
-          className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]"
-          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
+          className={"flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] transition-colors duration-300 " +
+            (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
+          style={scrolled ? undefined : { textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
         >
-          <Link to="/preview" className="hover:opacity-60 transition-opacity hidden md:inline">See it live</Link>
+          <Link to="/x402-demo" className="hover:opacity-60 transition-opacity hidden md:inline">x402 demo</Link>
           <a href="#how" className="hover:opacity-60 transition-opacity hidden md:inline">How it works</a>
           <Link to="/demo" className="hover:opacity-60 transition-opacity hidden md:inline">SDK</Link>
           <Link to="/login" className="hover:opacity-60 transition-opacity">Log in</Link>
@@ -22,7 +68,10 @@ export default function Home() {
             Sign up
           </Link>
         </nav>
+        </div>
       </header>
+      {/* Spacer to offset the now-fixed header from the hero photo. */}
+      <div className="h-0" />
 
       {/* HERO IMAGE — full-bleed. Mobile uses ~72vh so the headline below
           peeks above the fold (signaling "more here"). Desktop keeps full
@@ -74,10 +123,9 @@ export default function Home() {
               You hold USDC, you choose when to convert.
             </p>
             <div className="mt-8 md:mt-10">
-              <Link to="/signup"
-                className="inline-flex items-center gap-3 bg-[#0a0a0a] text-[#f1eee7] px-8 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
+              <MagneticCTA to="/signup">
                 Join the waitlist <span>→</span>
-              </Link>
+              </MagneticCTA>
             </div>
           </div>
         </div>
@@ -120,11 +168,13 @@ export default function Home() {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-            <Stat n="7-8%" label="Stripe BR + IOF takes"
+            <Stat n="7.8%" label="Stripe BR + IOF takes"
+              count={{ to: 7.8, decimals: 1, suffix: "%" }}
               body="Stripe BR 0.7% + 3.99% + R$0.50 per international transaction. IOF 3.5% on cross-border FX (raised from 0.38% in May 2025). Compounds across every invoice." />
             <Stat n="1 in 5" label="LATAM card decline rate"
               body="Cross-border card failure 15-25% across LATAM (Rapyd, 2025). Revenue that never reaches your dashboard. Stellar settlement removes the card rail entirely." />
             <Stat n="6s" label="Stellar finality"
+              count={{ to: 6, decimals: 0, suffix: "s" }}
               body="Deterministic on-chain settlement. No T+1, no batch windows, no chargebacks. Network fee: 0.00001 XLM (~$0.000001), auditable by anyone." />
           </div>
         </div>
@@ -142,39 +192,39 @@ export default function Home() {
                 002b · Verifiable on-chain
               </div>
               <h2 className="text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch]">
-                Not a deck. Not a mock.<br/><em className="font-light">A working contract.</em>
+                Not a deck. Not a mock.<br/><em className="font-light">Live on Stellar mainnet.</em>
               </h2>
               <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch]">
-                Subscription primitive v0.2 deployed on Stellar testnet. Every
-                transaction below is signed by a real wallet, settles in 6 seconds,
-                and is publicly auditable on stellar.expert. The auth chain
-                buyer&nbsp;→&nbsp;contract&nbsp;→&nbsp;SAC.transfer was exercised
-                end&#8209;to&#8209;end (audit-002 F5 closed).
+                Subscription primitive v0.2 deployed on Stellar PUBLIC network on
+                2026-05-16. Real USDC moved on chain through the x402 demo flow.
+                Both transactions below are publicly auditable on stellar.expert.
+                The full audit posture (8 critical + 14 high findings closed) sits
+                behind the link below.
               </p>
               <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
                 <div className="bg-[#0a0a0a] p-6 md:p-7">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Contract · testnet v0.2</div>
-                  <a href="https://stellar.expert/explorer/testnet/contract/CBN3M7IAKNSCSDQIUUGDBHSFUQDOFAQQQK6UXJZYGGIWERQGT24VBTFQ"
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Contract · MAINNET v0.2</div>
+                  <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
                      target="_blank" rel="noopener noreferrer"
                      className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                    CBN3M7IA...GT24VBTFQ
+                    CBJMQ6ZY...DJKSEVQN
                   </a>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · audit-002 fixed</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · F5 closed pre-deploy</div>
                 </div>
                 <div className="bg-[#0a0a0a] p-6 md:p-7">
-                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Real-wallet charge · F5 proof</div>
-                  <a href="https://stellar.expert/explorer/testnet/tx/eee0d71f2f2100da1b97c971cec98fe367e89758c0b8b91c29ef6d5e84a602ff"
+                  <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">x402 payment · MAINNET</div>
+                  <a href="https://stellar.expert/explorer/public/tx/aa3304c93beffde1809ced4989b898cf419b8121e8ca9b50d01d407ccbf8326b"
                      target="_blank" rel="noopener noreferrer"
                      className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                    eee0d71f...4a602ff
+                    aa3304c9...0d407ccb
                   </a>
-                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Buyer 1000→990 USDC · merchant 0→10 USDC</div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0.05 USDC · buyer → merchant · 6s finality</div>
                 </div>
               </div>
               <div className="mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
                 <div className="flex items-center gap-3">
-                  <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                  Building on Stellar
+                  <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
+                  Live on Stellar PUBLIC
                 </div>
                 <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
                    target="_blank" rel="noopener noreferrer"
@@ -324,10 +374,14 @@ export default function Home() {
   );
 }
 
-function Stat({ n, label, body }: { n: string; label: string; body: string }) {
+function Stat({ n, label, body, count }: { n: string; label: string; body: string; count?: { to: number; decimals?: number; suffix?: string; prefix?: string } }) {
   return (
     <div className="bg-[#f1eee7] p-8 md:p-10">
-      <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-[-0.04em] leading-none">{n}</div>
+      <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-[-0.04em] leading-none">
+        {count ? (
+          <CountUp to={count.to} decimals={count.decimals ?? 0} suffix={count.suffix ?? ""} prefix={count.prefix ?? ""} durationMs={1600} />
+        ) : n}
+      </div>
       <div className="mt-6 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
       <p className="mt-4 text-sm leading-[1.6] text-[#0a0a0a]/75 max-w-[28ch]">{body}</p>
     </div>
