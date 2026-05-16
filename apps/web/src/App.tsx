@@ -10,6 +10,7 @@ import DashboardSettings from "./pages/DashboardSettings.tsx";
 import Demo from "./pages/Demo.tsx";
 import Preview from "./pages/Preview.tsx";
 import X402Demo from "./pages/X402Demo.tsx";
+import Docs from "./pages/Docs.tsx";
 
 export default function App() {
   return (
@@ -21,6 +22,8 @@ export default function App() {
       <Route path="/demo" element={<Demo />} />
       <Route path="/preview" element={<Preview />} />
       <Route path="/x402-demo" element={<X402Demo />} />
+      <Route path="/docs" element={<Docs />} />
+      <Route path="/docs/*" element={<Docs />} />
       <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<Navigate to="orders" replace />} />
         <Route path="orders" element={<DashboardOrders />} />
