@@ -15,24 +15,23 @@ export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
   const text = size === "sm" ? "text-base" : "text-xl";
   const gap = size === "sm" ? "gap-2.5" : "gap-3";
 
+  // Suppress unused-var warning · fgSquare kept for backward-compat with
+  // older skin variants that re-introduce inline SVG marks.
+  void fgSquare;
   const inner = (
     <span className={`inline-flex items-center ${gap} group`}>
-      <svg width={dim} height={dim} viewBox="0 0 24 24" fill="none" aria-hidden>
-        <rect x="0" y="0" width="24" height="24" fill="#b5e853" />
-        <path
-          d="M7 8 Q12 8 12 12 Q12 16 17 16"
-          stroke={fgSquare}
-          strokeWidth="2.8"
-          strokeLinecap="square"
-          fill="none"
-        />
-      </svg>
+      <img
+        src="/slippay-mark.png"
+        alt=""
+        width={dim}
+        height={dim}
+        className="block shrink-0"
+        style={{ imageRendering: "auto" }}
+      />
       <span
         className={`${text} tracking-tight font-medium leading-none`}
         style={{
           color: fgText,
-          // Drop-shadow only on the bone variant, where wordmark sits on
-          // photo hero backgrounds and needs guaranteed legibility.
           textShadow: variant === "bone" ? "0 1px 3px rgba(0,0,0,0.6)" : "none",
         }}
       >
