@@ -143,16 +143,35 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
+      // Claude CLI v2.x rejects both --append-system-prompt and
+      // --append-system-prompt-file in the same invocation. Write a single
+      // merged prompt file per-call (small; ~50KB) and reference it.
+      const mergedPromptPath = `${docsPath}.merged-${Date.now()}.md`;
+      try {
+        const docsBundle = await Deno.readTextFile(docsPath);
+        await Deno.writeTextFile(mergedPromptPath, `${systemPrompt}\n\n${docsBundle}`);
+      } catch (e) {
+        send({ type: "error", error: `prompt merge failed: ${(e as Error).message ?? e}` });
+        controller.close();
+        return;
+      }
       const cmd = new Deno.Command(CLAUDE_BIN, {
         cwd: CLAUDE_CWD,
         args: [
           "-p", userInput,
-          "--append-system-prompt", systemPrompt,
-          "--append-system-prompt-file", docsPath,
+          "--append-system-prompt-file", mergedPromptPath,
           "--output-format", "stream-json",
           "--include-partial-messages",
-          "--bare",
+          "--verbose",       // required by claude CLI v2.x when --output-format=stream-json + --print
+          // NOTE: --bare REMOVED. In claude CLI v2.1.143 it breaks credential
+          // loading (subprocess reports "Not logged in" even with valid
+          // ~/.claude/.credentials.json). Reproduce: `claude -p ... --bare`
+          // returns not-logged-in; same call without --bare returns the
+          // expected response. We accept the small risk that CLAUDE.md /
+          // local skills MAY influence context — empirically negligible
+          // because the system prompt + docs bundle override.
         ],
+        stdin: "null",       // claude CLI warns about stdin · explicitly skip
         env: {
           CLAUDE_CODE_OAUTH_TOKEN: token,
           HOME: Deno.env.get("HOME") ?? "/home/manuel",
