@@ -57,7 +57,7 @@ export default function Home() {
         }
       >
         <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-4 md:py-6 flex items-center justify-between">
-        <Logo variant="bone" />
+        <Logo variant={scrolled ? "ink" : "bone"} />
         {/* Desktop nav */}
         <nav
           className={"hidden md:flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] transition-colors duration-300 " +
