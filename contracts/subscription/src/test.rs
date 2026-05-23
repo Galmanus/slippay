@@ -171,6 +171,93 @@ fn expiry_terminates_subscription() {
 }
 
 #[test]
+fn charge_auth_binds_to_transfer_tuple() {
+    // SOROBAN_SECURITY_v1 N3 (escalation of audit-002 F5):
+    // buyer.require_auth_for_args at charge() binds the buyer's signed
+    // payload to (id, token, merchant, amount). A wallet that signs the
+    // wrong amount — even if the rest of the auth tree is correct — must
+    // be rejected at the host level before token.transfer is reached.
+    //
+    // This test does NOT prove wallet UIs render the amount; that's the
+    // mainnet sign-off step (real wallet, testnet charge). It proves the
+    // contract-side binding is in place so a wallet bug cannot let a
+    // mutated nested transfer payload succeed under a "looks-correct"
+    // top-level sig.
+    let f = setup();
+    let id = BytesN::from_array(&f.env, &[7u8; 32]);
+
+    f.env.ledger().with_mut(|l| { l.timestamp = 1_000_000; });
+
+    // Create remains under the permissive env mock.
+    let amount: i128 = 10_000_000;
+    f.contract.create(
+        &f.buyer, &f.merchant, &f.token,
+        &amount, &(30 * DAY), &0, &0, &id,
+    );
+
+    // Strict auth: wrong amount in the signed payload — must reject.
+    let bad_args = (
+        id.clone(),
+        f.token.clone(),
+        f.merchant.clone(),
+        amount + 1,
+    ).into_val(&f.env);
+    let res = f.contract
+        .mock_auths(&[MockAuth {
+            address: &f.buyer,
+            invoke: &MockAuthInvoke {
+                contract: &f.contract.address,
+                fn_name: "charge",
+                args: bad_args,
+                sub_invokes: &[MockAuthInvoke {
+                    contract: &f.token,
+                    fn_name: "transfer",
+                    args: (
+                        f.buyer.clone(),
+                        f.merchant.clone(),
+                        amount,
+                    ).into_val(&f.env),
+                    sub_invokes: &[],
+                }],
+            },
+        }])
+        .try_charge(&id);
+    assert!(res.is_err(), "auth bound to wrong amount must reject");
+
+    // Strict auth: correct (id, token, merchant, amount) tuple + nested
+    // transfer sub-invocation — must succeed.
+    let good_args = (
+        id.clone(),
+        f.token.clone(),
+        f.merchant.clone(),
+        amount,
+    ).into_val(&f.env);
+    f.contract
+        .mock_auths(&[MockAuth {
+            address: &f.buyer,
+            invoke: &MockAuthInvoke {
+                contract: &f.contract.address,
+                fn_name: "charge",
+                args: good_args,
+                sub_invokes: &[MockAuthInvoke {
+                    contract: &f.token,
+                    fn_name: "transfer",
+                    args: (
+                        f.buyer.clone(),
+                        f.merchant.clone(),
+                        amount,
+                    ).into_val(&f.env),
+                    sub_invokes: &[],
+                }],
+            },
+        }])
+        .charge(&id);
+
+    let sub = f.contract.get(&id);
+    assert_eq!(sub.charges_done, 1);
+}
+
+#[test]
 fn invalid_config_rejected() {
     let f = setup();
     let id = BytesN::from_array(&f.env, &[5u8; 32]);

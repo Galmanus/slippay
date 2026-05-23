@@ -29,7 +29,7 @@
 #![no_std]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype,
-    Address, BytesN, Env, Symbol,
+    Address, BytesN, Env, IntoVal, Symbol,
     token,
 };
 
@@ -158,12 +158,26 @@ impl SubscriptionContract {
         let mut sub: Subscription = env.storage().persistent().get(&key)
             .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
 
-        // Audit-002 F4 / F5: v0.1 requires the buyer to sign every charge.
-        // Tests use mock_all_auths_allowing_non_root_auth which bypasses this
-        // top-level requirement; mainnet sign-off must include at least one
-        // end-to-end testnet charge with a real wallet signature to prove the
-        // nested SAC.transfer auth chain works.
-        sub.buyer.require_auth();
+        // Audit-002 F4 / F5 + SOROBAN_SECURITY_v1 N3: bind the buyer's auth
+        // payload to the exact transfer tuple (id, token, merchant, amount)
+        // rather than the bare (id,) function args. A weak smart-wallet
+        // session signer that signs "charge(id)" without inspecting the
+        // nested transfer would otherwise let a host-bug or wallet-bug
+        // permit a mutated nested amount. Here the top-level auth payload
+        // IS the transfer payload — defense in depth against wallet drift.
+        // Tests use mock_all_auths_allowing_non_root_auth which bypasses
+        // verification; mainnet sign-off must still include an end-to-end
+        // testnet charge with a real wallet to verify the nested SAC.transfer
+        // auth chain (the regression test below covers the host-level binding).
+        sub.buyer.require_auth_for_args(
+            (
+                id.clone(),
+                sub.token.clone(),
+                sub.merchant.clone(),
+                sub.amount,
+            )
+                .into_val(&env),
+        );
 
         if sub.status != Status::Active {
             panic_with_error!(&env, Error::NotActive);
