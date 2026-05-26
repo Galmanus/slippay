@@ -13,10 +13,11 @@ interface RevealProps {
   children: React.ReactNode;
   delay?: number;   // ms · stagger siblings
   className?: string;
+  id?: string;
   as?: "div" | "section" | "article" | "li";
 }
 
-export function Reveal({ children, delay = 0, className = "", as = "div" }: RevealProps) {
+export function Reveal({ children, delay = 0, className = "", id, as = "div" }: RevealProps) {
   const ref = useRef<HTMLElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -42,7 +43,7 @@ export function Reveal({ children, delay = 0, className = "", as = "div" }: Reve
     transform: visible ? "translateY(0)" : "translateY(24px)",
   };
   if (as === "section") return (
-    <section ref={ref as any} style={style} className={className}>{children}</section>
+    <section ref={ref as any} id={id} style={style} className={className}>{children}</section>
   );
   if (as === "article") return (
     <article ref={ref as any} style={style} className={className}>{children}</article>
