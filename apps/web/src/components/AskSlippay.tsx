@@ -35,11 +35,11 @@ const GITHUB_DOCS = "https://github.com/Galmanus/slippay/blob/main/docs";
 
 const QUICK_PROMPTS: Array<{ tag: string; prompt: string }> = [
   { tag: "pricing",     prompt: "How much does it cost to use slippay?" },
-  { tag: "on-chain",    prompt: "What's deployed on Stellar testnet?" },
-  { tag: "integration", prompt: "How do I integrate the SDK in 5 minutes?" },
-  { tag: "regulatory",  prompt: "Why partnership with a VASP?" },
-  { tag: "br-export",   prompt: "Como o slippay reduz o leakage de 6% do Stripe?" },
-  { tag: "soroban",     prompt: "How does the subscription contract work on-chain?" },
+  { tag: "economia",   prompt: "Quanto eu economizo vs Stripe e MoonPay?" },
+  { tag: "começar",    prompt: "Como começo a receber em dólar?" },
+  { tag: "minha loja", prompt: "Funciona na minha loja (WooCommerce, Shopify)?" },
+  { tag: "segurança",  prompt: "É seguro e legal no Brasil?" },
+  { tag: "a taxa",     prompt: "Qual é a taxa? Tem pegadinha?" },
 ];
 
 // bluewave design tokens (matching bluewaveai.online)
@@ -220,23 +220,15 @@ export function AskSlippay() {
           <div>
             <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] opacity-60" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-              <span>concierge</span>
+              <span>slippay</span>
               <span className="opacity-40">·</span>
-              <a
-                href="https://galmanus.github.io/ssl-spec/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:opacity-100 underline-offset-4 hover:underline transition-opacity"
-                title="Bluewave Soul Specification Language v7 · open spec"
-              >ssl v7 ↗</a>
-              <span className="opacity-40">·</span>
-              <span>fleet 001</span>
+              <span>resposta na hora</span>
             </div>
             <h2 className="mt-3 text-[28px] md:text-[34px] leading-none tracking-[-0.02em] font-medium" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
-              Ask SlipPay
+              Fala com o SlipPay
             </h2>
             <div className="mt-2 text-[11px] tracking-tight opacity-55 max-w-[42ch]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              doc-grounded · cites every claim · says "i don't know" when it doesn't.
+              Te mostro em segundos quanto você economiza e como começar. Pode perguntar em português normal.
             </div>
           </div>
           <button
@@ -279,7 +271,7 @@ export function AskSlippay() {
                 <div className="border-t" style={{ borderColor: `${INK}1A` }} />
               </div>
               <div className="text-[10px] opacity-40 tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                or type your own ↓
+                ou pergunta do seu jeito ↓
               </div>
             </div>
           )}
@@ -301,7 +293,7 @@ export function AskSlippay() {
                     <div className="space-y-4">
                       <div className="flex items-baseline gap-2 text-[9px] uppercase tracking-[0.28em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                         <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-                        <span>concierge</span>
+                        <span>slippay</span>
                       </div>
                       {streaming && i === turns.length - 1 && !t.content ? (
                         <ThinkingIndicator />
@@ -387,7 +379,7 @@ export function AskSlippay() {
                   }}
                   onKeyDown={onKey}
                   disabled={streaming}
-                  placeholder="what's deployed, what's the fee, how do I integrate"
+                  placeholder="quanto eu economizo? como começo? funciona na minha loja?"
                   className="flex-1 bg-transparent border-0 py-1 text-[14px] tracking-tight resize-none focus:outline-none disabled:opacity-50 placeholder:opacity-30"
                   style={{ fontFamily: "'Inter', sans-serif", minHeight: "26px" }}
                 />
@@ -413,8 +405,8 @@ export function AskSlippay() {
             </div>
           </form>
           <div className="px-7 pb-3 pt-1 flex items-center justify-between text-[9px] uppercase tracking-[0.24em] opacity-35" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            <span>verify with cited docs</span>
-            <span className="hidden md:inline">↵ send · ⇧↵ newline · esc close</span>
+            <span>resposta honesta, sem enrolação</span>
+            <span className="hidden md:inline">↵ enviar · ⇧↵ linha · esc fechar</span>
           </div>
         </div>
       </aside>
