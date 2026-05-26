@@ -175,7 +175,7 @@ export default function Home() {
       {/* HERO TEXT */}
       <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-6 md:pt-24 pb-16 md:pb-32 relative">
         <div className="grid grid-cols-12 gap-6 md:gap-6 items-end">
-          <div className="col-span-12 md:col-span-3 mb-4 md:mb-0">
+          <div className="col-span-12 mb-4 md:mb-0">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
               <span className="flex items-center gap-2">
                 <span className="inline-block w-2 h-2 bg-[#b5e853]" />
@@ -185,7 +185,7 @@ export default function Home() {
               <span className="tabular-nums">Live · v0.2</span>
             </div>
           </div>
-          <div className="col-span-12 md:col-span-9">
+          <div className="col-span-12">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
               ╱╱  Issue 001 · pra quem vende no Brasil
             </div>
@@ -208,12 +208,12 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
-          <div className="col-span-12 md:col-span-3">
+          <div className="col-span-12">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
               ┃ A tese
             </div>
           </div>
-          <div className="col-span-12 md:col-span-6">
+          <div className="col-span-12">
             <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch]">
               O brasileiro já se dolariza em massa: <em className="font-light">98%</em> das
               compras de cripto no país no 1º trimestre de 2026 foram stablecoin —
@@ -224,7 +224,7 @@ export default function Home() {
               Não é poupança em dólar — é caixa em dólar.
             </p>
           </div>
-          <div className="col-span-12 md:col-span-3 flex md:justify-end items-end">
+          <div className="col-span-12 flex md:justify-end items-end">
             <Link to="/signup"
               className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
               Entrar na lista <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -237,10 +237,10 @@ export default function Home() {
       <section className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6 mb-16">
-            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               ┃ Números
             </div>
-            <div className="col-span-12 md:col-span-9 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
               002 · A economia
             </div>
           </div>
@@ -261,10 +261,10 @@ export default function Home() {
       <section id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
           <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55">
               ┃ Prova
             </div>
-            <div className="col-span-12 md:col-span-9">
+            <div className="col-span-12">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
                 002b · Verificável on-chain
               </div>
@@ -327,10 +327,10 @@ export default function Home() {
       <section id="how" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               ┃ Mecânica
             </div>
-            <div className="col-span-12 md:col-span-9">
+            <div className="col-span-12">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
                 003 · Como funciona
               </div>
@@ -356,10 +356,10 @@ export default function Home() {
       <section id="stack" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               ┃ Posição
             </div>
-            <div className="col-span-12 md:col-span-9">
+            <div className="col-span-12">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
                 004 · Regulatório
               </div>
