@@ -314,7 +314,7 @@ export default function Home() {
                   <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
                      target="_blank" rel="noopener noreferrer"
                      className="hover:text-[#b5e853]">
-                    6 auditorias · 8 críticas + 14 altas fechadas →
+                    Auditado por Bluewave AI Security · 8 críticas + 14 altas fechadas →
                   </a>
                 </div>
               </div>
