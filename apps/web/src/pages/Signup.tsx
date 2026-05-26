@@ -15,7 +15,7 @@ export default function Signup() {
       <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
         <Link to="/login" className="text-xs uppercase tracking-[0.18em] hover:opacity-60">
-          Have an account? Log in
+          Já tem conta? Entrar
         </Link>
       </header>
 
@@ -23,15 +23,15 @@ export default function Signup() {
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-16 py-16">
           <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
             <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
-            001. Create account
+            001. Criar conta
           </div>
           <div className="md:col-span-6">
             <h1 className="text-6xl md:text-8xl font-medium tracking-[-0.04em] leading-[0.9]">
-              Start accepting USDC.
+              Comece a receber em dólar.
             </h1>
             <p className="mt-8 text-xl text-[#0a0a0a]/70 max-w-[44ch]">
-              First order in under five minutes. No custody, no escrow.
-              Buyer signs once, funds settle direct to your wallet.
+              Primeira venda em menos de 5 minutos. Sem custódia, sem intermediário.
+              O comprador assina uma vez e o dinheiro cai direto na sua carteira.
             </p>
             <form onSubmit={async (e) => {
               e.preventDefault(); setMsg(null); setLoading(true);
@@ -39,13 +39,13 @@ export default function Signup() {
               setLoading(false);
               if (error) { setMsg({ kind: "err", text: error.message }); return; }
               if (data.session) nav("/dashboard");
-              else setMsg({ kind: "info", text: "Check your email to confirm." });
+              else setMsg({ kind: "info", text: "Confira seu e-mail pra confirmar." });
             }} className="mt-16 max-w-md space-y-8">
-              <Field label="Email" type="email" value={email} onChange={setEmail} required autoFocus />
-              <Field label="Password" type="password" value={password} onChange={setPassword} required minLength={8} />
+              <Field label="E-mail" type="email" value={email} onChange={setEmail} required autoFocus />
+              <Field label="Senha" type="password" value={password} onChange={setPassword} required minLength={8} />
               <button disabled={loading}
                 className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
-                {loading ? "..." : "Sign up"}
+                {loading ? "..." : "Criar conta"}
               </button>
               {msg && (
                 <div className={`text-sm border-l-2 pl-3 ${msg.kind === "err" ? "text-red-700 border-red-700" : "text-[#0a0a0a]/70 border-[#0a0a0a]/30"}`}>
