@@ -56,7 +56,7 @@ export default function Dashboard() {
                 One name to begin.
               </h1>
               <p className="mt-8 text-xl text-[#0a0a0a]/70 max-w-[44ch]">
-                We'll create your merchant record and surface your API key once.
+                We'll create your account and surface your API key once.
                 You can rotate it whenever from settings.
               </p>
               <form onSubmit={async (e) => {
