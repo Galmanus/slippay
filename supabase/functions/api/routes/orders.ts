@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { SupabaseClient } from "supabase";
-import { CreateOrderInputSchema, ORDER_DEFAULT_EXPIRY_MINUTES } from "@slippay/shared";
+import { CreateOrderInputSchema, ORDER_DEFAULT_EXPIRY_MINUTES, DEFAULT_PLATFORM_FEE_BP } from "@slippay/shared";
 import { requireApiKey } from "../middleware/auth_apikey.ts";
 import { requireApiKeyOrJwt } from "../middleware/auth_any.ts";
 import { generateMemo } from "../lib/memo.ts";
@@ -46,6 +46,15 @@ r.post("/", requireApiKey, async (c) => {
   const minutes = input.expires_in_minutes ?? ORDER_DEFAULT_EXPIRY_MINUTES;
   const expiresAt = new Date(Date.now() + minutes * 60_000).toISOString();
 
+  // Platform fee. `usdc` (gross) is what the buyer pays; merchant net = gross −
+  // fee; fee_usdc is SlipPay's 0.98% cut, persisted per order so capture model A
+  // (off-chain invoice) has a ledger to bill from. Persisting is the accounting —
+  // capture routes fee_usdc to SlipPay via the monthly invoice.
+  const feeBp = Number((merchant as { platform_fee_bp?: number }).platform_fee_bp ?? DEFAULT_PLATFORM_FEE_BP);
+  const grossUsdc = parseFloat(usdc);
+  const feeUsdc = (grossUsdc * feeBp / 10_000).toFixed(7);
+  const netUsdc = (grossUsdc - parseFloat(feeUsdc)).toFixed(7);
+
   const { data, error } = await sb.from("orders").insert({
     merchant_id: merchant.id,
     external_ref: input.external_ref ?? null,
@@ -55,12 +64,21 @@ r.post("/", requireApiKey, async (c) => {
     rate_brl_usdc,
     memo,
     expires_at: expiresAt,
+    platform_fee_bp: feeBp,
+    fee_usdc: feeUsdc,
   }).select("*").single();
   if (error) return c.json({ error: "create_failed" }, 400);
   const token = await signCheckoutToken(data.id as string);
+
   return c.json({
     order: data,
     checkout_url: `${CHECKOUT_BASE}/checkout/${data.id}?t=${token}`,
+    fee: {
+      platform_fee_bp: feeBp,
+      gross_usdc: usdc,
+      fee_usdc: feeUsdc,
+      net_usdc: netUsdc,
+    },
   }, 201);
 });
 
