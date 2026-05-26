@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SlipPay · Deck · Stellar 37 Graus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bone:#f1eee7; --ink:#0a0a0a; --klein:#b5e853; --mut:rgba(241,238,231,.55); }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; background:var(--ink); color:var(--bone);
+    font-family:'Inter Tight',system-ui,sans-serif; overflow:hidden; }
+  /* horizontal slide track */
+  #deck{ display:flex; height:100vh; width:100vw;
+    transition:transform 720ms cubic-bezier(.22,1,.36,1); }
+  .slide{ min-width:100vw; height:100vh; padding:8vh 9vw; position:relative;
+    display:flex; flex-direction:column; justify-content:center;
+    background-image:radial-gradient(rgba(241,238,231,.03) 1px,transparent 1px);
+    background-size:3px 3px; }
+  /* slide content fades/rises in when active */
+  .slide > *{ opacity:0; transform:translateY(22px);
+    transition:opacity 700ms cubic-bezier(.22,1,.36,1),transform 700ms cubic-bezier(.22,1,.36,1); }
+  .slide.live > *{ opacity:1; transform:none; }
+  .slide.live > *:nth-child(2){ transition-delay:90ms; }
+  .slide.live > *:nth-child(3){ transition-delay:180ms; }
+  .slide.live > *:nth-child(4){ transition-delay:270ms; }
+  .slide.live > *:nth-child(5){ transition-delay:360ms; }
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em;
+    text-transform:uppercase; color:var(--mut); display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+  .eyebrow .dot{ width:7px; height:7px; background:var(--klein); display:inline-block; }
+  h1{ font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-.03em; line-height:1.02;
+    font-size:clamp(38px,6.2vw,104px);
+    background:linear-gradient(180deg,#ffffff 22%,#8f8b80 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+  h1 .k{ -webkit-text-fill-color:var(--klein); color:var(--klein); }
+  .lead{ margin-top:34px; font-size:clamp(17px,1.9vw,26px); line-height:1.5; color:rgba(241,238,231,.82); max-width:30ch; }
+  .big{ font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-.03em;
+    font-size:clamp(54px,9vw,150px); line-height:.95;
+    background:linear-gradient(180deg,#ffffff 25%,#7c7a72 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
+  .row{ display:flex; gap:6vw; flex-wrap:wrap; margin-top:40px; }
+  .stat .n{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(34px,4.4vw,68px); letter-spacing:-.03em; color:var(--bone); }
+  .stat .l{ margin-top:10px; font-size:14px; color:var(--mut); max-width:22ch; line-height:1.45; }
+  ul.clean{ list-style:none; margin-top:36px; display:flex; flex-direction:column; gap:18px; max-width:60ch; }
+  ul.clean li{ font-size:clamp(16px,1.6vw,21px); line-height:1.4; padding-left:26px; position:relative; color:rgba(241,238,231,.88); }
+  ul.clean li::before{ content:""; position:absolute; left:0; top:.55em; width:9px; height:9px; background:var(--klein); }
+  ul.clean li b{ color:var(--bone); font-weight:600; }
+  .seal{ display:inline-flex; align-items:center; gap:10px; margin-top:34px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--klein); }
+  .seal .dot{ width:9px; height:9px; background:var(--klein); }
+  .note{ margin-top:30px; font-size:13px; color:var(--mut); font-family:'JetBrains Mono',monospace; letter-spacing:.04em; }
+  /* chrome */
+  .brand{ position:fixed; top:5vh; left:9vw; font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.02em; font-size:20px; z-index:10; }
+  .brand .k{ color:var(--klein); }
+  .counter{ position:fixed; bottom:5vh; right:9vw; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; color:var(--mut); z-index:10; }
+  .hint{ position:fixed; bottom:5vh; left:9vw; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.22em; color:rgba(241,238,231,.3); z-index:10; }
+  .progress{ position:fixed; top:0; left:0; height:2px; background:var(--klein); width:0; transition:width 500ms cubic-bezier(.22,1,.36,1); z-index:20; }
+  em{ font-style:italic; color:var(--klein); -webkit-text-fill-color:var(--klein); }
+</style>
+</head>
+<body>
+<div class="progress" id="prog"></div>
+<div class="brand">slippay<span class="k">.</span></div>
+<div class="counter" id="counter">01 / 07</div>
+<div class="hint">← → navegar · F tela cheia</div>
+
+<div id="deck">
+
+  <!-- 1 · COVER -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> slippay · stellar 37 graus · rio 2026</div>
+    <h1>A conta em dólar<br/>que mora dentro<br/>do Pix<span class="k">.</span></h1>
+    <p class="lead">Billing em dólar, Stellar-nativo, pra todo negócio que o sistema exclui. Vivo na mainnet hoje.</p>
+  </section>
+
+  <!-- 2 · WHY NOW -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 01 · por que agora</div>
+    <h1>O Brasil já se<br/>dolariza<span class="k">.</span> Em massa.</h1>
+    <div class="row">
+      <div class="stat"><div class="n">98%</div><div class="l">das compras de cripto no BR no 1º tri/2026 foram stablecoin</div></div>
+      <div class="stat"><div class="n">US$ 6,8 bi</div><div class="l">de US$ 6,9 bi — hedge contra o real, num trimestre</div></div>
+      <div class="stat"><div class="n">5º</div><div class="l">maior mercado de adoção do mundo (era 10º)</div></div>
+    </div>
+    <p class="note">Mas esse dólar mora numa exchange — longe do caixa do negócio.</p>
+  </section>
+
+  <!-- 3 · THE VISION (nested) -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 02 · a visão</div>
+    <h1>O dólar no<br/><em>recebimento</em>.</h1>
+    <ul class="clean">
+      <li><b>Hoje:</b> o negócio brasileiro recebe e fica em dólar na própria carteira — 6s, sem custódia, sem chargeback.</li>
+      <li><b>Amanhã:</b> os agentes de IA — assinatura recorrente on-chain, o pagador que ninguém ainda atende.</li>
+      <li>Os dois precisam de um trilho que só a <b>Stellar</b> fecha. Não é poupança em dólar — é <b>caixa em dólar</b>.</li>
+    </ul>
+  </section>
+
+  <!-- 4 · THE HOOK -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 03 · a primitiva que ninguém tem</div>
+    <h1>Assinatura<br/>recorrente<br/>on-chain<span class="k">.</span></h1>
+    <ul class="clean">
+      <li>O x402 resolveu o pagamento <b>avulso</b> de agente. Assinatura <b>recorrente</b> ainda não existia.</li>
+      <li>SlipPay tem o contrato Soroban de subscription <b>vivo na mainnet</b> — a primeira do tipo.</li>
+      <li>Mainnet é piso do cohort. <b>Recorrência + uso real</b> é a pista que ninguém ocupou.</li>
+    </ul>
+  </section>
+
+  <!-- 5 · PROOF -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 04 · não é promessa — funciona</div>
+    <h1>Vivo na mainnet.<br/>Recebendo<span class="k">.</span></h1>
+    <ul class="clean">
+      <li><b>WooCommerce ao vivo:</b> venda real de R$ 49,90 → 9,92 USDC no checkout.</li>
+      <li><b>3 plataformas</b> conectadas: WooCommerce · VTEX · Shopify. Mesmo motor, adapter, não rebuild.</li>
+      <li><b>Taxa 0,98%</b> — a mais barata do mercado (MoonPay cobra 1%).</li>
+    </ul>
+    <div class="seal"><span class="dot"></span> Auditado por Bluewave AI Security</div>
+  </section>
+
+  <!-- 6 · MOAT -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 05 · o fosso regulatório</div>
+    <h1>A 561 fecha a<br/>porta<span class="k">.</span> Pra eles.</h1>
+    <ul class="clean">
+      <li>Res. BCB 561 (vigência 01/10/2026): proíbe stablecoin na liquidação <b>cross-border</b> de eFX.</li>
+      <li>Todo gateway "Pix→stablecoin→exterior" fica exposto. <b>SlipPay é doméstico por design</b> — a 561 não toca.</li>
+      <li>O câmbio BRL→USDC será executado <b>via Instituição de Pagamento autorizada pelo BCB</b>. Não somos PSAV nem instituição financeira.</li>
+    </ul>
+  </section>
+
+  <!-- 7 · ASK -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 06 · o pedido</div>
+    <h1>Vamos colocar o<br/>dólar no caixa<br/>do Brasil<span class="k">.</span></h1>
+    <ul class="clean">
+      <li>Uma <b>introdução a uma Instituição de Pagamento BR autorizada</b> — o anchor de câmbio que fecha o fluxo.</li>
+      <li>Marco até o Rio: <b>os primeiros merchants reais</b> processando em dólar.</li>
+    </ul>
+    <p class="note">slippay.cc · github.com/Galmanus/slippay · Manuel Galmanus · Mario F. Neto</p>
+  </section>
+
+</div>
+
+<script>
+  const deck = document.getElementById('deck');
+  const slides = [...document.querySelectorAll('.slide')];
+  const counter = document.getElementById('counter');
+  const prog = document.getElementById('prog');
+  let i = 0;
+  const pad = n => String(n).padStart(2,'0');
+  function go(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    deck.style.transform = `translateX(-${i*100}vw)`;
+    counter.textContent = `${pad(i+1)} / ${pad(slides.length)}`;
+    prog.style.width = `${((i+1)/slides.length)*100}%`;
+    slides.forEach((s,k)=> s.classList.toggle('live', k===i));
+  }
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); go(i+1); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(i-1); }
+    else if(e.key==='Home'){ go(0); } else if(e.key==='End'){ go(slides.length-1); }
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+  });
+  document.addEventListener('click', e=>{ go(i + (e.clientX < innerWidth*0.35 ? -1 : 1)); });
+  go(0);
+</script>
+</body>
+</html>
