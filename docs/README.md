@@ -1,10 +1,21 @@
 # SlipPay Documentation
 
-Stellar-native checkout SDK for Brazilian merchants billing globally.
-Pix in, USDC or PYUSD out, no chargebacks.
+Stellar-native commerce stack for Brazilian merchants billing globally.
+Pix in, USDC out (PYUSD coming), no chargebacks.
 
-> **Status**: testnet live at [api.slippay.cc](https://api.slippay.cc/api/health) ·
-> mainnet planned 2026-Q3
+> **Status**: **live on Stellar mainnet** since 2026-05-16.
+> Subscription contract `CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN`
+> on [stellar.expert/explorer/public](https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN).
+> API at [api.slippay.cc](https://api.slippay.cc/api/health).
+
+> **Ask Slippay** — the support agent on the bottom-right of every page
+> is **Concierge**, governed by the
+> [**Bluewave Soul Specification Language v7**](https://galmanus.github.io/ssl-spec/).
+> The full open spec is at `galmanus.github.io/ssl-spec`. See
+> [concierge-ssl](./integrations/concierge-ssl.md) for how the soul
+> file constrains the agent — doc-grounded answers, inline citations,
+> "I don't have that information" honesty, full audit chain on every
+> reply.
 
 ## Get started
 
@@ -41,6 +52,13 @@ Pix in, USDC or PYUSD out, no chargebacks.
 | [Architecture](./concepts/architecture.md) | How the three runtime processes fit. |
 | [Non-custodial settlement](./concepts/non-custodial-settlement.md) | What "non-custodial" actually means here. |
 | [Regulatory framing](./concepts/regulatory.md) | BCB Res 519/520/521 and the partnership-with-VASP model. |
+
+## Integrations
+
+| | |
+|---|---|
+| [x402 protocol](./integrations/x402.md) | Pay-per-call resources gated by Stellar USDC. Shipped 2026-05-16. |
+| [Ask Slippay · SSL v7](./integrations/concierge-ssl.md) | The Concierge agent is built on the open [Bluewave Soul Specification Language v7](https://galmanus.github.io/ssl-spec/). Doc-grounded, cited, auditable. |
 
 ## Where to next
 
