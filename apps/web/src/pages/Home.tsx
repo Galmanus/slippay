@@ -152,7 +152,7 @@ export default function Home() {
           decoding="async"
         />
         <div
-          className="md:hidden w-full h-[68vh] min-h-[440px] bg-[position:center_35%]"
+          className="md:hidden w-full h-[48vh] min-h-[340px] max-h-[480px] bg-[position:center_30%]"
           style={{
             backgroundImage: "url('/hero.png?v=liberty3')",
             backgroundSize: "cover",
@@ -173,29 +173,31 @@ export default function Home() {
       </div>
 
       {/* HERO TEXT */}
-      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-10 md:pt-24 pb-20 md:pb-32 relative">
-        <div className="grid grid-cols-12 gap-6 items-end">
-          <div className="col-span-12 md:col-span-3">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 flex items-center gap-3">
-              <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-              Pre-launch
-            </div>
-            <div className="mt-4 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
+      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-6 md:pt-24 pb-16 md:pb-32 relative">
+        <div className="grid grid-cols-12 gap-6 md:gap-6 items-end">
+          <div className="col-span-12 md:col-span-3 mb-4 md:mb-0">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
+              <span className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                Pre-launch
+              </span>
+              <span className="opacity-50 hidden md:inline">·</span>
               <span className="tabular-nums">2026 · v0.0.3</span>
             </div>
           </div>
           <div className="col-span-12 md:col-span-9">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-4 font-mono">
-              ╱╱  Issue 001 · for BR exporters
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
+              ╱╱  Issue 001 · para o merchant brasileiro
             </div>
-            <h1 className="text-[11vw] sm:text-[9vw] md:text-[4.2vw] font-medium leading-[1.02] tracking-[-0.035em] max-w-[24ch]">
-              Stripe takes <span className="tabular-nums">7-8%</span>.<br/>
-              <em className="not-italic">1 in 5 transactions silently fails.</em>
+            <h1 className="text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[14ch] md:max-w-[20ch] break-words">
+              A conta em dólar que mora<br/>
+              <em className="not-italic">dentro do Pix.</em>
               <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
             </h1>
-            <p className="mt-6 md:mt-8 text-base md:text-xl leading-[1.45] text-[#0a0a0a]/80 max-w-[52ch]">
-              SlipPay settles in 6 seconds on Stellar. No IOF. No card declines.
-              You hold USDC, you choose when to convert.
+            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[54ch]">
+              Hoje: receba em dólar na sua própria carteira — on-chain, em
+              6 segundos, sem custódia e sem chargeback. Em breve: a entrada
+              via Pix, por parceiro de câmbio licenciado.
             </p>
             <div className="mt-8 md:mt-10">
               <MagneticCTA to="/signup">
@@ -208,24 +210,24 @@ export default function Home() {
         <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
           <div className="col-span-12 md:col-span-3">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
-              ┃ The thesis
+              ┃ A tese
             </div>
           </div>
           <div className="col-span-12 md:col-span-6">
             <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch]">
-              Brazilian SaaS, agencies, and digital exporters lose roughly
-              <em className="font-light"> 7-8% per international invoice</em> — Stripe BR 0.7% +
-              3.99% + R$0.50, plus IOF 3.5% on cross-border FX (raised May 2025).
-              On top of that, <em className="font-light">15-25%</em> of LATAM card transactions
-              decline silently. Revenue you never see in the dashboard. SlipPay routes
-              the same payment via Stellar in six seconds — no IOF, no decline, no chargeback.
-              You hold USDC, you convert when you want.
+              O brasileiro já se dolariza em massa: <em className="font-light">98%</em> das
+              compras de cripto no país no 1º trimestre de 2026 foram stablecoin —
+              US$ 6,8 bi de US$ 6,9 bi, hedge contra o real. Mas esse dólar mora numa
+              exchange, longe do caixa do negócio. O Slippay coloca o dólar
+              <em className="font-light"> no recebimento</em>: o merchant recebe e fica em
+              dólar na própria carteira, em 6 segundos, sem custódia e sem chargeback.
+              Não é poupança em dólar — é caixa em dólar.
             </p>
           </div>
           <div className="col-span-12 md:col-span-3 flex md:justify-end items-end">
             <Link to="/signup"
               className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              Join the waitlist <span className="group-hover:translate-x-1 transition-transform">→</span>
+              Entrar na lista <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>
@@ -236,21 +238,21 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6 mb-16">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              ┃ Numbers
+              ┃ Números
             </div>
             <div className="col-span-12 md:col-span-9 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
-              002 · The economics
+              002 · A economia
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-            <Stat n="7.8%" label="Stripe BR + IOF takes"
-              count={{ to: 7.8, decimals: 1, suffix: "%" }}
-              body="Stripe BR 0.7% + 3.99% + R$0.50 per international transaction. IOF 3.5% on cross-border FX (raised from 0.38% in May 2025). Compounds across every invoice." />
-            <Stat n="1 in 5" label="LATAM card decline rate"
-              body="Cross-border card failure 15-25% across LATAM (Rapyd, 2025). Revenue that never reaches your dashboard. Stellar settlement removes the card rail entirely." />
-            <Stat n="6s" label="Stellar finality"
+            <Stat n="98%" label="das compras cripto no BR são stablecoin"
+              count={{ to: 98, decimals: 0, suffix: "%" }}
+              body="No 1º trimestre de 2026, US$ 6,8 bi de US$ 6,9 bi em compras de cripto no Brasil foram stablecoin (MEXC · Chainalysis). Dolarização não é tese — é o fluxo dominante." />
+            <Stat n="$6-8bi" label="volume cripto/mês no Brasil"
+              body="~90% em stablecoin, +250% ano a ano. Brasil é o 5º maior mercado de adoção do mundo (era 10º). O motivo declarado: hedge contra o real." />
+            <Stat n="6s" label="finalidade na Stellar"
               count={{ to: 6, decimals: 0, suffix: "s" }}
-              body="Deterministic on-chain settlement. No T+1, no batch windows, no chargebacks. Network fee: 0.00001 XLM (~$0.000001), auditable by anyone." />
+              body="Settlement determinístico on-chain. Sem T+1, sem janela de lote, sem chargeback. Taxa de rede 0,00001 XLM (~US$0,000001), auditável por qualquer um." />
           </div>
         </div>
       </section>
@@ -326,24 +328,24 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              ┃ Mechanics
+              ┃ Mecânica
             </div>
             <div className="col-span-12 md:col-span-9">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
-                003 · How it works
+                003 · Como funciona
               </div>
               <h2 className="text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
-                Four moving parts.<br/>One <em className="font-light">atomic</em> transaction.
+                Quatro partes.<br/>Uma transação <em className="font-light">atômica</em>.
               </h2>
               <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
-                <Step n="01" title="Invoice the customer in USD or BRL"
-                  body="POST /v1/orders with usd_amount (BR-export flow) or brl_amount (domestic). USDC denominated 1:1 against USD; no FX round-trip." />
-                <Step n="02" title="Customer pays via wallet or Pix"
-                  body="Global customer signs USDC payment from a Stellar wallet. Brazilian customer pays Pix BRL via licensed anchor (when partnership lands), anchor mints USDC against your address." />
-                <Step n="03" title="Listener confirms on-chain"
-                  body="Horizon stream watches your merchant address, matches the payment by memo, validates amount and asset issuer, marks status=paid in 6s deterministic finality." />
-                <Step n="04" title="Webhook fires, signed with HMAC"
-                  body="Your endpoint receives an order.paid (or subscription.charged) event. Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead. USDC sits in your wallet until you decide to convert." />
+                <Step n="01" title="Crie a cobrança"
+                  body="POST /v1/orders com o valor em dólar. USDC denominado 1:1 contra o USD; sem ida e volta de FX embutida na cobrança." />
+                <Step n="02" title="O cliente paga"
+                  body="Hoje, o cliente paga em USDC direto da carteira Stellar. Em breve, paga em Pix (BRL) via parceiro de câmbio licenciado, que entrega o USDC no seu endereço." />
+                <Step n="03" title="O listener confirma on-chain"
+                  body="O stream da Horizon observa o endereço do merchant, casa o pagamento pelo memo, valida valor e emissor do ativo, e marca status=pago em 6s de finalidade determinística." />
+                <Step n="04" title="O webhook dispara, assinado com HMAC"
+                  body="Seu endpoint recebe order.paid (ou subscription.charged). Retry exponencial: 1m, 5m, 30m, 2h, 12h, 24h, dead. O USDC fica na sua carteira até você decidir converter." />
               </div>
             </div>
           </div>
@@ -355,29 +357,30 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              ┃ Position
+              ┃ Posição
             </div>
             <div className="col-span-12 md:col-span-9">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
-                004 · Regulatory
+                004 · Regulatório
               </div>
               <h2 className="text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch]">
-                Built for the window<br/>that <em className="font-light">just opened</em>.
+                Feito para a janela<br/>que <em className="font-light">acabou de abrir</em>.
               </h2>
-              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[64ch]">
-                BCB Resoluções 519/520/521 (effective February 2026) reclassified BRL ↔ stablecoin flow as
-                <em className="font-light"> operações de câmbio</em>. SlipPay operates as a technology layer
-                on top of licensed BR VASPs — the anchor handles BRL custody and FX,
-                slippay handles the merchant API, settlement matching, and webhook delivery.
-                Merchant funds remain on Stellar in the merchant&rsquo;s own wallet from the moment
-                of payment forward. Non-custodial where it matters.
+              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch]">
+                O Slippay é provedor de tecnologia de pagamento — não detém custódia,
+                não opera câmbio e não é instituição financeira. A conversão BRL→USDC
+                é executada por instituição autorizada pelo BCB (câmbio + PSAV). O fluxo
+                é <em className="font-light">doméstico</em>: não há liquidação cross-border
+                via blockchain, e a Res. BCB 561/2026 não se aplica a ele por design
+                arquitetural. Risco residual de reinterpretação regulatória existe e é
+                monitorado ativamente.
               </p>
 
               <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-                <Cell label="Chain" value="Stellar" />
-                <Cell label="Assets" value="USDC · PYUSD" />
-                <Cell label="Buyer rail" value="Pix · BRL" />
-                <Cell label="Cash payout" value="MoneyGram · 180+ countries" />
+                <Cell label="Rede" value="Stellar" />
+                <Cell label="Ativos" value="USDC · PYUSD" />
+                <Cell label="Entrada" value="Pix · BRL" />
+                <Cell label="Custódia" value="Do merchant · não-custodial" />
               </div>
             </div>
           </div>
@@ -388,18 +391,19 @@ export default function Home() {
       <section className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
-            005 · Onboard <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
+            005 · Comece <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
           </div>
           <h2 className="text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch]">
-            Ready when<br/><em className="font-light">your store is</em>.
+            Pronto quando<br/><em className="font-light">seu caixa estiver</em>.
           </h2>
-          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[48ch]">
-            Sign up. Drop your Stellar receive address. Pick USDC or PYUSD.
-            Copy your API key. First Pix-to-dollar order in under five minutes.
+          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch]">
+            Cadastre-se. Informe seu endereço Stellar de recebimento. Escolha USDC
+            ou PYUSD. Copie sua API key. Comece a receber em dólar on-chain hoje;
+            a entrada via Pix entra com o parceiro de câmbio.
           </p>
           <Link to="/signup"
             className="inline-flex items-center gap-3 mt-12 bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
-            Create merchant account <span>→</span>
+            Criar conta de merchant <span>→</span>
           </Link>
         </div>
       </section>
