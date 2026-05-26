@@ -275,8 +275,8 @@ export default function Home() {
                 Primitiva de assinatura v0.2 implantada na mainnet da Stellar em
                 16/05/2026. USDC real movido on-chain pelo fluxo de demo x402.
                 As duas transações abaixo são auditáveis publicamente no stellar.expert.
-                A auditoria completa (8 críticas + 14 altas fechadas) está no
-                link abaixo.
+                A auditoria, feita pela Bluewave AI Security, fechou 8 críticas
+                e 14 altas.
               </p>
               <div className="mt-10 border border-[#f1eee7]/15">
                 <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#f1eee7]/15">
