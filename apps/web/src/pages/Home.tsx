@@ -66,13 +66,13 @@ export default function Home() {
         >
           <Link to="/x402-demo" className="hover:opacity-60 transition-opacity">x402 demo</Link>
           <Link to="/docs" className="hover:opacity-60 transition-opacity">Docs</Link>
-          <a href="#how" className="hover:opacity-60 transition-opacity">How it works</a>
-          <Link to="/login" className="hover:opacity-60 transition-opacity">Log in</Link>
+          <a href="#how" className="hover:opacity-60 transition-opacity">Como funciona</a>
+          <Link to="/login" className="hover:opacity-60 transition-opacity">Entrar</Link>
           <Link to="/signup"
             style={{ textShadow: "none" }}
             className="bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] transition-colors text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
             <span className="inline-block w-1 h-1 bg-[#0a0a0a]" />
-            Sign up
+            Criar conta
           </Link>
         </nav>
         {/* Mobile hamburger */}
@@ -106,10 +106,10 @@ export default function Home() {
           </div>
           <nav className="flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
             {[
-              { to: "/", label: "Home" },
+              { to: "/", label: "Início" },
               { to: "/x402-demo", label: "x402 demo" },
               { to: "/docs", label: "Docs" },
-              { to: "/login", label: "Log in" },
+              { to: "/login", label: "Entrar" },
             ].map(l => (
               <Link
                 key={l.to} to={l.to}
@@ -125,7 +125,7 @@ export default function Home() {
               className="mt-8 bg-[#b5e853] text-[#0a0a0a] py-4 text-center text-sm uppercase tracking-[0.22em] font-medium flex items-center justify-center gap-3"
             >
               <span className="inline-block w-1.5 h-1.5 bg-[#0a0a0a]" />
-              Sign up
+              Criar conta
             </Link>
           </nav>
           <div className="px-5 py-6 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
@@ -179,10 +179,10 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
               <span className="flex items-center gap-2">
                 <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                Pre-launch
+                Mainnet · Stellar
               </span>
               <span className="opacity-50 hidden md:inline">·</span>
-              <span className="tabular-nums">2026 · v0.0.3</span>
+              <span className="tabular-nums">Live · v0.2</span>
             </div>
           </div>
           <div className="col-span-12 md:col-span-9">
@@ -201,7 +201,7 @@ export default function Home() {
             </p>
             <div className="mt-8 md:mt-10">
               <MagneticCTA to="/signup">
-                Join the waitlist <span>→</span>
+                Criar conta de merchant <span>→</span>
               </MagneticCTA>
             </div>
           </div>
@@ -414,22 +414,22 @@ export default function Home() {
           <div className="grid grid-cols-12 gap-6 pb-16 border-b border-[#f1eee7]/15">
             <div className="col-span-12 md:col-span-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
-                ┃ Product
+                ┃ Produto
               </div>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/signup" className="hover:opacity-60">Sign up</Link></li>
-                <li><Link to="/login" className="hover:opacity-60">Log in</Link></li>
-                <li><a href="#how" className="hover:opacity-60">How it works</a></li>
+                <li><Link to="/signup" className="hover:opacity-60">Criar conta</Link></li>
+                <li><Link to="/login" className="hover:opacity-60">Entrar</Link></li>
+                <li><a href="#how" className="hover:opacity-60">Como funciona</a></li>
               </ul>
             </div>
             <div className="col-span-12 md:col-span-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
-                ┃ Resources
+                ┃ Recursos
               </div>
               <ul className="space-y-2 text-sm">
                 <li><Link to="/docs/api-reference/orders" className="hover:opacity-60">API docs</Link></li>
-                <li><Link to="/docs/api-reference/webhooks" className="hover:opacity-60">Webhook guide</Link></li>
-                <li><Link to="/docs/security/audit-001" className="hover:opacity-60">Security audits</Link></li>
+                <li><Link to="/docs/api-reference/webhooks" className="hover:opacity-60">Guia de webhook</Link></li>
+                <li><Link to="/docs/security/audit-001" className="hover:opacity-60">Auditorias de segurança</Link></li>
                 <li><Link to="/docs/integrations/x402" className="hover:opacity-60">x402 protocol</Link></li>
                 <li><a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="hover:opacity-60">SSL spec ↗</a></li>
               </ul>
@@ -439,8 +439,8 @@ export default function Home() {
                 ┃ Legal
               </div>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:opacity-60">Terms</a></li>
-                <li><a href="#" className="hover:opacity-60">Privacy</a></li>
+                <li><a href="#" className="hover:opacity-60">Termos</a></li>
+                <li><a href="#" className="hover:opacity-60">Privacidade</a></li>
               </ul>
             </div>
           </div>
@@ -452,7 +452,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-            <div>© 2026 · Bluewave AI · Pre-launch · Confidential</div>
+            <div>© 2026 · Bluewave AI · Mainnet · Stellar</div>
             <div>Blumenau · BR · America/Sao_Paulo</div>
           </div>
         </div>
