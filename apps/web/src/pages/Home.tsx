@@ -369,7 +369,8 @@ export default function Home() {
               <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch]">
                 O Slippay é provedor de tecnologia de pagamento — não detém custódia,
                 não opera câmbio e não é instituição financeira. A conversão BRL→USDC
-                é executada por instituição autorizada pelo BCB (câmbio + PSAV). O fluxo
+                será executada por instituição autorizada pelo BCB (câmbio + PSAV),
+                parceiro de câmbio em definição. O fluxo
                 é <em className="font-light">doméstico</em>: não há liquidação cross-border
                 via blockchain, e a Res. BCB 561/2026 não se aplica a ele por design
                 arquitetural. Risco residual de reinterpretação regulatória existe e é
