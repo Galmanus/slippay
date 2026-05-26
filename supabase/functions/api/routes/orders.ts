@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { SupabaseClient } from "supabase";
 import { CreateOrderInputSchema, ORDER_DEFAULT_EXPIRY_MINUTES } from "@slippay/shared";
 import { requireApiKey } from "../middleware/auth_apikey.ts";
+import { requireApiKeyOrJwt } from "../middleware/auth_any.ts";
 import { generateMemo } from "../lib/memo.ts";
 import { getBrlPerUsdc } from "../lib/rate.ts";
 import { serviceClient } from "../lib/supabase.ts";
@@ -63,7 +64,7 @@ r.post("/", requireApiKey, async (c) => {
   }, 201);
 });
 
-r.get("/", requireApiKey, async (c) => {
+r.get("/", requireApiKeyOrJwt, async (c) => {
   const merchant = c.get("merchant");
   const sb = c.get("supabase");
   const status = c.req.query("status");

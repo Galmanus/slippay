@@ -6,6 +6,7 @@ import {
   ORDER_DEFAULT_EXPIRY_MINUTES,
 } from "@slippay/shared";
 import { requireApiKey } from "../middleware/auth_apikey.ts";
+import { requireApiKeyOrJwt } from "../middleware/auth_any.ts";
 import { generateMemo } from "../lib/memo.ts";
 import { getBrlPerUsdc } from "../lib/rate.ts";
 import { buildChargeTransaction } from "../lib/soroban.ts";
@@ -53,7 +54,7 @@ r.post("/", requireApiKey, async (c) => {
 });
 
 // GET /v1/subscriptions — list merchant's subscriptions
-r.get("/", requireApiKey, async (c) => {
+r.get("/", requireApiKeyOrJwt, async (c) => {
   const merchant = c.get("merchant");
   const sb = c.get("supabase");
   const status = c.req.query("status");
@@ -67,7 +68,7 @@ r.get("/", requireApiKey, async (c) => {
 });
 
 // GET /v1/subscriptions/:id — single subscription
-r.get("/:id", requireApiKey, async (c) => {
+r.get("/:id", requireApiKeyOrJwt, async (c) => {
   const merchant = c.get("merchant");
   const sb = c.get("supabase");
   const id = c.req.param("id");
