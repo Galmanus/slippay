@@ -227,7 +227,7 @@ export default function Home() {
           <div className="col-span-12 flex md:justify-end items-end">
             <Link to="/signup"
               className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              Entrar na lista <span className="group-hover:translate-x-1 transition-transform">→</span>
+              Criar conta <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>
