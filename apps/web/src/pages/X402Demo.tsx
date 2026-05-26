@@ -121,7 +121,7 @@ export default function X402Demo() {
         return;
       }
       if (r.status === 404) {
-        setCard(slug, { step: "error", error: "resource_not_found · the merchant hasn't registered this resource yet" });
+        setCard(slug, { step: "error", error: "resource_not_found · the seller hasn't registered this resource yet" });
         return;
       }
       setCard(slug, { step: "error", error: `unexpected_status_${r.status}` });
@@ -248,7 +248,7 @@ export default function X402Demo() {
             <Step n="02" title="Sign with Freighter"
               body="The page constructs a Stellar USDC payment with the exact MEMO_HASH the API issued. Freighter (or any Stellar wallet) confirms the transaction. Submitted directly to Horizon." />
             <Step n="03" title="Listener matches on-chain"
-              body="Slippay's listener watches the merchant address. When the matching memo + asset + amount lands, the order is marked paid via the same matcher pipeline that powers subscription billing." />
+              body="Slippay's listener watches the seller address. When the matching memo + asset + amount lands, the order is marked paid via the same matcher pipeline that powers subscription billing." />
             <Step n="04" title="Page polls, unlocks"
               body="The page polls the x402 endpoint every 2s. As soon as the listener flips order.status to paid, the next GET returns 200 with the content." />
           </div>
