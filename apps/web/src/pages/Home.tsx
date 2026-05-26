@@ -185,26 +185,26 @@ export default function Home() {
               <span className="tabular-nums">Live · v0.2</span>
             </div>
           </div>
-          <div className="col-span-12">
+          <Reveal className="col-span-12 text-center">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
               ╱╱  Issue 001 · pra quem vende no Brasil
             </div>
-            <h1 className="text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[14ch] md:max-w-[20ch] break-words">
+            <h1 className="text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[20ch] mx-auto break-words">
               A conta em dólar que mora<br/>
               <em className="not-italic">dentro do Pix.</em>
               <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
             </h1>
-            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[54ch]">
+            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[54ch] mx-auto">
               Toda venda vira dólar na sua carteira em 6 segundos, com taxa de
               0,98% — a mais barata do mercado. Sem custódia, sem chargeback.
               Hoje em USDC; a entrada via Pix chega com parceiro de câmbio licenciado.
             </p>
-            <div className="mt-8 md:mt-10">
+            <div className="mt-8 md:mt-10 flex justify-center">
               <MagneticCTA to="/signup">
                 Criar conta <span>→</span>
               </MagneticCTA>
             </div>
-          </div>
+          </Reveal>
         </div>
 
         <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
