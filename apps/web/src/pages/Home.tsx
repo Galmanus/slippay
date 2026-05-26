@@ -144,17 +144,20 @@ export default function Home() {
           bg-cover on mobile (uses the band as focal anchor so the wordmark
           stays visible at portrait aspect). */}
       <div className="relative w-full bg-[#0a0a0a]">
-        <img
-          src="/hero.png?v=liberty3"
-          alt="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
-          className="hidden md:block w-full h-auto"
-          loading="eager"
-          decoding="async"
-        />
+        <picture className="hidden md:block">
+          <source srcSet="/hero.webp?v=opt1" type="image/webp" />
+          <img
+            src="/hero.jpg?v=opt1"
+            alt="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
+            className="w-full h-auto"
+            loading="eager"
+            decoding="async"
+          />
+        </picture>
         <div
           className="md:hidden w-full h-[48vh] min-h-[340px] max-h-[480px] bg-[position:center_30%]"
           style={{
-            backgroundImage: "url('/hero.png?v=liberty3')",
+            backgroundImage: "image-set(url('/hero.webp?v=opt1') type('image/webp'), url('/hero.jpg?v=opt1') type('image/jpeg'))",
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat",
           }}
@@ -189,15 +192,15 @@ export default function Home() {
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
               ╱╱  Issue 001 · pra quem vende no Brasil
             </div>
-            <h1 className="title-grad text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[20ch] mx-auto break-words">
-              A conta em dólar que mora<br/>
-              <em className="not-italic">dentro do Pix.</em>
+            <h1 className="title-grad text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[18ch] mx-auto break-words">
+              O commerce stack do Brasil<br/>
+              <em className="not-italic">em stablecoin.</em>
               <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
             </h1>
-            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[54ch] mx-auto">
-              Toda venda vira dólar na sua carteira em 6 segundos, com taxa de
-              0,98% — a mais barata do mercado. Sem custódia, sem chargeback.
-              Hoje em USDC; a entrada via Pix chega com parceiro de câmbio licenciado.
+            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[56ch] mx-auto">
+              Checkout, yield e cash-out no mesmo trilho Stellar. Toda venda vira
+              dólar na sua carteira em 6 segundos, com taxa de 0,98% — a mais barata
+              do mercado. Não-custodial, sem chargeback. Hoje em USDC, vivo na mainnet.
             </p>
             <div className="mt-8 md:mt-10 flex justify-center">
               <MagneticCTA to="/signup">
@@ -233,6 +236,55 @@ export default function Home() {
         </div>
       </Reveal>
 
+      {/* COMMERCE STACK · 3 modules — dark section (hybrid). Honest status
+          badges: only Checkout is live on mainnet; Yield + Cross-border are
+          roadmap / ecosystem rails, labeled as such so the page never claims
+          shipped what isn't. */}
+      <Reveal as="section" id="stack-modules" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
+              ┃ A solução
+            </div>
+            <div className="col-span-12">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums text-center">
+                001b · Não é checkout. É commerce stack
+              </div>
+              <h2 className="title-grad-dark text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch] mx-auto text-center">
+                Três módulos.<br/>Uma única <em className="font-light">wallet</em>.
+              </h2>
+              <p className="mt-8 text-base md:text-lg leading-[1.6] text-[#f1eee7]/70 max-w-[60ch] mx-auto text-center">
+                Mesma stack Soroban. Cada lojista que aceita SlipPay ganha checkout
+                hoje — e o trilho de yield e cash-out global na sequência.
+              </p>
+              <div className="mt-14 grid md:grid-cols-3 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
+                <Module
+                  tag="01 · Checkout"
+                  status="live"
+                  statusLabel="Live · mainnet"
+                  title="USDC no carrinho"
+                  body="Comprador paga em stablecoin com qualquer wallet Stellar (Freighter, Lobstr). Lojista recebe USDC direto na carteira. Liquidação atômica < 6s, fee 0,98%. PYUSD em breve."
+                />
+                <Module
+                  tag="02 · Yield"
+                  status="soon"
+                  statusLabel="Parceria em definição"
+                  title="Tesouros pro float do lojista"
+                  body="Saldo parado em USDC vira alocação em Tesouros tokenizados (CETES, US Treasuries) via Etherfuse — custódia regulada, não-custodial. Integração em definição."
+                />
+                <Module
+                  tag="03 · Cross-border"
+                  status="ecosystem"
+                  statusLabel="Rede Stellar · SDF"
+                  title="Cash-out em 180+ países"
+                  body="Comprador internacional saca em dinheiro em agência física via MoneyGram na rede Stellar. Saque físico, não liquidação stablecoin cross-border. Sem banco, sem cartão."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
       {/* NUMBERS */}
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
@@ -249,7 +301,7 @@ export default function Home() {
               count={{ to: 98, decimals: 0, suffix: "%" }}
               body="No 1º trimestre de 2026, US$ 6,8 bi de US$ 6,9 bi em compras de cripto no Brasil foram stablecoin (MEXC · Chainalysis). Dolarização não é tese — é o fluxo dominante." />
             <Stat n="$6-8bi" label="volume cripto/mês no Brasil"
-              body="~90% em stablecoin, +250% ano a ano. Brasil é o 5º maior mercado de adoção do mundo (era 10º). O motivo declarado: hedge contra o real." />
+              body="~90% em stablecoin, +100% ano a ano. Brasil é o 5º maior mercado de adoção do mundo (era 10º). O motivo declarado: hedge contra o real." />
             <Stat n="6s" label="finalidade na Stellar"
               count={{ to: 6, decimals: 0, suffix: "s" }}
               body="Settlement determinístico on-chain. Sem T+1, sem janela de lote, sem chargeback. Taxa de rede 0,00001 XLM (~US$0,000001), auditável por qualquer um." />
@@ -369,16 +421,18 @@ export default function Home() {
                 O Slippay é provedor de tecnologia de pagamento — não detém custódia,
                 não opera câmbio e não é instituição financeira. A conversão BRL→USDC
                 será executada por instituição autorizada pelo BCB (câmbio + PSAV),
-                parceiro de câmbio em definição. O fluxo
-                é <em className="font-light">doméstico</em>: não há liquidação cross-border
-                via blockchain, e a Res. BCB 561/2026 não se aplica a ele por design
-                arquitetural. Risco residual de reinterpretação regulatória existe e é
+                parceiro de câmbio em definição. A liquidação do checkout
+                é <em className="font-light">doméstica</em>: não há eFX cross-border em
+                stablecoin, e a Res. BCB 561/2026 não se aplica a ela por design. O
+                cash-out internacional é <em className="font-light">saque físico</em> em
+                agência via MoneyGram na rede Stellar — não liquidação stablecoin
+                cross-border. Risco residual de reinterpretação regulatória existe e é
                 monitorado ativamente.
               </p>
 
               <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
                 <Cell label="Rede" value="Stellar" />
-                <Cell label="Ativos" value="USDC · PYUSD" />
+                <Cell label="Ativos" value="USDC · PYUSD em breve" />
                 <Cell label="Entrada" value="Pix · BRL" />
                 <Cell label="Custódia" value="Sua · não-custodial" />
               </div>
@@ -397,8 +451,8 @@ export default function Home() {
             Pronto quando<br/><em className="font-light">seu caixa estiver</em>.
           </h2>
           <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch] mx-auto text-center">
-            Cadastre-se. Informe seu endereço Stellar de recebimento. Escolha USDC
-            ou PYUSD. Copie sua API key. Comece a receber em dólar on-chain hoje;
+            Cadastre-se. Informe seu endereço Stellar de recebimento. Copie sua
+            API key. Comece a receber em USDC on-chain hoje (PYUSD em breve);
             a entrada via Pix entra com o parceiro de câmbio.
           </p>
           <Link to="/signup"
@@ -472,7 +526,7 @@ function Stat({ n, label, body, count }: { n: string; label: string; body: strin
         ) : n}
       </div>
       <div className="mt-6 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
-      <p className="mt-4 text-sm leading-[1.6] text-[#0a0a0a]/75 max-w-[28ch]">{body}</p>
+      <p className="mt-4 text-sm leading-[1.6] text-[#0a0a0a]/75 max-w-[28ch] mx-auto">{body}</p>
     </div>
   );
 }
@@ -487,6 +541,28 @@ function Step({ n, title, body }: { n: string; title: string; body: string }) {
         <div className="text-xl md:text-2xl tracking-tight font-medium leading-[1.2]">{title}</div>
         <p className="mt-3 text-sm md:text-base leading-[1.65] text-[#0a0a0a]/75 max-w-[48ch]">{body}</p>
       </div>
+    </div>
+  );
+}
+
+function Module({ tag, status, statusLabel, title, body }: {
+  tag: string; status: "live" | "soon" | "ecosystem"; statusLabel: string; title: string; body: string;
+}) {
+  // Live = solid green dot; everything else = hollow, so the eye reads
+  // shipped-vs-roadmap instantly without reading the label.
+  const dot = status === "live"
+    ? "bg-[#b5e853]"
+    : "border border-[#f1eee7]/40";
+  const labelColor = status === "live" ? "text-[#b5e853]" : "text-[#f1eee7]/50";
+  return (
+    <div className="bg-[#0a0a0a] p-8 md:p-10">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#b5e853]">{tag}</div>
+      <div className={"mt-3 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.22em] " + labelColor}>
+        <span className={"inline-block w-2 h-2 " + dot + (status === "live" ? " animate-pulse" : "")} />
+        {statusLabel}
+      </div>
+      <div className="mt-6 text-xl md:text-2xl font-medium tracking-tight leading-[1.15]">{title}</div>
+      <p className="mt-4 text-sm leading-[1.6] text-[#f1eee7]/70">{body}</p>
     </div>
   );
 }
