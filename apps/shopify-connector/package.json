@@ -1,0 +1,11 @@
+{
+  "name": "@slippay/shopify-connector",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SlipPay × Shopify Payments App connector (maps Shopify payment sessions onto SlipPay's API).",
+  "scripts": {
+    "dev": "node src/index.mjs",
+    "start": "node src/index.mjs"
+  }
+}
