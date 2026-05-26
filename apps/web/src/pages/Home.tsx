@@ -209,7 +209,7 @@ export default function Home() {
 
         <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
           <div className="col-span-12">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center">
               ┃ A tese
             </div>
           </div>
@@ -237,14 +237,14 @@ export default function Home() {
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6 mb-16">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 text-center">
               ┃ Números
             </div>
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums text-center">
               002 · A economia
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15 text-center">
             <Stat n="98%" label="das compras cripto no BR são stablecoin"
               count={{ to: 98, decimals: 0, suffix: "%" }}
               body="No 1º trimestre de 2026, US$ 6,8 bi de US$ 6,9 bi em compras de cripto no Brasil foram stablecoin (MEXC · Chainalysis). Dolarização não é tese — é o fluxo dominante." />
@@ -261,7 +261,7 @@ export default function Home() {
       <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
           <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55">
+            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
               ┃ Prova
             </div>
             <div className="col-span-12">
@@ -365,7 +365,7 @@ export default function Home() {
               <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch] mx-auto text-center">
                 Feito para a janela<br/>que <em className="font-light">acabou de abrir</em>.
               </h2>
-              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch]">
+              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch] mx-auto text-center">
                 O Slippay é provedor de tecnologia de pagamento — não detém custódia,
                 não opera câmbio e não é instituição financeira. A conversão BRL→USDC
                 será executada por instituição autorizada pelo BCB (câmbio + PSAV),
@@ -389,14 +389,14 @@ export default function Home() {
 
       {/* CTA */}
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative text-center flex flex-col items-center">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
             005 · Comece <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
           </div>
           <h2 className="title-grad text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
             Pronto quando<br/><em className="font-light">seu caixa estiver</em>.
           </h2>
-          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch]">
+          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch] mx-auto text-center">
             Cadastre-se. Informe seu endereço Stellar de recebimento. Escolha USDC
             ou PYUSD. Copie sua API key. Comece a receber em dólar on-chain hoje;
             a entrada via Pix entra com o parceiro de câmbio.
