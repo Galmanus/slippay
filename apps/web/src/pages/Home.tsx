@@ -129,7 +129,7 @@ export default function Home() {
             </Link>
           </nav>
           <div className="px-5 py-6 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-            Live on Stellar PUBLIC · contract CBJMQ6ZY…
+            Vivo na mainnet Stellar · contrato CBJMQ6ZY…
           </div>
         </div>
       )}
@@ -262,48 +262,48 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 md:col-span-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55">
-              ┃ Proof
+              ┃ Prova
             </div>
             <div className="col-span-12 md:col-span-9">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
-                002b · Verifiable on-chain
+                002b · Verificável on-chain
               </div>
               <h2 className="text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch]">
-                Not a deck. Not a mock.<br/><em className="font-light">Live on Stellar mainnet.</em>
+                Não é promessa. Não é protótipo.<br/><em className="font-light">Vivo na mainnet da Stellar.</em>
               </h2>
               <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch]">
-                Subscription primitive v0.2 deployed on Stellar PUBLIC network on
-                2026-05-16. Real USDC moved on chain through the x402 demo flow.
-                Both transactions below are publicly auditable on stellar.expert.
-                The full audit posture (8 critical + 14 high findings closed) sits
-                behind the link below.
+                Primitiva de assinatura v0.2 implantada na mainnet da Stellar em
+                16/05/2026. USDC real movido on-chain pelo fluxo de demo x402.
+                As duas transações abaixo são auditáveis publicamente no stellar.expert.
+                A auditoria completa (8 críticas + 14 altas fechadas) está no
+                link abaixo.
               </p>
               <div className="mt-10 border border-[#f1eee7]/15">
                 <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#f1eee7]/15">
                   <div className="p-6 md:p-8">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Contract · MAINNET v0.2</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Contrato · MAINNET v0.2</div>
                     <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
                        target="_blank" rel="noopener noreferrer"
                        className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
                       CBJMQ6ZY...DJKSEVQN
                     </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · F5 closed pre-deploy</div>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · F5 fechado pré-deploy</div>
                   </div>
                   <div className="p-6 md:p-8">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">x402 payment · MAINNET</div>
+                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Pagamento x402 · MAINNET</div>
                     <a href="https://stellar.expert/explorer/public/tx/aa3304c93beffde1809ced4989b898cf419b8121e8ca9b50d01d407ccbf8326b"
                        target="_blank" rel="noopener noreferrer"
                        className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
                       aa3304c9...0d407ccb
                     </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0.05 USDC · comprador → vendedor · 6s finality</div>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0,05 USDC · comprador → vendedor · 6s de finalidade</div>
                   </div>
                 </div>
                 <div className="border-t border-[#f1eee7]/15 px-6 md:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                     <div className="flex items-center gap-3">
                       <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
-                      Live on Stellar PUBLIC
+                      Vivo na mainnet Stellar
                     </div>
                     <span className="opacity-40 hidden md:inline">·</span>
                     <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
@@ -314,7 +314,7 @@ export default function Home() {
                   <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
                      target="_blank" rel="noopener noreferrer"
                      className="hover:text-[#b5e853]">
-                    6 audits · 8 critical + 14 high closed →
+                    6 auditorias · 8 críticas + 14 altas fechadas →
                   </a>
                 </div>
               </div>
