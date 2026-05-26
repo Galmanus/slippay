@@ -12,46 +12,46 @@
   *{ margin:0; padding:0; box-sizing:border-box; }
   html,body{ height:100%; background:var(--ink); color:var(--bone);
     font-family:'Inter Tight',system-ui,sans-serif; overflow:hidden; }
-  /* horizontal slide track */
   #deck{ display:flex; height:100vh; width:100vw;
     transition:transform 720ms cubic-bezier(.22,1,.36,1); }
   .slide{ min-width:100vw; height:100vh; padding:8vh 9vw; position:relative;
     display:flex; flex-direction:column; justify-content:center;
-    background-image:radial-gradient(rgba(241,238,231,.03) 1px,transparent 1px);
-    background-size:3px 3px; }
-  /* slide content fades/rises in when active */
+    background-image:radial-gradient(rgba(241,238,231,.03) 1px,transparent 1px); background-size:3px 3px; }
   .slide > *{ opacity:0; transform:translateY(22px);
     transition:opacity 700ms cubic-bezier(.22,1,.36,1),transform 700ms cubic-bezier(.22,1,.36,1); }
   .slide.live > *{ opacity:1; transform:none; }
   .slide.live > *:nth-child(2){ transition-delay:90ms; }
   .slide.live > *:nth-child(3){ transition-delay:180ms; }
-  .slide.live > *:nth-child(4){ transition-delay:270ms; }
-  .slide.live > *:nth-child(5){ transition-delay:360ms; }
+  .slide.live > *:nth-child(4){ transition-delay:280ms; }
+  .slide.live > *:nth-child(5){ transition-delay:380ms; }
   .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em;
-    text-transform:uppercase; color:var(--mut); display:flex; align-items:center; gap:12px; margin-bottom:28px; }
+    text-transform:uppercase; color:var(--mut); display:flex; align-items:center; gap:12px; margin-bottom:30px; }
   .eyebrow .dot{ width:7px; height:7px; background:var(--klein); display:inline-block; }
   h1{ font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-.03em; line-height:1.02;
-    font-size:clamp(38px,6.2vw,104px);
-    background:linear-gradient(180deg,#ffffff 22%,#8f8b80 100%);
+    font-size:clamp(36px,5.8vw,98px);
+    background:linear-gradient(180deg,#fff 24%,#8f8b80 100%);
     -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
   h1 .k{ -webkit-text-fill-color:var(--klein); color:var(--klein); }
-  .lead{ margin-top:34px; font-size:clamp(17px,1.9vw,26px); line-height:1.5; color:rgba(241,238,231,.82); max-width:30ch; }
-  .big{ font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-.03em;
-    font-size:clamp(54px,9vw,150px); line-height:.95;
-    background:linear-gradient(180deg,#ffffff 25%,#7c7a72 100%);
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
-  .row{ display:flex; gap:6vw; flex-wrap:wrap; margin-top:40px; }
-  .stat .n{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(34px,4.4vw,68px); letter-spacing:-.03em; color:var(--bone); }
-  .stat .l{ margin-top:10px; font-size:14px; color:var(--mut); max-width:22ch; line-height:1.45; }
-  ul.clean{ list-style:none; margin-top:36px; display:flex; flex-direction:column; gap:18px; max-width:60ch; }
-  ul.clean li{ font-size:clamp(16px,1.6vw,21px); line-height:1.4; padding-left:26px; position:relative; color:rgba(241,238,231,.88); }
-  ul.clean li::before{ content:""; position:absolute; left:0; top:.55em; width:9px; height:9px; background:var(--klein); }
+  .lead{ margin-top:34px; font-size:clamp(17px,1.9vw,27px); line-height:1.45; color:rgba(241,238,231,.82); max-width:34ch; }
+  .row{ display:flex; gap:5vw; flex-wrap:wrap; margin-top:44px; }
+  .stat .n{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(40px,5.2vw,84px); letter-spacing:-.03em; color:var(--bone); line-height:1; }
+  .stat .l{ margin-top:14px; font-size:14px; color:var(--mut); max-width:20ch; line-height:1.45; }
+  ul.clean{ list-style:none; margin-top:34px; display:flex; flex-direction:column; gap:18px; max-width:62ch; }
+  ul.clean li{ font-size:clamp(16px,1.55vw,22px); line-height:1.42; padding-left:28px; position:relative; color:rgba(241,238,231,.88); }
+  ul.clean li::before{ content:""; position:absolute; left:0; top:.5em; width:10px; height:10px; background:var(--klein); }
   ul.clean li b{ color:var(--bone); font-weight:600; }
+  .force{ display:flex; gap:3vw; flex-wrap:wrap; margin-top:40px; }
+  .force div{ flex:1; min-width:220px; border-top:2px solid var(--klein); padding-top:18px; }
+  .force h3{ font-family:'Space Grotesk',sans-serif; font-size:clamp(18px,1.8vw,24px); font-weight:600; }
+  .force p{ margin-top:10px; font-size:15px; color:var(--mut); line-height:1.5; }
   .seal{ display:inline-flex; align-items:center; gap:10px; margin-top:34px;
     font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--klein); }
   .seal .dot{ width:9px; height:9px; background:var(--klein); }
-  .note{ margin-top:30px; font-size:13px; color:var(--mut); font-family:'JetBrains Mono',monospace; letter-spacing:.04em; }
-  /* chrome */
+  .live-tag{ display:inline-flex; align-items:center; gap:9px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--klein); margin-top:30px; }
+  .live-tag .pulse{ width:9px; height:9px; background:var(--klein); border-radius:50%; animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(181,232,83,.5);} 50%{ opacity:.5; box-shadow:0 0 0 8px rgba(181,232,83,0);} }
+  .note{ margin-top:30px; font-size:13px; color:var(--mut); font-family:'JetBrains Mono',monospace; letter-spacing:.04em; line-height:1.6; }
+  .kicker{ font-family:'Space Grotesk',sans-serif; font-size:clamp(20px,2.4vw,34px); font-weight:500; color:var(--klein); margin-top:30px; letter-spacing:-.02em; max-width:30ch; line-height:1.2; }
   .brand{ position:fixed; top:5vh; left:9vw; font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.02em; font-size:20px; z-index:10; }
   .brand .k{ color:var(--klein); }
   .counter{ position:fixed; bottom:5vh; right:9vw; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; color:var(--mut); z-index:10; }
@@ -63,82 +63,112 @@
 <body>
 <div class="progress" id="prog"></div>
 <div class="brand">slippay<span class="k">.</span></div>
-<div class="counter" id="counter">01 / 07</div>
-<div class="hint">← → navegar · F tela cheia</div>
+<div class="counter" id="counter"></div>
+<div class="hint">← → · F tela cheia</div>
 
 <div id="deck">
 
   <!-- 1 · COVER -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> slippay · stellar 37 graus · rio 2026</div>
-    <h1>A conta em dólar<br/>que mora dentro<br/>do Pix<span class="k">.</span></h1>
-    <p class="lead">Billing em dólar, Stellar-nativo, pra todo negócio que o sistema exclui. Vivo na mainnet hoje.</p>
+    <div class="eyebrow"><span class="dot"></span> stellar 37 graus · rio 2026</div>
+    <h1>A camada de dólar<br/>da economia<br/>on-chain<span class="k">.</span></h1>
+    <p class="lead">Começando pelo maior mercado em dolarização do planeta — o Brasil. Vivo na mainnet hoje.</p>
   </section>
 
-  <!-- 2 · WHY NOW -->
+  <!-- 2 · THE SHIFT -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 01 · por que agora</div>
-    <h1>O Brasil já se<br/>dolariza<span class="k">.</span> Em massa.</h1>
+    <div class="eyebrow"><span class="dot"></span> 01 · a virada</div>
+    <h1>O dinheiro está virando<br/>dólar on-chain<span class="k">.</span><br/>E não tem volta.</h1>
     <div class="row">
-      <div class="stat"><div class="n">98%</div><div class="l">das compras de cripto no BR no 1º tri/2026 foram stablecoin</div></div>
-      <div class="stat"><div class="n">US$ 6,8 bi</div><div class="l">de US$ 6,9 bi — hedge contra o real, num trimestre</div></div>
-      <div class="stat"><div class="n">5º</div><div class="l">maior mercado de adoção do mundo (era 10º)</div></div>
+      <div class="stat"><div class="n" data-count="98" data-suffix="%">0%</div><div class="l">das compras de cripto no BR já são stablecoin</div></div>
+      <div class="stat"><div class="n" data-count="6.8" data-dec="1" data-prefix="US$ " data-suffix=" bi">US$ 0</div><div class="l">em um único trimestre — hedge contra o real</div></div>
+      <div class="stat"><div class="n" data-count="250" data-prefix="+" data-suffix="%">0%</div><div class="l">de crescimento ano a ano. 5º maior mercado do mundo</div></div>
     </div>
-    <p class="note">Mas esse dólar mora numa exchange — longe do caixa do negócio.</p>
+    <p class="note">Não é moda. É a desconfiança permanente numa moeda fraca, expressa em dólar digital.</p>
   </section>
 
-  <!-- 3 · THE VISION (nested) -->
+  <!-- 3 · THE CATEGORY -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 02 · a visão</div>
-    <h1>O dólar no<br/><em>recebimento</em>.</h1>
+    <div class="eyebrow"><span class="dot"></span> 02 · a categoria</div>
+    <h1>Esse dólar está<br/>preso na exchange<span class="k">.</span></h1>
+    <p class="kicker">Quem leva esse dólar pro caixa da economia real ganha a camada inteira — não um produto, uma categoria.</p>
+  </section>
+
+  <!-- 4 · THE VISION -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 03 · um trilho, dois mercados</div>
+    <h1>Hoje os humanos.<br/>Amanhã os <em>agentes</em>.</h1>
     <ul class="clean">
-      <li><b>Hoje:</b> o negócio brasileiro recebe e fica em dólar na própria carteira — 6s, sem custódia, sem chargeback.</li>
-      <li><b>Amanhã:</b> os agentes de IA — assinatura recorrente on-chain, o pagador que ninguém ainda atende.</li>
-      <li>Os dois precisam de um trilho que só a <b>Stellar</b> fecha. Não é poupança em dólar — é <b>caixa em dólar</b>.</li>
+      <li><b>Hoje:</b> milhões de negócios que o Stripe exclui (BR, LATAM, África) recebem e ficam em dólar — sem custódia, sem chargeback, em 6 segundos.</li>
+      <li><b>Amanhã:</b> a economia de agentes de IA — que paga API, assina serviço e fatura sozinha. O pagador que ainda não tem trilho.</li>
+      <li>Dois mercados gigantes. <b>Um único trilho</b> — e ele roda na Stellar.</li>
     </ul>
   </section>
 
-  <!-- 4 · THE HOOK -->
+  <!-- 5 · INEVITABILITY -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 03 · a primitiva que ninguém tem</div>
-    <h1>Assinatura<br/>recorrente<br/>on-chain<span class="k">.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> 04 · por que é inevitável</div>
+    <h1>Três forças<br/>convergindo<span class="k">.</span></h1>
+    <div class="force">
+      <div><h3>Macro</h3><p>O real desvaloriza, a dolarização é permanente. A demanda não é cíclica — é estrutural.</p></div>
+      <div><h3>Regulação</h3><p>A Res. 561 torna ilegal o gateway cross-border via stablecoin em out/2026. Mata os concorrentes. SlipPay é doméstico por design.</p></div>
+      <div><h3>Tecnologia</h3><p>Stellar liquida em 6s a custo ~zero. A infra que torna o trilho possível, agora.</p></div>
+    </div>
+  </section>
+
+  <!-- 6 · THE FRONTIER -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 05 · a fronteira que ninguém ocupou</div>
+    <h1>A primeira assinatura<br/>recorrente de agente<span class="k">.</span></h1>
     <ul class="clean">
-      <li>O x402 resolveu o pagamento <b>avulso</b> de agente. Assinatura <b>recorrente</b> ainda não existia.</li>
-      <li>SlipPay tem o contrato Soroban de subscription <b>vivo na mainnet</b> — a primeira do tipo.</li>
-      <li>Mainnet é piso do cohort. <b>Recorrência + uso real</b> é a pista que ninguém ocupou.</li>
+      <li>O x402 resolveu o pagamento <b>avulso</b> de agente. Recorrência ainda não existia.</li>
+      <li>SlipPay tem o contrato Soroban de subscription <b>vivo na mainnet</b> — a primeira do mundo.</li>
+      <li>Quando agentes forem maioria dos pagantes, eles vão <b>assinar</b>. E vão assinar aqui.</li>
     </ul>
   </section>
 
-  <!-- 5 · PROOF -->
+  <!-- 7 · PROOF -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 04 · não é promessa — funciona</div>
-    <h1>Vivo na mainnet.<br/>Recebendo<span class="k">.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> 06 · não é promessa</div>
+    <h1>Funciona. Vivo.<br/>Recebendo<span class="k">.</span></h1>
     <ul class="clean">
-      <li><b>WooCommerce ao vivo:</b> venda real de R$ 49,90 → 9,92 USDC no checkout.</li>
-      <li><b>3 plataformas</b> conectadas: WooCommerce · VTEX · Shopify. Mesmo motor, adapter, não rebuild.</li>
-      <li><b>Taxa 0,98%</b> — a mais barata do mercado (MoonPay cobra 1%).</li>
+      <li><b>Demo WooCommerce ao vivo:</b> venda real de R$ 49,90 → 9,92 USDC, on-chain.</li>
+      <li><b>3 plataformas</b> conectadas: WooCommerce · VTEX · Shopify. Mesmo motor — adapter, não rebuild.</li>
+      <li><b>Taxa 0,98%</b> — a mais barata do mercado (MoonPay: 1%).</li>
     </ul>
-    <div class="seal"><span class="dot"></span> Auditado por Bluewave AI Security</div>
+    <div class="live-tag"><span class="pulse"></span> Vivo na mainnet Stellar · Auditado por Bluewave AI Security</div>
   </section>
 
-  <!-- 6 · MOAT -->
+  <!-- 8 · THE MONEY -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 05 · o fosso regulatório</div>
-    <h1>A 561 fecha a<br/>porta<span class="k">.</span> Pra eles.</h1>
+    <div class="eyebrow"><span class="dot"></span> 07 · por que vale um bilhão</div>
+    <h1>0,98% sobre um rio<br/>de dólares<span class="k">.</span></h1>
+    <div class="row">
+      <div class="stat"><div class="n" data-count="6" data-suffix="-8 bi" data-prefix="US$ ">US$ 0</div><div class="l">de fluxo cripto/mês só no Brasil — ~90% stablecoin</div></div>
+      <div class="stat"><div class="n">0,98%</div><div class="l">de take em cada dólar que passa pelo trilho</div></div>
+    </div>
+    <p class="kicker">Não precisamos de muito desse fluxo. E isso é antes da LATAM, antes dos agentes.</p>
+  </section>
+
+  <!-- 9 · MOAT -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 08 · o fosso</div>
+    <h1>Difícil de copiar.<br/>Cedo demais pra perder<span class="k">.</span></h1>
     <ul class="clean">
-      <li>Res. BCB 561 (vigência 01/10/2026): proíbe stablecoin na liquidação <b>cross-border</b> de eFX.</li>
-      <li>Todo gateway "Pix→stablecoin→exterior" fica exposto. <b>SlipPay é doméstico por design</b> — a 561 não toca.</li>
-      <li>O câmbio BRL→USDC será executado <b>via Instituição de Pagamento autorizada pelo BCB</b>. Não somos PSAV nem instituição financeira.</li>
+      <li><b>Regulatório:</b> doméstico por design — a 561 derruba quem é cross-border, não nós.</li>
+      <li><b>Não-custodial:</b> os fundos nunca passam por nós. Confiança é o produto num pagamento.</li>
+      <li><b>Distribuição:</b> adapters prontos pras maiores plataformas do mundo.</li>
+      <li><b>First-mover:</b> a única assinatura recorrente de agente, já na mainnet.</li>
     </ul>
   </section>
 
-  <!-- 7 · ASK -->
+  <!-- 10 · ASK / CLOSE -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 06 · o pedido</div>
-    <h1>Vamos colocar o<br/>dólar no caixa<br/>do Brasil<span class="k">.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> 09 · o pedido</div>
+    <h1>Vamos construir a<br/>camada de dólar de<br/>um continente<span class="k">.</span></h1>
     <ul class="clean">
-      <li>Uma <b>introdução a uma Instituição de Pagamento BR autorizada</b> — o anchor de câmbio que fecha o fluxo.</li>
-      <li>Marco até o Rio: <b>os primeiros merchants reais</b> processando em dólar.</li>
+      <li>Uma <b>introdução a uma Instituição de Pagamento BR autorizada</b> — o anchor de câmbio que destrava o Pix.</li>
+      <li>Os <b>primeiros merchants reais</b> processando em dólar, antes do fim do programa.</li>
     </ul>
     <p class="note">slippay.cc · github.com/Galmanus/slippay · Manuel Galmanus · Mario F. Neto</p>
   </section>
@@ -146,26 +176,31 @@
 </div>
 
 <script>
-  const deck = document.getElementById('deck');
-  const slides = [...document.querySelectorAll('.slide')];
-  const counter = document.getElementById('counter');
-  const prog = document.getElementById('prog');
-  let i = 0;
-  const pad = n => String(n).padStart(2,'0');
-  function go(n){
-    i = Math.max(0, Math.min(slides.length-1, n));
-    deck.style.transform = `translateX(-${i*100}vw)`;
-    counter.textContent = `${pad(i+1)} / ${pad(slides.length)}`;
-    prog.style.width = `${((i+1)/slides.length)*100}%`;
-    slides.forEach((s,k)=> s.classList.toggle('live', k===i));
+  const deck=document.getElementById('deck'),slides=[...document.querySelectorAll('.slide')];
+  const counter=document.getElementById('counter'),prog=document.getElementById('prog');
+  let i=0; const pad=n=>String(n).padStart(2,'0');
+  function countUp(el){
+    const to=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec||'0');
+    const pre=el.dataset.prefix||'',suf=el.dataset.suffix||'',start=performance.now(),dur=1300;
+    function tick(now){ const t=Math.min(1,(now-start)/dur),e=1-Math.pow(1-t,3),v=to*e;
+      el.textContent=pre+v.toFixed(dec).replace('.',',')+suf; if(t<1)requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
   }
-  document.addEventListener('keydown', e=>{
-    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); go(i+1); }
-    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); go(i-1); }
-    else if(e.key==='Home'){ go(0); } else if(e.key==='End'){ go(slides.length-1); }
-    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    deck.style.transform=`translateX(-${i*100}vw)`;
+    counter.textContent=`${pad(i+1)} / ${pad(slides.length)}`;
+    prog.style.width=`${((i+1)/slides.length)*100}%`;
+    slides.forEach((s,k)=>s.classList.toggle('live',k===i));
+    slides[i].querySelectorAll('[data-count]').forEach(el=>{ el.textContent=(el.dataset.prefix||'')+'0'+(el.dataset.suffix||''); countUp(el); });
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(i+1);}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
+    else if(e.key==='Home')go(0); else if(e.key==='End')go(slides.length-1);
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen(); }
   });
-  document.addEventListener('click', e=>{ go(i + (e.clientX < innerWidth*0.35 ? -1 : 1)); });
+  document.addEventListener('click',e=>go(i+(e.clientX<innerWidth*0.35?-1:1)));
   go(0);
 </script>
 </body>
