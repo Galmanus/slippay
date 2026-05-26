@@ -187,7 +187,7 @@ export default function Home() {
           </div>
           <div className="col-span-12 md:col-span-9">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
-              ╱╱  Issue 001 · para o merchant brasileiro
+              ╱╱  Issue 001 · pra quem vende no Brasil
             </div>
             <h1 className="text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[14ch] md:max-w-[20ch] break-words">
               A conta em dólar que mora<br/>
@@ -195,13 +195,13 @@ export default function Home() {
               <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
             </h1>
             <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[54ch]">
-              Hoje: receba em dólar na sua própria carteira — on-chain, em
-              6 segundos, sem custódia e sem chargeback. Em breve: a entrada
-              via Pix, por parceiro de câmbio licenciado.
+              Toda venda vira dólar na sua carteira em 6 segundos, com taxa de
+              0,98% — a mais barata do mercado. Sem custódia, sem chargeback.
+              Hoje em USDC; a entrada via Pix chega com parceiro de câmbio licenciado.
             </p>
             <div className="mt-8 md:mt-10">
               <MagneticCTA to="/signup">
-                Criar conta de merchant <span>→</span>
+                Criar conta <span>→</span>
               </MagneticCTA>
             </div>
           </div>
@@ -219,7 +219,7 @@ export default function Home() {
               compras de cripto no país no 1º trimestre de 2026 foram stablecoin —
               US$ 6,8 bi de US$ 6,9 bi, hedge contra o real. Mas esse dólar mora numa
               exchange, longe do caixa do negócio. O Slippay coloca o dólar
-              <em className="font-light"> no recebimento</em>: o merchant recebe e fica em
+              <em className="font-light"> no recebimento</em>: você recebe e fica em
               dólar na própria carteira, em 6 segundos, sem custódia e sem chargeback.
               Não é poupança em dólar — é caixa em dólar.
             </p>
@@ -296,7 +296,7 @@ export default function Home() {
                        className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
                       aa3304c9...0d407ccb
                     </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0.05 USDC · buyer → merchant · 6s finality</div>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0.05 USDC · comprador → vendedor · 6s finality</div>
                   </div>
                 </div>
                 <div className="border-t border-[#f1eee7]/15 px-6 md:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
@@ -343,7 +343,7 @@ export default function Home() {
                 <Step n="02" title="O cliente paga"
                   body="Hoje, o cliente paga em USDC direto da carteira Stellar. Em breve, paga em Pix (BRL) via parceiro de câmbio licenciado, que entrega o USDC no seu endereço." />
                 <Step n="03" title="O listener confirma on-chain"
-                  body="O stream da Horizon observa o endereço do merchant, casa o pagamento pelo memo, valida valor e emissor do ativo, e marca status=pago em 6s de finalidade determinística." />
+                  body="O stream da Horizon observa o seu endereço, casa o pagamento pelo memo, valida valor e emissor do ativo, e marca status=pago em 6s de finalidade determinística." />
                 <Step n="04" title="O webhook dispara, assinado com HMAC"
                   body="Seu endpoint recebe order.paid (ou subscription.charged). Retry exponencial: 1m, 5m, 30m, 2h, 12h, 24h, dead. O USDC fica na sua carteira até você decidir converter." />
               </div>
@@ -381,7 +381,7 @@ export default function Home() {
                 <Cell label="Rede" value="Stellar" />
                 <Cell label="Ativos" value="USDC · PYUSD" />
                 <Cell label="Entrada" value="Pix · BRL" />
-                <Cell label="Custódia" value="Do merchant · não-custodial" />
+                <Cell label="Custódia" value="Sua · não-custodial" />
               </div>
             </div>
           </div>
@@ -404,7 +404,7 @@ export default function Home() {
           </p>
           <Link to="/signup"
             className="inline-flex items-center gap-3 mt-12 bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
-            Criar conta de merchant <span>→</span>
+            Criar conta <span>→</span>
           </Link>
         </div>
       </section>

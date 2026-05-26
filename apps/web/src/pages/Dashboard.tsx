@@ -99,7 +99,7 @@ export default function Dashboard() {
         <Logo variant="bone" />
         {merchant && (
           <div className="mt-6 mb-12">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/55">Merchant</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/55">Conta</div>
             <div className="text-base mt-1 truncate">{merchant.display_name}</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/55 mt-3">Network</div>
             <div className="flex items-center gap-2 mt-1">
