@@ -453,7 +453,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-            <div>© 2026 · SlipPay · uma empresa Bluewave AI Security</div>
+            <div>© 2026 · SlipPay</div>
             <div>Blumenau · BR · America/Sao_Paulo</div>
           </div>
         </div>
