@@ -311,11 +311,10 @@ export default function Home() {
                       Agent · SSL v7 ↗
                     </a>
                   </div>
-                  <a href="https://github.com/Galmanus/slippay/tree/main/docs/security"
-                     target="_blank" rel="noopener noreferrer"
-                     className="hover:text-[#b5e853]">
-                    Auditado por Bluewave AI Security · 8 críticas + 14 altas fechadas →
-                  </a>
+                  <span className="flex items-center gap-2 text-[#b5e853]">
+                    <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                    Auditado por Bluewave AI Security
+                  </span>
                 </div>
               </div>
             </div>
