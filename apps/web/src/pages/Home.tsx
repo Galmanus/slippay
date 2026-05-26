@@ -173,7 +173,7 @@ export default function Home() {
       </div>
 
       {/* HERO TEXT */}
-      <section className="max-w-[1400px] mx-auto px-5 md:px-12 pt-6 md:pt-24 pb-16 md:pb-32 relative">
+      <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-6 md:pt-24 pb-16 md:pb-32 relative">
         <div className="grid grid-cols-12 gap-6 md:gap-6 items-end">
           <div className="col-span-12 mb-4 md:mb-0">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
@@ -214,7 +214,7 @@ export default function Home() {
             </div>
           </div>
           <div className="col-span-12">
-            <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch]">
+            <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch] mx-auto text-center">
               O brasileiro já se dolariza em massa: <em className="font-light">98%</em> das
               compras de cripto no país no 1º trimestre de 2026 foram stablecoin —
               US$ 6,8 bi de US$ 6,9 bi, hedge contra o real. Mas esse dólar mora numa
@@ -231,10 +231,10 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* NUMBERS */}
-      <section className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6 mb-16">
             <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
@@ -255,10 +255,10 @@ export default function Home() {
               body="Settlement determinístico on-chain. Sem T+1, sem janela de lote, sem chargeback. Taxa de rede 0,00001 XLM (~US$0,000001), auditável por qualquer um." />
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* PROOF · verifiable on-chain */}
-      <section id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+      <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55">
@@ -268,10 +268,10 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
                 002b · Verificável on-chain
               </div>
-              <h2 className="title-grad-dark text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch]">
+              <h2 className="title-grad-dark text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch] mx-auto text-center">
                 Não é promessa. Não é protótipo.<br/><em className="font-light">Vivo na mainnet da Stellar.</em>
               </h2>
-              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch]">
+              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch] mx-auto text-center">
                 Primitiva de assinatura v0.2 implantada na mainnet da Stellar em
                 16/05/2026. USDC real movido on-chain pelo fluxo de demo x402.
                 As duas transações abaixo são auditáveis publicamente no stellar.expert.
@@ -320,10 +320,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* HOW IT WORKS */}
-      <section id="how" className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" id="how" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
@@ -333,7 +333,7 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
                 003 · Como funciona
               </div>
-              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
+              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch] mx-auto text-center">
                 Quatro partes.<br/>Uma transação <em className="font-light">atômica</em>.
               </h2>
               <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
@@ -349,10 +349,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* REGULATORY / STACK */}
-      <section id="stack" className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" id="stack" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
@@ -362,7 +362,7 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
                 004 · Regulatório
               </div>
-              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch]">
+              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch] mx-auto text-center">
                 Feito para a janela<br/>que <em className="font-light">acabou de abrir</em>.
               </h2>
               <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch]">
@@ -385,15 +385,15 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* CTA */}
-      <section className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
             005 · Comece <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
           </div>
-          <h2 className="title-grad text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch]">
+          <h2 className="title-grad text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
             Pronto quando<br/><em className="font-light">seu caixa estiver</em>.
           </h2>
           <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch]">
@@ -406,7 +406,7 @@ export default function Home() {
             Criar conta <span>→</span>
           </Link>
         </div>
-      </section>
+      </Reveal>
 
       {/* FOOTER — oversized wordmark, editorial */}
       <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
