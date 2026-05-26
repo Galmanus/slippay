@@ -74,6 +74,7 @@ const DOC_FILES = [
   "guides/drop-in-sdk.md",
   "guides/recurring-billing.md",
   "guides/woocommerce.md",
+  "guides/platforms.md",
   "guides/webhooks-handler.md",
   "guides/br-export-merchants.md",
 ];
