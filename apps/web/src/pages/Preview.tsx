@@ -217,7 +217,7 @@ export default function Preview() {
                 <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">003 · approve</div>
                 <div className="text-sm text-[#0a0a0a]/75">
                   Your wallet (<strong>{WALLETS.find(w => w.id === wallet)?.name}</strong>) will request signature for one
-                  payment operation: <strong className="tabular-nums">{usdcAmount} USDC</strong> to the merchant
+                  payment operation: <strong className="tabular-nums">{usdcAmount} USDC</strong> to the seller
                   on the <strong>{net.toLowerCase()}</strong> network. Settles in roughly 6 seconds.
                 </div>
                 <div className="bg-[#0a0a0a] text-[#f1eee7] p-4 font-mono text-[11px] leading-[1.6]">
