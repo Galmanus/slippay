@@ -189,7 +189,7 @@ export default function Home() {
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
               ╱╱  Issue 001 · pra quem vende no Brasil
             </div>
-            <h1 className="text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[20ch] mx-auto break-words">
+            <h1 className="title-grad text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[20ch] mx-auto break-words">
               A conta em dólar que mora<br/>
               <em className="not-italic">dentro do Pix.</em>
               <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
@@ -268,7 +268,7 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
                 002b · Verificável on-chain
               </div>
-              <h2 className="text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch]">
+              <h2 className="title-grad-dark text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch]">
                 Não é promessa. Não é protótipo.<br/><em className="font-light">Vivo na mainnet da Stellar.</em>
               </h2>
               <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch]">
@@ -333,7 +333,7 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
                 003 · Como funciona
               </div>
-              <h2 className="text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
+              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch]">
                 Quatro partes.<br/>Uma transação <em className="font-light">atômica</em>.
               </h2>
               <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
@@ -362,7 +362,7 @@ export default function Home() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
                 004 · Regulatório
               </div>
-              <h2 className="text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch]">
+              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch]">
                 Feito para a janela<br/>que <em className="font-light">acabou de abrir</em>.
               </h2>
               <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch]">
@@ -393,7 +393,7 @@ export default function Home() {
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
             005 · Comece <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
           </div>
-          <h2 className="text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch]">
+          <h2 className="title-grad text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch]">
             Pronto quando<br/><em className="font-light">seu caixa estiver</em>.
           </h2>
           <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch]">
