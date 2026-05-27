@@ -98,6 +98,14 @@ app.get("*", async (c) => {
     return c.redirect(`${APP_ORIGIN}${c.req.path}`, 301);
   }
 
+  // Docs moved to GitBook (slippay.gitbook.io/slippay-docs). Redirect the old
+  // in-app /docs paths to the docs home so existing links don't 404. GitBook's
+  // section slugs differ from the old file paths, so we send everything to the
+  // docs root rather than guessing deep slugs.
+  if (c.req.path === "/docs" || c.req.path.startsWith("/docs/")) {
+    return c.redirect("https://slippay.gitbook.io/slippay-docs", 301);
+  }
+
   // app.slippay.cc (and any other host alias) — serve static + SPA fallback.
   try {
     const file = await Deno.readFile(`${WEB_DIST}${path}`);
