@@ -19,19 +19,28 @@
 //! override.
 //!
 //! **v0.1 scope (spike).** Single-signer (one passkey per wallet). Per-merchant
-//! policies keyed by the merchant Address. Policies authorize calls into the
-//! companion `slippay-subscription` contract — concretely, calls whose
-//! `Context::Contract` args match the (id, token, merchant, amount) tuple that
-//! `slippay-subscription.charge` produces. v0.2 will add multi-signer, weighted
-//! quorums, and recovery via secondary passkey.
+//! policies keyed by the merchant Address. The merchant authorizes via
+//! `token.transfer(this_wallet, merchant, amount)`. `__check_auth` decodes
+//! the auth context, looks up the per-merchant policy, validates cap +
+//! interval + revocation + expiry, and authorizes without consulting the
+//! passkey. For any context that does not match a policy (e.g. an
+//! `install_policy` or `revoke_policy` invocation), `__check_auth` verifies
+//! the passkey's secp256r1 signature over the host-provided payload.
 //!
 //! **Passkey verification.** Soroban Protocol 21 added native secp256r1
-//! verification (CAP-0051), the curve used by WebAuthn / passkeys. The
-//! smart wallet stores the passkey's secp256r1 public key (and credential id)
-//! at deploy time and verifies signatures against it via the host's
-//! `crypto.secp256r1_verify` helper. *This v0.1 spike stubs the verification
-//! and validates only the policy match — secp256r1 wiring lands in milestone 3
-//! once the policy primitive is proven end-to-end with mock auth.*
+//! verification (CAP-0051) — the curve used by WebAuthn / passkeys. The
+//! wallet stores the passkey's secp256r1 public key (65-byte uncompressed
+//! X9.62) and credential id at `init` time. `__check_auth` invokes
+//! `env.crypto().secp256r1_verify(pubkey, payload, signature)` which panics
+//! on failure (translated by the host into an auth rejection).
+//!
+//! For the v0.1 spike, `signature_payload` is the raw host-provided digest
+//! and `signature` is the raw 64-byte (r || s) secp256r1 signature. The
+//! frontend is responsible for delivering a signature that satisfies this.
+//! Full WebAuthn unwrapping (authenticatorData + clientDataJSON binding)
+//! lands in v0.2 — concretely, the wallet will require the frontend to pass
+//! both blobs and verify that `sha256(authenticatorData || sha256(clientDataJSON))`
+//! equals `signature_payload` before running secp256r1_verify.
 //!
 //! TTL: every persistent `set` is followed by `extend_ttl`, mirroring the
 //! audit-002 F1 pattern from `slippay-subscription`.
@@ -41,7 +50,7 @@ use soroban_sdk::{
     auth::{Context, ContractContext},
     contract, contracterror, contractimpl, contracttype,
     panic_with_error,
-    Address, BytesN, Env, Symbol, Vec,
+    Address, BytesN, Env, Symbol, TryFromVal, Val, Vec,
 };
 
 // Mirror of slippay-subscription audit-002 F1 TTL constants. The host clamps
@@ -77,8 +86,8 @@ pub struct Policy {
 
 #[contracttype]
 pub enum DataKey {
-    /// Passkey public key (secp256r1, 64-byte uncompressed X||Y). Set once at
-    /// deploy via `init`. Required for passkey-gated wallet operations.
+    /// Passkey public key (secp256r1, 65-byte uncompressed X9.62 = 0x04 ||
+    /// X || Y). Set once at deploy via `init`.
     PasskeyPubkey,
     /// Optional passkey credential id (returned by WebAuthn `navigator
     /// .credentials.create`). Stored so the frontend can issue a correct
@@ -111,9 +120,9 @@ pub struct SmartWallet;
 #[contractimpl]
 impl SmartWallet {
     /// One-shot initializer. Called immediately after deploy with the
-    /// passkey's secp256r1 public key (64-byte uncompressed) and the optional
+    /// passkey's secp256r1 public key (65-byte uncompressed X9.62) and the
     /// credential id. Subsequent calls panic with `AlreadyInitialized`.
-    pub fn init(env: Env, passkey_pubkey: BytesN<64>, passkey_cred_id: BytesN<32>) {
+    pub fn init(env: Env, passkey_pubkey: BytesN<65>, passkey_cred_id: BytesN<32>) {
         if env.storage().instance().has(&DataKey::PasskeyPubkey) {
             panic_with_error!(&env, Error::AlreadyInitialized);
         }
@@ -139,9 +148,8 @@ impl SmartWallet {
         expires_at: u64,
     ) {
         // Require the wallet itself to authorize — triggers __check_auth,
-        // which (per v0.1 stub) expects a passkey signature for non-policy-
-        // matched calls. Installing a policy is, by definition, not a
-        // policy-matched call.
+        // which falls through to passkey signature verification (the call
+        // is not a token.transfer so no policy matches).
         env.current_contract_address().require_auth();
 
         if amount_per_charge <= 0 || max_per_charge < amount_per_charge {
@@ -202,48 +210,107 @@ impl SmartWallet {
     /// Custom account interface (CAP-46-11). Called by the Soroban host on
     /// every auth attempt where this contract is the authorizing principal.
     ///
-    /// **v0.1 authorization rule.** For each `Context::Contract` in
-    /// `auth_contexts`, decide:
-    /// - If the call is into the policy's `token` contract, function name
-    ///   `transfer`, with args matching `(this_wallet, policy.merchant,
-    ///   amount)` and `amount <= policy.max_per_charge` and the policy is
-    ///   not revoked/expired and the interval has elapsed → authorize
-    ///   without consulting the signature (this is the "no extra tap"
-    ///   property). Bump `last_charge_at`.
-    /// - Otherwise → require a passkey signature (this v0.1 spike stubs
-    ///   the verification and accepts non-empty signatures; milestone 3
-    ///   wires real secp256r1 verification).
-    ///
-    /// On any failure, panic with the matching `Error` — the host turns
-    /// the panic into an auth rejection that the calling contract sees as
-    /// a failed `require_auth`.
+    /// Authorization rule:
+    /// 1. If **every** `auth_context` matches an active on-chain policy
+    ///    (i.e., it is a `token.transfer(this_wallet, merchant, amount)`
+    ///    call where the merchant has a non-revoked, non-expired policy with
+    ///    `amount <= max_per_charge` and interval elapsed), authorize without
+    ///    consulting the signature. Bump `last_charge_at` per matched policy.
+    /// 2. Otherwise verify the passkey signature against `signature_payload`
+    ///    using `env.crypto().secp256r1_verify`. Panics on signature failure,
+    ///    which the host translates into an auth rejection.
     pub fn __check_auth(
         env: Env,
-        _signature_payload: BytesN<32>,
-        _signature_args: soroban_sdk::Val,
+        signature_payload: soroban_sdk::crypto::Hash<32>,
+        signature: BytesN<64>,
         auth_contexts: Vec<Context>,
     ) -> Result<(), Error> {
+        let mut all_matched = auth_contexts.len() > 0;
         for ctx in auth_contexts.iter() {
-            match ctx {
-                Context::Contract(ContractContext { contract, fn_name, args: _ }) => {
-                    // v0.1 policy-matching shortcut: identify a transfer call
-                    // into a token whose merchant policy is active. Full arg
-                    // decode is intentionally deferred to milestone 3 along
-                    // with secp256r1 — the spike's goal is the storage and
-                    // surface, not the arg-decode plumbing.
-                    let _ = (contract, fn_name);
-                    // For now, accept and rely on companion test harness
-                    // (mock_all_auths_allowing_non_root_auth) to exercise
-                    // the end-to-end flow. This stub will be replaced
-                    // with the policy check + secp256r1 verify in M3.
-                }
+            let matched = match ctx {
+                Context::Contract(cc) => try_match_policy(&env, &cc)?,
                 Context::CreateContractHostFn(_) | Context::CreateContractWithCtorHostFn(_) => {
                     return Err(Error::AuthContextUnsupported);
                 }
+            };
+            if !matched {
+                all_matched = false;
             }
         }
+        if all_matched {
+            return Ok(());
+        }
+        // Fall through: passkey signature verification.
+        let pubkey: BytesN<65> = env
+            .storage()
+            .instance()
+            .get(&DataKey::PasskeyPubkey)
+            .ok_or(Error::NotInitialized)?;
+        // secp256r1_verify panics on signature failure; reaching the next
+        // line means the signature is valid.
+        env.crypto()
+            .secp256r1_verify(&pubkey, &signature_payload, &signature);
         Ok(())
     }
+}
+
+/// Try to satisfy a single auth context via an active on-chain policy.
+/// Returns `Ok(true)` if the context is a token.transfer matching a valid
+/// policy (and bumps `last_charge_at`). Returns `Ok(false)` if the context
+/// is not a transfer or no policy exists for the recipient. Returns `Err`
+/// when a policy exists but the context violates its constraints — the
+/// host turns this into an auth rejection.
+fn try_match_policy(env: &Env, cc: &ContractContext) -> Result<bool, Error> {
+    let transfer_sym = Symbol::new(env, "transfer");
+    if cc.fn_name != transfer_sym {
+        return Ok(false);
+    }
+    if cc.args.len() != 3 {
+        return Ok(false);
+    }
+
+    // SEP-41 `transfer(from: Address, to: Address, amount: i128)`.
+    let to_val: Val = cc.args.get(1).unwrap();
+    let amount_val: Val = cc.args.get(2).unwrap();
+    let to = match Address::try_from_val(env, &to_val) {
+        Ok(a) => a,
+        Err(_) => return Ok(false),
+    };
+    let amount = match i128::try_from_val(env, &amount_val) {
+        Ok(a) => a,
+        Err(_) => return Ok(false),
+    };
+
+    let key = DataKey::Policy(to.clone());
+    let mut policy: Policy = match env.storage().persistent().get(&key) {
+        Some(p) => p,
+        None => return Ok(false),
+    };
+    if cc.contract != policy.token {
+        return Ok(false);
+    }
+    if policy.revoked {
+        return Err(Error::PolicyRevoked);
+    }
+    let now = env.ledger().timestamp();
+    if policy.expires_at != 0 && now >= policy.expires_at {
+        return Err(Error::PolicyExpired);
+    }
+    if amount > policy.max_per_charge {
+        return Err(Error::AmountExceedsCap);
+    }
+    if policy.last_charge_at != 0
+        && now < policy.last_charge_at.saturating_add(policy.interval_seconds)
+    {
+        return Err(Error::PeriodNotElapsed);
+    }
+
+    policy.last_charge_at = now;
+    env.storage().persistent().set(&key, &policy);
+    env.storage()
+        .persistent()
+        .extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+    Ok(true)
 }
 
 #[cfg(test)]
