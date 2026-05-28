@@ -215,16 +215,17 @@ async function loadDeployerKeypair() {
   return Keypair.fromSecret(stdout.toString().trim());
 }
 
-async function chargeViaSdk({ wallet, amount }) {
+async function chargeViaSdk({ wallet, amount, to }) {
   const t0 = Date.now();
   const deployer = await loadDeployerKeypair();
+  const recipient = to ?? DEMO_MERCHANT;
 
-  // Build the contract invocation: tokenContract.transfer(from=wallet, to=merchant, amount)
+  // Build the contract invocation: tokenContract.transfer(from=wallet, to=recipient, amount)
   const tokenContract = new Contract(DEMO_TOKEN);
   const transferOp = tokenContract.call(
     "transfer",
     new Address(wallet).toScVal(),
-    new Address(DEMO_MERCHANT).toScVal(),
+    new Address(recipient).toScVal(),
     nativeToScVal(BigInt(amount), { type: "i128" }),
   );
 
@@ -370,13 +371,13 @@ function xdrInvokeWithAuth(tx, newAuthEntries) {
   };
 }
 
-async function charge({ wallet, amount }) {
+async function charge({ wallet, amount, to }) {
   // Wrap the SDK path with a timing guard. Falls back to surfacing the
   // error string if the auth-entry plumbing fails — the caller (and the
   // page) renders this as a "rejected" state.
   const t0 = Date.now();
   try {
-    return await chargeViaSdk({ wallet, amount });
+    return await chargeViaSdk({ wallet, amount, to });
   } catch (e) {
     return {
       status: "rejected",
@@ -442,8 +443,9 @@ const server = createServer(async (req, res) => {
     if (req.url === "/api/policy-checkout/charge") {
       if (!body.wallet) throw new Error("missing wallet");
       const amount = body.amount ?? 1_000_000; // default within cap
-      console.log(new Date().toISOString(), "charge", body.wallet.slice(0,8), amount);
-      const result = await charge({ wallet: body.wallet, amount });
+      const to = body.to; // optional · for audit-verification of C1 fix
+      console.log(new Date().toISOString(), "charge", body.wallet.slice(0,8), amount, to ? `to=${to.slice(0,8)}` : "");
+      const result = await charge({ wallet: body.wallet, amount, to });
       console.log(new Date().toISOString(), "charge_result", result.status, `(${result.timing_ms}ms)`);
       res.writeHead(200, { "content-type": "application/json" })
         .end(JSON.stringify(result));

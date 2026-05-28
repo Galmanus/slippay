@@ -189,6 +189,12 @@ impl SmartWallet {
         if expires_at != 0 && expires_at <= env.ledger().timestamp() {
             panic_with_error!(&env, Error::InvalidConfig);
         }
+        // SECURITY_AUDIT H3: a compromised admin must not be able to
+        // designate themselves (or the wallet itself) as the merchant
+        // and drain. Reject those configurations at install time.
+        if merchant == admin || merchant == env.current_contract_address() {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
 
         let policy = Policy {
             merchant: merchant.clone(),
@@ -275,42 +281,36 @@ impl SmartWallet {
         if all_matched {
             return Ok(());
         }
-        // Fall through: passkey signature verification.
+        // SECURITY_AUDIT C1 fix · DEFAULT-DENY for non-policy-matched contexts.
         //
-        // **v0.1 SPIKE STUB · TESTNET-ONLY.** Real secp256r1 verification
-        // requires the frontend to deliver a 64-byte (r||s) signature over
-        // the host-provided payload digest. Producing that signature from
-        // a browser involves either (a) native WebAuthn passkey signing
-        // with full clientDataJSON / authenticatorData unwrapping, or (b)
-        // `@noble/curves` secp256r1 over a JS-held private key. Both are
-        // v0.2 deliverables — they ship after the architecture is proven
-        // end-to-end on testnet.
+        // The previous v0.1 behaviour returned Ok if the signature blob
+        // was merely non-zero. That collapsed the entire "Stripe-impossible"
+        // property: an attacker who knew the placeholder signature (which
+        // lives in open-source code) could call `SAC.transfer(wallet,
+        // attacker_address, balance)` and route around the policy entirely.
+        // See SECURITY_AUDIT.md C1.
         //
-        // For v0.1 we require only that the caller (i) presents a non-zero
-        // signature blob (so a typo'd auth entry is still rejected) and
-        // (ii) has registered a passkey via `init` (so a wallet that was
-        // never initialized cannot install policies). The wallet at this
-        // version is documented as **not safe for mainnet** in DEPLOYED.md
-        // and is gated behind the `slippay-deployer` testnet keypair in
-        // the demo flow.
+        // v0.1 hardening · reject every context that does not match an
+        // installed policy. Until v0.2 wires real `secp256r1_verify`,
+        // wallet operations gated by `require_auth(current_contract_address)`
+        // are not callable. install_policy / revoke_policy stay reachable
+        // because they gate on admin.require_auth(), bypassing __check_auth
+        // for the wallet's own address.
         //
-        // v0.2 replaces this stub with:
+        // v0.2 replaces this rejection with:
+        //   let pubkey = ... ;
         //   env.crypto().secp256r1_verify(&pubkey, &signature_payload, &signature);
+        //   Ok(())
+        let _ = (signature_payload, signature);
+        // Surface NotInitialized if a fall-through hit a wallet that was
+        // never set up — keeps the error closer to the real cause than
+        // SignatureInvalid would.
         let _pubkey: BytesN<65> = env
             .storage()
             .instance()
             .get(&DataKey::PasskeyPubkey)
             .ok_or(Error::NotInitialized)?;
-        // Smoke check: signature must be non-zero. This is NOT cryptographic
-        // — it is purely an integration-error tripwire.
-        let sig_bytes = signature.to_array();
-        if sig_bytes.iter().all(|b| *b == 0) {
-            return Err(Error::SignatureInvalid);
-        }
-        // signature_payload is consumed to silence the unused warning even
-        // though we don't verify against it yet.
-        let _ = signature_payload;
-        Ok(())
+        Err(Error::SignatureInvalid)
     }
 }
 

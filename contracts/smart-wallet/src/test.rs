@@ -290,6 +290,37 @@ fn policy_match_returns_false_for_wrong_token() {
 }
 
 #[test]
+fn install_rejects_merchant_equals_admin() {
+    // SECURITY_AUDIT H3: refuse to install a policy where the admin is
+    // also the merchant — would let a compromised admin drain the wallet
+    // to themselves.
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy(&env);
+    let admin = Address::generate(&env);
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &admin);
+
+    let token = Address::generate(&env);
+    // merchant == admin → must reject
+    let r = wallet.try_install_policy(&admin, &token, &10, &10, &60, &0);
+    assert!(r.is_err(), "merchant==admin must be rejected");
+}
+
+#[test]
+fn install_rejects_merchant_equals_wallet_self() {
+    // SECURITY_AUDIT H3: same guard, but for the wallet's own contract
+    // address. Would let an attacker route funds in a self-loop pattern.
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+
+    let token = Address::generate(&env);
+    let r = wallet.try_install_policy(&id, &token, &10, &10, &60, &0);
+    assert!(r.is_err(), "merchant==wallet must be rejected");
+}
+
+#[test]
 fn policy_match_returns_false_for_non_transfer_fn() {
     let env = Env::default();
     env.mock_all_auths();
