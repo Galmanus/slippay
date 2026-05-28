@@ -58,6 +58,16 @@
   .hint{ position:fixed; bottom:5vh; left:9vw; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.22em; color:rgba(241,238,231,.3); z-index:10; }
   .progress{ position:fixed; top:0; left:0; height:2px; background:var(--klein); width:0; transition:width 500ms cubic-bezier(.22,1,.36,1); z-index:20; }
   em{ font-style:italic; color:var(--klein); -webkit-text-fill-color:var(--klein); }
+  .matrix{ margin-top:36px; display:grid; grid-template-columns: 1.1fr 1fr 1fr; gap:0; border-top:1px solid rgba(241,238,231,.15); max-width:1100px; }
+  .matrix > *{ padding:18px 22px 18px 0; border-bottom:1px solid rgba(241,238,231,.1); font-size:clamp(13px,1.15vw,16px); line-height:1.45; }
+  .matrix > .h{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--mut); padding-bottom:14px; padding-top:14px; }
+  .matrix > .s{ color:rgba(241,238,231,.55); }
+  .matrix > .sp{ color:var(--bone); font-weight:500; }
+  .matrix > .sp b{ color:var(--klein); font-weight:600; }
+  .codeblock{ margin-top:30px; font-family:'JetBrains Mono',monospace; font-size:clamp(11px,1vw,14px); line-height:1.55; color:rgba(241,238,231,.78); background:rgba(241,238,231,.04); border-left:2px solid var(--klein); padding:18px 22px; max-width:740px; white-space:pre; overflow-x:auto; }
+  .codeblock .k{ color:var(--klein); }
+  .codeblock .m{ color:var(--mut); }
+  a.proof{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--klein); text-decoration:underline; text-underline-offset:4px; margin-right:18px; }
 </style>
 </head>
 <body>
@@ -71,119 +81,148 @@
   <!-- 1 · COVER -->
   <section class="slide">
     <div class="eyebrow"><span class="dot"></span> stellar 37 graus · rio 2026</div>
-    <h1>A camada de dólar<br/>da economia<br/>on-chain<span class="k">.</span></h1>
-    <p class="lead">Começando pelo maior mercado em dolarização do planeta — o Brasil. Vivo na mainnet hoje.</p>
+    <h1>O cofre que a<br/>Stripe não pode<br/><em>replicar</em><span class="k">.</span></h1>
+    <p class="lead">Subscription billing onde o limite de gasto mora no smart wallet do cliente — não no banco de dados de uma plataforma. Pix-grade UX, enforcement em bytecode.</p>
   </section>
 
-  <!-- 2 · THE SHIFT -->
+  <!-- 2 · THE TRUTH ABOUT STRIPE -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 01 · a virada</div>
-    <h1>O dinheiro está virando<br/>dólar on-chain<span class="k">.</span><br/>E não tem volta.</h1>
-    <div class="row">
-      <div class="stat"><div class="n" data-count="98" data-suffix="%">0%</div><div class="l">das compras de cripto cross-border no BR são stablecoin</div></div>
-      <div class="stat"><div class="n" data-count="6.8" data-dec="1" data-prefix="US$ " data-suffix=" bi">US$ 0</div><div class="l">em compras cross-border, num trimestre — hedge contra o real</div></div>
-      <div class="stat"><div class="n" data-count="100" data-prefix="+" data-suffix="%">0%</div><div class="l">YoY (BCB, Q1/2026). 5º maior mercado do mundo</div></div>
-    </div>
-    <p class="note">Não é moda. É a desconfiança permanente numa moeda fraca, expressa em dólar digital.</p>
-  </section>
-
-  <!-- 3 · THE CATEGORY -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 02 · a categoria</div>
-    <h1>Esse dólar está<br/>preso na exchange<span class="k">.</span></h1>
-    <p class="kicker">Quem leva esse dólar pro caixa da economia real ganha a camada inteira — não um produto, uma categoria.</p>
-  </section>
-
-  <!-- 4 · THE VISION -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 03 · um trilho, dois mercados</div>
-    <h1>Hoje os humanos.<br/>Amanhã os <em>agentes</em>.</h1>
+    <div class="eyebrow"><span class="dot"></span> 01 · a verdade dura</div>
+    <h1>A Stripe escreve<br/>"limite de gasto".<br/>Mas o limite mora<br/>na <em>base de dados</em> dela.</h1>
     <ul class="clean">
-      <li><b>Hoje:</b> milhões de negócios que o Stripe exclui (BR, LATAM, África) recebem e ficam em dólar — sem custódia, sem chargeback, em 6 segundos.</li>
-      <li><b>Amanhã:</b> a economia de agentes de IA — que paga API, assina serviço e fatura sozinha. O pagador que ainda não tem trilho.</li>
-      <li>Dois mercados gigantes. <b>Um único trilho</b> — e ele roda na Stellar.</li>
+      <li><b>Settlement em 2-7 dias</b> — mandato regulatório de chargeback (Reg E nos EUA, PSD2 na UE). Stripe não pode encurtar sem virar money transmitter sem licença.</li>
+      <li><b>Piso de ~2.9% + $0.30</b> — interchange Visa é ~1.5% sozinho. Stripe é majoritariamente pass-through, não tem como descer.</li>
+      <li><b>Intermediário obrigatório</b> — o merchant nunca recebe direto. Stripe pode congelar. Casos documentados de $130k congelados sem explicação.</li>
     </ul>
+    <p class="kicker">Esses limites não são feature. São constitutivos do que faz a Stripe valer $70bi.</p>
   </section>
 
-  <!-- 5 · INEVITABILITY -->
+  <!-- 3 · THE PRIMITIVE -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 04 · por que é inevitável</div>
+    <div class="eyebrow"><span class="dot"></span> 02 · o primitivo</div>
+    <h1>O cliente assina<br/>uma <em>policy</em>.<br/>O bytecode aplica.</h1>
+    <p class="lead">Quando o usuário toca o Face ID, uma struct Policy é gravada no smart wallet dele — no contrato Soroban, não num servidor.</p>
+    <div class="codeblock"><span class="m">// Soroban contract storage · per merchant</span>
+struct Policy {
+  merchant:           <span class="k">Address</span>,    <span class="m">// quem pode cobrar (exato)</span>
+  max_per_charge:     <span class="k">i128</span>,        <span class="m">// teto on-chain por ciclo</span>
+  interval_seconds:   <span class="k">u64</span>,         <span class="m">// gap mínimo entre cobranças</span>
+  expires_at:         <span class="k">u64</span>,         <span class="m">// auto-revoga após</span>
+  revoked:            <span class="k">bool</span>,        <span class="m">// kill switch · só usuário</span>
+}</div>
+    <p class="kicker">A Slippay não pode mudar. O merchant não pode mudar. O validador não pode mudar. Só o usuário.</p>
+  </section>
+
+  <!-- 4 · LIVE PROOF -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 03 · não é deck · é hash</div>
+    <h1>Funciona hoje.<br/>Em mainnet<span class="k">.</span></h1>
+    <ul class="clean">
+      <li><b>Subscription contract · mainnet Stellar</b> · <a class="proof" href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN" target="_blank">CBJMQ6ZY…EVQN ↗</a> · vivo desde 16/05/2026</li>
+      <li><b>Smart wallet · testnet</b> · <a class="proof" href="https://stellar.expert/explorer/testnet/contract/CDDPGRFOLUP7B7XAA4UQRWSY7FKAHSIKJR7N6NJA2V6YCUK5FGBCCK2U" target="_blank">CDDPGRFO…CCK2U ↗</a> · 16/16 unit tests · auditado em dois passes</li>
+      <li><b>Demo end-to-end:</b> 1 URL → 1 toque biométrico → cofre próprio em ~25s. Merchant cobra dentro do teto: <em>passa</em>. Merchant tenta acima: <em>rejeitado pelo bytecode</em>, <code style="font-family:'JetBrains Mono',monospace; color:var(--klein)">Error(Contract,#6)</code>.</li>
+    </ul>
+    <div class="live-tag"><span class="pulse"></span> mainnet stellar · auditado por bluewave ai security · 0,98% de fee</div>
+  </section>
+
+  <!-- 5 · THE UX (Pix-grade) -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 04 · ux do pix · enforcement do bytecode</div>
+    <h1>Uma URL.<br/>Um toque.<br/><em>Cinco segundos</em>.</h1>
+    <ul class="clean">
+      <li><b>Zero campos digitados.</b> Sem email, senha, seed phrase, seleção de chain, modal de gas, checkbox de termos.</li>
+      <li><b>Passkey + Soroban smart wallet</b> nativos do Stellar Protocol 21 (secp256r1 on-chain). Sem MetaMask, sem extensão. iCloud Keychain / Google Password Manager sincroniza entre devices.</li>
+      <li><b>Recurring sem novo toque.</b> O merchant puxa via SAC.transfer; o smart wallet do cliente autoriza via policy match. <em>Stripe-grade UX. Bytecode-grade enforcement.</em></li>
+    </ul>
+    <p class="note">benchmark: pix automático é 3 taps + biometria. nosso fluxo cobre o mesmo — cross-border, composable, fora do perímetro de PSP regulado.</p>
+  </section>
+
+  <!-- 6 · INEVITABILITY (three forces) -->
+  <section class="slide">
+    <div class="eyebrow"><span class="dot"></span> 05 · por que agora</div>
     <h1>Três forças<br/>convergindo<span class="k">.</span></h1>
     <div class="force">
-      <div><h3>Macro</h3><p>O real desvaloriza, a dolarização é permanente. A demanda não é cíclica — é estrutural.</p></div>
-      <div><h3>Regulação</h3><p>A Res. 561 torna ilegal o gateway cross-border via stablecoin em out/2026. Mata os concorrentes. SlipPay é doméstico por design.</p></div>
-      <div><h3>Tecnologia</h3><p>Stellar liquida em 6s a custo ~zero. A infra que torna o trilho possível, agora.</p></div>
+      <div><h3>Macro</h3><p>98% da cripto cross-border BR no Q1/2026 foi stablecoin. US$ 6,8bi num trimestre. +100% YoY. O brasileiro já se dolarizou — falta o trilho doméstico.</p></div>
+      <div><h3>Regulação</h3><p>Res. 561 do BCB ilegaliza gateway cross-border de stablecoin em out/2026. Mata os competidores que dependem de pernas exteriores. SlipPay é doméstico por design.</p></div>
+      <div><h3>Tecnologia</h3><p>Protocol 21 (jun/2024) adicionou secp256r1 nativo no Stellar. Passkey signa contrato direto. Fee ~$0.00001. Finalidade em 3-5s. O stack que destrava o produto agora existe.</p></div>
     </div>
   </section>
 
-  <!-- 6 · THE FRONTIER -->
+  <!-- 7 · ONE TRAIL, TWO MARKETS -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 05 · a fronteira que ninguém ocupou</div>
-    <h1>A primeira assinatura<br/>recorrente de agente<span class="k">.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> 06 · um trilho, dois mercados</div>
+    <h1>Hoje os humanos.<br/>Amanhã os <em>agentes</em>.</h1>
     <ul class="clean">
-      <li>O x402 resolveu o pagamento <b>avulso</b> de agente. Recorrência ainda não existia.</li>
-      <li>SlipPay tem o contrato Soroban de subscription <b>vivo na mainnet</b> — uma das primeiras.</li>
-      <li>Quando agentes forem maioria dos pagantes, eles vão <b>assinar</b>. E vão assinar aqui.</li>
+      <li><b>Hoje:</b> SMBs e creators que a Stripe exclui ou onera (BR, LATAM, África). Recebem em dólar, em segundos, sem custódia. Zero chargeback overhang.</li>
+      <li><b>Amanhã:</b> agentes de IA assinando API, dados, computação. <em>Recurring</em> de agente é território vazio — x402 resolveu one-shot, não assinatura. SlipPay já tem o contrato vivo.</li>
+      <li><b>Mesmo trilho.</b> A mesma policy primitive que protege a humana protege a wallet do agente.</li>
     </ul>
   </section>
 
-  <!-- 7 · PROOF -->
+  <!-- 8 · THE MATRIX -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 06 · não é promessa</div>
-    <h1>Funciona. Vivo.<br/>Recebendo<span class="k">.</span></h1>
-    <ul class="clean">
-      <li><b>Demo WooCommerce ao vivo:</b> venda real de R$ 49,90 → 9,92 USDC, on-chain.</li>
-      <li><b>WooCommerce live</b> · VTEX e Shopify em integração. Mesmo motor — adapter, não rebuild.</li>
-      <li><b>Taxa 0,98%</b> — a mais barata do mercado (MoonPay: até 4,5% + spread).</li>
-    </ul>
-    <div class="live-tag"><span class="pulse"></span> Vivo na mainnet Stellar · Auditado por Bluewave AI Security</div>
+    <div class="eyebrow"><span class="dot"></span> 07 · stripe não pode</div>
+    <h1>Cinco dimensões<br/>estruturais<span class="k">.</span></h1>
+    <div class="matrix">
+      <div class="h">dimensão</div><div class="h">stripe</div><div class="h">slippay</div>
+
+      <div class="s">limite de gasto</div>
+      <div class="sp">na base de dados <b>deles</b>, mutável por eles</div>
+      <div class="sp">no <b>bytecode do wallet</b>, só usuário muda</div>
+
+      <div class="s">settlement</div>
+      <div class="sp">2-7 dias · janela de chargeback</div>
+      <div class="sp"><b>3-5s</b> · final no bloco</div>
+
+      <div class="s">piso de fee</div>
+      <div class="sp">~1,5% interchange · floor da Visa</div>
+      <div class="sp"><b>$0,00001</b> · só gas</div>
+
+      <div class="s">custódia</div>
+      <div class="sp">intermediário obrigatório · pode congelar</div>
+      <div class="sp"><b>não-custodial</b> · merchant recebe direto</div>
+
+      <div class="s">geografia</div>
+      <div class="sp">~46 países · SWIFT pra resto · ~6% médio</div>
+      <div class="sp"><b>global no dia 1</b> · mesma UX em qualquer país</div>
+    </div>
+    <p class="kicker">Stripe não pode entregar nenhum desses sem deixar de ser Stripe.</p>
   </section>
 
-  <!-- 8 · THE MONEY -->
+  <!-- 9 · THE MONEY -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 07 · por que vale um bilhão</div>
-    <h1>0,98% sobre um rio<br/>de dólares<span class="k">.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> 08 · por que vale um bilhão</div>
+    <h1>0,98% sobre<br/>um rio de dólares<span class="k">.</span></h1>
     <div class="row">
-      <div class="stat"><div class="n" data-count="6" data-suffix="-8 bi" data-prefix="US$ ">US$ 0</div><div class="l">de fluxo cripto/mês só no Brasil — ~90% stablecoin</div></div>
-      <div class="stat"><div class="n">0,98%</div><div class="l">de take em cada dólar que passa pelo trilho</div></div>
+      <div class="stat"><div class="n" data-count="6" data-suffix="-8 bi" data-prefix="US$ ">US$ 0</div><div class="l">fluxo cripto/mês só no Brasil · ~90% stablecoin (BCB Q1/2026)</div></div>
+      <div class="stat"><div class="n">0,98%</div><div class="l">de take em cada dólar que cruza o trilho</div></div>
+      <div class="stat"><div class="n" data-count="0">0</div><div class="l">custo marginal de processamento — gas em centavos de centavo</div></div>
     </div>
     <p class="kicker">Não precisamos de muito desse fluxo. E isso é antes da LATAM, antes dos agentes.</p>
   </section>
 
-  <!-- 9 · MOAT -->
+  <!-- 10 · INTELLIGENCE -->
   <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 08 · o fosso</div>
-    <h1>Difícil de copiar.<br/>Cedo demais pra perder<span class="k">.</span></h1>
+    <div class="eyebrow"><span class="dot"></span> 09 · pra onde vai</div>
+    <h1>Não é billing.<br/>É <em>inteligência</em><br/>de assinatura.</h1>
     <ul class="clean">
-      <li><b>Regulatório:</b> doméstico por design — a 561 derruba quem é cross-border, não nós.</li>
-      <li><b>Não-custodial:</b> os fundos nunca passam por nós. Confiança é o produto num pagamento.</li>
-      <li><b>Distribuição:</b> adapters prontos pras maiores plataformas do mundo.</li>
-      <li><b>First-mover:</b> a única assinatura recorrente de agente, já na mainnet.</li>
+      <li>Stripe vê o pedido. <b>SlipPay vê a wallet</b> — saldo, gas, on-chain history. Prevê a falha <b>antes</b> dela acontecer.</li>
+      <li>SaaS perde <b>20-40% pra churn involuntário</b> (Recurly · ProfitWell). Em cripto é pior. SlipPay avisa <b>3 dias antes</b>, com a razão exata.</li>
+      <li>O agente propõe (pausa · downgrade · troca de ativo · top-up de gas) e o usuário aprova respeitando a policy. Proativo, não débito autônomo.</li>
+      <li><b>Cada merchant ganha um CFO de assinatura embutido</b> — em mainnet, custo marginal perto de zero.</li>
     </ul>
   </section>
 
-  <!-- 10 · VISION -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 09 · para onde vai</div>
-    <h1>Não é billing.<br/>É <em>inteligência</em> de assinatura.</h1>
-    <ul class="clean">
-      <li>O Stripe vê o seu pedido. O <b>SlipPay vê a carteira do assinante</b> — saldo, gas, uso, on-chain — e prevê a falha <b>antes</b> dela acontecer. O Stripe estruturalmente não enxerga isso.</li>
-      <li>Em SaaS, <b>20-40% do churn é involuntário</b> — cobrança que falhou (Recurly · ProfitWell). Em cripto é pior. O SlipPay avisa o assinante <b>3 dias antes</b>, com a razão exata — não um e-mail genérico depois.</li>
-      <li>O agente detecta, propõe a ação certa (pausar, downgrade, trocar de ativo) e dispara o canal. <b>O assinante decide e assina</b>, respeitando o limite que autorizou no contrato. Proativo — não débito autônomo.</li>
-      <li>A maior parte é <b>analytics on-chain</b> (previsão, cohort, fraude). O modelo entra só onde precisa: a negociação.</li>
-    </ul>
-    <p class="kicker">Cada lojista ganha um CFO de assinatura embutido — em mainnet, custo marginal perto de zero.</p>
-  </section>
-
-  <!-- 11 · ASK / CLOSE -->
+  <!-- 11 · ASK -->
   <section class="slide">
     <div class="eyebrow"><span class="dot"></span> 10 · o pedido</div>
-    <h1>Vamos construir a<br/>camada de dólar de<br/>um continente<span class="k">.</span></h1>
+    <h1>Vamos construir a<br/>camada de dólar<br/>de um continente<span class="k">.</span></h1>
     <ul class="clean">
-      <li>Uma <b>introdução a uma Instituição de Pagamento BR autorizada</b> — o anchor de câmbio que destrava o Pix.</li>
-      <li>Os <b>primeiros merchants reais</b> processando em dólar, antes do fim do programa.</li>
+      <li><b>Uma introdução a uma Instituição de Pagamento BR</b> — o anchor de câmbio que destrava o Pix → USDC doméstico.</li>
+      <li><b>Os primeiros merchants reais</b> processando em dólar antes do fim do programa.</li>
+      <li><b>Pareceiro técnico</b> pra fechar v0.2 (passkey real on-chain) e auditoria externa (OpenZeppelin / Trail of Bits) antes de cliente pagante.</li>
     </ul>
-    <p class="note">slippay.cc · github.com/Galmanus/slippay · Manuel Galmanus · Mario F. Neto</p>
+    <p class="note">slippay.cc · github.com/Galmanus/slippay · Manuel Galmanus · Mario F. Neto · 2026</p>
   </section>
 
 </div>
