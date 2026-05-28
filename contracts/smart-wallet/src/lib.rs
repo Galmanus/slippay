@@ -93,6 +93,13 @@ pub enum DataKey {
     /// .credentials.create`). Stored so the frontend can issue a correct
     /// `allowCredentials` parameter on subsequent `get` calls.
     PasskeyCredId,
+    /// v0.1 administrator. Calls to `install_policy` and `revoke_policy`
+    /// require this address's `require_auth`. For the spike, admin is a
+    /// classic Ed25519 G-account (the trusted-setup oracle that operates
+    /// the spike server). v0.2 changes `init` to set admin =
+    /// `env.current_contract_address()` so that install/revoke flow back
+    /// through `__check_auth` and require the user's passkey.
+    Admin,
     /// Per-merchant policy. Address is keyed verbatim — a policy applies to
     /// exactly one merchant address (no wildcards in v0.1).
     Policy(Address),
@@ -120,17 +127,31 @@ pub struct SmartWallet;
 #[contractimpl]
 impl SmartWallet {
     /// One-shot initializer. Called immediately after deploy with the
-    /// passkey's secp256r1 public key (65-byte uncompressed X9.62) and the
-    /// credential id. Subsequent calls panic with `AlreadyInitialized`.
-    pub fn init(env: Env, passkey_pubkey: BytesN<65>, passkey_cred_id: BytesN<32>) {
+    /// passkey's secp256r1 public key (65-byte uncompressed X9.62), the
+    /// credential id, and the v0.1 admin address. Subsequent calls panic
+    /// with `AlreadyInitialized`.
+    ///
+    /// `admin` gates `install_policy` and `revoke_policy` in v0.1. For
+    /// the spike, callers pass the deployer's classic G-account so that
+    /// the trusted-setup server can sign these mutations. v0.2 will
+    /// migrate the admin to the wallet's own contract address, at which
+    /// point install/revoke require_auth flows back through __check_auth
+    /// and is gated by the user's passkey.
+    pub fn init(
+        env: Env,
+        passkey_pubkey: BytesN<65>,
+        passkey_cred_id: BytesN<32>,
+        admin: Address,
+    ) {
         if env.storage().instance().has(&DataKey::PasskeyPubkey) {
             panic_with_error!(&env, Error::AlreadyInitialized);
         }
         env.storage().instance().set(&DataKey::PasskeyPubkey, &passkey_pubkey);
         env.storage().instance().set(&DataKey::PasskeyCredId, &passkey_cred_id);
+        env.storage().instance().set(&DataKey::Admin, &admin);
         env.events().publish(
             (Symbol::new(&env, "wallet_initialized"),),
-            (passkey_pubkey, passkey_cred_id),
+            (passkey_pubkey, passkey_cred_id, admin),
         );
     }
 
@@ -147,21 +168,17 @@ impl SmartWallet {
         interval_seconds: u64,
         expires_at: u64,
     ) {
-        // **v0.1 SPIKE · TESTNET-ONLY GAP.** install_policy is supposed to
-        // require `env.current_contract_address().require_auth()` so that
-        // only the user's passkey can install a policy. We omit that call
-        // in v0.1 because constructing the custom-account auth entry from
-        // a browser (or even from stellar-cli) requires the full WebAuthn
-        // unwrapping + DER-to-raw signature conversion plumbing that is
-        // explicitly deferred to v0.2 per the policy-checkout product
-        // spec. For v0.1, install_policy is callable by anyone — the
-        // demo flow gates it behind a server endpoint that holds the
-        // slippay-deployer key, treating that endpoint as a trusted
-        // setup oracle.
-        //
-        // v0.2 restores the line below and adds the secp256r1 verification
-        // in `__check_auth`:
-        //   env.current_contract_address().require_auth();
+        // v0.1: install gated by an admin Ed25519 G-account set at init.
+        // For the spike, admin is the deployer key driving the trusted-setup
+        // server. v0.2 migrates admin to `env.current_contract_address()`
+        // so install flows through `__check_auth` and is gated by the
+        // user's passkey via secp256r1_verify.
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
+        admin.require_auth();
 
         if amount_per_charge <= 0 || max_per_charge < amount_per_charge {
             panic_with_error!(&env, Error::InvalidConfig);
@@ -196,8 +213,14 @@ impl SmartWallet {
     /// pulls fail authorization until `install_policy` is called again with
     /// a fresh passkey signature.
     pub fn revoke_policy(env: Env, merchant: Address) {
-        // Same v0.1 spike gap as install_policy — see comment above. v0.2:
-        //   env.current_contract_address().require_auth();
+        // v0.1: gated by the same admin as install_policy. v0.2 migrates to
+        // wallet's own __check_auth path.
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
+        admin.require_auth();
 
         let key = DataKey::Policy(merchant.clone());
         let mut policy: Policy = env.storage().persistent().get(&key)
