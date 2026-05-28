@@ -12,7 +12,7 @@
     "supabase:stop": "supabase stop",
     "supabase:reset": "supabase db reset",
     "api:test": "deno test --allow-all supabase/functions/api/test/",
-    "policy-checkout:spike": "node scripts/policy-checkout-spike-server.mjs"
+    "policy-checkout:spike": "NODE_PATH=apps/web/node_modules node scripts/policy-checkout-spike-server.mjs"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
