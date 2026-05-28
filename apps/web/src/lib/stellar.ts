@@ -29,7 +29,11 @@ export async function submitSignedTx(network: "TESTNET" | "PUBLIC", signedXdr: s
 }
 
 const ISSUERS: Record<string, string> = {
-  TESTNET: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+  // Testnet issuer is overridable for local demos via VITE_USDC_ISSUER so a
+  // self-controlled test issuer can mint USDC to the buyer wallet. Mainnet
+  // is never overridable.
+  TESTNET: (import.meta.env.VITE_USDC_ISSUER as string | undefined) ??
+           "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
   PUBLIC:  "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
 };
 
