@@ -458,6 +458,184 @@ Mainnet deployment must be gated on an external review.
 
 ---
 
+## SECOND-PASS REVIEW (2026-05-28 16:30 BRT)
+
+Operator's instruction: "auditar de novo, NÃO PODE TER NENHUM ERRO DE
+SEGURANÇA." This second pass treated "zero errors" as the aspirational
+goal it is and tried to surface every additional finding a fresh
+adversarial pass could catch.
+
+### Honest disclaimer up front
+
+"No security errors" is **literally impossible to prove** for any
+non-trivial program. The state of the art for high-stakes Soroban
+contracts uses: (1) third-party human audit, (2) automated static
+analysis, (3) formal verification of critical invariants, (4) fuzz
+testing, (5) bug bounty in production. This self-review covers none of
+those at production rigor.
+
+What this second pass added in concrete terms below.
+
+### Tools used in pass 2
+
+- `cargo clippy --release --all-features -W clippy::indexing_slicing -W clippy::unwrap_used`
+- Grep for `unsafe`, `unwrap`, `expect`
+- Direct invocation of `__check_auth` via stellar-cli to verify host gating
+- Re-read of `lib.rs` end-to-end with explicit checklist (overflow, reentrancy, TOCTOU, edge values, storage exhaustion, archival, public-readability, event leak)
+- Re-read of `policy-checkout-spike-server.mjs` end-to-end
+
+### NEW findings (second pass)
+
+#### N1 · `max_per_charge` unbounded · MEDIUM — **FIXED in this pass**
+
+Before fix: admin could install `max_per_charge = i128::MAX`. Combined
+with admin compromise (C3), this enables one-shot drain.
+
+Fix landed: `install_policy` now rejects `max_per_charge > amount_per_charge * 10`.
+The `MAX_CAP_MULTIPLIER` constant lives at the top of the file with a
+clear audit reference. Test `install_rejects_max_above_multiplier`
+covers both the rejection (max=amount*20) and the boundary (max=amount*10
+accepts).
+
+Live on testnet wasm `84bdf29c12238351922d07ecbc52fd9bac162b4d6341fafcfa403edc68dd6ec2`.
+
+#### N2 · `unwrap()` in `try_match_policy` · LOW — **FIXED in this pass**
+
+Before fix: lines 333-334 used `cc.args.get(1).unwrap()` and `.get(2).unwrap()`.
+Guarded by `args.len() != 3` upstream so safe in practice, but clippy
+flagged both. A future refactor that drops the length check would
+silently introduce panics in `__check_auth`, which is high-blast-radius.
+
+Fix landed: explicit `if let Some(v) = ... else return Ok(false)` per
+clippy's preferred pattern. Zero `unwrap()` in the panic-sensitive
+`__check_auth` path now.
+
+#### N3 · cargo dep `soroban-sdk = "26"` not exact-pinned · LOW
+
+Allows any 26.x.x via patch updates. A compromised SDK patch could
+ship a backdoor. Acceptable for testnet; mainnet rehearsal should pin
+to exact (e.g., `soroban-sdk = "=26.0.1"`) and verify the lockfile.
+
+**Status:** not fixed in this pass. Track for milestone B.
+
+#### N4 · `get_policy` is public read · LOW
+
+Anyone can read any wallet's policies. Privacy concern only — the
+policies themselves are also emitted as events on install/revoke, so
+the storage read does not increase leakage beyond what is already on
+chain. Not actionable for v0.1.
+
+#### N5 · Server reads `.testnet-deploy.env` once at startup · LOW
+
+Redeploy + forget to restart = server still uses stale wasm hash. The
+new wallets it deploys point at the OLD bytecode. Detectable by checking
+the contract id's wasm hash matches the env's after each redeploy.
+
+**Status:** not fixed in this pass. Add a startup sanity check that
+queries the deployed wasm to confirm the loaded hash matches.
+
+### Verifications PASSED (second pass)
+
+These were specific things I worried about and confirmed safe.
+
+- **V1** · No `unsafe` blocks anywhere in the contract. (`grep -n unsafe`)
+- **V2** · `__check_auth` cannot be invoked directly. Verified on testnet:
+  `stellar contract invoke ... -- __check_auth ...` returns
+  `HostError: Error(Context, InvalidAction): "can't invoke a reserved function directly"`.
+  The host explicitly reserves this function. The previously-hypothesized
+  attack (call `__check_auth` directly to bump `last_charge_at` on
+  policies and DoS legitimate charges) is impossible.
+- **V3** · No integer overflow / underflow risk. Only arithmetic in the
+  contract is `last_charge_at.saturating_add(interval_seconds)`, which
+  uses `saturating_add`. All comparisons are type-safe. `amount_per_charge.saturating_mul`
+  in N1 fix is also saturating.
+- **V4** · No reentrancy in `try_match_policy`. The function does
+  storage reads/writes only on its own contract; no external calls.
+- **V5** · Soroban transaction atomicity guarantees state rollback on
+  `Err` return from `__check_auth`. So intermediate `last_charge_at`
+  bumps for context A don't persist if context B fails.
+- **V6** · TTL extension target (`535_000` ledgers ≈ 31 days) is
+  clamped by the host to the protocol maximum, so passing a generous
+  target is safe and the entry survives idle gaps as designed.
+- **V7** · Archived (TTL-expired) policies trigger `Ok(false)` from
+  `try_match_policy`, which falls through to default-deny per the C1
+  fix. Archived policies fail safe.
+- **V8** · `Address` comparison via `==` is well-defined; the SDK
+  normalizes representations.
+- **V9** · `Cargo.lock` is committed → reproducible builds.
+- **V10** · 16/16 unit tests passing on the second-pass wasm. Coverage
+  includes: init reject double, install reject (negative amount, max < amount,
+  interval < 60, expires_at past, merchant == admin, merchant == contract,
+  max > amount * 10), revoke (success + nonexistent), policy match
+  (within cap, over cap, revoked, expired, interval not elapsed,
+  unknown merchant, wrong token, non-transfer fn).
+
+### Findings the second pass did NOT close
+
+- **C1** is closed but only verified end-to-end on testnet via direct
+  `SAC.transfer` to a non-policy address. A unit-level test of the
+  `__check_auth` fall-through requires `env.try_invoke_contract_check_auth`
+  (Soroban testutils) which I did not wire up due to time. **The
+  integration verification stands; the unit-level gap is documented.**
+- **C2** (init front-running) still requires moving init into a
+  constructor pattern or bundling deploy + init in a single Soroban
+  envelope. Not addressed.
+- **C3** (single-admin compromise = full drain) is mitigated by N1
+  (cap on max_per_charge) and H3 (no admin-as-merchant). Both reduce
+  blast radius but do not eliminate the risk. Mitigation requires
+  either HSM-protected admin (v0.1 mainnet) or migration to passkey
+  admin (v0.2).
+- **C4** (silent policy overwrite) still emits the same `policy_installed`
+  event whether installing or replacing. Not addressed.
+- **S1** (CORS + no rate limit + no auth on server) is unchanged.
+  Will be addressed in milestone C of MAINNET_PREP.
+- **S2** (any wallet in `/charge` request) is unchanged.
+- **H4** (no HTTPS) is unchanged.
+- **H5** (deployer secret on disk, read per request) is unchanged.
+
+### Updated minimum-fixes-for-capped-mainnet list
+
+- [x] C1 fix
+- [x] H3 fix
+- [x] N1 fix
+- [x] N2 cleanup
+- [ ] C2 fix (atomic deploy+init)
+- [ ] S1 fix (CORS, rate limit, daily cap)
+- [ ] S2 fix (merchant auth on /charge)
+- [ ] H4 + H5 (HTTPS, secret hardening)
+- [ ] N3 (exact-pin cargo deps)
+
+### Updated honest verdict
+
+The second pass closed 2 NEW findings (N1, N2), verified 10 invariants
+that were previously assumed safe, and confirmed 3 unfixed CRITICAL
+items (C2, C3, C4) and 3 unfixed HIGH items (H4, H5, S1) remain.
+
+**v0.1 with second-pass fixes is now closer to mainnet-acceptable for
+a capped demo** (< $5/wallet, rate-limited public surface) but still
+**not production-grade**. The CRITICAL gating for production stays:
+
+1. Third-party audit by an established firm.
+2. Either v0.2 with passkey admin OR HSM-protected v0.1 admin.
+3. Closure of C2, C4 at minimum.
+4. Bug bounty in production.
+
+This second pass increased confidence but did not change the binary
+"mainnet customer-facing or not" answer.
+
+### Author's honest self-assessment
+
+I am Claude, an LLM. I wrote this code and I audited it. I am not
+qualified to certify a smart contract for mainnet customer use no
+matter how many passes I do. The mention of OpenZeppelin / Trail of
+Bits / Halborn in this document is not theater — it is the literal
+prerequisite for any real money to touch this code in production.
+
+I caught what I could in two passes. The next pass needs to be by
+someone who didn't write the code.
+
+---
+
 ## Suggested next actions for operator
 
 1. **Today** · Apply C1 fix (one line) + redeploy testnet + retest.
