@@ -108,9 +108,32 @@ export default function PolicySubscribe() {
               </span>
             </div>
             <div className="text-2xl mb-2">{meta.merchant}</div>
-            <div className="text-base opacity-70 mb-8">
+            <div className="text-base opacity-70 mb-6">
               {meta.plan} — {meta.amount_label} / {meta.interval_label}
             </div>
+
+            {/* On-chain proof links — M4d e2e artifact from testnet. M5
+                replaces these hardcoded URLs with per-user deploy output
+                returned by the server endpoint. */}
+            <div className="mb-8 space-y-2 text-[10px] uppercase tracking-[0.22em]">
+              <a
+                href="https://stellar.expert/explorer/testnet/contract/CDC2OJU3RJSDCMWORR2UCYGRAWSGX7ZABFBOK7YYJATJEMKKGTVPRUDU"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block underline underline-offset-4 hover:opacity-60"
+              >
+                cofre on-chain ↗
+              </a>
+              <a
+                href="https://stellar.expert/explorer/testnet/tx/8a526d2dceb898cfbbdff8a2f02bcf06670e02106f9e5059aa71240369922532"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block underline underline-offset-4 hover:opacity-60"
+              >
+                policy_installed event ↗
+              </a>
+            </div>
+
             <button
               onClick={onRevoke}
               className="text-[11px] uppercase tracking-[0.22em] underline underline-offset-4 hover:opacity-60"
