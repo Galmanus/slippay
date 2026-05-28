@@ -37,11 +37,22 @@ type SpikeResult = {
   wallet_contract_id: string;
   init_tx: string | null;
   policy_tx: string | null;
+  fund_tx: string | null;
   wallet_url: string;
   init_tx_url: string | null;
   policy_tx_url: string | null;
+  fund_tx_url: string | null;
   network: string;
-  timing_ms: { deploy: number; init: number; install: number };
+  timing_ms: { deploy: number; init: number; install: number; fund: number };
+};
+
+type ChargeResult = {
+  status: "ok" | "rejected";
+  tx?: string;
+  tx_url?: string;
+  error?: string;
+  amount: number;
+  timing_ms: number;
 };
 
 // Demo registry. Each entry corresponds to a subId in the URL. The amounts
@@ -73,6 +84,8 @@ export default function PolicySubscribe() {
   const [result, setResult] = useState<SpikeResult | null>(null);
   const [showGuarantees, setShowGuarantees] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [chargeLog, setChargeLog] = useState<ChargeResult[]>([]);
+  const [charging, setCharging] = useState(false);
 
   async function onBiometricTap() {
     setError(null);
@@ -100,7 +113,31 @@ export default function PolicySubscribe() {
     // wallet.revoke_policy on chain. Left local-only for now.
     setError(null);
     setResult(null);
+    setChargeLog([]);
     setPhase("idle");
+  }
+
+  async function onSimulateCharge(amount: number) {
+    if (!result) return;
+    setCharging(true);
+    try {
+      const r = await fetch(`${SPIKE_API_BASE}/api/policy-checkout/charge`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ wallet: result.wallet_contract_id, amount }),
+      });
+      const data: ChargeResult = await r.json();
+      setChargeLog(log => [data, ...log]);
+    } catch (err) {
+      setChargeLog(log => [{
+        status: "rejected",
+        error: err instanceof Error ? err.message : String(err),
+        amount,
+        timing_ms: 0,
+      }, ...log]);
+    } finally {
+      setCharging(false);
+    }
   }
 
   return (
@@ -202,6 +239,80 @@ export default function PolicySubscribe() {
             >
               cancelar assinatura
             </button>
+          </div>
+        )}
+
+        {/* On-chain enforcement demo — visible only after active. Mentor
+            triggers a within-cap charge (succeeds, sub-cent fee, no
+            biometric) and an over-cap charge (rejected ON CHAIN by the
+            wallet bytecode, not by Slippay). */}
+        {phase === "active" && result && (
+          <div className="mt-8 border border-[#0a0a0a]/15 p-6">
+            <div className="text-[10px] uppercase tracking-[0.22em] opacity-60 mb-4">
+              enforcement on-chain · simular cobrança
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => onSimulateCharge(1_000_000)}
+                disabled={charging}
+                className="border border-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.22em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] transition-colors disabled:opacity-40"
+              >
+                merchant cobra 0.1 XLM (dentro do teto)
+              </button>
+              <button
+                onClick={() => onSimulateCharge(5_000_000)}
+                disabled={charging}
+                className="border border-[#0a0a0a] px-4 py-2 text-[11px] uppercase tracking-[0.22em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] transition-colors disabled:opacity-40"
+              >
+                tentar cobrar 0.5 XLM (acima do teto)
+              </button>
+            </div>
+            {charging && (
+              <div className="mt-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] opacity-60">
+                <Spinner />
+                executando on-chain…
+              </div>
+            )}
+            {chargeLog.length > 0 && (
+              <div className="mt-5 space-y-3">
+                {chargeLog.map((entry, i) => (
+                  <div key={i} className="border-l-2 border-[#0a0a0a]/20 pl-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`inline-block w-2 h-2 ${
+                          entry.status === "ok" ? "bg-[#b5e853]" : "bg-red-500"
+                        }`}
+                      />
+                      <span className="text-[10px] uppercase tracking-[0.22em]">
+                        {entry.status === "ok"
+                          ? `${(entry.amount / 1e7).toFixed(4)} XLM transferida (${entry.timing_ms}ms)`
+                          : `rejeitada on-chain (${entry.timing_ms}ms)`}
+                      </span>
+                    </div>
+                    {entry.tx_url ? (
+                      <a
+                        href={entry.tx_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] uppercase tracking-[0.22em] underline underline-offset-4 hover:opacity-60"
+                      >
+                        ver tx ↗
+                      </a>
+                    ) : null}
+                    {entry.error && (
+                      <details className="mt-1 text-[10px] opacity-60">
+                        <summary className="cursor-pointer uppercase tracking-[0.22em]">
+                          motivo (do contrato)
+                        </summary>
+                        <pre className="mt-2 whitespace-pre-wrap break-words text-[9px] leading-relaxed">
+                          {entry.error}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
