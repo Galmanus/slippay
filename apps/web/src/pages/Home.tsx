@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
 import { AskSlippay } from "../components/AskSlippay.tsx";
 import { Reveal, CountUp } from "../components/Reveal.tsx";
+import PolicyDemoAnimation from "../components/PolicyDemoAnimation.tsx";
 import { useLang, type Lang } from "../lib/lang.ts";
 import { homeCopy } from "../copy/home.tsx";
 
@@ -358,7 +359,10 @@ export default function Home() {
         </div>
       </Reveal>
 
-      {/* HOW IT WORKS */}
+      {/* HOW IT WORKS · ANIMATED DEMO */}
+      <PolicyDemoAnimation />
+
+      {/* HOW IT WORKS · 4 STEPS */}
       <Reveal as="section" id="how" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="grid grid-cols-12 gap-6">
