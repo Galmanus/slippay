@@ -1,0 +1,191 @@
+// SEP-10 + SEP-24 client against the Stellar reference testanchor.
+// Scope: minimum viable flow for hackathon demo · no production hardening.
+//
+// Flow:
+//   1. SEP-10 web auth (GET challenge, sign, POST, receive JWT)
+//   2. SEP-24 deposit interactive (POST, open popup, poll transaction)
+//   3. Surface USDC arrival on the buyer wallet via Horizon
+//
+// Anchor: https://testanchor.stellar.org/.well-known/stellar.toml
+// Network: TESTNET (passphrase "Test SDF Network ; September 2015")
+
+import {
+  Keypair,
+  TransactionBuilder,
+  Networks,
+  Operation,
+  Asset,
+  Horizon,
+} from "@stellar/stellar-sdk";
+
+export const ANCHOR_HOME = "https://testanchor.stellar.org";
+export const ANCHOR_AUTH = `${ANCHOR_HOME}/auth`;
+export const ANCHOR_SEP24 = `${ANCHOR_HOME}/sep24`;
+export const HORIZON_TESTNET = "https://horizon-testnet.stellar.org";
+export const NETWORK_PASSPHRASE = Networks.TESTNET;
+
+// SRT (Stellar Reference Token) is the testanchor's controlled-mint
+// reference asset · always has liquidity. We default to SRT because the
+// USDC test-pool at testanchor.stellar.org periodically drains, which
+// surfaces as "resulting balance is not within the allowed range" in
+// the SAC contract simulation. Production swaps SRT → USDC, same flow.
+export const ANCHOR_SRT_ISSUER =
+  "GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B";
+export const ANCHOR_ASSET_CODE = "SRT";
+export const ANCHOR_ASSET_ISSUER = ANCHOR_SRT_ISSUER;
+export const ANCHOR_ASSET = new Asset(ANCHOR_ASSET_CODE, ANCHOR_ASSET_ISSUER);
+
+export interface BuyerWallet {
+  publicKey: string;
+  secretKey: string;
+}
+
+const STORAGE_KEY = "slippay.anchor.buyer.v1";
+
+export function getOrCreateBuyer(): BuyerWallet {
+  const cached = localStorage.getItem(STORAGE_KEY);
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached) as BuyerWallet;
+      if (parsed.publicKey && parsed.secretKey) return parsed;
+    } catch { /* fall through */ }
+  }
+  const kp = Keypair.random();
+  const wallet: BuyerWallet = { publicKey: kp.publicKey(), secretKey: kp.secret() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+  return wallet;
+}
+
+export function resetBuyer(): BuyerWallet {
+  localStorage.removeItem(STORAGE_KEY);
+  return getOrCreateBuyer();
+}
+
+/** Fund a testnet account via friendbot. Idempotent — succeeds if already funded. */
+export async function fundIfNeeded(publicKey: string): Promise<"funded" | "already"> {
+  const horizon = new Horizon.Server(HORIZON_TESTNET);
+  try {
+    await horizon.loadAccount(publicKey);
+    return "already";
+  } catch {
+    const res = await fetch(`https://friendbot.stellar.org/?addr=${publicKey}`);
+    if (!res.ok) throw new Error(`friendbot failed: ${res.status}`);
+    return "funded";
+  }
+}
+
+/** Add the anchor's asset trustline so the anchor can pay this wallet. */
+export async function ensureUsdcTrustline(buyer: BuyerWallet): Promise<"added" | "exists"> {
+  const horizon = new Horizon.Server(HORIZON_TESTNET);
+  const account = await horizon.loadAccount(buyer.publicKey);
+  const has = account.balances.some((b: any) =>
+    b.asset_code === ANCHOR_ASSET_CODE && b.asset_issuer === ANCHOR_ASSET_ISSUER,
+  );
+  if (has) return "exists";
+
+  const tx = new TransactionBuilder(account, {
+    fee: "1000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(Operation.changeTrust({ asset: ANCHOR_ASSET }))
+    .setTimeout(60)
+    .build();
+  tx.sign(Keypair.fromSecret(buyer.secretKey));
+  await horizon.submitTransaction(tx);
+  return "added";
+}
+
+/** SEP-10 web auth: returns a JWT bound to the buyer account. */
+export async function sep10Authenticate(buyer: BuyerWallet): Promise<string> {
+  // 1. GET challenge
+  const challengeRes = await fetch(`${ANCHOR_AUTH}?account=${buyer.publicKey}`);
+  if (!challengeRes.ok) throw new Error(`SEP-10 challenge failed: ${challengeRes.status}`);
+  const { transaction, network_passphrase } = await challengeRes.json();
+  if (network_passphrase !== NETWORK_PASSPHRASE) {
+    throw new Error(`network passphrase mismatch: ${network_passphrase}`);
+  }
+  // 2. Sign challenge with buyer key
+  const tx = TransactionBuilder.fromXDR(transaction, NETWORK_PASSPHRASE);
+  tx.sign(Keypair.fromSecret(buyer.secretKey));
+  const signedXDR = tx.toEnvelope().toXDR("base64");
+  // 3. POST signed
+  const tokenRes = await fetch(ANCHOR_AUTH, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ transaction: signedXDR }),
+  });
+  if (!tokenRes.ok) throw new Error(`SEP-10 token failed: ${tokenRes.status}`);
+  const { token } = await tokenRes.json();
+  if (!token) throw new Error("no token returned");
+  return token;
+}
+
+export interface DepositInteractive {
+  url: string;
+  id: string;
+}
+
+/** SEP-24 deposit/interactive: returns the popup URL + transaction id. */
+export async function sep24DepositInteractive(
+  jwt: string,
+  buyer: BuyerWallet,
+): Promise<DepositInteractive> {
+  const form = new FormData();
+  form.append("asset_code", ANCHOR_ASSET_CODE);
+  form.append("account", buyer.publicKey);
+  const res = await fetch(`${ANCHOR_SEP24}/transactions/deposit/interactive`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${jwt}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`SEP-24 deposit failed: ${res.status} ${text}`);
+  }
+  const data = await res.json();
+  if (!data.url || !data.id) throw new Error("missing url/id in deposit response");
+  return { url: data.url, id: data.id };
+}
+
+export interface AnchorTx {
+  id: string;
+  status: string;
+  status_eta?: number;
+  amount_in?: string;
+  amount_out?: string;
+  amount_fee?: string;
+  stellar_transaction_id?: string;
+  external_transaction_id?: string;
+  started_at?: string;
+  completed_at?: string;
+  message?: string;
+}
+
+export async function getAnchorTransaction(jwt: string, id: string): Promise<AnchorTx> {
+  const res = await fetch(`${ANCHOR_SEP24}/transaction?id=${id}`, {
+    headers: { authorization: `Bearer ${jwt}` },
+  });
+  if (!res.ok) throw new Error(`get transaction failed: ${res.status}`);
+  const data = await res.json();
+  return data.transaction as AnchorTx;
+}
+
+export interface BuyerBalance {
+  asset_code: string;
+  asset_issuer?: string;
+  balance: string;
+}
+
+export async function getBuyerBalances(publicKey: string): Promise<BuyerBalance[]> {
+  const horizon = new Horizon.Server(HORIZON_TESTNET);
+  try {
+    const account = await horizon.loadAccount(publicKey);
+    return account.balances.map((b: any) => ({
+      asset_code: b.asset_code ?? "XLM",
+      asset_issuer: b.asset_issuer,
+      balance: b.balance,
+    }));
+  } catch {
+    return [];
+  }
+}

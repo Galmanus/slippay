@@ -346,10 +346,11 @@ export default function Home() {
                       Agent · SSL v7 ↗
                     </a>
                   </div>
-                  <span className="flex items-center gap-2 text-[#b5e853]">
+                  <a href="https://bluewaveai.online" target="_blank" rel="noopener noreferrer"
+                     className="flex items-center gap-2 text-[#b5e853] hover:opacity-70">
                     <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                    {t.proof.auditTag}
-                  </span>
+                    {t.proof.auditTag} ↗
+                  </a>
                 </div>
               </div>
             </div>

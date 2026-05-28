@@ -17,11 +17,66 @@ import {
 
 marked.setOptions({ gfm: true, breaks: false });
 
-function renderMd(src: string): string {
+// Resolve a markdown-relative href against a doc slug into an in-app /docs path,
+// an external URL, or a github source link. Returns null if it should be left as-is.
+function resolveDocHref(href: string, fromSlug: string): string | null {
+  if (!href) return null;
+  // Absolute external links, anchors, mailto — leave alone
+  if (/^([a-z]+:|\/\/|#|mailto:)/i.test(href)) return null;
+
+  // Strip query/hash for resolution, reattach later
+  const hashIdx = href.search(/[#?]/);
+  const tail = hashIdx >= 0 ? href.slice(hashIdx) : "";
+  const path = hashIdx >= 0 ? href.slice(0, hashIdx) : href;
+
+  // Resolve relative path against /docs/<fromSlug>
+  // fromSlug like "README" or "concepts/architecture"
+  const baseDir = fromSlug.includes("/") ? fromSlug.replace(/\/[^/]*$/, "") : "";
+  const baseParts = baseDir ? baseDir.split("/") : [];
+  const pathParts = path.split("/");
+  const stack: string[] = [...baseParts];
+  for (const p of pathParts) {
+    if (p === "" || p === ".") continue;
+    if (p === "..") { stack.pop(); continue; }
+    stack.push(p);
+  }
+  const resolved = stack.join("/");
+
+  // If it's a .md file inside the docs tree → /docs/<slug>
+  if (/\.md$/i.test(resolved)) {
+    const slug = resolved.replace(/\.md$/i, "");
+    if (slug === "README" || slug === "") return "/docs";
+    // Verify it exists in manifest; if not, fall back to github source
+    if (DOCS.find(d => d.slug === slug)) return `/docs/${slug}${tail}`;
+    return `https://github.com/Galmanus/slippay/blob/main/docs/${slug}.md${tail}`;
+  }
+
+  // Path that escapes docs/ (e.g., "../../contracts/...") → github source
+  if (path.startsWith("../") || resolved.startsWith("..")) {
+    const cleaned = resolved.replace(/^\.\.\//, "");
+    return `https://github.com/Galmanus/slippay/blob/main/${cleaned}${tail}`;
+  }
+
+  // Directory link → github tree
+  return `https://github.com/Galmanus/slippay/tree/main/docs/${resolved}${tail}`;
+}
+
+function rewriteHrefs(html: string, fromSlug: string): string {
+  return html.replace(/<a\s+([^>]*?)href="([^"]+)"([^>]*)>/gi, (m, pre, href, post) => {
+    const resolved = resolveDocHref(href, fromSlug);
+    if (!resolved) return m;
+    const isExternal = /^https?:\/\//i.test(resolved);
+    const extra = isExternal ? ' target="_blank" rel="noopener noreferrer"' : "";
+    return `<a ${pre}href="${resolved}"${post}${extra}>`;
+  });
+}
+
+function renderMd(src: string, fromSlug: string): string {
   // Strip the leading H1 — Docs page already renders the title separately.
   const stripped = src.replace(/^#\s+.+\n+/, "");
-  const html = marked.parse(stripped, { async: false }) as string;
-  return DOMPurify.sanitize(html, {
+  const rawHtml = marked.parse(stripped, { async: false }) as string;
+  const rewritten = rewriteHrefs(rawHtml, fromSlug);
+  return DOMPurify.sanitize(rewritten, {
     ALLOWED_TAGS: ["p","strong","em","code","pre","ul","ol","li","h1","h2","h3","h4","h5","blockquote","br","a","hr","table","thead","tbody","tr","th","td","img","del","sup","sub","span"],
     ALLOWED_ATTR: ["href","target","rel","alt","src","title","id","class"],
   });
@@ -47,8 +102,12 @@ export default function Docs() {
   // Auto-close on slug change
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
-  // Parse slug from /docs/<everything-after>
-  const pathSlug = location.pathname.replace(/^\/docs\/?/, "").replace(/\/$/, "");
+  // Parse slug from /docs/<everything-after>; tolerate trailing .md from
+  // markdown-relative links and decode percent-encoded chars.
+  const pathSlug = decodeURIComponent(location.pathname)
+    .replace(/^\/docs\/?/, "")
+    .replace(/\/$/, "")
+    .replace(/\.md$/i, "");
   const slug = pathSlug || (DOCS.find(d => d.filename === "README")?.slug ?? DOCS[0]?.slug ?? "");
   const doc = getDoc(slug);
 
@@ -67,7 +126,7 @@ export default function Docs() {
   // Scroll to top on slug change
   useEffect(() => { window.scrollTo({ top: 0, behavior: "instant" }); }, [slug]);
 
-  const html = useMemo(() => (doc ? renderMd(doc.content) : ""), [doc]);
+  const html = useMemo(() => (doc ? renderMd(doc.content, doc.slug) : ""), [doc]);
 
   // Build TOC from rendered H2s
   const tocRef = useRef<HTMLDivElement>(null);
@@ -103,7 +162,7 @@ export default function Docs() {
           <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]">
             <Link to="/" className="hover:opacity-60 hidden md:inline">Home</Link>
             <Link to="/x402-demo" className="hover:opacity-60 hidden md:inline">x402 demo</Link>
-            <a href="https://github.com/Galmanus/slippay" target="_blank" rel="noopener noreferrer" className="hover:opacity-60 hidden md:inline">GitHub ↗</a>
+            <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="hover:opacity-60 hidden md:inline">SSL Spec ↗</a>
             <Link to="/login" className="hover:opacity-60">Log in</Link>
           </nav>
         </div>
@@ -220,7 +279,19 @@ export default function Docs() {
               </Reveal>
 
               <Reveal delay={200} className="docs-md mt-12">
-                <div dangerouslySetInnerHTML={{ __html: html }} />
+                <div
+                  dangerouslySetInnerHTML={{ __html: html }}
+                  onClick={(e) => {
+                    const target = (e.target as HTMLElement).closest("a") as HTMLAnchorElement | null;
+                    if (!target) return;
+                    const href = target.getAttribute("href") ?? "";
+                    // Intercept only same-origin /docs internal links for SPA nav
+                    if (href.startsWith("/docs") && !target.target) {
+                      e.preventDefault();
+                      nav(href);
+                    }
+                  }}
+                />
               </Reveal>
 
               {/* Prev / next pager */}
@@ -273,8 +344,8 @@ export default function Docs() {
       <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1600px] mx-auto px-5 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] font-mono">
           <div>SLIPPAY · documentation · live on Stellar PUBLIC</div>
-          <a href="https://github.com/Galmanus/slippay" target="_blank" rel="noopener noreferrer" className="text-[#b5e853] hover:opacity-80">
-            Edit on GitHub ↗
+          <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="text-[#b5e853] hover:opacity-80">
+            SSL Spec ↗
           </a>
         </div>
       </footer>

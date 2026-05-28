@@ -68,8 +68,8 @@ const pt: HomeStrings = {
   mobileFooter: "Vivo na mainnet Stellar · contrato CBJMQ6ZY…",
   hero: {
     statusLive: "Live · v0.2",
-    eyebrow: "O commerce stack do Brasil em stablecoin",
-    h1: <>Você se protege do real com uma mão.<br/><em className="not-italic">E recebe nele com a outra.{dot}</em></>,
+    eyebrow: "Issue 001 · pra quem vende no Brasil",
+    h1: <>O commerce stack do Brasil<br/><em className="not-italic">em stablecoin.{dot}</em></>,
     sub: <>98% de quem comprou cripto no Brasil no início de 2026 comprou stablecoin — US$ 6,8 bi de US$ 6,9 bi. O brasileiro já se dolarizou. Só o seu caixa ainda não.</>,
     cta: "Comece a receber em dólar",
   },
@@ -154,8 +154,8 @@ const en: HomeStrings = {
   mobileFooter: "Live on Stellar mainnet · contract CBJMQ6ZY…",
   hero: {
     statusLive: "Live · v0.2",
-    eyebrow: "Brazil's commerce stack, in stablecoin",
-    h1: <>You hedge against the real with one hand.<br/><em className="not-italic">And get paid in it with the other.{dot}</em></>,
+    eyebrow: "Issue 001 · for who sells in Brazil",
+    h1: <>Brazil's commerce stack<br/><em className="not-italic">in stablecoin.{dot}</em></>,
     sub: <>98% of everyone who bought crypto in Brazil in early 2026 bought stablecoin — $6.8bn of $6.9bn. Brazilians already dollarized. Your cash flow hasn't.</>,
     cta: "Start getting paid in dollars",
   },
