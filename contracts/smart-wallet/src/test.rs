@@ -290,6 +290,25 @@ fn policy_match_returns_false_for_wrong_token() {
 }
 
 #[test]
+fn install_rejects_max_above_multiplier() {
+    // SECURITY_AUDIT N1: cap on max_per_charge prevents a compromised
+    // admin from installing max=i128::MAX and draining the wallet in one
+    // transfer.
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy(&env);
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+
+    let merchant = Address::generate(&env);
+    let token = Address::generate(&env);
+    // amount=100, max=2000 → max == amount * 20, must reject (10x cap)
+    let r = wallet.try_install_policy(&merchant, &token, &100, &2_000, &60, &0);
+    assert!(r.is_err(), "max > amount*10 must be rejected");
+    // amount=100, max=1000 → max == amount * 10, must accept (boundary)
+    wallet.install_policy(&merchant, &token, &100, &1_000, &60, &0);
+}
+
+#[test]
 fn install_rejects_merchant_equals_admin() {
     // SECURITY_AUDIT H3: refuse to install a policy where the admin is
     // also the merchant — would let a compromised admin drain the wallet

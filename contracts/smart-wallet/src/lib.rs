@@ -58,6 +58,11 @@ use soroban_sdk::{
 const TTL_THRESHOLD_LEDGERS: u32 = 17_280;   // ~1 day at 5s/ledger
 const TTL_TARGET_LEDGERS: u32 = 535_000;     // ~31 days at 5s/ledger (clamped)
 
+/// SECURITY_AUDIT N1 · maximum cap multiplier. `max_per_charge` may be at
+/// most `amount_per_charge * MAX_CAP_MULTIPLIER`. Limits blast radius of
+/// admin compromise (see DEPLOYED.md gap C3).
+const MAX_CAP_MULTIPLIER: i128 = 10;
+
 /// On-chain per-merchant spending policy. The wallet authorizes any
 /// `token.transfer` whose merchant + amount + interval fall inside these
 /// constraints, without consulting the user's passkey again.
@@ -181,6 +186,15 @@ impl SmartWallet {
         admin.require_auth();
 
         if amount_per_charge <= 0 || max_per_charge < amount_per_charge {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
+        // SECURITY_AUDIT N1 (second pass): bound max_per_charge to a small
+        // multiple of amount_per_charge. Without this, a compromised admin
+        // could install max=i128::MAX and drain the wallet to the policy
+        // merchant in a single transfer. 10x amount gives merchants room
+        // to handle proration / fee bumps while keeping blast radius small.
+        let max_allowed = amount_per_charge.saturating_mul(MAX_CAP_MULTIPLIER);
+        if max_per_charge > max_allowed {
             panic_with_error!(&env, Error::InvalidConfig);
         }
         if interval_seconds < 60 {
@@ -330,8 +344,18 @@ fn try_match_policy(env: &Env, cc: &ContractContext) -> Result<bool, Error> {
     }
 
     // SEP-41 `transfer(from: Address, to: Address, amount: i128)`.
-    let to_val: Val = cc.args.get(1).unwrap();
-    let amount_val: Val = cc.args.get(2).unwrap();
+    // SECURITY_AUDIT N2 cleanup · use `if let Some` rather than `.unwrap()`.
+    // The `args.len() != 3` guard above made unwrap safe, but the explicit
+    // pattern is auditor-friendly and matches the "no panic in __check_auth"
+    // invariant.
+    let to_val: Val = match cc.args.get(1) {
+        Some(v) => v,
+        None => return Ok(false),
+    };
+    let amount_val: Val = match cc.args.get(2) {
+        Some(v) => v,
+        None => return Ok(false),
+    };
     let to = match Address::try_from_val(env, &to_val) {
         Ok(a) => a,
         Err(_) => return Ok(false),
