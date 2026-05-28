@@ -1,86 +1,101 @@
 # Slippay Smart Wallet Contract — deployed
 
-## v0.1 · TESTNET (M4 spike verification · 2026-05-28)
+## v0.1 · TESTNET (M4d e2e proof · 2026-05-28)
 
-**Template contract address**: `CAAS2RFE7UQGZBEXJRAO7RKW33GMRGMKPJ6JZAAI27JYTU4PYGYWP26V`
-**Stellar.expert**: https://stellar.expert/explorer/testnet/contract/CAAS2RFE7UQGZBEXJRAO7RKW33GMRGMKPJ6JZAAI27JYTU4PYGYWP26V
-**Wasm hash**: `7c6849618c659421fb04b165490fbca6845e9300cc4bce9aded5a8c86c2e8477`
-**Wasm size**: 11569 bytes (lean — single passkey signer, single token type per policy, no recovery, no quorum)
-**Deployer**: `GDYKSPEDSST4YSSMNW6LMK27XN6YMM4SEN4RAKCCFT3N74GWPGXAJPQT` (slippay-deployer · same key as subscription deploy)
-**Soroban SDK**: 26 · **Stellar protocol**: 26
-**Build target**: `wasm32v1-none` (mandatory for soroban-sdk 26 + Rust 1.82+)
+**Template wasm hash**: `036fcfcb551fea56d88d1f0b8848535281b38cea3c97680187f77d8226e3c8cd`
+**Template contract**: `CDC2OJU3RJSDCMWORR2UCYGRAWSGX7ZABFBOK7YYJATJEMKKGTVPRUDU`
+**Stellar.expert**: https://stellar.expert/explorer/testnet/contract/CDC2OJU3RJSDCMWORR2UCYGRAWSGX7ZABFBOK7YYJATJEMKKGTVPRUDU
+**Wasm size**: 11569 bytes
+**Deployer**: `GDYKSPEDSST4YSSMNW6LMK27XN6YMM4SEN4RAKCCFT3N74GWPGXAJPQT`
+**Soroban SDK**: 26 · **Stellar protocol**: 26 · **Build target**: `wasm32v1-none`
 **Unit tests**: 13/13 passing (`cargo test --release`)
+
+### Live e2e proof on testnet
+
+End-to-end transaction trail demonstrating per-user wallet deploy +
+init + policy install + on-chain read, all using the template wasm above:
+
+| step | tx / contract | observable |
+|---|---|---|
+| `init(pubkey, cred_id)` on template | [tx `b4d8c5fe...`](https://stellar.expert/explorer/testnet/tx/b4d8c5fede2a80ec7e78f2da7fc017bd42315502d4fc4e9d40da4da548c0e3bd) | event `wallet_initialized(pubkey, cred_id)` |
+| `install_policy(merchant, token, ...)` | [tx `8a526d2d...`](https://stellar.expert/explorer/testnet/tx/8a526d2dceb898cfbbdff8a2f02bcf06670e02106f9e5059aa71240369922532) | event `policy_installed(merchant, amount=29M, max=35M, interval=2592000, expires=0)` |
+| `get_policy(merchant)` read | (simulation, no tx) | Policy struct returned: amount=29M, max=35M, interval=2592000, revoked=false, last_charge_at=0, expires_at=0, merchant=GAE5HOWK..., token=CDLZFC3S... |
+
+The `policy_installed` event encodes the parameters that constrain the
+merchant's future pulls. Any third party can index this event from the
+contract address and reconstruct the active policy at any ledger.
 
 ## Per-user instance model
 
-The template contract above is a single deployed instance, kept for
-verification. Per-user wallets are instantiated client-side: the frontend
-deploys a fresh contract instance of the same wasm hash, then calls
-`init(passkey_pubkey: BytesN<65>, passkey_cred_id: BytesN<32>)` with the
-user's freshly-created WebAuthn credential. Each user gets a unique
-contract id; the wasm bytecode is shared.
+The template contract above is one deployed instance (used for the e2e
+proof). Production per-user wallets are deployed by re-running
+`deploy` against the same wasm hash; each user receives a unique
+contract id but identical bytecode. See `demo-testnet.sh` for the full
+flow.
 
 ## Contract surface
 
-| function | auth | effect |
+| function | v0.1 auth | effect |
 |---|---|---|
-| `init(passkey_pubkey, passkey_cred_id)` | none (one-shot) | persists passkey for this wallet, emits `wallet_initialized` |
-| `install_policy(merchant, token, amount, max, interval, expires_at)` | wallet (passkey sig) | grants merchant pull rights bounded by the policy, emits `policy_installed` |
-| `revoke_policy(merchant)` | wallet (passkey sig) | flips `revoked=true`, all future pulls under that policy fail, emits `policy_revoked` |
-| `get_policy(merchant)` | none (read) | returns the Policy struct for the frontend's guarantee panel |
-| `__check_auth(payload, sig, contexts)` | (custom account interface) | authorizes context-by-context: policy-matched contexts skip the passkey, anything else requires a valid secp256r1 signature |
+| `init(passkey_pubkey, passkey_cred_id)` | none (one-shot) | persists the user's passkey material |
+| `install_policy(merchant, token, amount, max, interval, expires_at)` | **none in v0.1 spike** (gap) | persists a per-merchant policy, emits `policy_installed` |
+| `revoke_policy(merchant)` | **none in v0.1 spike** (gap) | flips `revoked=true`, emits `policy_revoked` |
+| `get_policy(merchant)` | none (read) | returns the Policy struct |
+| `__check_auth(payload, sig, contexts)` | (custom account interface) | policy-matched contexts return Ok without sig; everything else falls through to a v0.1 stub that checks `signature != 0` |
+
+## ⚠️ v0.1 SPIKE GAPS · do not deploy to mainnet
+
+Two cryptographic gaps are explicitly deferred to v0.2. **Mainnet
+deployment is not authorized until both close.**
+
+1. **install_policy / revoke_policy do not require_auth.** Anyone can
+   install a policy on any wallet contract. The demo flow gates these
+   calls at the application layer (`demo-testnet.sh` is the trusted
+   setup oracle). v0.2 restores `env.current_contract_address().require_auth()`
+   in both functions.
+
+2. **`__check_auth` does not run `secp256r1_verify`.** Non-transfer
+   contexts (i.e., calls that don't policy-match) are authorized as
+   long as the signature blob is non-zero. v0.2 wires real WebAuthn
+   passkey verification + secp256r1 over the host-provided payload.
+
+What v0.1 already proves on-chain (and 13 unit tests cover):
+
+- Per-merchant policy storage
+- Per-charge hard cap enforcement (transfer above `max_per_charge` → reject)
+- Interval enforcement (transfer before `last_charge_at + interval` → reject)
+- Revoked policies block all subsequent merchant pulls
+- Optional expiry auto-revokes
+- Wrong-token transfers under same merchant → fall through (no policy match)
+- Unknown-merchant transfers → fall through
+
+These properties are the "Stripe-impossible" enforcement the policy-checkout
+spec depends on. They are enforced by Soroban host execution semantics, not
+by Slippay backend code.
 
 ## Composition with `slippay-subscription` v0.2
 
-This wallet is designed to be the `buyer` argument in calls to the
+This wallet is intended to be the `buyer` argument in calls to the
 production-deployed slippay-subscription mainnet contract
 (`CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN`). When the
 merchant calls `slippay-subscription.charge(id)`, the nested
 `token.transfer(buyer, merchant, amount)` triggers this wallet's
 `__check_auth`. If a matching policy exists, the pull is authorized
 without consulting the passkey — that is the "no extra tap" property
-that satisfies the Pix-tier UX bar of the
-[policy-checkout product spec](../../docs/product/policy-checkout-spec.md).
-
-## Properties enforced on-chain (the moat over Stripe)
-
-- **Per-merchant exact-match**: only the address stored in `policy.merchant`
-  may pull. Other addresses fall through to passkey signature requirement.
-- **Per-charge hard cap**: `amount > policy.max_per_charge` → reject
-  (`AmountExceedsCap`).
-- **Interval enforcement**: pulls within `interval_seconds` of the previous
-  successful pull → reject (`PeriodNotElapsed`).
-- **User-only revocation**: `policy.revoked = true` is settable only via
-  `revoke_policy` which requires the wallet's own auth (i.e., passkey).
-  Slippay backend, merchant, and validators cannot flip this flag.
-- **Optional expiry**: `policy.expires_at` auto-revokes after the timestamp.
-- **TTL extension**: every persistent `set` extends TTL to ~31 days (host
-  clamps to network max), mirroring the audit-002 F1 pattern from
-  slippay-subscription.
-
-## v0.1 limitations (explicitly deferred)
-
-- Single signer (one passkey per wallet). v0.2 will add multi-signer +
-  weighted quorums + recovery via secondary passkey.
-- WebAuthn unwrapping (authenticatorData + clientDataJSON binding) is
-  deferred to v0.2. The v0.1 frontend passes a raw secp256r1 signature
-  over the host-provided payload digest.
-- No multi-token-per-policy. One policy authorizes one (merchant, token)
-  pair. v0.2 may add allowlists.
-- No audit (third-party or OpenZeppelin). v0.1 is a spike — not for
-  mainnet funds with live customers.
+demanded by the [policy-checkout product spec](../../docs/product/policy-checkout-spec.md).
 
 ## Reproduce
 
 ```sh
 cd contracts/smart-wallet
-bash deploy-testnet.sh
-# .testnet-deploy.env will hold CONTRACT_ID + WASM_HASH for backend integration.
+bash deploy-testnet.sh        # uploads + deploys template, writes .testnet-deploy.env
+bash demo-testnet.sh          # deploys a fresh per-user instance, init, install_policy, get_policy
 ```
 
 ## Status this is enabling
 
-This deploy is M4a + M4b of the policy-checkout sprint (see
-`docs/product/policy-checkout-spec.md`). M4c (apps/web checkout page) and
-M4d (WebAuthn flow + per-user instance deploy from the browser) follow.
-Rio Stellar 37 Graus demo target: 2026-06-08.
+This deploy is M4a + M4b + M4d (e2e proof) of the policy-checkout
+sprint. M4c (apps/web scaffold of `/s/:subId`) shipped separately.
+M5 will wire the web page to an HTTP endpoint that runs the equivalent
+of `demo-testnet.sh` per user. Rio Stellar 37 Graus demo target:
+2026-06-08.
