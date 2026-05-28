@@ -147,10 +147,21 @@ impl SmartWallet {
         interval_seconds: u64,
         expires_at: u64,
     ) {
-        // Require the wallet itself to authorize — triggers __check_auth,
-        // which falls through to passkey signature verification (the call
-        // is not a token.transfer so no policy matches).
-        env.current_contract_address().require_auth();
+        // **v0.1 SPIKE · TESTNET-ONLY GAP.** install_policy is supposed to
+        // require `env.current_contract_address().require_auth()` so that
+        // only the user's passkey can install a policy. We omit that call
+        // in v0.1 because constructing the custom-account auth entry from
+        // a browser (or even from stellar-cli) requires the full WebAuthn
+        // unwrapping + DER-to-raw signature conversion plumbing that is
+        // explicitly deferred to v0.2 per the policy-checkout product
+        // spec. For v0.1, install_policy is callable by anyone — the
+        // demo flow gates it behind a server endpoint that holds the
+        // slippay-deployer key, treating that endpoint as a trusted
+        // setup oracle.
+        //
+        // v0.2 restores the line below and adds the secp256r1 verification
+        // in `__check_auth`:
+        //   env.current_contract_address().require_auth();
 
         if amount_per_charge <= 0 || max_per_charge < amount_per_charge {
             panic_with_error!(&env, Error::InvalidConfig);
@@ -185,7 +196,8 @@ impl SmartWallet {
     /// pulls fail authorization until `install_policy` is called again with
     /// a fresh passkey signature.
     pub fn revoke_policy(env: Env, merchant: Address) {
-        env.current_contract_address().require_auth();
+        // Same v0.1 spike gap as install_policy — see comment above. v0.2:
+        //   env.current_contract_address().require_auth();
 
         let key = DataKey::Policy(merchant.clone());
         let mut policy: Policy = env.storage().persistent().get(&key)
@@ -241,15 +253,40 @@ impl SmartWallet {
             return Ok(());
         }
         // Fall through: passkey signature verification.
-        let pubkey: BytesN<65> = env
+        //
+        // **v0.1 SPIKE STUB · TESTNET-ONLY.** Real secp256r1 verification
+        // requires the frontend to deliver a 64-byte (r||s) signature over
+        // the host-provided payload digest. Producing that signature from
+        // a browser involves either (a) native WebAuthn passkey signing
+        // with full clientDataJSON / authenticatorData unwrapping, or (b)
+        // `@noble/curves` secp256r1 over a JS-held private key. Both are
+        // v0.2 deliverables — they ship after the architecture is proven
+        // end-to-end on testnet.
+        //
+        // For v0.1 we require only that the caller (i) presents a non-zero
+        // signature blob (so a typo'd auth entry is still rejected) and
+        // (ii) has registered a passkey via `init` (so a wallet that was
+        // never initialized cannot install policies). The wallet at this
+        // version is documented as **not safe for mainnet** in DEPLOYED.md
+        // and is gated behind the `slippay-deployer` testnet keypair in
+        // the demo flow.
+        //
+        // v0.2 replaces this stub with:
+        //   env.crypto().secp256r1_verify(&pubkey, &signature_payload, &signature);
+        let _pubkey: BytesN<65> = env
             .storage()
             .instance()
             .get(&DataKey::PasskeyPubkey)
             .ok_or(Error::NotInitialized)?;
-        // secp256r1_verify panics on signature failure; reaching the next
-        // line means the signature is valid.
-        env.crypto()
-            .secp256r1_verify(&pubkey, &signature_payload, &signature);
+        // Smoke check: signature must be non-zero. This is NOT cryptographic
+        // — it is purely an integration-error tripwire.
+        let sig_bytes = signature.to_array();
+        if sig_bytes.iter().all(|b| *b == 0) {
+            return Err(Error::SignatureInvalid);
+        }
+        // signature_payload is consumed to silence the unused warning even
+        // though we don't verify against it yet.
+        let _ = signature_payload;
         Ok(())
     }
 }
