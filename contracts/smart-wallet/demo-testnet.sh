@@ -48,10 +48,12 @@ TOKEN=CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC
 
 echo
 echo "=== init wallet ==="
+ADMIN=$(stellar keys address slippay-deployer)
 stellar contract invoke --network testnet --source slippay-deployer \
   --id "$WALLET" -- init \
   --passkey_pubkey "$PUBKEY" \
-  --passkey_cred_id "$CRED"
+  --passkey_cred_id "$CRED" \
+  --admin "$ADMIN"
 
 echo
 echo "=== install policy ==="

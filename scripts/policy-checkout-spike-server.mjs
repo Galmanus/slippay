@@ -55,6 +55,15 @@ const PLACEHOLDER_PUBKEY =
   "04" + "01".repeat(32) + "02".repeat(32);
 const PLACEHOLDER_CRED_ID = "03".repeat(32);
 
+// v0.1 admin = the trusted setup oracle, i.e. this server's signing
+// key. The wallet's `install_policy` and `revoke_policy` require this
+// address's `require_auth`. v0.2 migrates admin to the wallet's own
+// contract address so the user's passkey gates these mutations.
+async function getAdminAddress() {
+  const { stdout } = await execFile("stellar", ["keys", "address", DEPLOYER_KEY]);
+  return stdout.toString().trim();
+}
+
 // Demo merchant + token. The TOKEN constant is the native XLM SAC; for v0.1
 // we don't actually move USDC, we just install a policy that names this
 // token. v0.2 wires USDC SAC.
@@ -97,7 +106,8 @@ async function deployAndInstall({
     throw new Error(`deploy: unexpected contract id '${wallet}'`);
   }
 
-  // Step 2: init wallet.
+  // Step 2: init wallet with admin = the deployer's G-account.
+  const adminAddr = await getAdminAddress();
   const init = await stellar([
     "contract", "invoke",
     "--network", NETWORK,
@@ -107,6 +117,7 @@ async function deployAndInstall({
     "init",
     "--passkey_pubkey", PLACEHOLDER_PUBKEY,
     "--passkey_cred_id", PLACEHOLDER_CRED_ID,
+    "--admin", adminAddr,
   ]);
   const initTx = parseTxHash(init.stdout + init.stderr);
 

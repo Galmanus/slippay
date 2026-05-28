@@ -45,8 +45,8 @@ fn dummy_cred_id(env: &Env) -> BytesN<32> {
 fn init_persists_passkey() {
     let env = Env::default();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
-    let res = wallet.try_init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+    let res = wallet.try_init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     assert!(res.is_err(), "second init must reject");
 }
 
@@ -56,7 +56,7 @@ fn install_and_get_policy() {
     env.mock_all_auths();
 
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -86,7 +86,7 @@ fn revoke_flips_flag() {
     env.mock_all_auths();
 
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -102,7 +102,7 @@ fn install_with_invalid_config_panics() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -117,7 +117,7 @@ fn revoke_nonexistent_policy_panics() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     assert!(wallet.try_revoke_policy(&merchant).is_err());
@@ -146,7 +146,7 @@ fn policy_match_authorizes_within_cap() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -164,7 +164,7 @@ fn policy_match_rejects_over_cap() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -182,7 +182,7 @@ fn policy_match_rejects_revoked() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -201,7 +201,7 @@ fn policy_match_rejects_expired() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     env.ledger().with_mut(|li| { li.timestamp = 1_000; });
     let merchant = Address::generate(&env);
@@ -223,7 +223,7 @@ fn policy_match_enforces_interval() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     env.ledger().with_mut(|li| { li.timestamp = 1_000; });
     let merchant = Address::generate(&env);
@@ -257,7 +257,7 @@ fn policy_match_returns_false_for_unknown_merchant() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let unknown_merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -273,7 +273,7 @@ fn policy_match_returns_false_for_wrong_token() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -294,7 +294,7 @@ fn policy_match_returns_false_for_non_transfer_fn() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env));
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
