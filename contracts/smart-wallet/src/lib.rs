@@ -50,7 +50,7 @@ use soroban_sdk::{
     auth::{Context, ContractContext},
     contract, contracterror, contractimpl, contracttype,
     panic_with_error,
-    Address, BytesN, Env, Symbol, TryFromVal, Val, Vec,
+    Address, Bytes, BytesN, Env, Symbol, TryFromVal, Val, Vec,
 };
 
 // Mirror of slippay-subscription audit-002 F1 TTL constants. The host clamps
@@ -122,6 +122,25 @@ pub struct AgentSession {
     /// non-empty, the agent may only pay these addresses — the core of the
     /// agent-to-agent guarantee (pay only approved counterparties).
     pub allow_recipients: Vec<Address>,
+}
+
+/// Agent credential carried in the `__check_auth` signature slot: the agent's
+/// ed25519 session pubkey plus its signature over the host payload.
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct AgentAuth {
+    pub session_pubkey: BytesN<32>,
+    pub signature: BytesN<64>,
+}
+
+/// The wallet's custom-account signature type (CAP-46-11). The caller declares
+/// which principal is authorizing: the human passkey (secp256r1) or a delegated
+/// agent session (ed25519). Replaces the bare `BytesN<64>` of v0.1.
+#[contracttype]
+#[derive(Clone, Debug)]
+pub enum WalletAuth {
+    Passkey(BytesN<64>),
+    Agent(AgentAuth),
 }
 
 #[contracttype]
@@ -410,7 +429,7 @@ impl SmartWallet {
     pub fn __check_auth(
         env: Env,
         signature_payload: soroban_sdk::crypto::Hash<32>,
-        signature: BytesN<64>,
+        auth: WalletAuth,
         auth_contexts: Vec<Context>,
     ) -> Result<(), Error> {
         let mut all_matched = auth_contexts.len() > 0;
@@ -428,36 +447,50 @@ impl SmartWallet {
         if all_matched {
             return Ok(());
         }
-        // SECURITY_AUDIT C1 fix · DEFAULT-DENY for non-policy-matched contexts.
-        //
-        // The previous v0.1 behaviour returned Ok if the signature blob
-        // was merely non-zero. That collapsed the entire "Stripe-impossible"
-        // property: an attacker who knew the placeholder signature (which
-        // lives in open-source code) could call `SAC.transfer(wallet,
-        // attacker_address, balance)` and route around the policy entirely.
-        // See SECURITY_AUDIT.md C1.
-        //
-        // v0.1 hardening · reject every context that does not match an
-        // installed policy. Until v0.2 wires real `secp256r1_verify`,
-        // wallet operations gated by `require_auth(current_contract_address)`
-        // are not callable. install_policy / revoke_policy stay reachable
-        // because they gate on admin.require_auth(), bypassing __check_auth
-        // for the wallet's own address.
-        //
-        // v0.2 replaces this rejection with:
-        //   let pubkey = ... ;
-        //   env.crypto().secp256r1_verify(&pubkey, &signature_payload, &signature);
-        //   Ok(())
-        let _ = (signature_payload, signature);
-        // Surface NotInitialized if a fall-through hit a wallet that was
-        // never set up — keeps the error closer to the real cause than
-        // SignatureInvalid would.
-        let _pubkey: BytesN<65> = env
-            .storage()
-            .instance()
-            .get(&DataKey::PasskeyPubkey)
-            .ok_or(Error::NotInitialized)?;
-        Err(Error::SignatureInvalid)
+        // 2. Auth-based path — dispatch on the credential the caller declared.
+        //    Signature verification (secp256r1 / ed25519) panics on failure,
+        //    which the host turns into an auth rejection. These crypto paths are
+        //    exercised in the testnet e2e run, not unit tests — mirroring how the
+        //    v0.1 spike deferred secp256r1 to M4.
+        match auth {
+            // Delegated agent: authenticate the ed25519 session key over the
+            // host payload, then authorize EVERY context against the session's
+            // allowlist + windowed budget. A single non-authorizable context
+            // rejects the whole entry (no partial authorization).
+            WalletAuth::Agent(a) => {
+                let msg = Bytes::from_array(&env, &signature_payload.to_array());
+                env.crypto().ed25519_verify(&a.session_pubkey, &msg, &a.signature);
+                for ctx in auth_contexts.iter() {
+                    let authorized = match ctx {
+                        Context::Contract(cc) => {
+                            try_authorize_agent_context(&env, &a.session_pubkey, &cc)?
+                        }
+                        Context::CreateContractHostFn(_)
+                        | Context::CreateContractWithCtorHostFn(_) => {
+                            return Err(Error::AuthContextUnsupported);
+                        }
+                    };
+                    if !authorized {
+                        return Err(Error::SignatureInvalid);
+                    }
+                }
+                Ok(())
+            }
+            // Human passkey: secp256r1 over the host payload authorizes any
+            // context (e.g. the wallet's own install/revoke via __check_auth in
+            // the v0.2 admin migration). Real verification, replacing the v0.1
+            // default-deny stub.
+            WalletAuth::Passkey(sig) => {
+                let pubkey: BytesN<65> = env
+                    .storage()
+                    .instance()
+                    .get(&DataKey::PasskeyPubkey)
+                    .ok_or(Error::NotInitialized)?;
+                env.crypto()
+                    .secp256r1_verify(&pubkey, &signature_payload, &sig);
+                Ok(())
+            }
+        }
     }
 }
 
@@ -594,6 +627,55 @@ fn recipient_allowed(session: &AgentSession, to: &Address) -> bool {
         return true;
     }
     session.allow_recipients.iter().any(|a| &a == to)
+}
+
+/// Authorize a single auth context against a delegated agent session. Parses a
+/// `token.transfer(wallet, to, amount)` context, enforces the recipient
+/// allowlist, then defers cap/window/revoke/expiry to
+/// `try_authorize_agent_transfer`. Tri-state like `try_match_policy`.
+fn try_authorize_agent_context(
+    env: &Env,
+    session_pubkey: &BytesN<32>,
+    cc: &ContractContext,
+) -> Result<bool, Error> {
+    let transfer_sym = Symbol::new(env, "transfer");
+    if cc.fn_name != transfer_sym {
+        return Ok(false);
+    }
+    if cc.args.len() != 3 {
+        return Ok(false);
+    }
+    let to_val: Val = match cc.args.get(1) {
+        Some(v) => v,
+        None => return Ok(false),
+    };
+    let amount_val: Val = match cc.args.get(2) {
+        Some(v) => v,
+        None => return Ok(false),
+    };
+    let to = match Address::try_from_val(env, &to_val) {
+        Ok(a) => a,
+        Err(_) => return Ok(false),
+    };
+    let amount = match i128::try_from_val(env, &amount_val) {
+        Ok(a) => a,
+        Err(_) => return Ok(false),
+    };
+
+    let key = DataKey::AgentSession(session_pubkey.clone());
+    let session: AgentSession = match env.storage().persistent().get(&key) {
+        Some(s) => s,
+        None => return Ok(false),
+    };
+    // Wrong asset for this session — fall through.
+    if cc.contract != session.token {
+        return Ok(false);
+    }
+    if !recipient_allowed(&session, &to) {
+        return Err(Error::RecipientNotAllowed);
+    }
+    // Cap / window / revoke / expiry enforcement (also charges the budget).
+    try_authorize_agent_transfer(env, session_pubkey, &session.token, amount)
 }
 
 #[cfg(test)]
