@@ -63,6 +63,12 @@ const TTL_TARGET_LEDGERS: u32 = 535_000;     // ~31 days at 5s/ledger (clamped)
 /// admin compromise (see DEPLOYED.md gap C3).
 const MAX_CAP_MULTIPLIER: i128 = 10;
 
+/// SECURITY_AUDIT A2 · maximum window multiplier. `window_cap` may be at most
+/// `per_tx_cap * MAX_WINDOW_MULTIPLIER`. Bounds how much larger an aggregate
+/// window can be than a single transfer, limiting blast radius of a stolen hot
+/// session key + compromised admin. Mirrors the policy path's N1 guard.
+const MAX_WINDOW_MULTIPLIER: i128 = 100;
+
 /// On-chain per-merchant spending policy. The wallet authorizes any
 /// `token.transfer` whose merchant + amount + interval fall inside these
 /// constraints, without consulting the user's passkey again.
@@ -93,9 +99,27 @@ pub struct Policy {
 /// a single merchant), this is a *push* grant: a delegated ed25519 session key
 /// the user authorizes once (via passkey) so an autonomous agent can initiate
 /// transfers within an aggregate budget — without a fresh human signature per
-/// transaction. The budget is a fixed window (O(1) roll-and-reset), chosen over
-/// a sliding window to keep `__check_auth` gas bounded under high-frequency
-/// agent traffic.
+/// transaction.
+///
+/// **A3 — sliding-window counter.** The budget is enforced with an O(1)
+/// sliding-window counter (no per-tx history). We keep the spend of the
+/// current epoch (`cur_spent`) and the immediately preceding epoch
+/// (`prev_spent`), and estimate the rolling spend as a time-weighted sum of
+/// the two for throughput shaping, while staying gas-bounded under
+/// high-frequency agent traffic.
+///
+/// **Worst-case guarantee (N-A3).** The time-weighted estimate counts
+/// `cur_spent` at full weight regardless of *when* in the epoch it was spent.
+/// A "delayed straddle" — spend late in one epoch, roll, spend early in the
+/// next — can therefore place spend that exceeds `window_cap` inside a single
+/// real `window_seconds`-length interval (such an interval overlaps at most
+/// two adjacent epochs). The guarantee is therefore NOT `<= window_cap`; it is
+/// that the worst-case spend over ANY `window_seconds`-length real-time
+/// interval is bounded by **2 × window_cap**. This bound is enforced by a hard
+/// un-weighted ceiling (`prev_spent + cur_spent + amount <= 2 * window_cap`,
+/// see `try_authorize_agent_transfer`) layered over the weighted estimate.
+/// Size `window_cap` to **half** of the maximum exposure you are willing to
+/// accept per window.
 #[contracttype]
 #[derive(Clone, Debug)]
 pub struct AgentSession {
@@ -107,12 +131,19 @@ pub struct AgentSession {
     pub per_tx_cap: i128,
     /// Length of the spending window, in seconds (e.g. 86_400 = 24h).
     pub window_seconds: u64,
-    /// Aggregate cap across the current window. Spend above this is rejected.
+    /// Aggregate cap across the rolling window. The time-weighted estimate of
+    /// spend across (prev epoch, current epoch) must stay <= this.
     pub window_cap: i128,
-    /// Unix timestamp the current window opened.
-    pub window_start: u64,
-    /// Amount already spent in the current window.
-    pub window_spent: i128,
+    /// Unix timestamp the current epoch opened. Epochs are rolled lazily on
+    /// charge: a charge at `now >= epoch_start + window_seconds` opens a new
+    /// epoch anchored at `now` (sliding, not grid-aligned).
+    pub epoch_start: u64,
+    /// Amount spent so far in the current epoch.
+    pub cur_spent: i128,
+    /// Amount spent in the immediately preceding epoch. Decays linearly across
+    /// the current epoch in the rolling estimate. 0 if the gap to the previous
+    /// epoch was >= 2 windows (fully decayed).
+    pub prev_spent: i128,
     /// Unix timestamp after which the session auto-revokes. 0 = no expiry.
     pub expires_at: u64,
     /// User-set kill switch. Once true, all agent transfers fail until the
@@ -185,6 +216,7 @@ pub enum Error {
     SessionExpired = 13,
     WindowCapExceeded = 14,
     RecipientNotAllowed = 15,
+    EmptyAllowlist = 16,
 }
 
 #[contract]
@@ -351,6 +383,15 @@ impl SmartWallet {
         if per_tx_cap <= 0 || window_cap < per_tx_cap {
             panic_with_error!(&env, Error::InvalidConfig);
         }
+        // SECURITY_AUDIT A2.3: bound window_cap to a small multiple of
+        // per_tx_cap. Mirrors the policy path's N1 guard — without it a
+        // compromised admin could install a window_cap orders of magnitude
+        // larger than a single transfer, defeating the per-tx cap as a
+        // meaningful limit on aggregate exfiltration before revocation.
+        let max_window = per_tx_cap.saturating_mul(MAX_WINDOW_MULTIPLIER);
+        if window_cap > max_window {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
         if window_seconds < 60 {
             panic_with_error!(&env, Error::InvalidConfig);
         }
@@ -358,14 +399,31 @@ impl SmartWallet {
         if expires_at != 0 && expires_at <= now {
             panic_with_error!(&env, Error::InvalidConfig);
         }
+        // SECURITY_AUDIT A2.1: an empty allowlist + a stolen hot session key
+        // = drain to ANY address within budget. Require a non-empty allowlist
+        // so the agent can only pay pre-approved counterparties. This is the
+        // primary mitigation for the stolen-key threat model.
+        if allow_recipients.is_empty() {
+            panic_with_error!(&env, Error::EmptyAllowlist);
+        }
+        // SECURITY_AUDIT A2.2 (H3 analog): a compromised admin must not be able
+        // to name itself or the wallet's own contract address as an allowed
+        // recipient and drain the wallet to itself / in a self-loop.
+        let self_addr = env.current_contract_address();
+        for r in allow_recipients.iter() {
+            if r == admin || r == self_addr {
+                panic_with_error!(&env, Error::RecipientNotAllowed);
+            }
+        }
         let session = AgentSession {
             session_pubkey: session_pubkey.clone(),
             token,
             per_tx_cap,
             window_seconds,
             window_cap,
-            window_start: now,
-            window_spent: 0,
+            epoch_start: now,
+            cur_spent: 0,
+            prev_spent: 0,
             expires_at,
             revoked: false,
             allow_recipients,
@@ -417,46 +475,43 @@ impl SmartWallet {
     /// Custom account interface (CAP-46-11). Called by the Soroban host on
     /// every auth attempt where this contract is the authorizing principal.
     ///
-    /// Authorization rule:
-    /// 1. If **every** `auth_context` matches an active on-chain policy
-    ///    (i.e., it is a `token.transfer(this_wallet, merchant, amount)`
-    ///    call where the merchant has a non-revoked, non-expired policy with
-    ///    `amount <= max_per_charge` and interval elapsed), authorize without
-    ///    consulting the signature. Bump `last_charge_at` per matched policy.
-    /// 2. Otherwise verify the passkey signature against `signature_payload`
-    ///    using `env.crypto().secp256r1_verify`. Panics on signature failure,
-    ///    which the host translates into an auth rejection.
+    /// Authorization rule (SECURITY_AUDIT A1 — dispatch on credential FIRST,
+    /// exactly one authorization model per entry):
+    /// - `WalletAuth::Agent`: authenticate the ed25519 session key, then
+    ///   authorize EVERY context against the session's allowlist + windowed
+    ///   budget. This path NEVER runs the pull-policy loop, so an agent
+    ///   credential can never mutate policy `last_charge_at`.
+    /// - `WalletAuth::Passkey`: first try the pull-policy path — if **every**
+    ///   `auth_context` matches an active on-chain policy (a
+    ///   `token.transfer(this_wallet, merchant, amount)` with a non-revoked,
+    ///   non-expired policy, `amount <= max_per_charge`, interval elapsed),
+    ///   authorize without consulting the signature, bumping `last_charge_at`
+    ///   per matched policy. Otherwise verify the passkey secp256r1 signature
+    ///   over `signature_payload` (panics on failure → host auth rejection).
     pub fn __check_auth(
         env: Env,
         signature_payload: soroban_sdk::crypto::Hash<32>,
         auth: WalletAuth,
         auth_contexts: Vec<Context>,
     ) -> Result<(), Error> {
-        let mut all_matched = auth_contexts.len() > 0;
-        for ctx in auth_contexts.iter() {
-            let matched = match ctx {
-                Context::Contract(cc) => try_match_policy(&env, &cc)?,
-                Context::CreateContractHostFn(_) | Context::CreateContractWithCtorHostFn(_) => {
-                    return Err(Error::AuthContextUnsupported);
-                }
-            };
-            if !matched {
-                all_matched = false;
-            }
-        }
-        if all_matched {
-            return Ok(());
-        }
-        // 2. Auth-based path — dispatch on the credential the caller declared.
-        //    Signature verification (secp256r1 / ed25519) panics on failure,
-        //    which the host turns into an auth rejection. These crypto paths are
-        //    exercised in the testnet e2e run, not unit tests — mirroring how the
-        //    v0.1 spike deferred secp256r1 to M4.
+        // SECURITY_AUDIT A1: dispatch on the credential type FIRST, then run
+        // exactly ONE authorization model per entry. The previous structure
+        // ran the pull-policy loop (which has the `last_charge_at` side effect)
+        // on EVERY entry before dispatch, so an Agent credential could mutate
+        // policy state as a side effect of authenticating. Now the Agent path
+        // never touches `try_match_policy`, and only the Passkey path runs the
+        // pull-policy loop (where its side effects are intended).
+        //
+        // Signature verification (secp256r1 / ed25519) panics on failure, which
+        // the host turns into an auth rejection. These crypto paths are
+        // exercised in the testnet e2e run, not unit tests — mirroring how the
+        // v0.1 spike deferred secp256r1 to M4.
         match auth {
             // Delegated agent: authenticate the ed25519 session key over the
             // host payload, then authorize EVERY context against the session's
             // allowlist + windowed budget. A single non-authorizable context
-            // rejects the whole entry (no partial authorization).
+            // rejects the whole entry (no partial authorization). NEVER calls
+            // try_match_policy — an agent credential cannot mutate policy state.
             WalletAuth::Agent(a) => {
                 let msg = Bytes::from_array(&env, &signature_payload.to_array());
                 env.crypto().ed25519_verify(&a.session_pubkey, &msg, &a.signature);
@@ -476,11 +531,17 @@ impl SmartWallet {
                 }
                 Ok(())
             }
-            // Human passkey: secp256r1 over the host payload authorizes any
-            // context (e.g. the wallet's own install/revoke via __check_auth in
-            // the v0.2 admin migration). Real verification, replacing the v0.1
-            // default-deny stub.
+            // Human passkey: first try the pull-policy path (a merchant pull
+            // matching a pre-installed policy authorizes WITHOUT consuming the
+            // signature, and the side effects on `last_charge_at` are intended
+            // here). If the pull path does not authorize all contexts, fall
+            // back to verifying the secp256r1 signature over the host payload —
+            // which authorizes any context (e.g. the wallet's own
+            // install/revoke via __check_auth in the v0.2 admin migration).
             WalletAuth::Passkey(sig) => {
+                if pull_policy_authorizes(&env, &auth_contexts)? {
+                    return Ok(());
+                }
                 let pubkey: BytesN<65> = env
                     .storage()
                     .instance()
@@ -492,6 +553,34 @@ impl SmartWallet {
             }
         }
     }
+}
+
+/// SECURITY_AUDIT A1: extracted pull-policy "do all contexts match an active
+/// policy" loop. Returns `Ok(true)` iff there is at least one context and
+/// EVERY context matches an active policy (each match bumps `last_charge_at`
+/// as a side effect via `try_match_policy`). Returns `Ok(false)` if some
+/// context does not match a policy (caller falls back to signature
+/// verification). Returns `Err` if a policy exists but a context violates it
+/// — the host turns this into an auth rejection.
+///
+/// NOTE on side effects: like the original inline loop, a partial run can bump
+/// `last_charge_at` on policies matched before a later context returns
+/// `Ok(false)`. This preserves the pre-refactor semantics exactly; it is only
+/// ever reached on the Passkey path now (A1), never the Agent path.
+fn pull_policy_authorizes(env: &Env, auth_contexts: &Vec<Context>) -> Result<bool, Error> {
+    let mut all_matched = auth_contexts.len() > 0;
+    for ctx in auth_contexts.iter() {
+        let matched = match ctx {
+            Context::Contract(cc) => try_match_policy(env, &cc)?,
+            Context::CreateContractHostFn(_) | Context::CreateContractWithCtorHostFn(_) => {
+                return Err(Error::AuthContextUnsupported);
+            }
+        };
+        if !matched {
+            all_matched = false;
+        }
+    }
+    Ok(all_matched)
 }
 
 /// Try to satisfy a single auth context via an active on-chain policy.
@@ -563,15 +652,22 @@ fn try_match_policy(env: &Env, cc: &ContractContext) -> Result<bool, Error> {
     Ok(true)
 }
 
-/// Try to authorize a single agent-initiated transfer against a delegated
-/// session. Tri-state like `try_match_policy`: `Ok(true)` authorizes (and
-/// charges the windowed budget), `Ok(false)` means no session for this key /
-/// wrong token (caller falls through), `Err` means a session exists but the
-/// transfer violates it (host turns into an auth rejection).
+/// SECURITY_AUDIT A5: the single budget chokepoint. Authorizes a single
+/// agent-initiated transfer to `to` for `amount` against a delegated session,
+/// enforcing allowlist + per-tx cap + sliding-window aggregate cap + revoke +
+/// expiry TOGETHER. Because the allowlist is checked HERE (not only in the
+/// context wrapper), this function cannot authorize a non-allowlisted recipient
+/// even when called directly. Reads the session exactly once.
+///
+/// Tri-state like `try_match_policy`: `Ok(true)` authorizes (and charges the
+/// windowed budget), `Ok(false)` means no session for this key / wrong token
+/// (caller falls through), `Err` means a session exists but the transfer
+/// violates it (host turns into an auth rejection).
 fn try_authorize_agent_transfer(
     env: &Env,
     session_pubkey: &BytesN<32>,
     token: &Address,
+    to: &Address,
     amount: i128,
 ) -> Result<bool, Error> {
     let key = DataKey::AgentSession(session_pubkey.clone());
@@ -583,6 +679,10 @@ fn try_authorize_agent_transfer(
     // pull-policy path may still authorize).
     if &s.token != token {
         return Ok(false);
+    }
+    // A5: allowlist enforced at the chokepoint, before any budget mutation.
+    if !recipient_allowed(&s, to) {
+        return Err(Error::RecipientNotAllowed);
     }
     if s.revoked {
         return Err(Error::SessionRevoked);
@@ -597,21 +697,89 @@ fn try_authorize_agent_transfer(
     if amount > s.per_tx_cap {
         return Err(Error::AmountExceedsCap);
     }
-    // Fixed-window roll: O(1) reset once the window has elapsed. Deliberately
-    // not a sliding window — a per-transaction sliding/eviction pass would make
-    // __check_auth gas grow with history under high-frequency agent traffic.
-    if now >= s.window_start.saturating_add(s.window_seconds) {
-        s.window_start = now;
-        s.window_spent = 0;
+
+    // SECURITY_AUDIT A3: O(1) sliding-window counter. The previous fixed-window
+    // reset allowed a 2x burst: spend window_cap just before a boundary, then
+    // another window_cap just after (because the counter reset to 0). Here we
+    // keep cur_spent (current epoch) and prev_spent (previous epoch), roll
+    // epochs lazily, and estimate the rolling spend as a time-weighted sum:
+    //   estimate = prev_spent * (1 - elapsed_fraction) + cur_spent
+    // where elapsed_fraction = (now - epoch_start) / window_seconds in [0,1).
+    // Just after a boundary, elapsed_fraction ≈ 0 so prev_spent is counted at
+    // (almost) full weight — the burst is shaped. The previous epoch's weight
+    // decays linearly to 0 across the new epoch. NOTE: this weighted estimate
+    // does NOT bound real-time-window spend to window_cap — a delayed straddle
+    // can place up to ~2× window_cap into one real W-length interval. The hard
+    // un-weighted ceiling below (N-A3) is what makes the worst case provably
+    // <= 2 * window_cap.
+    let w = s.window_seconds; // >= 60 by install-time validation
+    let elapsed = now.saturating_sub(s.epoch_start);
+    if elapsed >= w {
+        // Rolled into a new epoch. If the gap is within one window of the old
+        // epoch boundary (adjacent epoch), carry cur_spent into prev_spent so
+        // it decays across the new epoch; otherwise (>= 2 windows elapsed) the
+        // previous activity is fully decayed and dropped.
+        if elapsed < w.saturating_mul(2) {
+            s.prev_spent = s.cur_spent;
+        } else {
+            s.prev_spent = 0;
+        }
+        s.cur_spent = 0;
+        s.epoch_start = now;
     }
-    let new_spent = s
-        .window_spent
+
+    // Recompute elapsed against the (possibly rolled) epoch_start. Integer
+    // weighted estimate: prev_spent * (W - elapsed_in_epoch) / W + cur_spent.
+    // All values are non-negative; use i128/u128 with saturating/checked math
+    // to avoid overflow. elapsed_in_epoch is in [0, W).
+    let elapsed_in_epoch = now.saturating_sub(s.epoch_start); // < w here
+    let remaining = w.saturating_sub(elapsed_in_epoch); // in (0, w]
+    // weighted_prev = prev_spent * remaining / w  (floor). prev_spent and
+    // remaining are bounded (prev_spent <= window_cap <= per_tx*100), but use
+    // u128 intermediate to be safe against i128 overflow on the product.
+    let weighted_prev: i128 = if w == 0 {
+        0
+    } else {
+        let prod = (s.prev_spent.max(0) as u128)
+            .saturating_mul(remaining as u128);
+        (prod / (w as u128)) as i128
+    };
+    let estimate = weighted_prev
+        .checked_add(s.cur_spent)
+        .ok_or(Error::WindowCapExceeded)?;
+    let projected = estimate
         .checked_add(amount)
         .ok_or(Error::WindowCapExceeded)?;
-    if new_spent > s.window_cap {
+    if projected > s.window_cap {
         return Err(Error::WindowCapExceeded);
     }
-    s.window_spent = new_spent;
+
+    // SECURITY_AUDIT N-A3: hard un-weighted ceiling. The weighted estimate
+    // above shapes throughput but counts `cur_spent` at full weight regardless
+    // of when in the epoch it was spent, so a "delayed straddle" (spend late in
+    // one epoch, roll, spend early in the next) can place spend that exceeds
+    // `window_cap` inside a single real W-length interval. That interval
+    // overlaps at most two adjacent epochs, whose combined UN-weighted spend is
+    // `prev_spent + cur_spent`. Bounding that sum + this charge to
+    // `2 * window_cap` makes the worst-case real-time-window spend provably
+    // `<= 2 * window_cap`. Saturating/checked i128, fail-closed; redundant with
+    // the weighted check for in-invariant states (prev,cur,amount each
+    // <= window_cap) and load-bearing as a defense-in-depth invariant guard if
+    // any future path lets prev/cur exceed window_cap. Either check rejecting
+    // rejects the transfer.
+    let unweighted = s
+        .prev_spent
+        .saturating_add(s.cur_spent)
+        .saturating_add(amount);
+    let hard_ceiling = s.window_cap.saturating_mul(2);
+    if unweighted > hard_ceiling {
+        return Err(Error::WindowCapExceeded);
+    }
+
+    s.cur_spent = s
+        .cur_spent
+        .checked_add(amount)
+        .ok_or(Error::WindowCapExceeded)?;
     env.storage().persistent().set(&key, &s);
     env.storage()
         .persistent()
@@ -619,9 +787,12 @@ fn try_authorize_agent_transfer(
     Ok(true)
 }
 
-/// Whether `to` is an allowed recipient under this session. An empty allowlist
-/// means open (any recipient within budget); a non-empty allowlist restricts
-/// transfers to exactly its members.
+/// Whether `to` is an allowed recipient under this session. A non-empty
+/// allowlist (enforced at install time by A2) restricts transfers to exactly
+/// its members. An empty allowlist returns `true` (open) — but A2 prevents an
+/// empty allowlist from ever being installed, so in practice this is always a
+/// membership check. The open-case branch is retained for defense in depth and
+/// direct unit testing of the predicate.
 fn recipient_allowed(session: &AgentSession, to: &Address) -> bool {
     if session.allow_recipients.is_empty() {
         return true;
@@ -630,9 +801,15 @@ fn recipient_allowed(session: &AgentSession, to: &Address) -> bool {
 }
 
 /// Authorize a single auth context against a delegated agent session. Parses a
-/// `token.transfer(wallet, to, amount)` context, enforces the recipient
-/// allowlist, then defers cap/window/revoke/expiry to
+/// `token.transfer(wallet, to, amount)` context and defers ALL enforcement
+/// (allowlist + cap + window + revoke + expiry) to the single chokepoint
 /// `try_authorize_agent_transfer`. Tri-state like `try_match_policy`.
+///
+/// SECURITY_AUDIT A5: this wrapper no longer reads the session or checks the
+/// allowlist itself — it only parses the context and the token from it, then
+/// hands off to the chokepoint (one storage read). This removes the previous
+/// double storage read and ensures the allowlist is enforced at the budget
+/// chokepoint rather than only in this wrapper.
 fn try_authorize_agent_context(
     env: &Env,
     session_pubkey: &BytesN<32>,
@@ -662,20 +839,9 @@ fn try_authorize_agent_context(
         Err(_) => return Ok(false),
     };
 
-    let key = DataKey::AgentSession(session_pubkey.clone());
-    let session: AgentSession = match env.storage().persistent().get(&key) {
-        Some(s) => s,
-        None => return Ok(false),
-    };
-    // Wrong asset for this session — fall through.
-    if cc.contract != session.token {
-        return Ok(false);
-    }
-    if !recipient_allowed(&session, &to) {
-        return Err(Error::RecipientNotAllowed);
-    }
-    // Cap / window / revoke / expiry enforcement (also charges the budget).
-    try_authorize_agent_transfer(env, session_pubkey, &session.token, amount)
+    // The token the transfer is on (cc.contract) is the asset; the chokepoint
+    // re-checks it against the session's token and falls through on mismatch.
+    try_authorize_agent_transfer(env, session_pubkey, &cc.contract, &to, amount)
 }
 
 #[cfg(test)]
