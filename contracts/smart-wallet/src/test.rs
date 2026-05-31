@@ -572,3 +572,61 @@ fn recipient_allowed_restricts_to_listed() {
     assert!(super::recipient_allowed(&s, &listed), "listed recipient must be allowed");
     assert!(!super::recipient_allowed(&s, &other), "unlisted recipient must be rejected");
 }
+
+#[test]
+fn agent_context_authorizes_allowed_recipient_within_budget() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    let token = Address::generate(&env);
+    let to = Address::generate(&env);
+    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &vec![&env, to.clone()]);
+
+    let ctx = make_transfer_ctx(&env, &token, &id, &to, 10);
+    env.as_contract(&id, || {
+        let r = super::try_authorize_agent_context(&env, &agent_pk(&env), &ctx);
+        assert!(matches!(r, Ok(true)), "allowed recipient within budget must authorize: {:?}", r);
+    });
+}
+
+#[test]
+fn agent_context_rejects_unlisted_recipient() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    let token = Address::generate(&env);
+    let listed = Address::generate(&env);
+    let unlisted = Address::generate(&env);
+    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &vec![&env, listed.clone()]);
+
+    let ctx = make_transfer_ctx(&env, &token, &id, &unlisted, 10);
+    env.as_contract(&id, || {
+        let r = super::try_authorize_agent_context(&env, &agent_pk(&env), &ctx);
+        assert!(matches!(r, Err(Error::RecipientNotAllowed)), "got {:?}", r);
+    });
+}
+
+#[test]
+fn agent_context_ignores_non_transfer() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    let token = Address::generate(&env);
+    install_session(&env, &wallet, &token, 10, 600, 25, 0);
+
+    let ctx = ContractContext {
+        contract: token,
+        fn_name: Symbol::new(&env, "burn"),
+        args: vec![&env, id.into_val(&env), 100i128.into_val(&env)],
+    };
+    env.as_contract(&id, || {
+        let r = super::try_authorize_agent_context(&env, &agent_pk(&env), &ctx);
+        assert!(matches!(r, Ok(false)), "non-transfer must fall through: {:?}", r);
+    });
+}
