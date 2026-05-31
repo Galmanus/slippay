@@ -89,6 +89,41 @@ pub struct Policy {
     pub revoked: bool,
 }
 
+/// Delegated agent spending session. Unlike `Policy` (a *pull* grant keyed by
+/// a single merchant), this is a *push* grant: a delegated ed25519 session key
+/// the user authorizes once (via passkey) so an autonomous agent can initiate
+/// transfers within an aggregate budget — without a fresh human signature per
+/// transaction. The budget is a fixed window (O(1) roll-and-reset), chosen over
+/// a sliding window to keep `__check_auth` gas bounded under high-frequency
+/// agent traffic.
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct AgentSession {
+    /// ed25519 public key the agent signs transfer payloads with.
+    pub session_pubkey: BytesN<32>,
+    /// Token contract (SEP-41) the agent may transfer from this wallet.
+    pub token: Address,
+    /// Hard cap per single transfer.
+    pub per_tx_cap: i128,
+    /// Length of the spending window, in seconds (e.g. 86_400 = 24h).
+    pub window_seconds: u64,
+    /// Aggregate cap across the current window. Spend above this is rejected.
+    pub window_cap: i128,
+    /// Unix timestamp the current window opened.
+    pub window_start: u64,
+    /// Amount already spent in the current window.
+    pub window_spent: i128,
+    /// Unix timestamp after which the session auto-revokes. 0 = no expiry.
+    pub expires_at: u64,
+    /// User-set kill switch. Once true, all agent transfers fail until the
+    /// session is re-installed.
+    pub revoked: bool,
+    /// Recipient allowlist. Empty = open (any recipient within budget). When
+    /// non-empty, the agent may only pay these addresses — the core of the
+    /// agent-to-agent guarantee (pay only approved counterparties).
+    pub allow_recipients: Vec<Address>,
+}
+
 #[contracttype]
 pub enum DataKey {
     /// Passkey public key (secp256r1, 65-byte uncompressed X9.62 = 0x04 ||
@@ -108,6 +143,8 @@ pub enum DataKey {
     /// Per-merchant policy. Address is keyed verbatim — a policy applies to
     /// exactly one merchant address (no wildcards in v0.1).
     Policy(Address),
+    /// Delegated agent session, keyed by the agent's ed25519 session pubkey.
+    AgentSession(BytesN<32>),
 }
 
 #[contracterror]
@@ -124,6 +161,11 @@ pub enum Error {
     AuthContextUnsupported = 8,
     SignatureInvalid = 9,
     InvalidConfig = 10,
+    SessionNotFound = 11,
+    SessionRevoked = 12,
+    SessionExpired = 13,
+    WindowCapExceeded = 14,
+    RecipientNotAllowed = 15,
 }
 
 #[contract]
@@ -262,6 +304,97 @@ impl SmartWallet {
             .unwrap_or_else(|| panic_with_error!(&env, Error::PolicyNotFound))
     }
 
+    /// Install (or replace) a delegated agent spending session. Gated by the
+    /// same admin as `install_policy` in v0.1.
+    pub fn install_agent_session(
+        env: Env,
+        session_pubkey: BytesN<32>,
+        token: Address,
+        per_tx_cap: i128,
+        window_seconds: u64,
+        window_cap: i128,
+        expires_at: u64,
+        allow_recipients: Vec<Address>,
+    ) {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
+        admin.require_auth();
+
+        // Config validation. `window_cap >= per_tx_cap` keeps a single allowed
+        // transfer consistent with the aggregate budget. The `window_seconds`
+        // floor prevents a degenerate window that rolls every call — which
+        // would silently disable the aggregate cap and collapse enforcement to
+        // per-tx only. Blast radius is `window_cap` by design (user-chosen),
+        // bounded further by `expires_at` and revocation.
+        if per_tx_cap <= 0 || window_cap < per_tx_cap {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
+        if window_seconds < 60 {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
+        let now = env.ledger().timestamp();
+        if expires_at != 0 && expires_at <= now {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
+        let session = AgentSession {
+            session_pubkey: session_pubkey.clone(),
+            token,
+            per_tx_cap,
+            window_seconds,
+            window_cap,
+            window_start: now,
+            window_spent: 0,
+            expires_at,
+            revoked: false,
+            allow_recipients,
+        };
+        let key = DataKey::AgentSession(session_pubkey.clone());
+        env.storage().persistent().set(&key, &session);
+        env.storage()
+            .persistent()
+            .extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+        env.events().publish(
+            (Symbol::new(&env, "agent_session_installed"), session_pubkey),
+            (per_tx_cap, window_seconds, window_cap, expires_at),
+        );
+    }
+
+    /// Read-only accessor for a delegated agent session.
+    pub fn get_agent_session(env: Env, session_pubkey: BytesN<32>) -> AgentSession {
+        let key = DataKey::AgentSession(session_pubkey);
+        env.storage().persistent().get(&key)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::SessionNotFound))
+    }
+
+    /// User-controlled kill switch for a delegated agent session. After this
+    /// call, all agent transfers under this key fail until the session is
+    /// re-installed.
+    pub fn revoke_agent_session(env: Env, session_pubkey: BytesN<32>) {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
+        admin.require_auth();
+
+        let key = DataKey::AgentSession(session_pubkey.clone());
+        let mut s: AgentSession = env
+            .storage()
+            .persistent()
+            .get(&key)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::SessionNotFound));
+        s.revoked = true;
+        env.storage().persistent().set(&key, &s);
+        env.storage()
+            .persistent()
+            .extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+        env.events()
+            .publish((Symbol::new(&env, "agent_session_revoked"), session_pubkey), ());
+    }
+
     /// Custom account interface (CAP-46-11). Called by the Soroban host on
     /// every auth attempt where this contract is the authorizing principal.
     ///
@@ -395,6 +528,72 @@ fn try_match_policy(env: &Env, cc: &ContractContext) -> Result<bool, Error> {
         .persistent()
         .extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
     Ok(true)
+}
+
+/// Try to authorize a single agent-initiated transfer against a delegated
+/// session. Tri-state like `try_match_policy`: `Ok(true)` authorizes (and
+/// charges the windowed budget), `Ok(false)` means no session for this key /
+/// wrong token (caller falls through), `Err` means a session exists but the
+/// transfer violates it (host turns into an auth rejection).
+fn try_authorize_agent_transfer(
+    env: &Env,
+    session_pubkey: &BytesN<32>,
+    token: &Address,
+    amount: i128,
+) -> Result<bool, Error> {
+    let key = DataKey::AgentSession(session_pubkey.clone());
+    let mut s: AgentSession = match env.storage().persistent().get(&key) {
+        Some(s) => s,
+        None => return Ok(false),
+    };
+    // Wrong asset for this session — fall through (a different session or the
+    // pull-policy path may still authorize).
+    if &s.token != token {
+        return Ok(false);
+    }
+    if s.revoked {
+        return Err(Error::SessionRevoked);
+    }
+    let now = env.ledger().timestamp();
+    if s.expires_at != 0 && now >= s.expires_at {
+        return Err(Error::SessionExpired);
+    }
+    if amount <= 0 {
+        return Err(Error::InvalidConfig);
+    }
+    if amount > s.per_tx_cap {
+        return Err(Error::AmountExceedsCap);
+    }
+    // Fixed-window roll: O(1) reset once the window has elapsed. Deliberately
+    // not a sliding window — a per-transaction sliding/eviction pass would make
+    // __check_auth gas grow with history under high-frequency agent traffic.
+    if now >= s.window_start.saturating_add(s.window_seconds) {
+        s.window_start = now;
+        s.window_spent = 0;
+    }
+    let new_spent = s
+        .window_spent
+        .checked_add(amount)
+        .ok_or(Error::WindowCapExceeded)?;
+    if new_spent > s.window_cap {
+        return Err(Error::WindowCapExceeded);
+    }
+    s.window_spent = new_spent;
+    env.storage().persistent().set(&key, &s);
+    env.storage()
+        .persistent()
+        .extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+    Ok(true)
+}
+
+/// Whether `to` is an allowed recipient under this session. An empty allowlist
+/// means open (any recipient within budget); a non-empty allowlist restricts
+/// transfers to exactly its members.
+fn recipient_allowed(session: &AgentSession, to: &Address) -> bool {
+    if session.allow_recipients.is_empty() {
+        return true;
+    }
+    session.allow_recipients.iter().any(|a| &a == to)
 }
 
 #[cfg(test)]
