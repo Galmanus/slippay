@@ -1,9 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
-import { AskSlippay } from "../components/AskSlippay.tsx";
-import { Reveal, CountUp } from "../components/Reveal.tsx";
-import PolicyDemoAnimation from "../components/PolicyDemoAnimation.tsx";
+import { Reveal } from "../components/Reveal.tsx";
+import { X402Carousel } from "../components/X402Carousel.tsx";
 import { useLang, type Lang } from "../lib/lang.ts";
 import { homeCopy } from "../copy/home.tsx";
 
@@ -55,6 +54,108 @@ function LangToggle({ lang, setLang, className = "" }: { lang: Lang; setLang: (l
   );
 }
 
+// One proof fact — number + one line. Used in the condensed proof grid.
+// Centered, monumental-adjacent: the feeling leads, the mechanics stay brief.
+// Tween a number toward `target` (ease-out cubic) — `from` is always the
+// currently-displayed value, so rapid slider drags chase smoothly without jumps.
+function useTween(target: number, ms = 420): number {
+  const [v, setV] = useState(target);
+  const vRef = useRef(target);
+  vRef.current = v;
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setV(target); return; }
+    const from = vRef.current;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / ms);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setV(from + (target - from) * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, ms]);
+  return v;
+}
+
+// Loss calculator — turns the abstract "5–12%" into a felt, accumulating number.
+// STATUS-QUO LOSS ONLY: shows what the earner loses TODAY on the way in. It
+// deliberately does NOT compute a "Slippay saves you $X" figure, because the
+// full receive→hold→Pix loop is early-access (see honest status section). The
+// ~1–2% target is stated as context in the footnote, never as a delivered saving.
+function LossCalculator({ t }: { t: { label: string; title: string; lossLabel: string; youReceive: string; perMonth: string; perYear: string; over3y: string; foot: string } }) {
+  const presets = [1000, 3000, 5000, 10000];
+  const [amount, setAmount] = useState(3000);
+  const LOW = 0.05, HIGH = 0.12;
+  const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
+  const shown = useTween(amount);
+  const mLow = shown * LOW, mHigh = shown * HIGH;
+
+  return (
+    <div className="max-w-[700px] mx-auto mt-16 border border-[#0a0a0a]/15 bg-white/50 p-7 md:p-12 lift">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6">{t.label}</div>
+      <div className="text-xl md:text-2xl tracking-[-0.01em] mb-9 max-w-[28ch] leading-snug">{t.title}</div>
+
+      {/* amount — slider + live value, plus quick presets */}
+      <div className="flex items-end justify-between mb-3">
+        <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.youReceive}</span>
+        <span className="text-2xl md:text-4xl font-medium tabular-nums tracking-[-0.03em]">{usd(amount)}</span>
+      </div>
+      <input
+        type="range" min={500} max={20000} step={500} value={amount}
+        onChange={e => setAmount(Number(e.target.value))}
+        aria-label={t.youReceive}
+        className="slip-range w-full"
+      />
+      <div className="flex flex-wrap gap-2 mt-5 mb-11">
+        {presets.map(p => (
+          <button
+            key={p} type="button" onClick={() => setAmount(p)}
+            className={"px-4 py-2 text-sm font-mono tabular-nums border transition-colors " +
+              (amount === p ? "bg-[#0a0a0a] text-[#f1eee7] border-[#0a0a0a]" : "border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60")}
+          >{usd(p)}</button>
+        ))}
+      </div>
+
+      {/* the loss — big, animated, accumulating */}
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono mb-3">{t.lossLabel}</div>
+      <div className="flex items-end gap-3 flex-wrap">
+        <span className="text-5xl md:text-7xl font-medium tracking-[-0.045em] tabular-nums leading-[0.9]" style={{ color: "#b91c1c" }}>
+          {usd(mLow)}<span className="text-[#0a0a0a]/25 mx-1">–</span>{usd(mHigh)}
+        </span>
+        <span className="text-xs uppercase tracking-[0.2em] text-[#0a0a0a]/45 mb-1">{t.perMonth}</span>
+      </div>
+
+      <div className="mt-9 grid grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12">
+        <div className="bg-[#f1eee7] p-5">
+          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 12)}<span className="text-[#0a0a0a]/25 mx-0.5">–</span>{usd(mHigh * 12)}</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 mt-2">{t.perYear}</div>
+        </div>
+        <div className="bg-[#f1eee7] p-5">
+          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 36)}<span className="text-[#0a0a0a]/25 mx-0.5">–</span>{usd(mHigh * 36)}</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 mt-2">{t.over3y}</div>
+        </div>
+      </div>
+
+      <p className="mt-7 text-xs leading-relaxed text-[#0a0a0a]/55 max-w-[62ch]">{t.foot}</p>
+    </div>
+  );
+}
+
+function ProofFact({ n, title, body }: { n: string; title: string; body: string }) {
+  return (
+    <div className="group lift">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30 mb-3 transition-colors duration-300 group-hover:text-[#b5e853]">
+        {n}
+      </div>
+      <div className="text-lg md:text-xl tracking-tight font-medium leading-[1.25]">{title}</div>
+      <p className="mt-3 text-sm leading-[1.6] text-[#f1eee7]/65">{body}</p>
+    </div>
+  );
+}
+
 export default function Home() {
   const scrolled = useScrolled(80);
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -66,7 +167,7 @@ export default function Home() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileMenu]);
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header
         className={
           "fixed top-0 left-0 right-0 z-30 transition-colors duration-300 " +
@@ -83,12 +184,12 @@ export default function Home() {
         >
           <Link to="/x402-demo" className="hover:opacity-60 transition-opacity">x402 demo</Link>
           <a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60 transition-opacity">{t.nav.docs}</a>
-          <a href="#how" className="hover:opacity-60 transition-opacity">{t.nav.how}</a>
+          <a href="#proof" className="hover:opacity-60 transition-opacity">{t.nav.how}</a>
           <Link to="/login" className="hover:opacity-60 transition-opacity">{t.nav.login}</Link>
           <LangToggle lang={lang} setLang={setLang} />
           <Link to="/signup"
             style={{ textShadow: "none" }}
-            className="bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] transition-colors text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
+            className="lift bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
             <span className="inline-block w-1 h-1 bg-[#0a0a0a]" />
             {t.nav.signup}
           </Link>
@@ -97,8 +198,7 @@ export default function Home() {
         <button
           aria-label="Open menu"
           onClick={() => setMobileMenu(v => !v)}
-          className={"md:hidden flex flex-col gap-1.5 p-2 -mr-2 transition-colors " + (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
-          style={scrolled ? undefined : { filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))" }}
+          className={"md:hidden flex flex-col gap-1.5 p-2.5 transition-colors " + (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7] bg-[#0a0a0a]/35 backdrop-blur-sm")}
         >
           <span className="block w-6 h-[2px] bg-current" />
           <span className="block w-6 h-[2px] bg-current" />
@@ -110,7 +210,7 @@ export default function Home() {
       {/* Mobile menu overlay */}
       {mobileMenu && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-[#0a0a0a] text-[#f1eee7] flex flex-col"
+          className="menu-in md:hidden fixed inset-0 z-40 bg-[#0a0a0a] text-[#f1eee7] flex flex-col"
           role="dialog"
           aria-modal="true"
         >
@@ -122,7 +222,7 @@ export default function Home() {
               className="text-3xl leading-none px-2 py-1 -mr-2"
             >×</button>
           </div>
-          <nav className="flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
+          <nav className="menu-stagger flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
             {[
               { to: "/", label: t.nav.home },
               { to: "/x402-demo", label: "x402 demo" },
@@ -164,8 +264,10 @@ export default function Home() {
       {/* Spacer to offset the now-fixed header from the hero photo. */}
       <div className="h-0" />
 
-      {/* HERO IMAGE — full-bleed. */}
-      <div className="relative w-full bg-[#0a0a0a]">
+      {/* ───────── 1 · HERO ─────────
+          Full-bleed image, then centered monumental type. One promise, one CTA.
+          No spec card, no fashion SKU tag. The feeling leads. */}
+      <div className="relative w-full bg-[#0a0a0a] overflow-hidden">
         <picture className="hidden md:block">
           <source srcSet="/hero.webp?v=opt1" type="image/webp" />
           <img
@@ -186,301 +288,262 @@ export default function Home() {
           aria-label="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
         />
         <div className="absolute bottom-0 left-0 right-0 h-16 md:h-12 bg-gradient-to-b from-transparent via-[#f1eee7]/40 to-[#f1eee7] pointer-events-none" />
-        <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
-          <span>slippay</span>
-          <span className="text-[#0a0a0a]/55 hidden md:inline">·</span>
-          <span className="hidden md:inline">product label</span>
-          <span className="text-[#0a0a0a]/55">·</span>
-          <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
-        </div>
       </div>
 
-      {/* HERO TEXT */}
-      <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-6 md:pt-24 pb-16 md:pb-32 relative">
-        <div className="grid grid-cols-12 gap-6 md:gap-6 items-end">
-          <div className="col-span-12 mb-4 md:mb-0">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
-              <span className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                Mainnet · Stellar
-              </span>
-              <span className="opacity-50 hidden md:inline">·</span>
-              <span className="tabular-nums">{t.hero.statusLive}</span>
-            </div>
+      {/* HERO TEXT — centered, monumental, single CTA */}
+      <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-10 md:pt-24 pb-20 md:pb-32 relative">
+        {/* ambient lime aurora — slow drift behind the hero, editorial not gaudy */}
+        <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(181,232,83,0.22), transparent 70%)", filter: "blur(6px)" }} />
+        <div className="relative flex flex-col items-center text-center">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-6">
+            <span className="flex items-center gap-2 normal-case tracking-tight">
+              <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+              {t.hero.badge}
+            </span>
           </div>
-          <Reveal className="col-span-12 text-center">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
-              ╱╱  {t.hero.eyebrow}
-            </div>
-            <h1 className="title-grad text-[7.5vw] sm:text-[6vw] md:text-[3.4vw] font-medium leading-[1.06] tracking-[-0.03em] max-w-[28ch] mx-auto break-words">
-              {t.hero.h1}
-            </h1>
-            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[54ch] mx-auto">
-              {t.hero.sub}
-            </p>
-            <div className="mt-8 md:mt-10 flex justify-center">
-              <MagneticCTA to="/signup">
-                {t.hero.cta} <span>→</span>
-              </MagneticCTA>
-            </div>
-          </Reveal>
+          <h1 className="title-grad text-[9vw] sm:text-[7vw] md:text-[4.4vw] font-medium leading-[1.04] tracking-[-0.035em] max-w-[20ch] mx-auto break-words">
+            {t.hero.h1}
+          </h1>
+          <p className="mt-7 md:mt-9 text-[16px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[48ch] mx-auto">
+            {t.hero.sub}
+          </p>
+          <div className="mt-9 md:mt-11 flex justify-center">
+            <MagneticCTA to="/signup">
+              {t.hero.cta} <span>→</span>
+            </MagneticCTA>
+          </div>
+          <div className="mt-7 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 leading-[1.7] max-w-[52ch] mx-auto">
+            {t.hero.status}
+          </div>
         </div>
+      </Reveal>
 
-        <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
-          <div className="col-span-12">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center">
-              {t.tese.label}
+      {/* ───────── 2 · THE PROBLEM ─────────
+          The gap, condensed and visceral. One idea per line, centered. */}
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center mb-10">
+            {t.gap.label}
+          </div>
+          {/* b1 opens as the gut-punch ("já chega menor"); b2 and b3 carry their
+              own eyebrows so the pain scans. b3 (inverse-flow) anchors — it is
+              the one line that says why no incumbent serves this person. */}
+          <div className="max-w-[36ch] mx-auto text-center space-y-12">
+            <p className="text-2xl md:text-4xl leading-[1.18] tracking-[-0.02em] text-[#0a0a0a]/90">
+              {t.gap.b1}
+            </p>
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">
+                {t.gap.b2Label}
+              </div>
+              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/75">
+                {t.gap.b2}
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">
+                {t.gap.b3Label}
+              </div>
+              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/90">
+                {t.gap.b3}
+              </p>
             </div>
           </div>
-          <div className="col-span-12 max-w-[60ch] mx-auto space-y-12">
-            <TeseBlock label={t.tese.b1Label}>{t.tese.b1}</TeseBlock>
-            <TeseBlock label={t.tese.b2Label}>{t.tese.b2}</TeseBlock>
-            <TeseBlock label={t.tese.b3Label}>{t.tese.b3}</TeseBlock>
+          {/* make the 5–12% concrete — status-quo loss only, no Slippay-saving claim */}
+          <LossCalculator t={t.calc} />
+        </div>
+      </Reveal>
+
+      {/* ───────── 2.5 · HOW YOU USE IT ─────────
+          Plain 3-step consumer flow — answers "how does a person use this?". */}
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 text-center mb-6">
+            {t.howto.label}
           </div>
-          <div className="col-span-12 flex justify-center md:justify-end items-end">
-            <Link to="/signup"
-              className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              {t.tese.cta} <span className="group-hover:translate-x-1 transition-transform">→</span>
+          <h2 className="title-grad text-3xl md:text-6xl font-medium tracking-[-0.035em] leading-[1.02] max-w-[16ch] mx-auto text-center">
+            {t.howto.h2}
+          </h2>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-[1100px] mx-auto">
+            {t.howto.steps.map((s, i) => (
+              <Reveal key={s.n} delay={i * 100} className="lift border border-[#0a0a0a]/15 bg-white/40 p-7 md:p-9">
+                <div className="flex items-center gap-3">
+                  <span className="text-5xl md:text-6xl font-medium tracking-[-0.05em] tabular-nums text-[#0a0a0a]/12 leading-none">{s.n}</span>
+                  <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                </div>
+                <div className="text-xl md:text-2xl font-medium tracking-tight mt-5">{s.t}</div>
+                <p className="mt-3 text-sm md:text-base text-[#0a0a0a]/70 leading-relaxed">{s.b}</p>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-10 text-xs text-[#0a0a0a]/55 text-center max-w-[64ch] mx-auto leading-relaxed">{t.howto.foot}</p>
+        </div>
+      </Reveal>
+
+      {/* ───────── 3 · THE PROOF, as a feeling ─────────
+          "it simply can't." Condensed proof facts, then a prominent link to the
+          product on stage (/x402-demo). The terminal stays as an opt-in aside. */}
+      <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
+            {t.proof.kicker}
+          </div>
+          <h2 className="title-grad-dark text-3xl md:text-6xl font-medium tracking-[-0.035em] leading-[1.02] max-w-[18ch] mx-auto text-center">
+            {t.proof.h2}
+          </h2>
+          <p className="mt-8 text-base md:text-lg leading-[1.65] text-[#f1eee7]/75 max-w-[60ch] mx-auto text-center">
+            {t.proof.body}
+          </p>
+
+          {/* the proof, in four plain facts — condensed */}
+          <div className="mt-14 grid grid-cols-1 md:grid-cols-4 gap-x-10 gap-y-10 max-w-[1000px] mx-auto">
+            {/* benefit-first order: "nobody can freeze it" leads (the most
+                visceral, most-understood differentiator), then cost, then Pix,
+                then the seed-phrase/tech reassurance last. */}
+            <ProofFact n="01" title={t.proof.certLabel} body={t.proof.certBody} />
+            <ProofFact n="02" title={t.proof.proveLabel} body={t.proof.proveBody} />
+            <ProofFact n="03" title={t.proof.refuseLabel} body={t.proof.refuseBody} />
+            <ProofFact n="04" title={t.proof.invariantLabel} body={t.proof.invariantBody} />
+          </div>
+
+          {/* the agent roadmap — a quiet builder link, NOT a second lime CTA.
+              The only high-contrast ask on the page is "Entrar na lista". The
+              agent proof is for builders, so it sits at low visual weight next
+              to the for-builders toggle below. */}
+          <div className="mt-16 flex justify-center">
+            <Link to="/x402-demo"
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853] transition-colors border-b border-[#f1eee7]/20 pb-1">
+              {t.proof.seeItWork} <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
+
+          {/* the runnable certificate — demoted behind a "for builders" toggle */}
+          <details className="group mt-12 max-w-[64ch] mx-auto border border-[#f1eee7]/15 overflow-hidden">
+            <summary className="flex items-center justify-between gap-3 px-5 md:px-6 py-3.5 cursor-pointer list-none select-none font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853]">
+              <span className="flex items-center gap-2">
+                <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" />
+                {t.proof.codeToggle}
+              </span>
+              <span className="transition-transform group-open:rotate-180">▾</span>
+            </summary>
+            <div className="border-t border-[#f1eee7]/15 px-5 md:px-6 py-3 font-mono text-[10px] tracking-tight text-[#f1eee7]/45 normal-case">
+              {t.proof.codeAside}
+            </div>
+            <pre className="px-5 md:px-8 py-6 overflow-x-auto font-mono text-[11px] md:text-[13px] leading-[1.7] text-[#f1eee7]/90 whitespace-pre border-t border-[#f1eee7]/15">
+{t.proof.code}
+            </pre>
+            <div className="border-t border-[#f1eee7]/15 px-5 md:px-8 py-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-[#b5e853] font-mono">
+              <span className="flex items-center gap-2">
+                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                {t.proof.runline}
+              </span>
+              <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
+                 className="text-[#f1eee7]/55 hover:text-[#b5e853]">
+                {t.proof.specLink}
+              </a>
+            </div>
+          </details>
         </div>
       </Reveal>
 
-      {/* COMMERCE STACK · 3 modules */}
-      <Reveal as="section" id="stack-modules" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
-              {t.modules.label}
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums text-center">
-                {t.modules.kicker}
-              </div>
-              <h2 className="title-grad-dark text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch] mx-auto text-center">
-                {t.modules.h2}
-              </h2>
-              <p className="mt-8 text-base md:text-lg leading-[1.6] text-[#f1eee7]/70 max-w-[60ch] mx-auto text-center">
-                {t.modules.intro}
-              </p>
-              <div className="mt-14 grid md:grid-cols-3 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
-                <Module tag={t.modules.m1.tag} status="live" statusLabel={t.modules.m1.statusLabel} title={t.modules.m1.title} body={t.modules.m1.body} />
-                <Module tag={t.modules.m2.tag} status="soon" statusLabel={t.modules.m2.statusLabel} title={t.modules.m2.title} body={t.modules.m2.body} />
-                <Module tag={t.modules.m3.tag} status="ecosystem" statusLabel={t.modules.m3.statusLabel} title={t.modules.m3.title} body={t.modules.m3.body} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* NUMBERS */}
+      {/* ───────── 4 · THE STANDARD ─────────
+          x402's PUBLIC backing = authority for the technology Slippay builds on.
+          Brief. The honest disclaimer (Slippay is not a member) stays. */}
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6 mb-16">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 text-center">
-              {t.numbers.label}
-            </div>
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums text-center">
-              {t.numbers.kicker}
-            </div>
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center mb-6">
+            {t.standard.label}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15 text-center">
-            <Stat n="98%" label={t.numbers.s1Label}
-              count={{ to: 98, decimals: 0, suffix: "%" }}
-              body={t.numbers.s1Body} />
-            <Stat n={t.numbers.s2N} label={t.numbers.s2Label}
-              body={t.numbers.s2Body} />
-            <Stat n="6s" label={t.numbers.s3Label}
-              count={{ to: 6, decimals: 0, suffix: "s" }}
-              body={t.numbers.s3Body} />
-          </div>
-        </div>
-      </Reveal>
-
-      {/* PROOF · verifiable on-chain */}
-      <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
-              {t.proof.label}
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
-                {t.proof.kicker}
-              </div>
-              <h2 className="title-grad-dark text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch] mx-auto text-center">
-                {t.proof.h2}
-              </h2>
-              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch] mx-auto text-center">
-                {t.proof.body}
-              </p>
-              <div className="mt-10 border border-[#f1eee7]/15">
-                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#f1eee7]/15">
-                  <div className="p-6 md:p-8">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">{t.proof.contractLabel}</div>
-                    <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
-                       target="_blank" rel="noopener noreferrer"
-                       className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                      CBJMQ6ZY...DJKSEVQN
-                    </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">{t.proof.contractMeta}</div>
-                  </div>
-                  <div className="p-6 md:p-8">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">{t.proof.payLabel}</div>
-                    <a href="https://stellar.expert/explorer/public/tx/aa3304c93beffde1809ced4989b898cf419b8121e8ca9b50d01d407ccbf8326b"
-                       target="_blank" rel="noopener noreferrer"
-                       className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                      aa3304c9...0d407ccb
-                    </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">{t.proof.payMeta}</div>
-                  </div>
-                </div>
-                <div className="border-t border-[#f1eee7]/15 px-6 md:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
-                      {t.proof.liveTag}
-                    </div>
-                    <span className="opacity-40 hidden md:inline">·</span>
-                    <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
-                       className="hover:text-[#b5e853]">
-                      Agent · SSL v7 ↗
-                    </a>
-                  </div>
-                  <a href="https://bluewaveai.online" target="_blank" rel="noopener noreferrer"
-                     className="flex items-center gap-2 text-[#b5e853] hover:opacity-70">
-                    <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                    {t.proof.auditTag} ↗
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* HOW IT WORKS · ANIMATED DEMO */}
-      <PolicyDemoAnimation />
-
-      {/* HOW IT WORKS · 4 STEPS */}
-      <Reveal as="section" id="how" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              {t.how.label}
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
-                {t.how.kicker}
-              </div>
-              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch] mx-auto text-center">
-                {t.how.h2}
-              </h2>
-              <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
-                <Step n="01" title={t.how.s1Title} body={t.how.s1Body} />
-                <Step n="02" title={t.how.s2Title} body={t.how.s2Body} />
-                <Step n="03" title={t.how.s3Title} body={t.how.s3Body} />
-                <Step n="04" title={t.how.s4Title} body={t.how.s4Body} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* REGULATORY / STACK */}
-      <Reveal as="section" id="stack" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              {t.reg.label}
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
-                {t.reg.kicker}
-              </div>
-              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch] mx-auto text-center">
-                {t.reg.h2}
-              </h2>
-              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch] mx-auto text-center">
-                {t.reg.body}
-              </p>
-
-              <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-                <Cell label={t.reg.cNetwork} value="Stellar" />
-                <Cell label={t.reg.cAssets} value={t.reg.cAssetsV} />
-                <Cell label={t.reg.cOnramp} value="Pix · BRL" />
-                <Cell label={t.reg.cCustody} value={t.reg.cCustodyV} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* COMPETITION · the empty quadrant */}
-      <Reveal as="section" id="competition" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
-              {t.comp.label}
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums text-center">
-                {t.comp.kicker}
-              </div>
-              <h2 className="title-grad-dark text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[22ch] mx-auto text-center">
-                {t.comp.h2}
-              </h2>
-              <div className="mt-12 overflow-x-auto -mx-5 md:mx-0 px-5 md:px-0">
-                <table className="w-full min-w-[680px] border-collapse text-sm">
-                  <thead>
-                    <tr className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/55">
-                      <th className="text-left font-normal py-4 pr-4"></th>
-                      <th className="text-left font-normal py-4 px-3">Stripe · Bridge</th>
-                      <th className="text-left font-normal py-4 px-3">Coinbase Commerce</th>
-                      <th className="text-left font-normal py-4 px-3">Paywit</th>
-                      <th className="text-left font-normal py-4 px-3">Paykit</th>
-                      <th className="text-left font-medium py-4 px-3 text-[#b5e853] border-x border-[#b5e853]/30">SlipPay</th>
-                    </tr>
-                  </thead>
-                  <tbody className="align-top">
-                    <Row label={t.comp.rRegional} cells={["—","—","—","—"]} slip={t.comp.sNative} />
-                    <Row label={t.comp.rPix} cells={["—","—","—","—"]} slip={t.comp.sFx} slipNote={t.comp.sFxNote} />
-                    <Row label={t.comp.rSub} cells={["—","—","—","—"]} slip={t.comp.sSub} />
-                    <Row label={t.comp.rYield} cells={["—","—","—","—"]} slip="Etherfuse" slipNote={t.comp.sYieldNote} />
-                    <Row label={t.comp.rCashout} cells={["—","—","—","—"]} slip="MoneyGram · Stellar" slipNote={t.comp.sYieldNote} />
-                    <Row label={t.comp.rCustody} cells={["—",t.comp.yes,t.comp.yes,t.comp.yes]} slip={t.comp.sCustody} />
-                    <Row label={t.comp.rTake} cells={[t.comp.stripeTake,t.comp.coinbaseTake,t.comp.na,t.comp.na]} slip={t.comp.slipTake} last />
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/45 flex flex-wrap items-center gap-x-5 gap-y-2">
-                <span className="flex items-center gap-2"><span className="inline-block w-2 h-2 bg-[#b5e853]" /> {t.comp.legendLive}</span>
-                <span className="flex items-center gap-2"><span className="inline-block w-2 h-2 border border-[#f1eee7]/40" /> {t.comp.legendRoadmap}</span>
-              </div>
-              <p className="mt-8 text-base md:text-lg leading-[1.6] text-[#f1eee7]/75 max-w-[64ch] mx-auto text-center border-l-2 border-[#b5e853] pl-4 md:border-l-0 md:pl-0">
-                {t.comp.kickerP}
-              </p>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* CTA */}
-      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative text-center flex flex-col items-center">
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
-            {t.cta.kicker} <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
-          </div>
-          <h2 className="title-grad text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
-            {t.cta.h2}
+          <h2 className="text-[6vw] md:text-[2.2vw] font-medium leading-[1.12] tracking-[-0.02em] max-w-[26ch] mx-auto text-center">
+            {t.standard.h2}
           </h2>
-          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch] mx-auto text-center">
-            {t.cta.body}
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono text-center mt-10 mb-6">
+            {t.standard.backersLabel}
+          </div>
+          <X402Carousel />
+          <div className="max-w-[72ch] mx-auto mt-4">
+            <p className="text-[11px] leading-relaxed text-[#0a0a0a]/50 text-center max-w-[62ch] mx-auto">
+              {t.standard.source}
+            </p>
+            <p className="mt-6 text-base md:text-lg leading-[1.5] text-[#0a0a0a]/85 text-center max-w-[52ch] mx-auto">
+              {t.standard.bridge}
+            </p>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ───────── 5 · HONEST STATUS + final CTA ─────────
+          The truth out loud (test network · checked by us · outside audit +
+          real money to come), then one monumental ask. */}
+      <Reveal as="section" id="status" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
+            {t.status.label}
+          </div>
+          <h2 className="title-grad-dark text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[20ch] mx-auto text-center">
+            {t.status.h2}
+          </h2>
+          <p className="mt-8 text-base md:text-lg leading-[1.65] text-[#f1eee7]/75 max-w-[68ch] mx-auto text-center">
+            {t.status.body}
           </p>
-          <Link to="/signup"
-            className="inline-flex items-center gap-3 mt-12 bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
-            {t.cta.button} <span>→</span>
-          </Link>
+          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15 overflow-hidden max-w-[1000px] mx-auto">
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cNetwork}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cNetworkV}</div>
+            </div>
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cAudit}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cAuditV}</div>
+            </div>
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cBound}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cBoundV}</div>
+            </div>
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cChain}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cChainV}</div>
+            </div>
+          </div>
+
+          {/* live-on-mainnet proof — verifiable, NOT a customer-volume claim */}
+          <div className="mt-10 max-w-[1000px] mx-auto border border-[#b5e853]/35 p-6 md:p-8 lift">
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] font-mono text-[#b5e853] mb-3">
+              <span className="inline-block w-1.5 h-1.5 bg-[#b5e853] animate-pulse" /> {t.status.mainnetLabel}
+            </div>
+            <p className="text-sm md:text-base text-[#f1eee7]/80 leading-relaxed max-w-[68ch]">{t.status.mainnetBody}</p>
+            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs">
+              <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
+                target="_blank" rel="noopener noreferrer"
+                className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetContract} ↗</a>
+              <a href="https://stellar.expert/explorer/public/tx/05ae429b926d94770166e3425c77210260d2db0083fa81053059612775e510be"
+                target="_blank" rel="noopener noreferrer"
+                className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetTx} ↗</a>
+            </div>
+            <p className="mt-4 text-xs text-[#f1eee7]/45 italic max-w-[62ch]">{t.status.mainnetNote}</p>
+          </div>
+
+          {/* one final ask — monumental */}
+          <div className="mt-24 md:mt-32 text-center flex flex-col items-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-8 tabular-nums">
+              {t.cta.kicker} <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
+            </div>
+            <h2 className="title-grad-dark text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
+              {t.cta.h2}
+            </h2>
+            <p className="mt-10 text-base md:text-lg text-[#f1eee7]/75 max-w-[50ch] mx-auto text-center">
+              {t.cta.body}
+            </p>
+            <div className="mt-12 flex flex-col sm:flex-row items-center gap-5">
+              <Link to="/signup"
+                className="lift inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium hover:bg-[#c3f06a]">
+                {t.cta.button} <span>→</span>
+              </Link>
+              <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#f1eee7] pb-1 hover:opacity-60">
+                {t.cta.spec} <span className="group-hover:translate-x-1 transition-transform">↗</span>
+              </a>
+            </div>
+          </div>
         </div>
       </Reveal>
 
@@ -495,7 +558,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li><Link to="/signup" className="hover:opacity-60">{t.footer.fSignup}</Link></li>
                 <li><Link to="/login" className="hover:opacity-60">{t.footer.fLogin}</Link></li>
-                <li><a href="#how" className="hover:opacity-60">{t.footer.fHow}</a></li>
+                <li><a href="#proof" className="hover:opacity-60">{t.footer.fHow}</a></li>
               </ul>
             </div>
             <div className="col-span-12 md:col-span-4">
@@ -528,100 +591,12 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-            <div>© 2026 · SlipPay</div>
-            <div>Blumenau · BR · America/Sao_Paulo</div>
+            <div>© 2026 · SlipPay · v0.2</div>
+            <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN" target="_blank" rel="noopener noreferrer" className="hover:text-[#b5e853] transition-colors">stellar · subscription contract · CBJMQ6ZY…SEVQN ↗</a>
+            <div>Blumenau · BR</div>
           </div>
         </div>
       </footer>
-
-      <AskSlippay />
-    </div>
-  );
-}
-
-function Stat({ n, label, body, count }: { n: string; label: string; body: string; count?: { to: number; decimals?: number; suffix?: string; prefix?: string } }) {
-  return (
-    <div className="bg-[#f1eee7] p-8 md:p-10">
-      <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-[-0.04em] leading-none">
-        {count ? (
-          <CountUp to={count.to} decimals={count.decimals ?? 0} suffix={count.suffix ?? ""} prefix={count.prefix ?? ""} durationMs={1600} />
-        ) : n}
-      </div>
-      <div className="mt-6 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
-      <p className="mt-4 text-sm leading-[1.6] text-[#0a0a0a]/75 max-w-[28ch] mx-auto">{body}</p>
-    </div>
-  );
-}
-
-function Step({ n, title, body }: { n: string; title: string; body: string }) {
-  return (
-    <div className="flex gap-5 md:gap-7">
-      <div className="shrink-0 w-10 md:w-14 text-3xl md:text-4xl font-medium tabular-nums tracking-tight text-[#0a0a0a]/30 leading-none font-mono">
-        {n}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-xl md:text-2xl tracking-tight font-medium leading-[1.2]">{title}</div>
-        <p className="mt-3 text-sm md:text-base leading-[1.65] text-[#0a0a0a]/75 max-w-[48ch]">{body}</p>
-      </div>
-    </div>
-  );
-}
-
-function Module({ tag, status, statusLabel, title, body }: {
-  tag: string; status: "live" | "soon" | "ecosystem"; statusLabel: string; title: string; body: string;
-}) {
-  const dot = status === "live" ? "bg-[#b5e853]" : "border border-[#f1eee7]/40";
-  const labelColor = status === "live" ? "text-[#b5e853]" : "text-[#f1eee7]/50";
-  return (
-    <div className="bg-[#0a0a0a] p-8 md:p-10">
-      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#b5e853]">{tag}</div>
-      <div className={"mt-3 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.22em] " + labelColor}>
-        <span className={"inline-block w-2 h-2 " + dot + (status === "live" ? " animate-pulse" : "")} />
-        {statusLabel}
-      </div>
-      <div className="mt-6 text-xl md:text-2xl font-medium tracking-tight leading-[1.15]">{title}</div>
-      <p className="mt-4 text-sm leading-[1.6] text-[#f1eee7]/70">{body}</p>
-    </div>
-  );
-}
-
-function TeseBlock({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 mb-3">{label}</div>
-      <p className="text-lg md:text-2xl leading-[1.45] tracking-tight text-[#0a0a0a]/90">{children}</p>
-    </div>
-  );
-}
-
-function Row({ label, cells, slip, slipNote, last }: {
-  label: string; cells: string[]; slip: string; slipNote?: string; last?: boolean;
-}) {
-  const isLive = !slipNote;
-  return (
-    <tr className={last ? "" : "border-b border-[#f1eee7]/10"}>
-      <td className="py-4 pr-4 font-medium">{label}</td>
-      {cells.map((c, i) => (
-        <td key={i} className="py-4 px-3 text-[#f1eee7]/45">{c}</td>
-      ))}
-      <td className="py-4 px-3 border-x border-[#b5e853]/30 bg-[#b5e853]/[0.06]">
-        <span className="flex items-start gap-2">
-          <span className={"mt-1.5 shrink-0 inline-block w-2 h-2 " + (isLive ? "bg-[#b5e853]" : "border border-[#f1eee7]/40")} />
-          <span>
-            <span className="font-medium">{slip}</span>
-            {slipNote && <span className="block font-mono text-[9px] uppercase tracking-[0.18em] text-[#f1eee7]/45">{slipNote}</span>}
-          </span>
-        </span>
-      </td>
-    </tr>
-  );
-}
-
-function Cell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-[#f1eee7] p-6 md:p-8">
-      <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
-      <div className="mt-3 text-base md:text-lg font-medium tracking-tight">{value}</div>
     </div>
   );
 }

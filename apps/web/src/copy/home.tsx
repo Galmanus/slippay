@@ -4,6 +4,38 @@ import type { Lang } from "../lib/lang.ts";
 // Landing copy, PT + EN. Markup-bearing strings (headlines/paragraphs with
 // <em>/<br/>) are JSX nodes so emphasis survives translation. Plain strings
 // (labels, component props) stay strings. Both langs share the same shape.
+//
+// POSITIONING (2026-06-01): DOLLAR INBOX — the dollar account for Brazilians
+// who EARN in dollars (freelancers, IT/dev exporters, creators, gig workers).
+// The wedge: you earn in dollars and lose 5–12% on the way in (StoneX ~10-day
+// holds on one typo, Payoneer/Wise 2–5% skim, frozen accounts, 3.5% IOF +
+// spread on every conversion). Slippay: the dollar arrives and STAYS a dollar —
+// yours, that nobody can freeze — and becomes reais on Pix only when YOU choose.
+// No 12-word seed phrase. The incumbents (Nubank, Inter, C6, Nomad, Wise) all
+// optimize the INVERSE flow (sending reais OUT to buy US stocks), so the inbound
+// dollar-EARNER is who they ignore — that's the opening.
+//
+// LANGUAGE: PT is PRIMARY (audience reads Portuguese). EN is the secondary
+// mirror. PT voice: "você" + 3rd person. NEVER creole BR-PT ("você recebe",
+// never "tu recebe/tu pode").
+//
+// HARD HONESTY (NON-NEGOTIABLE — this is pre-revenue; the overclaim risk now is
+// faking a working product):
+//   - The receive→hold→spend-via-Pix LOOP is NOT live. The Pix on/off-ramp needs
+//     a LICENSED partner still being set up. Say it plainly: early access /
+//     waitlist, "o Pix entra via um parceiro licenciado (em definição)". Do NOT
+//     present "spend in reais via Pix today" as a working feature.
+//   - What IS real: the no-seed-phrase self-custody wallet design + the agent
+//     spend-limit PROOF. But the proof/agent wallet is TESTNET + self-audited —
+//     mark "pending mainnet + outside audit", never "proven in production".
+//   - REGULATORY: STRICTLY DOMESTIC — hold dollars + spend domestically +
+//     receive your own inbound. NEVER claim cross-border SEND / remittance —
+//     Res 561 (effective Oct 1 2026) bans stablecoin on the offshore leg. No
+//     remittance claims anywhere.
+//   - "The money is yours, never ours" (self-custody) is true and load-bearing.
+//   - No jargon in the lead (no USDC/Stellar/Soroban/testnet/seed-phrase as
+//     jargon in headlines — say "dollars", "a test version", "no password to
+//     memorize"). Jargon only in the for-builders footnote, if at all.
 
 const dot = <span className="inline-block align-baseline ml-1.5 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853]" />;
 
@@ -11,62 +43,66 @@ export interface HomeStrings {
   nav: { how: string; docs: string; login: string; signup: string; home: string };
   mobileFooter: string;
   hero: {
-    statusLive: string; eyebrow: string; h1: ReactNode; sub: ReactNode; cta: string;
+    badge: string; eyebrow: string; h1: ReactNode; sub: ReactNode; cta: string; status: ReactNode;
   };
-  tese: {
+  // BUILT FOR WHAT'S NEXT — the agent future is the MOAT, not the headline.
+  // x402's PUBLIC backing = authority for the rail the agent-future builds on.
+  // Attributed to x402 (not Slippay); the source line states plainly that
+  // Slippay is not a member, so the authority is borrowed honestly. The agent
+  // spend-limit proof is labeled ROADMAP (testnet + outside audit pending).
+  standard: {
+    label: string; h2: ReactNode; backersLabel: string; backers: string[]; source: string; bridge: ReactNode;
+  };
+  // THE PAIN — the dollar-earner loses 5–12% on the way in. Concrete, human:
+  // StoneX 10-day holds, the freeze, the 2–5% skim, the 3.5% IOF. Only b2 and b3
+  // render on the page.
+  gap: {
     label: string;
-    b1Label: string; b1: ReactNode;
+    b1: ReactNode;
     b2Label: string; b2: ReactNode;
     b3Label: string; b3: ReactNode;
-    cta: string;
   };
-  modules: {
-    label: string; kicker: string; h2: ReactNode; intro: string;
-    m1: { tag: string; statusLabel: string; title: string; body: string };
-    m2: { tag: string; statusLabel: string; title: string; body: string };
-    m3: { tag: string; statusLabel: string; title: string; body: string };
+  // LOSS CALCULATOR — makes the abstract "5–12%" concrete and emotional.
+  // STATUS-QUO LOSS ONLY: never computes a "Slippay saves you $X" figure, since
+  // the full receive→hold→Pix loop is early-access. The ~1–2% target is stated
+  // as context (consistent with proof.proveLabel), not as a delivered saving.
+  calc: {
+    label: string; title: string; lossLabel: string; youReceive: string;
+    perMonth: string; perYear: string; over3y: string; foot: string;
   };
-  numbers: {
-    label: string; kicker: string;
-    s1Label: string; s1Body: string;
-    s2N: string; s2Label: string; s2Body: string;
-    s3Label: string; s3Body: string;
+  // HOW YOU USE IT — the plain 3-step consumer flow (face login → get paid in
+  // dollars → cash out on Pix). Answers "how does a person actually use this?".
+  howto: {
+    label: string; h2: ReactNode; steps: { n: string; t: string; b: string }[]; foot: string;
   };
+  // HOW IT'S DIFFERENT — three plain reasons: no seed phrase, self-custody, the
+  // dollar rail costs ~1–2% not 5–12%. The for-builders terminal card is the
+  // only place jargon/formula appears.
   proof: {
     label: string; kicker: string; h2: ReactNode; body: string;
-    contractLabel: string; contractMeta: string; payLabel: string; payMeta: string;
-    liveTag: string; auditTag: string;
+    invariantLabel: string; invariantBody: string;
+    certLabel: string; certBody: string;
+    proveLabel: string; proveBody: string;
+    refuseLabel: string; refuseBody: string;
+    codeToggle: string; codeAside: string;
+    codeTitle: string; code: string;
+    runline: string;
+    specLink: string;
+    seeItWork: string;
   };
-  demoLoop: {
-    label: string;
-    h2: ReactNode;
-    sub: string;
-    s_provisioning: string;
-    s_deploy: string; s_init: string; s_install: string;
-    s_active: string; s_vault: string; s_event: string; s_cancel: string;
-    s_enforcement_label: string;
-    s_btn_under: string; s_btn_over: string;
-    s_result_under: string; s_result_over: string;
-    s_replay: string;
-  };
-  how: {
-    label: string; kicker: string; h2: ReactNode;
-    s1Title: string; s1Body: string; s2Title: string; s2Body: string;
-    s3Title: string; s3Body: string; s4Title: string; s4Body: string;
-  };
-  reg: {
+  // HONEST STATUS — the loop is not live (Pix via a licensed partner being
+  // defined), self-custody wallet design is real, agent proof is testnet +
+  // outside audit to come. Strictly domestic.
+  status: {
     label: string; kicker: string; h2: ReactNode; body: ReactNode;
-    cNetwork: string; cAssets: string; cAssetsV: string;
-    cOnramp: string; cCustody: string; cCustodyV: string;
+    cNetwork: string; cNetworkV: string;
+    cAudit: string; cAuditV: string;
+    cBound: string; cBoundV: string;
+    cChain: string; cChainV: string;
+    mainnetLabel: string; mainnetBody: string; mainnetContract: string; mainnetTx: string; mainnetNote: string;
   };
-  comp: {
-    label: string; kicker: string; h2: ReactNode;
-    rRegional: string; rPix: string; rSub: string; rYield: string; rCashout: string; rCustody: string; rTake: string;
-    sNative: string; sFx: string; sFxNote: string; sSub: string; sYieldNote: string; sCustody: string;
-    yes: string; na: string; stripeTake: string; coinbaseTake: string; slipTake: string;
-    legendLive: string; legendRoadmap: string; kickerP: ReactNode;
-  };
-  cta: { kicker: string; h2: ReactNode; body: string; button: string };
+  // CTA — one waitlist ask.
+  cta: { kicker: string; h2: ReactNode; body: string; button: string; spec: string };
   footer: {
     product: string; resources: string; legal: string;
     fSignup: string; fLogin: string; fHow: string;
@@ -76,213 +112,215 @@ export interface HomeStrings {
 }
 
 const pt: HomeStrings = {
-  nav: { how: "Como funciona", docs: "Docs", login: "Entrar", signup: "Criar conta", home: "Início" },
-  mobileFooter: "Vivo na rede Stellar · contratos públicos no stellar.expert",
+  nav: { how: "Como funciona", docs: "Docs", login: "Entrar", signup: "Entrar na lista", home: "Início" },
+  mobileFooter: "você ganha em dólar · o dólar chega e fica dólar · vira real no Pix só quando você quiser",
   hero: {
-    statusLive: "Live · v0.2",
-    eyebrow: "Issue 001 · pra quem vende no Brasil",
-    h1: <>O commerce stack do Brasil<br/><em className="not-italic">em stablecoin.{dot}</em></>,
-    sub: <>Você cobra. O cliente toca uma vez no celular. O dinheiro entra em dólar, em segundos. <em className="font-light">E a regra de quanto e quando podem te cobrar fica no celular do cliente — nem você consegue mudar.</em> É o que a Stripe não consegue fazer.</>,
-    cta: "Comece a receber em dólar",
+    badge: "Acesso antecipado — entre na lista",
+    eyebrow: "PARA QUEM RECEBE EM DÓLAR E JÁ VIU A CONTA CONGELAR",
+    h1: <>Sua conta em dólar<br/><em className="not-italic">que mora no Pix.{dot}</em></>,
+    sub: <>Hoje você perde de 5% a 12% só pra receber: a plataforma segura dez dias, o intermediário fica com a parte dele, e ainda vem o IOF e o spread do banco. No Slippay <em className="font-light">o dólar chega e continua dólar</em> — seu, ninguém congela — e vira real no Pix quando você quiser. Sem senha de doze palavras.</>,
+    cta: "Entrar na lista",
+    status: <>Acesso antecipado. O dólar que chega e fica dólar — a chave é sua, ninguém congela — é o que estamos construindo; o Pix entra via um parceiro licenciado, em definição. A gente conta o estágio em voz alta. Pesquisa de mercado de 01/06/2026.</>,
   },
-  tese: {
-    label: "┃ A tese",
-    b1Label: "A contradição",
-    b1: <>Você compra dólar pra se proteger. Mas vende em real, recebe em real, paga fornecedor em real, paga funcionário em real. O dólar fica parado numa exchange. O caixa fica exposto. <em className="font-light">A proteção mora num lugar, o risco mora em outro.</em></>,
-    b2Label: "O que muda",
-    b2: <>O Slippay coloca o dólar <em className="font-light">no recebimento</em>. Você cobra, o cliente paga, o valor entra em dólar e fica em dólar até você decidir o contrário. Sem corretora, sem PJ no exterior, sem planilha. Roda na Stellar, custa frações de centavo por transação, e o dinheiro é seu desde o primeiro segundo.</>,
-    b3Label: "A coisa que ninguém mais consegue fazer",
-    b3: <>A pergunta não é se você vai se dolarizar — <em className="font-light">6,8 bilhões dizem que você já está</em>. A nova pergunta é: <em className="font-light">quem decide quanto te cobram?</em> No Stripe, é o computador deles — e eles podem mudar. No Slippay, é o celular do cliente — e ninguém burla. Nem nós. Nem o banco. Nem o ladrão.</>,
-    cta: "Comece a receber em dólar",
+  standard: {
+    label: "┃ Feito para o que vem a seguir",
+    h2: <>Sua conta em dólar já fica pronta pra quando um assistente de IA começar a trabalhar por você: o limite que você põe, ele não consegue passar — não é promessa, é trava de verdade.<br/><em className="font-light">Ainda em teste hoje — é assim que o pagamento por IA vai funcionar, e a gente já está construindo isso.</em></>,
+    backersLabel: "Por trás desse trilho (x402) — informação pública em x402.org",
+    backers: ["Visa", "Mastercard", "American Express", "Stripe", "Coinbase", "Cloudflare", "Google", "Amazon · AWS", "Circle", "Shopify", "Fiserv", "Adyen"],
+    source: "Empresas que respaldam o padrão x402, segundo x402.org. O Slippay não faz parte desse grupo — esse é o padrão de pagamento de agentes sobre o qual o Slippay constrói. A garantia de limite que descrevemos abaixo é roteiro: hoje roda em rede de teste, checada por nós, com auditoria de fora ainda por vir — não é um recurso de produção.",
+    bridge: <>Eles tornam o pagamento de agentes possível. <em className="font-light">A gente acrescenta a parte que falta: provar que o agente não passa do limite que você definir. Em rede de teste hoje — mainnet e auditoria de fora a seguir.</em></>,
   },
-  modules: {
-    label: "┃ A solução",
-    kicker: "001b · Não é checkout. É commerce stack",
-    h2: <>Três módulos.<br/>Uma única <em className="font-light">wallet</em>.</>,
-    intro: "Mesma base de tecnologia. Quem aceita Slippay ganha checkout + assinatura recorrente protegida hoje — investimento em dólar e saque internacional no mesmo trilho depois.",
-    m1: { tag: "01 · Checkout + Assinatura", statusLabel: "Vivo agora", title: "Um toque. Um cofre só dele.", body: "Pagamento avulso é em dólar digital, na hora. Pra assinatura, o cliente toca uma vez (digital do celular) e a regra fica gravada: quanto a empresa pode cobrar, de quanto em quanto tempo, até quando. Acima do teto: bloqueado. Quer cancelar: 1 toque, sem ligar pra ninguém. Taxa 0,98%." },
-    m2: { tag: "02 · Rendimento", statusLabel: "Parceria sendo fechada", title: "Dinheiro parado rende em dólar", body: "O dólar que entrou no seu caixa pode ficar parado ou render. A gente aplica em títulos do tesouro americano via parceiro de câmbio brasileiro autorizado pelo BC. Você puxa de volta quando quiser." },
-    m3: { tag: "03 · Saque pelo mundo", statusLabel: "Rede Stellar", title: "Vira dinheiro vivo em 180 países", body: "Cliente lá fora? Ele tira dinheiro em espécie numa agência MoneyGram, em mais de 180 países, usando o trilho da rede Stellar. Sem banco, sem cartão internacional." },
+  gap: {
+    label: "┃ A dor",
+    b1: <>Você fecha um trabalho em dólar e o dinheiro demora pra chegar. <em className="font-light">E quando chega, já chega menor.</em></>,
+    b2Label: "Você perde em cinco lugares, não num só",
+    b2: <>Você ganha em dólar e perde de 5% a 12% só na entrada. <em className="font-light">A plataforma segura seu dinheiro dez dias por um dado digitado errado.</em> O intermediário fica com 2% a 5%, a conta congela sem aviso, e cada conversão come 3,5% de IOF mais o spread.</>,
+    b3Label: "O que ninguém resolve",
+    b3: <>Bancos e fintechs olham pro caminho contrário: mandar real <em className="font-light">pra fora</em> comprar ação americana. <em className="font-light">Quem ganha dólar e quer manter dólar fica de fora</em> — é esse buraco que a gente preenche.</>,
   },
-  numbers: {
-    label: "┃ Números", kicker: "002 · A economia",
-    s1Label: "das compras cripto no BR são stablecoin",
-    s1Body: "No 1º trimestre de 2026, US$ 6,8 bi de US$ 6,9 bi em compras de cripto no Brasil foram stablecoin (MEXC · Chainalysis). Dolarização não é tese — é o fluxo dominante.",
-    s2N: "$6-8bi", s2Label: "volume cripto/mês no Brasil",
-    s2Body: "~90% em stablecoin, +100% ano a ano. Brasil é o 5º maior mercado de adoção do mundo (era 10º). O motivo declarado: hedge contra o real.",
-    s3Label: "finalidade na Stellar",
-    s3Body: "Settlement determinístico on-chain. Sem T+1, sem janela de lote, sem chargeback. Taxa de rede 0,00001 XLM (~US$0,000001), auditável por qualquer um.",
+  calc: {
+    label: "┃ Faz a conta",
+    title: "Quanto você recebe por mês em dólar?",
+    lossLabel: "O que você perde hoje só na entrada",
+    youReceive: "Você recebe",
+    perMonth: "por mês",
+    perYear: "por ano",
+    over3y: "em 3 anos",
+    foot: "Conta feita sobre 5% a 12% — retenção, intermediário, IOF e spread, os mesmos vazamentos de cima. No Slippay esse caminho fica perto de 1% a 2%. Ainda em acesso antecipado.",
+  },
+  howto: {
+    label: "┃ Como você usa",
+    h2: <>Três passos.<br/><em className="font-light">Sua mãe consegue.</em></>,
+    steps: [
+      { n: "01", t: "Entra com o rosto", b: "Sem senha, sem frase de doze palavras pra decorar. Você entra com a digital ou o rosto, igual a qualquer aplicativo." },
+      { n: "02", t: "Recebe em dólar", b: "O dólar que você ganha cai na sua conta e continua dólar — sob a sua chave, que ninguém congela." },
+      { n: "03", t: "Saca no Pix quando quiser", b: "Precisou de real? Um toque e ele cai no seu Pix, por um parceiro licenciado. Só quando você decidir." },
+    ],
+    foot: "Sem decorar nada, sem intermediário, sem conta congelada. O Pix entra via parceiro licenciado — essa parte ainda está sendo montada.",
   },
   proof: {
-    label: "┃ Prova", kicker: "002b · Qualquer um pode conferir",
-    h2: <>Não é promessa. Não é protótipo.<br/><em className="font-light">Está rodando agora, ao vivo.</em></>,
-    body: "O contrato que move o dinheiro está na rede Stellar desde 16 de maio de 2026. O cofre do cliente — onde mora a regra — está em testes desde 28 de maio. 16 testes técnicos passando, duas rodadas de auditoria interna, e auditoria externa pela Bluewave AI Security (8 problemas críticos e 14 altos, todos resolvidos). As transações abaixo são públicas no stellar.expert: qualquer pessoa, em qualquer lugar do mundo, pode abrir e verificar.",
-    contractLabel: "Contrato em produção", contractMeta: "Stellar mainnet · auditado",
-    payLabel: "Pagamento real", payMeta: "USDC saiu do comprador, entrou no vendedor, em 6 segundos",
-    liveTag: "Vivo na rede Stellar",
-    auditTag: "Auditado por Bluewave AI Security",
+    label: "┃ Como é diferente", kicker: "001 · Três motivos simples",
+    h2: <>O dinheiro é seu — e ninguém pode congelar.<br/><em className="font-light">Sua chave, sua digital, sem ninguém no meio tirando a sua parte.</em></>,
+    body: "Três motivos: você não decora senha — entra com a digital ou o rosto. O dinheiro é seu: a chave fica com você, ninguém congela nem bloqueia. E o caminho do dólar custa ~1% a 2%, não 5% a 12%. O real entra no Pix por um parceiro licenciado — essa parte ainda está sendo montada, e a gente fala na cara.",
+    invariantLabel: "Sem senha de doze palavras",
+    invariantBody: "Você não decora frase secreta nenhuma. Entra pela biometria do celular, como qualquer aplicativo que você já usa. Sua mãe consegue usar. Não tem aquele papelzinho com doze palavras que, se você perder, perde o dinheiro.",
+    certLabel: "Ninguém congela o seu dólar — nem a gente",
+    certBody: "A chave da sua conta é sua, não nossa. Isso significa que a gente literalmente não consegue congelar nem bloquear o seu dólar — nem que quisesse, nem que mandassem. Diferente da plataforma que trava sua conta e te deixa dez dias no escuro.",
+    proveLabel: "O caminho do dólar custa ~1% a 2%",
+    proveBody: "O trilho que a gente usa para o dólar chegar e ficar dólar custa por volta de 1% a 2%, não os 5% a 12% que você perde hoje com hold, skim e spread. Você fica com mais do que ganhou.",
+    refuseLabel: "Real no Pix só quando você quiser",
+    refuseBody: "Seu dólar fica dólar o tempo todo. Quando você precisar de real, ele vira real no Pix por um parceiro licenciado — esse pedaço ainda está em definição, e a gente conta isso em voz alta em vez de fingir que já funciona.",
+    codeToggle: "Para builders: como o limite do agente é provado",
+    codeAside: "Isto é o que um desenvolvedor vê — você não precisa entender essa parte. É o roteiro do agente: o limite por janela é provado por máquina (Z3) para qualquer ordem de ações. Hoje roda em rede de teste (Stellar/Soroban), checado por nós, sem auditoria de fora ainda. O pior caso do total ao longo de uma janela móvel fica preso a cerca do dobro desse limite, por um passo geométrico enunciado que ainda não checamos por máquina.",
+    codeTitle: "para quem é da área · a prova do limite de gasto do agente",
+    code: `# roteiro · o limite de gasto do agente, provado por máquina
+invariant spent_in_epoch <= window_cap
+
+#  base: spent_in_epoch(s0) = 0 <= window_cap        ✓
+#  step: ∀ a. spent' = spent + pay(a)
+#        pay(a) <= remaining  ⇒  spent' <= window_cap ✓
+#  lemma (declarado): janela ⊆ época_i ∪ época_{i+1}
+#        ⇒  outflow_window <= 2 · window_cap
+
+$ axlc prove agent_budget.axl
+  limite por janela ............... PROVADO  (0.4s · rede de teste)
+  política sem limite ............. RECUSADA (sem teto)`,
+    runline: "PROVADO em rede de teste · roda em 0,4s · mainnet e auditoria de fora a seguir",
+    specLink: "Para builders: ler a especificação ↗",
+    seeItWork: "Ver o roteiro do agente",
   },
-  demoLoop: {
-    label: "┃ É assim que funciona",
-    h2: <>É assim que funciona.<br/><em className="font-light">Apenas um toque.</em></>,
-    sub: "O cliente abre o link da assinatura no celular. Toca uma vez. Em uns 25 segundos o cofre dele nasce, com a regra gravada dentro. Não precisa instalar carteira, não precisa anotar senha de 12 palavras. Daí em diante, a empresa cobra dentro do que ele autorizou. Tentaram cobrar a mais? O próprio cofre bloqueia. Pra cancelar: 1 toque, sem ligar pra ninguém.",
-    s_provisioning: "Criando o cofre do cliente",
-    s_deploy: "Cofre nasce na rede Stellar",
-    s_init: "Digital do celular dele entra no cofre",
-    s_install: "Regra é gravada · valor, frequência, validade",
-    s_active: "Assinatura ativa",
-    s_vault: "Cofre do cliente · ver na rede",
-    s_event: "Momento em que a regra foi gravada · ver na rede",
-    s_cancel: "Cancelar assinatura",
-    s_enforcement_label: "Vamos testar uma cobrança",
-    s_btn_under: "Empresa cobra dentro da regra",
-    s_btn_over: "Empresa tenta cobrar a mais",
-    s_result_under: "transferiu · em 6 segundos · sem janela de estorno",
-    s_result_over: "bloqueada · acima do que o cliente autorizou",
-    s_replay: "ver de novo",
-  },
-  how: {
-    label: "┃ Mecânica", kicker: "003 · Como funciona",
-    h2: <>Quatro partes.<br/>Uma transação <em className="font-light">atômica</em>.</>,
-    s1Title: "Crie a cobrança", s1Body: "POST /v1/orders com o valor em dólar. USDC denominado 1:1 contra o USD; sem ida e volta de FX embutida na cobrança.",
-    s2Title: "O cliente toca uma vez e pronto", s2Body: "Avulso: ele paga em dólar digital direto, ou em Pix (a parte do Pix vem por parceiro de câmbio autorizado pelo BC). Assinatura: 1 toque no celular (Face ID ou digital) escreve a regra no cofre dele. Nos próximos meses, a cobrança roda sozinha — desde que esteja dentro do que ele autorizou. Acima disso: bloqueia.",
-    s3Title: "O listener confirma on-chain", s3Body: "O stream da Horizon observa o seu endereço, casa o pagamento pelo memo, valida valor e emissor do ativo, e marca status=pago em 6s de finalidade determinística.",
-    s4Title: "O webhook dispara, assinado com HMAC", s4Body: "Seu endpoint recebe order.paid (ou subscription.charged). Retry exponencial: 1m, 5m, 30m, 2h, 12h, 24h, dead. O USDC fica na sua carteira até você decidir converter.",
-  },
-  reg: {
-    label: "┃ Posição", kicker: "004 · Regulatório",
-    h2: <>Feito para a janela<br/>que <em className="font-light">acabou de abrir</em>.</>,
-    body: <>O Slippay é provedor de tecnologia de pagamento — não detém custódia, não opera câmbio e não é instituição financeira. A conversão BRL→USDC será executada por instituição autorizada pelo BCB (câmbio + PSAV), parceiro de câmbio em definição. A liquidação do checkout é <em className="font-light">doméstica</em>: não há eFX cross-border em stablecoin, e a Res. BCB 561/2026 não se aplica a ela por design. O cash-out internacional é <em className="font-light">saque físico</em> em agência via MoneyGram na rede Stellar — não liquidação stablecoin cross-border. Risco residual de reinterpretação regulatória existe e é monitorado ativamente.</>,
-    cNetwork: "Rede", cAssets: "Ativos", cAssetsV: "USDC · PYUSD em breve",
-    cOnramp: "Entrada", cCustody: "Custódia", cCustodyV: "Sua · não-custodial",
-  },
-  comp: {
-    label: "┃ Competição", kicker: "006 · Por que a Stripe não consegue copiar",
-    h2: <>A Stripe não pode fazer isso<br/>sem <em className="font-light">deixar de ser Stripe</em>.</>,
-    rRegional: "Foco regional BR", rPix: "Pix in / BRL out", rSub: "Assinatura Soroban",
-    rYield: "Yield (Tesouros tokenizados)", rCashout: "Cash-out global", rCustody: "Não-custodial", rTake: "Take rate",
-    sNative: "Nativo", sFx: "Parceiro de câmbio", sFxNote: "em definição", sSub: "Live na mainnet",
-    sYieldNote: "roadmap", sCustody: "Sim, by design",
-    yes: "Sim", na: "n/d", stripeTake: "2,9% + US$0,30", coinbaseTake: "1,0%", slipTake: "0,98%",
-    legendLive: "live", legendRoadmap: "roadmap",
-    kickerP: <>Stripe cobra ~2,9% + US$0,30 <em className="font-light">porque a lei obriga ela a aceitar contestação por 120 dias</em>. O dinheiro fica preso 2 a 7 dias <em className="font-light">porque a janela de estorno é mandatada</em>. O limite que ela mostra no painel mora num banco de dados deles. E ela <em className="font-light">precisa segurar o dinheiro</em> — é exigência da licença que ela tem. Cada uma dessas regras é o que faz a Stripe valer US$ 70 bilhões. Tirar uma quebra o modelo. <em className="font-light">Slippay nasceu sem nenhuma delas.</em></>,
+  status: {
+    label: "┃ A verdade nua", kicker: "005 · Em que estágio a gente está, dito em voz alta",
+    h2: <>O que já é real.<br/><em className="font-light">E o que ainda está sendo montado.</em></>,
+    body: <>Já é real: a carteira sem senha de decorar — <em className="font-light">o dólar chega, fica dólar e é seu</em>. Ainda não no ar: o ciclo completo de virar real no Pix — <em className="font-light">via parceiro licenciado, em definição</em>. A prova de limite do agente roda em rede de teste, com auditoria de fora por vir. Por isso é acesso antecipado, não "use hoje". Tudo doméstico — sem remessa pra fora. Contar o estágio em voz alta é sinal de confiança.</>,
+    cNetwork: "Carteira", cNetworkV: "Autocustódia · sem senha de decorar (em construção)",
+    cAudit: "Pix", cAuditV: "Via parceiro licenciado · em definição",
+    cBound: "Limite do agente", cBoundV: "Rede de teste · auditoria de fora por vir",
+    cChain: "Alcance", cChainV: "Doméstico · sem remessa para fora",
+    mainnetLabel: "Já vive na mainnet pública",
+    mainnetBody: "O contrato Slippay e uma transação USDC real estão liquidados na rede principal do Stellar — não é testnet, não é mockup. Confere on-chain:",
+    mainnetContract: "Contrato na mainnet",
+    mainnetTx: "Transação USDC",
+    mainnetNote: "Transação de verificação (auto-pagamento). O ciclo completo com cliente e Pix ainda é acesso antecipado.",
   },
   cta: {
-    kicker: "005 · Comece",
-    h2: <>Pronto quando<br/><em className="font-light">seu caixa estiver</em>.</>,
-    body: "Cadastre-se. Informe seu endereço Stellar de recebimento. Copie sua API key. Comece a receber em USDC on-chain hoje (PYUSD em breve); a entrada via Pix entra com o parceiro de câmbio.",
-    button: "Criar conta",
+    kicker: "005 · Próximo passo",
+    h2: <>O dólar que é seu,<br/><em className="font-light">no Pix quando você quiser.</em></>,
+    body: "Entre na lista de acesso antecipado. A gente avisa quando o ciclo de receber, segurar e virar real no Pix estiver no ar com o parceiro licenciado. Sem remessa pra fora.",
+    button: "Quero manter meu dólar em dólar",
+    spec: "Para builders: ler a especificação",
   },
   footer: {
     product: "┃ Produto", resources: "┃ Recursos", legal: "┃ Legal",
-    fSignup: "Criar conta", fLogin: "Entrar", fHow: "Como funciona",
-    fApi: "API reference", fGuides: "Guias", fAudits: "Auditorias de segurança", fX402: "x402 protocol", fSsl: "SSL spec ↗",
+    fSignup: "Entrar na lista", fLogin: "Entrar", fHow: "Como funciona",
+    fApi: "Referência da API", fGuides: "Guias", fAudits: "Auditoria · de fora por vir", fX402: "Padrão x402", fSsl: "Especificação ↗",
     fTerms: "Termos", fPrivacy: "Privacidade",
   },
 };
 
 const en: HomeStrings = {
-  nav: { how: "How it works", docs: "Docs", login: "Log in", signup: "Sign up", home: "Home" },
-  mobileFooter: "Live on the Stellar network · public contracts on stellar.expert",
+  nav: { how: "How it works", docs: "Docs", login: "Log in", signup: "Join the list", home: "Home" },
+  mobileFooter: "you earn in dollars · the dollar arrives and stays a dollar · it becomes reais on Pix only when you choose",
   hero: {
-    statusLive: "Live · v0.2",
-    eyebrow: "Issue 001 · for who sells in Brazil",
-    h1: <>Brazil's commerce stack<br/><em className="not-italic">in stablecoin.{dot}</em></>,
-    sub: <>You charge. Your customer taps once on their phone. The dollar lands in your cash flow in seconds. <em className="font-light">And the rule for how much and how often they can be charged lives on their phone — you can't change it either.</em> That's what Stripe can't do.</>,
-    cta: "Start getting paid in dollars",
+    badge: "Early access — join the list",
+    eyebrow: "FOR PEOPLE WHO EARN IN DOLLARS AND HAVE WATCHED AN ACCOUNT FREEZE",
+    h1: <>Your dollar account<br/><em className="not-italic">that lives in Pix.{dot}</em></>,
+    sub: <>Today you lose 5% to 12% just to get paid: the platform holds it ten days, the middleman takes a cut, then come IOF and the bank's spread. With Slippay <em className="font-light">the dollar arrives and stays a dollar</em> — yours, nobody can freeze it — and becomes reais on Pix when you choose. No twelve-word seed phrase.</>,
+    cta: "Get early access",
+    status: <>Early access. The dollar that arrives and stays a dollar — your key, nobody can freeze it — is what we're building; Pix comes in through a licensed partner, still being set up. We say the stage out loud. Market survey as of 2026-06-01.</>,
   },
-  tese: {
-    label: "┃ The thesis",
-    b1Label: "The contradiction",
-    b1: <>You buy dollars to protect yourself. But you sell in reais, get paid in reais, pay suppliers in reais, pay staff in reais. The dollars sit idle on an exchange. The cash stays exposed. <em className="font-light">The hedge lives in one place, the risk in another.</em></>,
-    b2Label: "What changes",
-    b2: <>SlipPay puts the dollar <em className="font-light">at the point of payment</em>. You charge, the customer pays, the money lands in dollars and stays in dollars until you decide otherwise. No broker, no offshore entity, no spreadsheet. It runs on Stellar, costs fractions of a cent per transaction, and the money is yours from the first second.</>,
-    b3Label: "The thing nobody else can do",
-    b3: <>The question isn't whether you'll dollarize — <em className="font-light">$6.8bn says you already have</em>. The new question is: <em className="font-light">who decides how much you get charged?</em> With Stripe, it's their computer — and they can change it. With Slippay, it's the customer's phone — and nobody can override. Not us. Not the bank. Not a thief.</>,
-    cta: "Start getting paid in dollars",
+  standard: {
+    label: "┃ Built for what's next",
+    h2: <>Your dollar account is ready for when an AI assistant starts working for you: the limit you set is one it simply can't cross — not a promise, a real stop.<br/><em className="font-light">Still in testing today — this is how AI payments will work, and we're already building it.</em></>,
+    backersLabel: "Behind these rails (x402) — public info at x402.org",
+    backers: ["Visa", "Mastercard", "American Express", "Stripe", "Coinbase", "Cloudflare", "Google", "Amazon · AWS", "Circle", "Shopify", "Fiserv", "Adyen"],
+    source: "Companies backing the x402 standard, per x402.org. Slippay is not a member of their group — this is the agent-payment standard Slippay builds on. The spend-limit guarantee described below is roadmap: today it runs on a test network, checked by us, with an outside audit still to come — not a production feature.",
+    bridge: <>They make agent payments possible. <em className="font-light">We add the missing piece: proving the agent can't go over the limit you set. On a test network today — mainnet and an outside audit are next.</em></>,
   },
-  modules: {
-    label: "┃ The solution",
-    kicker: "001b · Not a checkout. A commerce stack",
-    h2: <>Three modules.<br/>One single <em className="font-light">wallet</em>.</>,
-    intro: "Same underlying tech. Whoever accepts Slippay gets checkout + protected recurring subscription today — yield and global cash-out on the same rails after.",
-    m1: { tag: "01 · Checkout + Subscription", statusLabel: "Live now", title: "One tap. A vault only they control.", body: "One-time payments land in digital dollars, right away. For subscriptions, the customer taps once (Face ID or fingerprint) and the rule is written: how much can be charged, how often, until when. Over the cap: blocked. Want to cancel: one tap, no support call. 0.98% fee." },
-    m2: { tag: "02 · Yield", statusLabel: "Partnership being closed", title: "Idle cash earns in dollars", body: "Dollars sitting in your cash flow can stay parked or earn. We allocate to US Treasury bills via a BR-authorized FX partner (BCB-licensed). You can pull it back whenever." },
-    m3: { tag: "03 · Cash-out worldwide", statusLabel: "Stellar network", title: "Becomes physical cash in 180+ countries", body: "Customer abroad? They walk into a MoneyGram agency in 180+ countries and pick up physical cash, using the Stellar network rail. No bank, no international card." },
+  gap: {
+    label: "┃ The pain",
+    b1: <>You close a job in dollars and the money takes its time to arrive. <em className="font-light">And when it lands, it already lands smaller.</em></>,
+    b2Label: "You lose in five places, not one",
+    b2: <>You earn in dollars and lose 5% to 12% just on the way in. <em className="font-light">The platform holds your money ten days over one mistyped detail.</em> The middleman skims 2% to 5%, the account freezes with no warning, and every conversion eats 3.5% IOF plus spread.</>,
+    b3Label: "What nobody fixes",
+    b3: <>Banks and fintechs all look at the opposite flow: sending reais <em className="font-light">out</em> to buy US stocks. <em className="font-light">The person who earns dollars and wants to keep dollars is left out</em> — that's the gap we fill.</>,
   },
-  numbers: {
-    label: "┃ Numbers", kicker: "002 · The economy",
-    s1Label: "of crypto purchases in Brazil are stablecoin",
-    s1Body: "In Q1 2026, $6.8bn of $6.9bn in crypto purchases in Brazil were stablecoin (MEXC · Chainalysis). Dollarization isn't a thesis — it's the dominant flow.",
-    s2N: "$6-8bn", s2Label: "crypto volume/month in Brazil",
-    s2Body: "~90% in stablecoin, +100% year over year. Brazil is the world's 5th-largest adoption market (was 10th). The stated reason: a hedge against the real.",
-    s3Label: "finality on Stellar",
-    s3Body: "Deterministic on-chain settlement. No T+1, no batch window, no chargebacks. Network fee 0.00001 XLM (~$0.000001), auditable by anyone.",
+  calc: {
+    label: "┃ Run the numbers",
+    title: "How much do you receive per month in dollars?",
+    lossLabel: "What you lose today, just on the way in",
+    youReceive: "You receive",
+    perMonth: "per month",
+    perYear: "per year",
+    over3y: "over 3 years",
+    foot: "Based on 5% to 12% — holds, middleman, IOF and spread, the same leaks as above. With Slippay this path is closer to 1% to 2%. Still in early access.",
+  },
+  howto: {
+    label: "┃ How you use it",
+    h2: <>Three steps.<br/><em className="font-light">Anyone can do it.</em></>,
+    steps: [
+      { n: "01", t: "Sign in with your face", b: "No password, no twelve-word phrase to memorize. Fingerprint or face, like any app you already use." },
+      { n: "02", t: "Get paid in dollars", b: "The dollars you earn land in your account and stay dollars — under your key, that nobody can freeze." },
+      { n: "03", t: "Cash out on Pix anytime", b: "Need reais? One tap and they land in your Pix, through a licensed partner. Only when you decide." },
+    ],
+    foot: "Nothing to memorize, no middleman, no frozen account. Pix comes in through a licensed partner — that part is still being set up.",
   },
   proof: {
-    label: "┃ Proof", kicker: "002b · Verifiable on-chain",
-    h2: <>Not a promise. Not a prototype.<br/><em className="font-light">Live on Stellar mainnet.</em></>,
-    body: "The contract that moves the money has been live on the Stellar network since May 16, 2026. The customer's vault — where the rule lives — has been in testing since May 28. 16 technical tests passing, two internal audit passes, plus an external audit by Bluewave AI Security (8 critical and 14 high findings, all closed). The transactions below are public on stellar.expert: anyone, anywhere in the world, can open them and verify.",
-    contractLabel: "Contract in production", contractMeta: "Stellar mainnet · audited",
-    payLabel: "Real payment", payMeta: "USDC left the buyer, landed in the seller, in 6 seconds",
-    liveTag: "Live on the Stellar network",
-    auditTag: "Audited by Bluewave AI Security",
+    label: "┃ How it's different", kicker: "001 · Three plain reasons",
+    h2: <>The money is yours — and nobody can freeze it.<br/><em className="font-light">Your key, your fingerprint, no middleman taking a cut.</em></>,
+    body: "Three reasons: you memorize no password — sign in with your fingerprint or face. The money is yours: the key stays with you, nobody can freeze or block it. And the dollar's path costs ~1% to 2%, not 5% to 12%. Reais come in over Pix through a licensed partner — that part is still being set up, and we say so plainly.",
+    invariantLabel: "No twelve-word seed phrase",
+    invariantBody: "You memorize no secret phrase. You sign in with your phone's biometrics, like any app you already use. Your mother can use it. There's no slip of paper with twelve words that, if you lose it, you lose the money.",
+    certLabel: "Nobody can freeze your dollars — not even us",
+    certBody: "The key to your account is yours, not ours. Which means we literally can't freeze or block your dollar — not if we wanted to, not if someone ordered us to. Unlike the platform that locks your account and leaves you ten days in the dark.",
+    proveLabel: "The dollar's path costs ~1% to 2%",
+    proveBody: "The rail we use to make the dollar arrive and stay a dollar costs around 1% to 2%, not the 5% to 12% you lose today to holds, skims and spread. You keep more of what you earned.",
+    refuseLabel: "Reais on Pix only when you choose",
+    refuseBody: "Your dollar stays a dollar the whole time. When you need reais, it becomes reais on Pix through a licensed partner — that piece is still being set up, and we say it out loud instead of pretending it already works.",
+    codeToggle: "For builders: how the agent limit is proved",
+    codeAside: "This is what a developer sees — you don't need to follow this part. It's the agent roadmap: the per-window limit is machine-proved (Z3) for any order of moves. Today it runs on a test network (Stellar/Soroban), checked by us, with no outside audit yet. The worst-case total over a rolling window is bounded to about twice that limit by a stated geometric step we haven't machine-checked yet.",
+    codeTitle: "for builders · the agent spending-limit proof",
+    code: `# roadmap · the agent spending limit, machine-checked
+invariant spent_in_epoch <= window_cap
+
+#  base: spent_in_epoch(s0) = 0 <= window_cap        ✓
+#  step: ∀ a. spent' = spent + pay(a)
+#        pay(a) <= remaining  ⇒  spent' <= window_cap ✓
+#  lemma (stated): window ⊆ epoch_i ∪ epoch_{i+1}
+#        ⇒  outflow_window <= 2 · window_cap
+
+$ axlc prove agent_budget.axl
+  per-window limit ................ PROVED   (0.4s · test network)
+  policy with no limit ............ REFUSED  (no cap)`,
+    runline: "PROVED on a test network · runs in 0.4s · mainnet and outside audit next",
+    specLink: "For builders: read the spec ↗",
+    seeItWork: "See the agent roadmap",
   },
-  demoLoop: {
-    label: "┃ This is how it works",
-    h2: <>This is how it works.<br/><em className="font-light">Just one tap.</em></>,
-    sub: "The customer opens the subscription link on their phone. Taps once. In about 25 seconds, their vault is born with the rule written inside. No wallet to install, no 12-word seed phrase to write down. From then on, the company charges within what they authorized. Tried to charge more? The vault itself blocks it. To cancel: one tap, no support call.",
-    s_provisioning: "Creating the customer's vault",
-    s_deploy: "Vault is born on the Stellar network",
-    s_init: "Their phone's biometric enters the vault",
-    s_install: "Rule is written · amount, frequency, validity",
-    s_active: "Subscription active",
-    s_vault: "Customer's vault · view on the network",
-    s_event: "Moment the rule was written · view on the network",
-    s_cancel: "Cancel subscription",
-    s_enforcement_label: "Let's test a charge",
-    s_btn_under: "Company charges within the rule",
-    s_btn_over: "Company tries to overcharge",
-    s_result_under: "transferred · in 6 seconds · no chargeback window",
-    s_result_over: "blocked · above what the customer authorized",
-    s_replay: "replay",
-  },
-  how: {
-    label: "┃ Mechanics", kicker: "003 · How it works",
-    h2: <>Four parts.<br/>One <em className="font-light">atomic</em> transaction.</>,
-    s1Title: "Create the charge", s1Body: "POST /v1/orders with the dollar amount. USDC denominated 1:1 against USD; no FX round-trip baked into the charge.",
-    s2Title: "The customer taps once · done", s2Body: "One-off: they pay in digital dollars directly, or in Pix (the Pix side flows through a BR-authorized FX partner). Subscription: one tap on the phone (Face ID or fingerprint) writes the rule inside their vault. The next charges run on schedule — within what they authorized. Above that: blocked.",
-    s3Title: "The listener confirms on-chain", s3Body: "The Horizon stream watches your address, matches the payment by memo, validates the asset amount and issuer, and marks status=paid in 6s of deterministic finality.",
-    s4Title: "The webhook fires, HMAC-signed", s4Body: "Your endpoint receives order.paid (or subscription.charged). Exponential retry: 1m, 5m, 30m, 2h, 12h, 24h, dead. The USDC stays in your wallet until you decide to convert.",
-  },
-  reg: {
-    label: "┃ Position", kicker: "004 · Regulatory",
-    h2: <>Built for the window<br/>that <em className="font-light">just opened</em>.</>,
-    body: <>SlipPay is a payment-technology provider — it holds no custody, operates no FX, and is not a financial institution. The BRL→USDC conversion is executed by a BCB-authorized institution (FX + PSAV), FX partner in progress. The checkout settlement is <em className="font-light">domestic</em>: no cross-border stablecoin eFX, and BCB Res. 561/2026 does not apply to it by design. International cash-out is <em className="font-light">physical withdrawal</em> at a MoneyGram agency over the Stellar network — not cross-border stablecoin settlement. Residual regulatory-reinterpretation risk exists and is actively monitored.</>,
-    cNetwork: "Network", cAssets: "Assets", cAssetsV: "USDC · PYUSD soon",
-    cOnramp: "On-ramp", cCustody: "Custody", cCustodyV: "Yours · non-custodial",
-  },
-  comp: {
-    label: "┃ Competition", kicker: "006 · Why Stripe can't copy this",
-    h2: <>Stripe can't do this<br/>without <em className="font-light">ceasing to be Stripe</em>.</>,
-    rRegional: "Brazil regional focus", rPix: "Pix in / BRL out", rSub: "Soroban subscription",
-    rYield: "Yield (tokenized treasuries)", rCashout: "Global cash-out", rCustody: "Non-custodial", rTake: "Take rate",
-    sNative: "Native", sFx: "FX partner", sFxNote: "in progress", sSub: "Live on mainnet",
-    sYieldNote: "roadmap", sCustody: "Yes, by design",
-    yes: "Yes", na: "n/a", stripeTake: "2.9% + $0.30", coinbaseTake: "1.0%", slipTake: "0.98%",
-    legendLive: "live", legendRoadmap: "roadmap",
-    kickerP: <>Stripe charges ~2.9% + $0.30 <em className="font-light">because the law forces them to accept disputes for 120 days</em>. Money sits frozen for 2 to 7 days <em className="font-light">because the dispute window is mandated</em>. The cap shown in the dashboard lives in their database. And they <em className="font-light">have to hold the money</em> — it's a license requirement. Each of these rules is what makes Stripe worth $70bn. Drop one and the model breaks. <em className="font-light">Slippay was born without any of them.</em></>,
+  status: {
+    label: "┃ The honest truth", kicker: "005 · What stage we're at, said out loud",
+    h2: <>What's already real.<br/><em className="font-light">And what's still being built.</em></>,
+    body: <>Already real: the no-seed-phrase wallet — <em className="font-light">the dollar arrives, stays a dollar, and is yours</em>. Not live yet: the full loop to reais on Pix — <em className="font-light">via a licensed partner, still being defined</em>. The agent spend-limit proof runs on testnet, with an outside audit still to come. That's why it's early access, not "use it today." All domestic — no money sent abroad. Saying the stage out loud is a sign you can trust us.</>,
+    cNetwork: "Wallet", cNetworkV: "Self-custody · no password to memorize (in build)",
+    cAudit: "Pix", cAuditV: "Via licensed partner · still being defined",
+    cBound: "Agent limit", cBoundV: "Test network · outside audit to come",
+    cChain: "Scope", cChainV: "Domestic · no sending abroad",
+    mainnetLabel: "Already live on Stellar mainnet",
+    mainnetBody: "The Slippay contract and a real USDC transaction are settled on Stellar's public network — not testnet, not a mockup. Verify on-chain:",
+    mainnetContract: "Mainnet contract",
+    mainnetTx: "USDC transaction",
+    mainnetNote: "Verification transaction (a self-payment). The full loop with a customer and Pix is still early access.",
   },
   cta: {
-    kicker: "005 · Get started",
-    h2: <>Ready when<br/><em className="font-light">your cash flow is</em>.</>,
-    body: "Sign up. Enter your Stellar receiving address. Copy your API key. Start receiving USDC on-chain today (PYUSD soon); the Pix on-ramp lands with the FX partner.",
-    button: "Sign up",
+    kicker: "005 · Next step",
+    h2: <>The dollar that's yours,<br/><em className="font-light">on Pix when you choose.</em></>,
+    body: "Join the early-access list. We'll tell you the moment the loop — receive, hold, turn into reais on Pix — is live with the licensed partner. No sending abroad.",
+    button: "Keep my dollars in dollars",
+    spec: "For builders: read the spec",
   },
   footer: {
     product: "┃ Product", resources: "┃ Resources", legal: "┃ Legal",
-    fSignup: "Sign up", fLogin: "Log in", fHow: "How it works",
-    fApi: "API reference", fGuides: "Guides", fAudits: "Security audits", fX402: "x402 protocol", fSsl: "SSL spec ↗",
+    fSignup: "Join the list", fLogin: "Log in", fHow: "How it works",
+    fApi: "API reference", fGuides: "Guides", fAudits: "Audit · outside audit to come", fX402: "x402 standard", fSsl: "Spec ↗",
     fTerms: "Terms", fPrivacy: "Privacy",
   },
 };

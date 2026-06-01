@@ -11,7 +11,7 @@
 import * as S from "../apps/web/node_modules/@stellar/stellar-sdk/lib/index.js";
 import { execSync } from "node:child_process";
 
-const { rpc, xdr, Keypair, Networks, TransactionBuilder, Operation, Address, Asset, nativeToScVal, hash, BASE_FEE } = S;
+const { rpc, xdr, Keypair, Networks, TransactionBuilder, Operation, Address, Asset, Contract, nativeToScVal, hash, BASE_FEE } = S;
 
 const RPC = process.env.RPC || "https://soroban-testnet.stellar.org";
 const PASSPHRASE = process.env.PASSPHRASE || Networks.TESTNET;
@@ -25,6 +25,10 @@ const WINDOW_CAP = process.env.WINDOW_CAP || "200000000";
 const FUND = process.env.FUND || "100000000";
 const WITHIN = process.env.WITHIN || "30000000";
 const OVER = process.env.OVER || "80000000";
+// Governing .ssl spec provenance (sha256, 32-byte hex). Required positional on
+// install_agent_session since the C3 audit. Placeholder mirrors the contract
+// unit tests' ssl_h() = [0xAB; 32]; override with the real spec hash in prod.
+const SSL_HASH = process.env.SSL_HASH || "ab".repeat(32);
 const server = new rpc.Server(RPC, { allowHttp: false });
 
 const log = (...a) => console.log(...a);
@@ -117,30 +121,57 @@ async function agentTransfer(agent, deployer, to, amount, label) {
   return { rejected: false, status: res.status, hash: sent.hash };
 }
 
+// Read-only check that the agent session actually landed on-chain (defends
+// against flaky-RPC CLI submits that report timeout but may not have committed).
+async function sessionExists(agent, feeAcct) {
+  try {
+    const c = new Contract(WALLET);
+    const op = c.call("get_agent_session", nativeToScVal(agent.rawPublicKey(), { type: "bytes" }));
+    const src = await server.getAccount(feeAcct.publicKey());
+    const tx = new TransactionBuilder(src, { fee: BASE_FEE, networkPassphrase: PASSPHRASE })
+      .addOperation(op).setTimeout(30).build();
+    const sim = await server.simulateTransaction(tx);
+    return !rpc.Api.isSimulationError(sim);
+  } catch { return false; }
+}
+
 async function main() {
   if (!DEPLOYER_SECRET) { console.error("DEPLOYER_SECRET required"); process.exit(1); }
   const deployer = Keypair.fromSecret(DEPLOYER_SECRET);
   const agent = Keypair.random();
   const agentPubHex = agent.rawPublicKey().toString("hex");
-  const recipient = Keypair.random().publicKey();
+  // Recipient must be an EXISTING account — the native SAC won't create a new
+  // account with a sub-1-XLM transfer. Default to the deployer (exists).
+  const recipient = process.env.RECIPIENT || deployer.publicKey();
   log("native SAC:", NATIVE_SAC);
   log("agent ed25519 pubkey:", agentPubHex);
   log("recipient:", recipient);
 
-  // 0. Init the wallet (dummy passkey; admin = deployer). Idempotent-ish: ignore if already init.
-  log("\n=== init wallet (admin = deployer) ===");
-  const PUBKEY = "04" + "01".repeat(32) + "02".repeat(32);
-  const CRED = "03".repeat(32);
-  sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --id ${WALLET} -- init --passkey_pubkey ${PUBKEY} --passkey_cred_id ${CRED} --admin ${deployer.publicKey()} >/dev/null 2>&1 || true`);
-
-  // 1. Install an agent session keyed by the REAL agent pubkey (admin-signed via CLI).
-  //    per_tx_cap 5 XLM, window 20 XLM / 24h, allowlist = [recipient] (A2: non-empty required).
-  log("=== install_agent_session (real ed25519 pubkey, non-empty allowlist) ===");
-  sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --id ${WALLET} -- install_agent_session --session_pubkey ${agentPubHex} --token ${NATIVE_SAC} --per_tx_cap ${PER_TX} --window_seconds 86400 --window_cap ${WINDOW_CAP} --expires_at 0 --allow_recipients '["${recipient}"]' >/dev/null 2>&1 || true`);
-
-  // 2. Fund the wallet contract with 10 XLM via the native SAC (deployer → wallet).
-  log("=== fund wallet with XLM ===");
-  sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --id ${NATIVE_SAC} -- transfer --from ${deployer.publicKey()} --to ${WALLET} --amount ${FUND} >/dev/null 2>&1 || true`);
+  // Setup (install · fund), retried until the session is VERIFIED on-chain —
+  // robust against flaky-RPC submits that time out at the CLI.
+  //
+  // SECURITY_AUDIT C2/C3: init is no longer a separate step. The wallet's
+  // passkey/admin/absolute-ceiling are set by its __constructor ATOMICALLY at
+  // deploy time. The WALLET referenced here MUST have been created with the
+  // constructor args, e.g.:
+  //   stellar contract deploy --network <net> --source <key> \
+  //     --wasm-hash <hash> -- \
+  //     --passkey_pubkey 04<32B>01..<32B>02 \
+  //     --passkey_cred_id 03..(32B) \
+  //     --admin <DEPLOYER_G_ADDRESS> \
+  //     --max_absolute_per_charge <MAX_ABS_STROOPS>
+  // There is NO standalone init invoke (the contract's init() is a guarded
+  // no-op that always errors AlreadyInitialized, by design).
+  let ready = false;
+  for (let attempt = 1; attempt <= 6 && !ready; attempt++) {
+    log(`\n=== setup attempt ${attempt} · install · fund ===`);
+    sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --id ${WALLET} -- install_agent_session --session_pubkey ${agentPubHex} --token ${NATIVE_SAC} --per_tx_cap ${PER_TX} --window_seconds 86400 --window_cap ${WINDOW_CAP} --expires_at 0 --allow_recipients '["${recipient}"]' --ssl_hash ${SSL_HASH} >/dev/null 2>&1 || true`);
+    sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --id ${NATIVE_SAC} -- transfer --from ${deployer.publicKey()} --to ${WALLET} --amount ${FUND} >/dev/null 2>&1 || true`);
+    await new Promise((r) => setTimeout(r, 3000));
+    ready = await sessionExists(agent, deployer);
+    log(`  session on-chain: ${ready ? "YES" : "not yet, retrying…"}`);
+  }
+  if (!ready) { console.error("setup failed — agent session never landed on-chain"); process.exit(1); }
 
   // 3. Agent transfer WITHIN per-tx cap → must succeed.
   const ok = await agentTransfer(agent, deployer, recipient, WITHIN, "WITHIN cap");

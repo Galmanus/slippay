@@ -2,8 +2,10 @@
 // Policy-checkout spike HTTP server.
 //
 // Single POST endpoint `/api/policy-checkout/spike` that deploys a fresh
-// slippay-smart-wallet instance on Stellar testnet, calls init() with
-// placeholder passkey material, and calls install_policy() with the
+// slippay-smart-wallet instance on Stellar testnet — passing the wallet's
+// __constructor args (placeholder passkey material + admin + absolute
+// per-charge ceiling) ATOMICALLY at deploy time (SECURITY_AUDIT C2/C3, no
+// un-inited front-run window) — and calls install_policy() with the
 // merchant/amount/interval supplied in the request body. Returns JSON
 // with the new contract id + tx hashes + stellar.expert URLs.
 //
@@ -62,6 +64,13 @@ const PLACEHOLDER_PUBKEY =
   "04" + "01".repeat(32) + "02".repeat(32);
 const PLACEHOLDER_CRED_ID = "03".repeat(32);
 
+// SECURITY_AUDIT C3 · immutable absolute per-charge ceiling, passed to the
+// __constructor and never settable again. Caps the largest single per-charge
+// drain even with a fully compromised admin. For the demo this is sized well
+// above the demo amounts but far below the funded balance. Override with
+// MAX_ABSOLUTE_PER_CHARGE (stroops, 7 decimals). Default 100.0 XLM/USDC.
+const MAX_ABSOLUTE_PER_CHARGE = process.env.MAX_ABSOLUTE_PER_CHARGE ?? "1000000000";
+
 // v0.1 admin = the trusted setup oracle, i.e. this server's signing
 // key. The wallet's `install_policy` and `revoke_policy` require this
 // address's `require_auth`. v0.2 migrates admin to the wallet's own
@@ -117,35 +126,35 @@ async function deployAndInstall({
   interval_seconds,
   expires_at,
 }) {
-  // Step 1: deploy fresh instance from wasm hash.
+  // Step 1: deploy fresh instance from wasm hash, passing the __constructor
+  // args ATOMICALLY (SECURITY_AUDIT C2). `stellar contract deploy -- <ctor
+  // args>` invokes the contract's __constructor in the SAME transaction as the
+  // create, so there is NO un-inited window between deploy and init for an
+  // observer to front-run with their own passkey + admin. This replaces the old
+  // two-step deploy-then-init flow that C2 flagged.
+  const adminAddr = await getAdminAddress();
   const deploy = await stellar([
     "contract", "deploy",
     "--network", NETWORK,
     "--source", DEPLOYER_KEY,
     "--wasm-hash", WASM_HASH,
+    "--",
+    "--passkey_pubkey", PLACEHOLDER_PUBKEY,
+    "--passkey_cred_id", PLACEHOLDER_CRED_ID,
+    "--admin", adminAddr,
+    // SECURITY_AUDIT C3 · immutable absolute per-charge ceiling.
+    "--max_absolute_per_charge", String(MAX_ABSOLUTE_PER_CHARGE),
   ]);
   // stellar-cli prints the contract id on the last line of stdout.
   const wallet = deploy.stdout.trim().split(/\r?\n/).pop().trim();
   if (!wallet.startsWith("C") || wallet.length !== 56) {
     throw new Error(`deploy: unexpected contract id '${wallet}'`);
   }
+  // Deploy now carries init; the tx hash for the atomic deploy+construct is the
+  // deploy tx. Surface it as init_tx for response-shape compatibility.
+  const initTx = parseTxHash(deploy.stdout + deploy.stderr);
 
-  // Step 2: init wallet with admin = the deployer's G-account.
-  const adminAddr = await getAdminAddress();
-  const init = await stellar([
-    "contract", "invoke",
-    "--network", NETWORK,
-    "--source", DEPLOYER_KEY,
-    "--id", wallet,
-    "--",
-    "init",
-    "--passkey_pubkey", PLACEHOLDER_PUBKEY,
-    "--passkey_cred_id", PLACEHOLDER_CRED_ID,
-    "--admin", adminAddr,
-  ]);
-  const initTx = parseTxHash(init.stdout + init.stderr);
-
-  // Step 3: install_policy.
+  // Step 2: install_policy.
   const install = await stellar([
     "contract", "invoke",
     "--network", NETWORK,
@@ -162,7 +171,7 @@ async function deployAndInstall({
   ]);
   const policyTx = parseTxHash(install.stdout + install.stderr);
 
-  // Step 4: fund the wallet with XLM (via native SAC) so it can be the
+  // Step 3: fund the wallet with XLM (via native SAC) so it can be the
   // `from` of a subsequent merchant pull demo.
   const fund = await fundWallet(wallet);
   const fundTx = parseTxHash(fund.stdout + fund.stderr);
@@ -184,8 +193,8 @@ async function deployAndInstall({
       : null,
     network: NETWORK,
     timing_ms: {
+      // deploy now includes the atomic __constructor (init folded in, C2).
       deploy: deploy.dt,
-      init: init.dt,
       install: install.dt,
       fund: fund.dt,
     },

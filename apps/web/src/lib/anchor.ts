@@ -15,6 +15,7 @@ import {
   Networks,
   Operation,
   Asset,
+  Memo,
   Horizon,
 } from "@stellar/stellar-sdk";
 
@@ -159,6 +160,93 @@ export interface AnchorTx {
   started_at?: string;
   completed_at?: string;
   message?: string;
+  // Withdraw-only: populated once status reaches pending_user_transfer_start.
+  // The wallet must send `amount_in` of the asset TO this account with this memo.
+  withdraw_anchor_account?: string;
+  withdraw_memo?: string;
+  withdraw_memo_type?: "text" | "id" | "hash";
+}
+
+/** SEP-24 withdraw/interactive: returns the popup URL + transaction id.
+ *
+ * Off-ramp (USDC → cash). Mirror of sep24DepositInteractive but on the
+ * withdraw endpoint. After the user completes the popup, poll
+ * getAnchorTransaction until status === "pending_user_transfer_start", then
+ * call sendWithdrawalPayment to push the USDC to the anchor. This is the leg
+ * MoneyGram Access uses for physical cash-out (docs/integrations/moneygram.md).
+ */
+export async function sep24WithdrawInteractive(
+  jwt: string,
+  buyer: BuyerWallet,
+  amount?: string,
+): Promise<DepositInteractive> {
+  const form = new FormData();
+  form.append("asset_code", ANCHOR_ASSET_CODE);
+  form.append("account", buyer.publicKey);
+  if (amount) form.append("amount", amount);
+  const res = await fetch(`${ANCHOR_SEP24}/transactions/withdraw/interactive`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${jwt}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`SEP-24 withdraw failed: ${res.status} ${text}`);
+  }
+  const data = await res.json();
+  if (!data.url || !data.id) throw new Error("missing url/id in withdraw response");
+  return { url: data.url, id: data.id };
+}
+
+/** Build the SEP-24 memo from the anchor's declared memo + memo_type. */
+function withdrawMemo(tx: AnchorTx): Memo {
+  if (!tx.withdraw_memo) return Memo.none();
+  switch (tx.withdraw_memo_type) {
+    case "id":
+      return Memo.id(tx.withdraw_memo);
+    case "hash":
+      // SEP-24 hash memos are base64-encoded over the wire.
+      return Memo.hash(Buffer.from(tx.withdraw_memo, "base64"));
+    case "text":
+    default:
+      return Memo.text(tx.withdraw_memo);
+  }
+}
+
+/** Send the withdrawal payment: USDC FROM the buyer TO the anchor's account.
+ *
+ * Call only when tx.status === "pending_user_transfer_start" and the anchor has
+ * populated withdraw_anchor_account/withdraw_memo. The amount sent is the
+ * anchor's amount_in (what the user agreed to withdraw, fees handled anchor-side).
+ * Returns the Stellar transaction hash. The anchor matches the payment by memo
+ * and dispenses cash; status then advances to completed.
+ */
+export async function sendWithdrawalPayment(
+  buyer: BuyerWallet,
+  tx: AnchorTx,
+): Promise<string> {
+  if (!tx.withdraw_anchor_account) {
+    throw new Error("withdraw_anchor_account missing — anchor not at transfer_start");
+  }
+  if (!tx.amount_in) throw new Error("amount_in missing on withdraw tx");
+
+  const horizon = new Horizon.Server(HORIZON_TESTNET);
+  const account = await horizon.loadAccount(buyer.publicKey);
+  const payment = new TransactionBuilder(account, {
+    fee: "1000",
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(Operation.payment({
+      destination: tx.withdraw_anchor_account,
+      asset: ANCHOR_ASSET,
+      amount: tx.amount_in,
+    }))
+    .addMemo(withdrawMemo(tx))
+    .setTimeout(60)
+    .build();
+  payment.sign(Keypair.fromSecret(buyer.secretKey));
+  const result = await horizon.submitTransaction(payment);
+  return result.hash;
 }
 
 export async function getAnchorTransaction(jwt: string, id: string): Promise<AnchorTx> {

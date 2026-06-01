@@ -15,14 +15,23 @@ interface RevealProps {
   className?: string;
   id?: string;
   as?: "div" | "section" | "article" | "li";
+  style?: React.CSSProperties;
 }
 
-export function Reveal({ children, delay = 0, className = "", id, as = "div" }: RevealProps) {
+const prefersReducedMotion = (): boolean =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+export function Reveal({ children, delay = 0, className = "", id, as = "div", style: callerStyle }: RevealProps) {
   const ref = useRef<HTMLElement | null>(null);
-  const [visible, setVisible] = useState(false);
+  // Reduced-motion users start fully visible — no fade, no offset, no flash of
+  // hidden content if JS is slow.
+  const reduce = prefersReducedMotion();
+  const [visible, setVisible] = useState(reduce);
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (reduce || !ref.current) return;
     const io = new IntersectionObserver((entries) => {
       for (const e of entries) {
         if (e.isIntersecting) { setVisible(true); io.disconnect(); break; }
@@ -30,11 +39,12 @@ export function Reveal({ children, delay = 0, className = "", id, as = "div" }: 
     }, { rootMargin: "-10% 0px -10% 0px", threshold: 0.05 });
     io.observe(ref.current);
     return () => io.disconnect();
-  }, []);
+  }, [reduce]);
 
   // Default to <div>. Caller can pass `as` for semantic tags but we keep
   // the union narrow to avoid TS2590 complexity blowups.
   const style: React.CSSProperties = {
+    ...callerStyle,
     transitionDelay: `${delay}ms`,
     transitionDuration: "700ms",
     transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
