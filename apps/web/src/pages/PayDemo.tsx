@@ -93,7 +93,7 @@ export default function PayDemo() {
           ┃ pagar com o rosto · testnet · no seu celular
         </div>
         <h1 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98]">
-          Paga com o dedo.<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
+          Paga com o rosto.<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
         </h1>
         <p className="mt-6 text-base text-[#0a0a0a]/75 leading-relaxed max-w-[52ch]">
           Sem senha, sem frase de doze palavras. Cria a conta com Face ID, e o
