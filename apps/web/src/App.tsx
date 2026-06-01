@@ -14,6 +14,7 @@ import AnchorDemo from "./pages/AnchorDemo.tsx";
 import WithdrawDemo from "./pages/WithdrawDemo.tsx";
 import BioTest from "./pages/BioTest.tsx";
 import PayDemo from "./pages/PayDemo.tsx";
+import Cobrar from "./pages/Cobrar.tsx";
 import Store from "./pages/Store.tsx";
 import PolicySubscribe from "./pages/PolicySubscribe.tsx";
 import Docs from "./pages/Docs.tsx";
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/withdraw-demo" element={<WithdrawDemo />} />
       <Route path="/bio" element={<BioTest />} />
       <Route path="/pay" element={<PayDemo />} />
+      <Route path="/cobrar" element={<Cobrar />} />
       <Route path="/loja" element={<Store />} />
       <Route path="/s/:subId" element={<PolicySubscribe />} />
       <Route path="/docs" element={<Docs />} />

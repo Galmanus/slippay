@@ -99,7 +99,7 @@ export interface HomeStrings {
     cAudit: string; cAuditV: string;
     cBound: string; cBoundV: string;
     cChain: string; cChainV: string;
-    mainnetLabel: string; mainnetBody: string; mainnetContract: string; mainnetTx: string; mainnetNote: string;
+    mainnetLabel: string; mainnetBody: string; mainnetContract: string; mainnetTx: string; mainnetBio: string; mainnetNote: string;
   };
   // CTA — one waitlist ask.
   cta: { kicker: string; h2: ReactNode; body: string; button: string; spec: string };
@@ -124,10 +124,10 @@ const pt: HomeStrings = {
   },
   standard: {
     label: "┃ Feito para o que vem a seguir",
-    h2: <>Sua conta em dólar já fica pronta pra quando um assistente de IA começar a trabalhar por você: o limite que você põe, ele não consegue passar — não é promessa, é trava de verdade.<br/><em className="font-light">Ainda em teste hoje — é assim que o pagamento por IA vai funcionar, e a gente já está construindo isso.</em></>,
+    h2: <>Sua conta em dólar pronta pra quando um assistente de IA trabalhar por você: o limite que você põe, ele não consegue passar. <em className="font-light">Não é promessa, é trava. Ainda em teste.</em></>,
     backersLabel: "Por trás desse trilho (x402) — informação pública em x402.org",
     backers: ["Visa", "Mastercard", "American Express", "Stripe", "Coinbase", "Cloudflare", "Google", "Amazon · AWS", "Circle", "Shopify", "Fiserv", "Adyen"],
-    source: "Empresas que respaldam o padrão x402, segundo x402.org. O Slippay não faz parte desse grupo — esse é o padrão de pagamento de agentes sobre o qual o Slippay constrói. A garantia de limite que descrevemos abaixo é roteiro: hoje roda em rede de teste, checada por nós, com auditoria de fora ainda por vir — não é um recurso de produção.",
+    source: "Padrão x402 · informação pública em x402.org. O Slippay constrói sobre ele — não faz parte desse grupo.",
     bridge: <>Eles tornam o pagamento de agentes possível. <em className="font-light">A gente acrescenta a parte que falta: provar que o agente não passa do limite que você definir. Em rede de teste hoje — mainnet e auditoria de fora a seguir.</em></>,
   },
   gap: {
@@ -160,8 +160,8 @@ const pt: HomeStrings = {
   },
   proof: {
     label: "┃ Como é diferente", kicker: "001 · Três motivos simples",
-    h2: <>O dinheiro é seu — e ninguém pode congelar.<br/><em className="font-light">Sua chave, sua digital, sem ninguém no meio tirando a sua parte.</em></>,
-    body: "Três motivos: você não decora senha — entra com a digital ou o rosto. O dinheiro é seu: a chave fica com você, ninguém congela nem bloqueia. E o caminho do dólar custa ~1% a 2%, não 5% a 12%. O real entra no Pix por um parceiro licenciado — essa parte ainda está sendo montada, e a gente fala na cara.",
+    h2: <>O dinheiro é seu — ninguém congela.<br/><em className="font-light">Sua chave, seu rosto, ninguém no meio tirando sua parte.</em></>,
+    body: "Três motivos: você entra com o rosto, sem senha pra decorar. O dólar é seu — a chave fica com você, ninguém congela nem bloqueia. E o caminho custa ~1%, não 12%: você fica com o que ganhou. O real cai no Pix por um parceiro licenciado — ainda sendo montado, e a gente diz na cara.",
     invariantLabel: "Sem senha de doze palavras",
     invariantBody: "Você não decora frase secreta nenhuma. Entra pela biometria do celular, como qualquer aplicativo que você já usa. Sua mãe consegue usar. Não tem aquele papelzinho com doze palavras que, se você perder, perde o dinheiro.",
     certLabel: "Ninguém congela o seu dólar — nem a gente",
@@ -198,10 +198,11 @@ $ axlc prove agent_budget.axl
     cBound: "Limite do agente", cBoundV: "Rede de teste · auditoria de fora por vir",
     cChain: "Alcance", cChainV: "Doméstico · sem remessa para fora",
     mainnetLabel: "Já vive na mainnet pública",
-    mainnetBody: "O contrato Slippay e uma transação USDC real estão liquidados na rede principal do Stellar — não é testnet, não é mockup. Confere on-chain:",
+    mainnetBody: "O contrato Slippay, uma transação USDC e um pagamento autorizado por biometria estão liquidados na rede principal do Stellar — não é testnet, não é mockup. Confere on-chain:",
     mainnetContract: "Contrato na mainnet",
     mainnetTx: "Transação USDC",
-    mainnetNote: "Transação de verificação (auto-pagamento). O ciclo completo com cliente e Pix ainda é acesso antecipado.",
+    mainnetBio: "Pagamento por biometria",
+    mainnetNote: "Transações de verificação. O toque de biometria no celular contra a mainnet e o ciclo completo com cliente e Pix ainda são acesso antecipado.",
   },
   cta: {
     kicker: "005 · Próximo passo",
@@ -231,10 +232,10 @@ const en: HomeStrings = {
   },
   standard: {
     label: "┃ Built for what's next",
-    h2: <>Your dollar account is ready for when an AI assistant starts working for you: the limit you set is one it simply can't cross — not a promise, a real stop.<br/><em className="font-light">Still in testing today — this is how AI payments will work, and we're already building it.</em></>,
+    h2: <>Your dollar account, ready for when an AI assistant works for you: the limit you set, it can't cross. <em className="font-light">Not a promise — a lock. Still in testing.</em></>,
     backersLabel: "Behind these rails (x402) — public info at x402.org",
     backers: ["Visa", "Mastercard", "American Express", "Stripe", "Coinbase", "Cloudflare", "Google", "Amazon · AWS", "Circle", "Shopify", "Fiserv", "Adyen"],
-    source: "Companies backing the x402 standard, per x402.org. Slippay is not a member of their group — this is the agent-payment standard Slippay builds on. The spend-limit guarantee described below is roadmap: today it runs on a test network, checked by us, with an outside audit still to come — not a production feature.",
+    source: "x402 standard · public info at x402.org. Slippay builds on it — not a member of their group.",
     bridge: <>They make agent payments possible. <em className="font-light">We add the missing piece: proving the agent can't go over the limit you set. On a test network today — mainnet and an outside audit are next.</em></>,
   },
   gap: {
@@ -267,8 +268,8 @@ const en: HomeStrings = {
   },
   proof: {
     label: "┃ How it's different", kicker: "001 · Three plain reasons",
-    h2: <>The money is yours — and nobody can freeze it.<br/><em className="font-light">Your key, your fingerprint, no middleman taking a cut.</em></>,
-    body: "Three reasons: you memorize no password — sign in with your fingerprint or face. The money is yours: the key stays with you, nobody can freeze or block it. And the dollar's path costs ~1% to 2%, not 5% to 12%. Reais come in over Pix through a licensed partner — that part is still being set up, and we say so plainly.",
+    h2: <>The money is yours — nobody can freeze it.<br/><em className="font-light">Your key, your face, no middleman taking a cut.</em></>,
+    body: "Three reasons: you sign in with your face — no password to memorize. The dollar is yours — the key stays with you, nobody freezes or blocks it. And the path costs ~1%, not 12%: you keep what you earned. Reais land on Pix through a licensed partner — still being set up, and we say it plainly.",
     invariantLabel: "No twelve-word seed phrase",
     invariantBody: "You memorize no secret phrase. You sign in with your phone's biometrics, like any app you already use. Your mother can use it. There's no slip of paper with twelve words that, if you lose it, you lose the money.",
     certLabel: "Nobody can freeze your dollars — not even us",
@@ -305,10 +306,11 @@ $ axlc prove agent_budget.axl
     cBound: "Agent limit", cBoundV: "Test network · outside audit to come",
     cChain: "Scope", cChainV: "Domestic · no sending abroad",
     mainnetLabel: "Already live on Stellar mainnet",
-    mainnetBody: "The Slippay contract and a real USDC transaction are settled on Stellar's public network — not testnet, not a mockup. Verify on-chain:",
+    mainnetBody: "The Slippay contract, a real USDC transaction and a biometric-authorized payment are settled on Stellar's public network — not testnet, not a mockup. Verify on-chain:",
     mainnetContract: "Mainnet contract",
     mainnetTx: "USDC transaction",
-    mainnetNote: "Verification transaction (a self-payment). The full loop with a customer and Pix is still early access.",
+    mainnetBio: "Biometric payment",
+    mainnetNote: "Verification transactions. The on-phone biometric tap against mainnet and the full loop with a customer and Pix are still early access.",
   },
   cta: {
     kicker: "005 · Next step",
