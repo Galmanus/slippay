@@ -11,6 +11,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Keypair } from "@stellar/stellar-sdk";
 import { Logo } from "../components/Logo";
+import { QrScanner } from "../components/QrScanner";
+import { decodeRequest, stroopsToXlm, type PayRequest } from "../lib/slippayqr";
 import {
   createPasskey, deployPasskeyWallet, friendbotFund, fundWalletXlm,
   payWithBiometric, type PasskeyHandle,
@@ -29,7 +31,8 @@ export default function PayDemo() {
   const [handle, setHandle] = useState<PasskeyHandle | null>(null);
   const [feeSource, setFeeSource] = useState<Keypair | null>(null);
   const [wallet, setWallet] = useState<string | null>(null);
-  const [recipient, setRecipient] = useState<Keypair | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [req, setReq] = useState<PayRequest | null>(null);
   const [log, setLog] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [payHash, setPayHash] = useState<string | null>(null);
@@ -43,9 +46,6 @@ export default function PayDemo() {
       const fee = Keypair.random();
       await friendbotFund(fee.publicKey());
       setFeeSource(fee);
-      const rcpt = Keypair.random();
-      await friendbotFund(rcpt.publicKey());
-      setRecipient(rcpt);
       add("✅ rede pronta");
 
       add("toca o Face ID pra criar tua passkey…");
@@ -64,20 +64,30 @@ export default function PayDemo() {
 
       add("depositando 2 XLM de teste na carteira…");
       await fundWalletXlm({ network: "TESTNET", feeSource: fee, walletId: w, amount: "20000000" });
-      add("✅ conta pronta. Agora toca em PAGAR.");
+      add("✅ conta pronta. Agora escaneia um QR de cobrança.");
     } catch (e) { add(`✗ ${(e as Error).message}`); } finally { setBusy(false); }
   }
 
-  async function onPay() {
-    if (!handle || !feeSource || !wallet || !recipient) return;
+  function onScanned(text: string) {
+    setScanning(false);
+    try {
+      const r = decodeRequest(text);
+      setReq(r);
+      add(`QR lido: ${stroopsToXlm(r.amount)} XLM → ${short(r.to)}`);
+    } catch (e) { add(`✗ ${(e as Error).message}`); }
+  }
+
+  async function onPayReq() {
+    if (!handle || !feeSource || !wallet || !req) return;
     setBusy(true); setPayHash(null);
     try {
-      add("toca o Face ID pra autorizar o pagamento de 0,3 XLM…");
+      add(`toca o Face ID pra pagar ${stroopsToXlm(req.amount)} XLM…`);
       const hash = await payWithBiometric({
-        network: "TESTNET", walletId: wallet, recipient: recipient.publicKey(),
-        amount: "3000000", feeSource, credId: handle.credId,
+        network: "TESTNET", walletId: wallet, recipient: req.to,
+        amount: req.amount, feeSource, credId: handle.credId,
       });
       setPayHash(hash);
+      setReq(null);
       add(`✅ PAGO · tx ${short(hash)}`);
     } catch (e) { add(`✗ ${(e as Error).message}`); } finally { setBusy(false); }
   }
@@ -105,11 +115,30 @@ export default function PayDemo() {
             className="lift px-6 py-4 bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
             1 · Criar minha conta (Face ID)
           </button>
-          <button onClick={onPay} disabled={busy || !wallet}
+          <button onClick={() => setScanning(true)} disabled={busy || !wallet}
             className="lift px-6 py-4 bg-[#b5e853] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
-            2 · Pagar 0,3 XLM com o rosto
+            2 · Escanear QR e pagar
           </button>
         </div>
+
+        {/* confirm screen — see WHO and HOW MUCH before your face authorizes */}
+        {req && (
+          <div className="mt-8 p-6 border-2 border-[#0a0a0a] max-w-[360px]">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-3">Confirma o pagamento</div>
+            <div className="text-4xl font-medium tabular-nums tracking-[-0.03em]">{stroopsToXlm(req.amount)} <span className="text-base text-[#0a0a0a]/55">XLM</span></div>
+            <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">para {short(req.to, 8, 8)}</div>
+            <button onClick={onPayReq} disabled={busy}
+              className="lift mt-5 w-full px-6 py-4 bg-[#b5e853] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
+              {busy ? "…" : "Pagar com o rosto"}
+            </button>
+            <button onClick={() => setReq(null)} disabled={busy}
+              className="mt-2 w-full px-6 py-3 text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
+              Cancelar
+            </button>
+          </div>
+        )}
+
+        {scanning && <QrScanner onScan={onScanned} onClose={() => setScanning(false)} />}
 
         {payHash && (
           <div className="mt-8 p-5 border" style={{ borderColor: "#3f7d20" }}>

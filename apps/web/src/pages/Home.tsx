@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
 import { Reveal } from "../components/Reveal.tsx";
 import { X402Carousel } from "../components/X402Carousel.tsx";
+import { PayFlowDemo } from "../components/PayFlowDemo.tsx";
 import { useLang, type Lang } from "../lib/lang.ts";
 import { homeCopy } from "../copy/home.tsx";
 
@@ -312,8 +313,27 @@ export default function Home() {
               {t.hero.cta} <span>→</span>
             </MagneticCTA>
           </div>
-          <div className="mt-7 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 leading-[1.7] max-w-[52ch] mx-auto">
-            {t.hero.status}
+        </div>
+      </Reveal>
+
+      {/* ───────── 1.5 · PAYMENT FLOW, animated ───────── */}
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">┃ é assim que paga</div>
+            <h2 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98] max-w-[14ch]">
+              Aponta. Olha. Pago.<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
+            </h2>
+            <p className="mt-6 text-base md:text-lg text-[#0a0a0a]/75 leading-relaxed max-w-[44ch]">
+              Aponta a câmera no QR, olha pra tela, e o dólar sai — sem senha, sem
+              frase de doze palavras. Seu rosto autoriza, a blockchain confirma.
+            </p>
+            <Link to="/pay" className="lift inline-flex items-center gap-3 mt-8 bg-[#0a0a0a] text-[#f1eee7] px-7 py-4 text-[11px] uppercase tracking-[0.22em]">
+              Testa no seu celular <span>→</span>
+            </Link>
+          </div>
+          <div className="flex justify-center md:justify-end">
+            <PayFlowDemo />
           </div>
         </div>
       </Reveal>
@@ -480,13 +500,7 @@ export default function Home() {
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
             {t.status.label}
           </div>
-          <h2 className="title-grad-dark text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[20ch] mx-auto text-center">
-            {t.status.h2}
-          </h2>
-          <p className="mt-8 text-base md:text-lg leading-[1.65] text-[#f1eee7]/75 max-w-[68ch] mx-auto text-center">
-            {t.status.body}
-          </p>
-          <div className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15 overflow-hidden max-w-[1000px] mx-auto">
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15 overflow-hidden max-w-[1000px] mx-auto">
             <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cNetwork}</div>
               <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cNetworkV}</div>
@@ -518,6 +532,9 @@ export default function Home() {
               <a href="https://stellar.expert/explorer/public/tx/05ae429b926d94770166e3425c77210260d2db0083fa81053059612775e510be"
                 target="_blank" rel="noopener noreferrer"
                 className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetTx} ↗</a>
+              <a href="https://stellar.expert/explorer/public/tx/d9a7d17a18719ece53535d51423b8951f37b163e170a7bea2cb4d9588471ec31"
+                target="_blank" rel="noopener noreferrer"
+                className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetBio} ↗</a>
             </div>
             <p className="mt-4 text-xs text-[#f1eee7]/45 italic max-w-[62ch]">{t.status.mainnetNote}</p>
           </div>

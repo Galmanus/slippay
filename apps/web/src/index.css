@@ -76,6 +76,11 @@ html { scroll-behavior: smooth; }
 .lift:hover { transform: translateY(-3px); }
 .lift:active { transform: translateY(-1px); }
 
+/* PayFlowDemo (landing payment animation). */
+@keyframes pf-sweep { 0%, 100% { top: 4%; } 50% { top: 92%; } }
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+@keyframes pf-pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
 /* Editorial range slider — square thumb, ink on a thin track. No rounding. */
 .slip-range { -webkit-appearance: none; appearance: none; height: 2px; background: rgba(10,10,10,0.18); cursor: pointer; }
 .slip-range:focus { outline: none; }

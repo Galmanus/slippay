@@ -30,7 +30,7 @@ const RECIPIENT = process.env.RECIPIENT;
 const FUND = process.env.FUND || "20000000";   // 2 XLM into wallet
 const PAY = process.env.PAY || "3000000";        // 0.3 XLM paid out by biometric
 const MAX_ABS = process.env.MAX_ABS || "1000000000";
-const EXPLORER = "https://stellar.expert/explorer/testnet/tx/";
+const EXPLORER = process.env.EXPLORER || "https://stellar.expert/explorer/testnet/tx/";
 
 const server = new rpc.Server(RPC, { allowHttp: false });
 const log = (...a) => console.log(...a);
@@ -92,7 +92,7 @@ async function main() {
   log("  https://stellar.expert/explorer/testnet/contract/" + WALLET);
 
   // 3. Fund the wallet (XLM via native SAC).
-  sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --id ${NATIVE_SAC} -- transfer --from ${admin} --to ${WALLET} --amount ${FUND}`);
+  sh(`stellar contract invoke --network ${CLI_NET} --source ${SOURCE} --fee 10000000 --id ${NATIVE_SAC} -- transfer --from ${admin} --to ${WALLET} --amount ${FUND}`);
   log("funded wallet with", FUND, "stroops");
 
   // 4. Build the transfer + the Soroban auth payload (Hash<32>).
@@ -149,7 +149,7 @@ async function main() {
     auth: [authEntry],
   });
   const src = await server.getAccount(deployer.publicKey());
-  const tx = new TransactionBuilder(src, { fee: String(Number(BASE_FEE) * 100), networkPassphrase: PASSPHRASE })
+  const tx = new TransactionBuilder(src, { fee: "10000000", networkPassphrase: PASSPHRASE })
     .addOperation(op).setTimeout(60).build();
   const sim = await server.simulateTransaction(tx);
   if (rpc.Api.isSimulationError(sim)) {
