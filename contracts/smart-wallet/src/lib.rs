@@ -185,13 +185,34 @@ pub struct AgentAuth {
     pub signature: BytesN<64>,
 }
 
+/// A REAL WebAuthn assertion (what `navigator.credentials.get()` returns on a
+/// Face ID / fingerprint tap), carried in the `__check_auth` signature slot.
+///
+/// The platform authenticator does NOT sign the raw Soroban payload — it signs
+/// `SHA256(authenticator_data || SHA256(client_data_json))` with the device's
+/// secp256r1 key, and embeds the challenge (= the Soroban signature_payload,
+/// base64url-no-pad) inside `client_data_json`. `__check_auth` therefore:
+///   1. binds the assertion to THIS transaction — base64url(signature_payload)
+///      MUST appear in `client_data_json` (replay/cross-tx defense),
+///   2. reconstructs the WebAuthn signing digest and verifies it against the
+///      device's stored secp256r1 pubkey.
+/// `signature` is the raw 64-byte (r||s) form; the frontend converts the
+/// authenticator's DER signature before submitting.
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct WebAuthnAuth {
+    pub authenticator_data: Bytes,
+    pub client_data_json: Bytes,
+    pub signature: BytesN<64>,
+}
+
 /// The wallet's custom-account signature type (CAP-46-11). The caller declares
-/// which principal is authorizing: the human passkey (secp256r1) or a delegated
-/// agent session (ed25519). Replaces the bare `BytesN<64>` of v0.1.
+/// which principal is authorizing: the human passkey (real WebAuthn assertion,
+/// secp256r1) or a delegated agent session (ed25519).
 #[contracttype]
 #[derive(Clone, Debug)]
 pub enum WalletAuth {
-    Passkey(BytesN<64>),
+    Passkey(WebAuthnAuth),
     Agent(AgentAuth),
 }
 
@@ -658,7 +679,7 @@ impl SmartWallet {
             // back to verifying the secp256r1 signature over the host payload —
             // which authorizes any context (e.g. the wallet's own
             // install/revoke via __check_auth in the v0.2 admin migration).
-            WalletAuth::Passkey(sig) => {
+            WalletAuth::Passkey(wa) => {
                 if pull_policy_authorizes(&env, &auth_contexts)? {
                     return Ok(());
                 }
@@ -667,12 +688,94 @@ impl SmartWallet {
                     .instance()
                     .get(&DataKey::PasskeyPubkey)
                     .ok_or(Error::NotInitialized)?;
-                env.crypto()
-                    .secp256r1_verify(&pubkey, &signature_payload, &sig);
+                verify_webauthn(&env, &pubkey, &signature_payload, &wa)?;
                 Ok(())
             }
         }
     }
+}
+
+/// Verify a REAL WebAuthn assertion against the wallet's stored secp256r1
+/// passkey, bound to THIS transaction's host payload.
+///
+/// 1. **Challenge binding (replay defense):** base64url-no-pad of the Soroban
+///    `signature_payload` MUST appear verbatim in `client_data_json` — the
+///    authenticator put it there as the WebAuthn challenge, so an assertion
+///    captured for one tx cannot authorize another.
+/// 2. **Signature:** the authenticator signed
+///    `SHA256(authenticator_data || SHA256(client_data_json))`. We rebuild that
+///    digest and run native secp256r1 verification (panics → host auth reject).
+pub(crate) fn verify_webauthn(
+    env: &Env,
+    pubkey: &BytesN<65>,
+    payload: &soroban_sdk::crypto::Hash<32>,
+    wa: &WebAuthnAuth,
+) -> Result<(), Error> {
+    let expected = base64url_nopad(env, &payload.to_array());
+    if !bytes_contains(&wa.client_data_json, &expected) {
+        return Err(Error::SignatureInvalid);
+    }
+    let client_hash = env.crypto().sha256(&wa.client_data_json);
+    let mut signed = wa.authenticator_data.clone();
+    signed.append(&Bytes::from_array(env, &client_hash.to_array()));
+    let digest = env.crypto().sha256(&signed);
+    env.crypto().secp256r1_verify(pubkey, &digest, &wa.signature);
+    Ok(())
+}
+
+/// base64url (RFC 4648 §5), no padding — the encoding WebAuthn uses for the
+/// challenge field of `client_data_json`. Encodes the 32-byte host payload.
+pub(crate) fn base64url_nopad(env: &Env, input: &[u8; 32]) -> Bytes {
+    const A: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    let mut out = Bytes::new(env);
+    let mut i = 0usize;
+    while i + 3 <= input.len() {
+        let n = ((input[i] as u32) << 16) | ((input[i + 1] as u32) << 8) | (input[i + 2] as u32);
+        out.push_back(A[((n >> 18) & 63) as usize]);
+        out.push_back(A[((n >> 12) & 63) as usize]);
+        out.push_back(A[((n >> 6) & 63) as usize]);
+        out.push_back(A[(n & 63) as usize]);
+        i += 3;
+    }
+    // 32 mod 3 == 2 → two trailing bytes → three base64 chars, no '=' padding.
+    let rem = input.len() - i;
+    if rem == 2 {
+        let n = ((input[i] as u32) << 16) | ((input[i + 1] as u32) << 8);
+        out.push_back(A[((n >> 18) & 63) as usize]);
+        out.push_back(A[((n >> 12) & 63) as usize]);
+        out.push_back(A[((n >> 6) & 63) as usize]);
+    } else if rem == 1 {
+        let n = (input[i] as u32) << 16;
+        out.push_back(A[((n >> 18) & 63) as usize]);
+        out.push_back(A[((n >> 12) & 63) as usize]);
+    }
+    out
+}
+
+/// Naive substring search over `Bytes` (no allocator-friendly std available).
+fn bytes_contains(hay: &Bytes, needle: &Bytes) -> bool {
+    let hlen = hay.len();
+    let nlen = needle.len();
+    if nlen == 0 || nlen > hlen {
+        return false;
+    }
+    let mut start = 0u32;
+    while start + nlen <= hlen {
+        let mut j = 0u32;
+        let mut matched = true;
+        while j < nlen {
+            if hay.get(start + j) != needle.get(j) {
+                matched = false;
+                break;
+            }
+            j += 1;
+        }
+        if matched {
+            return true;
+        }
+        start += 1;
+    }
+    false
 }
 
 /// SECURITY_AUDIT A1: extracted pull-policy "do all contexts match an active
