@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -190,7 +190,7 @@ export function AskSlippay() {
             bottom: "max(1.25rem, env(safe-area-inset-bottom))",
             right:  "max(1rem, env(safe-area-inset-right))",
           }}
-          className="fixed z-50 px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)] active:scale-95"
+          className="fixed z-50 rounded-full px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)] active:scale-95"
           aria-label="Ask Slippay"
         >
           <span style={{ background: KLEIN }} className="inline-block w-1.5 h-1.5" />
@@ -213,7 +213,7 @@ export function AskSlippay() {
       {/* Side panel — slides in from right */}
       <aside
         style={{ background: BONE, color: INK }}
-        className={`fixed top-0 right-0 bottom-0 z-50 w-full md:w-[560px] flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 bottom-0 z-50 w-full md:w-[560px] md:rounded-l-2xl md:overflow-hidden flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* INK header bar */}
         <div style={{ background: INK, color: BONE }} className="px-7 pt-7 pb-6 flex items-start justify-between">

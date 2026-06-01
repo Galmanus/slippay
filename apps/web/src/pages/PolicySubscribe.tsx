@@ -89,12 +89,42 @@ export default function PolicySubscribe() {
 
   async function onBiometricTap() {
     setError(null);
-    setPhase("deploying");
     try {
+      // REAL biometric. WebAuthn fires the platform authenticator — Face ID /
+      // Touch ID / Windows Hello — natively. No library, no CDN: the browser
+      // ceremony IS the "Subscribe with Face ID" magic. The customer's face
+      // resolves the passkey; no seed phrase, no app, no crypto word.
+      if (!window.PublicKeyCredential) {
+        throw new Error("Este dispositivo não suporta Face ID / passkey.");
+      }
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId = crypto.getRandomValues(new Uint8Array(16));
+      const cred = (await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: "SlipPay", id: location.hostname },
+          user: { id: userId, name: `sub-${Date.now()}`, displayName: "Assinante" },
+          pubKeyCredParams: [{ type: "public-key", alg: -7 }], // ES256 / secp256r1
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required",
+            residentKey: "preferred",
+          },
+          timeout: 60000,
+          attestation: "none",
+        },
+      })) as PublicKeyCredential | null;
+      if (!cred) throw new Error("Biometria cancelada.");
+      const rawId = new Uint8Array(cred.rawId);
+      let bin = "";
+      for (const b of rawId) bin += String.fromCharCode(b);
+      const credentialId = btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+      setPhase("deploying");
       const r = await fetch(`${SPIKE_API_BASE}/api/policy-checkout/spike`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ credentialId }),
       });
       if (!r.ok) {
         throw new Error(`server returned ${r.status}`);

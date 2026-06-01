@@ -26,10 +26,14 @@ export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
         width={dim}
         height={dim}
         className="block shrink-0"
-        style={{ imageRendering: "auto" }}
+        style={{
+          imageRendering: "auto",
+          // whisper of depth — premium, static, no glow
+          filter: "drop-shadow(0 1px 3px rgba(10,10,10,0.12))",
+        }}
       />
       <span
-        className={`${text} tracking-tight font-medium leading-none`}
+        className={`${text} tracking-[-0.035em] font-semibold leading-none`}
         style={{
           color: fgText,
           textShadow: variant === "bone" ? "0 1px 3px rgba(0,0,0,0.6)" : "none",

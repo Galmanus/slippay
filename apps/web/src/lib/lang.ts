@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 
-// Landing locale. Auto-detect from the browser on first visit (pt-* → pt,
-// everything else → en) so international visitors land in English. Persisted
-// in localStorage so a manual toggle sticks.
+// Landing locale. PT is PRIMARY — the audience is Brazilians who earn in
+// dollars (freelancers, IT/dev exporters, creators, gig workers), they read
+// Portuguese. We default to PT and only switch to EN when the browser is
+// explicitly non-pt (the EN mirror is the secondary). Persisted in localStorage
+// so a manual toggle sticks.
 export type Lang = "pt" | "en";
 
 const KEY = "slippay_lang";
@@ -11,7 +13,8 @@ export function detectLang(): Lang {
   if (typeof window === "undefined") return "pt";
   const stored = window.localStorage.getItem(KEY);
   if (stored === "pt" || stored === "en") return stored;
-  return navigator.language?.toLowerCase().startsWith("pt") ? "pt" : "en";
+  // Default to PT (primary audience). Only EN for an explicitly English browser.
+  return navigator.language?.toLowerCase().startsWith("en") ? "en" : "pt";
 }
 
 export function useLang(): [Lang, (l: Lang) => void] {

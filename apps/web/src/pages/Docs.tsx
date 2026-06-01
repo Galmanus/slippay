@@ -12,7 +12,6 @@ import { Logo } from "../components/Logo.tsx";
 import { Reveal } from "../components/Reveal.tsx";
 import {
   DOCS, CATEGORY_LABELS, getDoc, getDocsByCategory,
-  type DocEntry,
 } from "../lib/docs-manifest.ts";
 
 marked.setOptions({ gfm: true, breaks: false });

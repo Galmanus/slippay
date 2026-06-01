@@ -1,8 +1,10 @@
-import { Outlet, NavLink, Navigate, useNavigate, Link } from "react-router-dom";
+import { Outlet, NavLink, Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth, supabase } from "../lib/auth.tsx";
 import { authFetch } from "../lib/apiAuth.ts";
 import { Logo } from "../components/Logo.tsx";
+import { StellarAddressInput } from "../components/StellarAddressInput.tsx";
+import { isValidStellarAddress } from "../lib/stellar.ts";
 
 interface MerchantSummary {
   id: string;
@@ -19,7 +21,12 @@ export default function Dashboard() {
   const [needsCreate, setNeedsCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [stellarAddress, setStellarAddress] = useState("");
   const nav = useNavigate();
+  // New merchants default to testnet (early-access stage). Address format check
+  // is network-independent; only the live account/trustline lookup uses it.
+  const onboardNetwork = "TESTNET" as const;
+  const addrFormatInvalid = stellarAddress.trim() !== "" && !isValidStellarAddress(stellarAddress);
 
   useEffect(() => {
     if (!session) return;
@@ -53,18 +60,23 @@ export default function Dashboard() {
             </div>
             <div className="md:col-span-6">
               <h1 className="text-6xl md:text-8xl font-medium tracking-[-0.04em] leading-[0.9]">
-                One name to begin.
+                Two fields and you're live.
               </h1>
               <p className="mt-8 text-xl text-[#0a0a0a]/70 max-w-[44ch]">
-                We'll create your account and surface your API key once.
-                You can rotate it whenever from settings.
+                Your business name and the Stellar address where your dollars land.
+                That's the whole setup — your API key shows once, right after.
               </p>
               <form onSubmit={async (e) => {
-                e.preventDefault(); setCreating(true);
+                e.preventDefault();
+                if (addrFormatInvalid) return;
+                setCreating(true);
+                const body: Record<string, string> = { display_name: displayName };
+                const addr = stellarAddress.trim();
+                if (addr !== "") body.stellar_address = addr;
                 const r = await authFetch("/v1/merchants", {
                   method: "POST",
                   headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ display_name: displayName }),
+                  body: JSON.stringify(body),
                 });
                 setCreating(false);
                 if (r.ok) {
@@ -81,8 +93,15 @@ export default function Dashboard() {
                     autoFocus required minLength={1} maxLength={120}
                     className="w-full bg-transparent border-b border-[#0a0a0a]/30 py-3 text-lg tracking-tight focus:outline-none focus:border-[#0a0a0a] transition-colors" />
                 </label>
-                <button disabled={creating}
-                  className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
+                <StellarAddressInput
+                  value={stellarAddress}
+                  onChange={setStellarAddress}
+                  network={onboardNetwork}
+                  hint="Where your dollars (USDC) land. You can also set this later in settings — but setting it now means you're ready to get paid immediately."
+                />
+                <button disabled={creating || addrFormatInvalid}
+                  title={addrFormatInvalid ? "Fix the Stellar address before continuing" : undefined}
+                  className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50 disabled:cursor-not-allowed">
                   {creating ? "..." : "Create merchant"}
                 </button>
               </form>

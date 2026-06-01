@@ -156,6 +156,9 @@ r.get("/:slug", async (c) => {
     const expiresAt = new Date(Date.now() + ORDER_DEFAULT_EXPIRY_MINUTES * 60_000).toISOString();
     const { error: ordErr } = await sb.from("orders").insert({
       merchant_id: res.merchant_id,
+      // Pin the consented recipient (the address quoted in this 402) so the
+      // listener matches against it even if the merchant later rotates.
+      merchant_stellar_address: merchantRel.stellar_address ?? null,
       external_ref: `x402:${slug}:${clientId}`,
       usd_amount: res.usd_amount,
       usdc_amount: res.usd_amount, // 1:1 with USD by Slippay convention

@@ -46,6 +46,20 @@
 //! audit-002 F1 pattern from `slippay-subscription`.
 
 #![no_std]
+// The contract's public API surface (install_policy / install_agent_session /
+// __check_auth) intentionally takes more than clippy's 7-argument threshold —
+// each parameter is a distinct on-chain policy field, and bundling them into a
+// struct would change the contract ABI the off-chain scripts and frontend call.
+// The `#[contractimpl]` macro also generates client methods that inherit these
+// arities. Scope the allow at crate level so macro-expanded code is covered too.
+#![allow(clippy::too_many_arguments)]
+// `env.events().publish(...)` is deprecated in soroban-sdk 26.1.x in favor of
+// the `#[contractevent]` macro. Migrating would change the on-chain event
+// encoding (topic/data layout) that indexers and the SSL drift detector bind to
+// (see install_agent_session). Out of scope for the C2/C3 audit fixes; keep the
+// existing event ABI; the only deprecated usage in this crate is these five
+// intentional `publish` calls, so allow `deprecated` at crate level.
+#![allow(deprecated)]
 use soroban_sdk::{
     auth::{Context, ContractContext},
     contract, contracterror, contractimpl, contracttype,
@@ -153,6 +167,13 @@ pub struct AgentSession {
     /// non-empty, the agent may only pay these addresses — the core of the
     /// agent-to-agent guarantee (pay only approved counterparties).
     pub allow_recipients: Vec<Address>,
+    /// SSL/Axl provenance: sha256 of the `.ssl` spec that governed this agent
+    /// at install time. The contract does not interpret it (SSL is declarative,
+    /// not runtime-enforced here) — it pins it immutably so every spend made
+    /// under this session is non-repudiably tied to one governing policy. The
+    /// off-chain drift detector diffs observed spend against the spec at this
+    /// hash; that diff, not the hash, is the compliance evidence.
+    pub ssl_hash: BytesN<32>,
 }
 
 /// Agent credential carried in the `__check_auth` signature slot: the agent's
@@ -177,7 +198,8 @@ pub enum WalletAuth {
 #[contracttype]
 pub enum DataKey {
     /// Passkey public key (secp256r1, 65-byte uncompressed X9.62 = 0x04 ||
-    /// X || Y). Set once at deploy via `init`.
+    /// X || Y). Set once at deploy via `__constructor` (atomic with deploy —
+    /// SECURITY_AUDIT C2: no un-inited window an observer can front-run).
     PasskeyPubkey,
     /// Optional passkey credential id (returned by WebAuthn `navigator
     /// .credentials.create`). Stored so the frontend can issue a correct
@@ -195,6 +217,12 @@ pub enum DataKey {
     Policy(Address),
     /// Delegated agent session, keyed by the agent's ed25519 session pubkey.
     AgentSession(BytesN<32>),
+    /// SECURITY_AUDIT C3 · immutable absolute ceiling on any single per-charge
+    /// amount/cap, set once at `__constructor` and NEVER settable again. Both
+    /// `install_policy` and `install_agent_session` reject any amount/cap above
+    /// this value, so a fully compromised admin cannot drain more than this in a
+    /// single charge regardless of the ratio guards (N1 / A2.3).
+    MaxAbsolutePerCharge,
 }
 
 #[contracterror]
@@ -217,6 +245,12 @@ pub enum Error {
     WindowCapExceeded = 14,
     RecipientNotAllowed = 15,
     EmptyAllowlist = 16,
+    SessionExists = 17,
+    /// SECURITY_AUDIT C3 · a per-charge amount/cap exceeds the wallet's
+    /// immutable absolute ceiling (`max_absolute_per_charge`, set once at
+    /// `__constructor`). Caps the per-charge drain independent of the ratio
+    /// guards, even with a fully compromised admin.
+    ExceedsAbsoluteCeiling = 18,
 }
 
 #[contract]
@@ -224,33 +258,72 @@ pub struct SmartWallet;
 
 #[contractimpl]
 impl SmartWallet {
-    /// One-shot initializer. Called immediately after deploy with the
-    /// passkey's secp256r1 public key (65-byte uncompressed X9.62), the
-    /// credential id, and the v0.1 admin address. Subsequent calls panic
-    /// with `AlreadyInitialized`.
+    /// SECURITY_AUDIT C2 · atomic deploy+init constructor. Soroban runs
+    /// `__constructor` exactly once, in the SAME transaction as the deploy that
+    /// creates the contract. There is therefore NO un-inited window between
+    /// deploy and init for an observer to front-run with their own passkey +
+    /// admin (the C2 finding). The wallet is fully owned by the deployer-chosen
+    /// principals the instant it exists on-chain.
     ///
-    /// `admin` gates `install_policy` and `revoke_policy` in v0.1. For
-    /// the spike, callers pass the deployer's classic G-account so that
-    /// the trusted-setup server can sign these mutations. v0.2 will
-    /// migrate the admin to the wallet's own contract address, at which
-    /// point install/revoke require_auth flows back through __check_auth
-    /// and is gated by the user's passkey.
-    pub fn init(
+    /// Args:
+    /// - `passkey_pubkey`: the passkey's secp256r1 public key (65-byte
+    ///   uncompressed X9.62 = 0x04 || X || Y).
+    /// - `passkey_cred_id`: the WebAuthn credential id.
+    /// - `admin`: gates `install_policy` / `revoke_policy` / agent-session
+    ///   mutations in v0.1. For the spike, callers pass the deployer's classic
+    ///   G-account so the trusted-setup server can sign these. v0.2 migrates the
+    ///   admin to the wallet's own contract address so install/revoke flow back
+    ///   through `__check_auth` and are gated by the user's passkey.
+    /// - `max_absolute_per_charge`: SECURITY_AUDIT C3 · the IMMUTABLE absolute
+    ///   ceiling on any single per-charge amount/cap. Set once here and never
+    ///   settable again; `install_policy` and `install_agent_session` reject any
+    ///   amount/cap above it. Caps the per-charge drain absolutely even with a
+    ///   fully compromised admin — independent of the ratio guards (N1 / A2.3).
+    ///   Must be > 0.
+    pub fn __constructor(
         env: Env,
         passkey_pubkey: BytesN<65>,
         passkey_cred_id: BytesN<32>,
         admin: Address,
+        max_absolute_per_charge: i128,
     ) {
-        if env.storage().instance().has(&DataKey::PasskeyPubkey) {
-            panic_with_error!(&env, Error::AlreadyInitialized);
+        // The host guarantees `__constructor` runs exactly once at deploy, so a
+        // double-init guard is unnecessary here. We still reject a non-positive
+        // ceiling — a zero/negative absolute ceiling would make every
+        // install_policy / install_agent_session impossible (or, worse, defeat
+        // the C3 guard if mishandled).
+        if max_absolute_per_charge <= 0 {
+            panic_with_error!(&env, Error::InvalidConfig);
         }
         env.storage().instance().set(&DataKey::PasskeyPubkey, &passkey_pubkey);
         env.storage().instance().set(&DataKey::PasskeyCredId, &passkey_cred_id);
         env.storage().instance().set(&DataKey::Admin, &admin);
+        // C3: persist the immutable absolute ceiling. There is intentionally NO
+        // setter for this key anywhere in the contract — it is write-once here.
+        env.storage()
+            .instance()
+            .set(&DataKey::MaxAbsolutePerCharge, &max_absolute_per_charge);
         env.events().publish(
             (Symbol::new(&env, "wallet_initialized"),),
-            (passkey_pubkey, passkey_cred_id, admin),
+            (passkey_pubkey, passkey_cred_id, admin, max_absolute_per_charge),
         );
+    }
+
+    /// SECURITY_AUDIT C2 · guarded no-op kept only to default-deny a stray
+    /// `init` call. Initialization is now atomic via `__constructor`, so by the
+    /// time the contract exists `PasskeyPubkey` is always present. Any direct
+    /// `init` invocation — e.g. a front-runner attempting the old C2 exploit —
+    /// therefore always errors `AlreadyInitialized`. It can never (re)claim
+    /// ownership or reset state.
+    pub fn init(
+        env: Env,
+        _passkey_pubkey: BytesN<65>,
+        _passkey_cred_id: BytesN<32>,
+        _admin: Address,
+    ) {
+        // Constructor already ran at deploy; this path is unreachable for
+        // legitimate setup and exists solely to reject front-running attempts.
+        panic_with_error!(&env, Error::AlreadyInitialized);
     }
 
     /// Install (or replace) a spending policy for a specific merchant. Requires
@@ -289,6 +362,20 @@ impl SmartWallet {
         let max_allowed = amount_per_charge.saturating_mul(MAX_CAP_MULTIPLIER);
         if max_per_charge > max_allowed {
             panic_with_error!(&env, Error::InvalidConfig);
+        }
+        // SECURITY_AUDIT C3: absolute per-charge ceiling. The ratio guard above
+        // (max <= amount*10) is RELATIVE — a compromised admin can still set
+        // amount_per_charge = full balance and pass it trivially. The immutable
+        // `max_absolute_per_charge` (set once at __constructor) caps BOTH the
+        // expected amount AND the hard cap absolutely, so the single-charge
+        // drain is bounded no matter what ratios the admin chooses.
+        let max_absolute: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::MaxAbsolutePerCharge)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
+        if amount_per_charge > max_absolute || max_per_charge > max_absolute {
+            panic_with_error!(&env, Error::ExceedsAbsoluteCeiling);
         }
         if interval_seconds < 60 {
             panic_with_error!(&env, Error::InvalidConfig);
@@ -366,6 +453,7 @@ impl SmartWallet {
         window_cap: i128,
         expires_at: u64,
         allow_recipients: Vec<Address>,
+        ssl_hash: BytesN<32>,
     ) {
         let admin: Address = env
             .storage()
@@ -373,6 +461,20 @@ impl SmartWallet {
             .get(&DataKey::Admin)
             .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
         admin.require_auth();
+
+        // SECURITY_AUDIT (agent-session reinstall): reject installing over an
+        // EXISTING session pubkey. Silently resetting cur_spent/prev_spent/
+        // epoch_start (and un-revoking) would defeat the proved 2*window_cap
+        // exposure bound, which assumes the accumulator starts at (0,0) and only
+        // grows. A session pubkey is therefore single-use: a new delegation must
+        // use a fresh pubkey. (To retire a key, revoke it; it stays retired.)
+        if env
+            .storage()
+            .persistent()
+            .has(&DataKey::AgentSession(session_pubkey.clone()))
+        {
+            panic_with_error!(&env, Error::SessionExists);
+        }
 
         // Config validation. `window_cap >= per_tx_cap` keeps a single allowed
         // transfer consistent with the aggregate budget. The `window_seconds`
@@ -391,6 +493,21 @@ impl SmartWallet {
         let max_window = per_tx_cap.saturating_mul(MAX_WINDOW_MULTIPLIER);
         if window_cap > max_window {
             panic_with_error!(&env, Error::InvalidConfig);
+        }
+        // SECURITY_AUDIT C3: absolute per-charge ceiling on the agent path. The
+        // A2.3 guard above bounds window_cap RELATIVE to per_tx_cap; it does not
+        // bound a single transfer absolutely. The immutable
+        // `max_absolute_per_charge` caps `per_tx_cap` (the largest single
+        // agent-initiated transfer) so a compromised admin cannot delegate a
+        // single-transfer drain. window_cap is bounded transitively
+        // (window_cap <= per_tx_cap * 100, with per_tx_cap <= the ceiling).
+        let max_absolute: i128 = env
+            .storage()
+            .instance()
+            .get(&DataKey::MaxAbsolutePerCharge)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotInitialized));
+        if per_tx_cap > max_absolute {
+            panic_with_error!(&env, Error::ExceedsAbsoluteCeiling);
         }
         if window_seconds < 60 {
             panic_with_error!(&env, Error::InvalidConfig);
@@ -427,15 +544,18 @@ impl SmartWallet {
             expires_at,
             revoked: false,
             allow_recipients,
+            ssl_hash: ssl_hash.clone(),
         };
         let key = DataKey::AgentSession(session_pubkey.clone());
         env.storage().persistent().set(&key, &session);
         env.storage()
             .persistent()
             .extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+        // Emit ssl_hash in the install event so indexers / the drift detector
+        // can bind a session to its governing spec without a contract read.
         env.events().publish(
             (Symbol::new(&env, "agent_session_installed"), session_pubkey),
-            (per_tx_cap, window_seconds, window_cap, expires_at),
+            (per_tx_cap, window_seconds, window_cap, expires_at, ssl_hash),
         );
     }
 
@@ -568,7 +688,7 @@ impl SmartWallet {
 /// `Ok(false)`. This preserves the pre-refactor semantics exactly; it is only
 /// ever reached on the Passkey path now (A1), never the Agent path.
 fn pull_policy_authorizes(env: &Env, auth_contexts: &Vec<Context>) -> Result<bool, Error> {
-    let mut all_matched = auth_contexts.len() > 0;
+    let mut all_matched = !auth_contexts.is_empty();
     for ctx in auth_contexts.iter() {
         let matched = match ctx {
             Context::Contract(cc) => try_match_policy(env, &cc)?,

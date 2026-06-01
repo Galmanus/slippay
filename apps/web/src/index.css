@@ -12,3 +12,107 @@
   0%, 100% { opacity: 0; }
   50%      { opacity: 1; }
 }
+/* LiveLedger — streaming row enter + terminal caret blink. */
+@keyframes ledger-in {
+  from { opacity: 0; transform: translateY(-7px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ledger-caret {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+/* PolicyDemoAnimation device — scan sweep + blocked shake + face-scan pulse. */
+@keyframes scan-sweep {
+  0%   { transform: translateY(-120%); opacity: 0; }
+  15%, 85% { opacity: 1; }
+  100% { transform: translateY(620%); opacity: 0; }
+}
+@keyframes dev-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-5px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes face-scan {
+  0%, 100% { opacity: 0.25; transform: scaleY(0.6); }
+  50%      { opacity: 1; transform: scaleY(1); }
+}
+/* Hero ambient aurora — slow drift, not cursor-driven. */
+@keyframes aurora-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.75; }
+  50%      { transform: translate(7%, -5%) scale(1.18); opacity: 1; }
+}
+/* x402 ecosystem carousel — continuous marquee. Track holds 2 copies; -50%
+   loops seamlessly. Pause on hover so cards are readable/clickable. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 55s linear infinite; will-change: transform; }
+.marquee-wrap:hover .marquee-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+/* ─────────────────────────────────────────────────────────────
+   UX motion layer — smooth, editorial, not gaudy. Desktop + mobile.
+   Every effect degrades to nothing under prefers-reduced-motion.
+   ───────────────────────────────────────────────────────────── */
+
+/* Smooth anchor scrolling (e.g. "Como funciona" → #proof). */
+html { scroll-behavior: smooth; }
+
+/* Premium easing token + the canonical 180ms interaction transition
+   (design-review dim. 6: 150–200ms ease). */
+:root { --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Tactile hover-lift for interactive surfaces (CTAs, cards, cells).
+   GPU-friendly: only transform + box-shadow animate. */
+.lift {
+  transition: transform 180ms var(--ease-out-expo),
+              box-shadow 180ms var(--ease-out-expo),
+              background-color 180ms ease, color 180ms ease, opacity 180ms ease;
+  will-change: transform;
+}
+.lift:hover { transform: translateY(-3px); }
+.lift:active { transform: translateY(-1px); }
+
+/* Editorial range slider — square thumb, ink on a thin track. No rounding. */
+.slip-range { -webkit-appearance: none; appearance: none; height: 2px; background: rgba(10,10,10,0.18); cursor: pointer; }
+.slip-range:focus { outline: none; }
+.slip-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; background: #0a0a0a; border: 0; border-radius: 0;
+  transition: transform 140ms var(--ease-out-expo);
+}
+.slip-range:hover::-webkit-slider-thumb,
+.slip-range:active::-webkit-slider-thumb { transform: scale(1.25); }
+.slip-range::-moz-range-thumb { width: 16px; height: 16px; background: #0a0a0a; border: 0; border-radius: 0; }
+.slip-range::-moz-range-track { height: 2px; background: rgba(10,10,10,0.18); }
+
+/* Mobile menu entrance — slide+fade from the right, smooth. */
+@keyframes menu-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.menu-in { animation: menu-in 320ms var(--ease-out-expo) both; }
+
+/* Staggered children for menu items reading in one after another. */
+.menu-stagger > * { animation: menu-in 380ms var(--ease-out-expo) both; }
+.menu-stagger > *:nth-child(1) { animation-delay: 40ms; }
+.menu-stagger > *:nth-child(2) { animation-delay: 90ms; }
+.menu-stagger > *:nth-child(3) { animation-delay: 140ms; }
+.menu-stagger > *:nth-child(4) { animation-delay: 190ms; }
+.menu-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.menu-stagger > *:nth-child(6) { animation-delay: 290ms; }
+
+/* Global accessibility guard — kill all motion when the user asks. This is
+   the catch-all the Reveal/aurora/scan animations previously lacked. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Logo } from "../components/Logo.tsx";
 import { createDemoOrder } from "../lib/api.ts";
 
 const KLEIN = "#b5e853";

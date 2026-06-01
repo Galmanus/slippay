@@ -11,6 +11,7 @@ import Demo from "./pages/Demo.tsx";
 import Preview from "./pages/Preview.tsx";
 import X402Demo from "./pages/X402Demo.tsx";
 import AnchorDemo from "./pages/AnchorDemo.tsx";
+import WithdrawDemo from "./pages/WithdrawDemo.tsx";
 import Store from "./pages/Store.tsx";
 import PolicySubscribe from "./pages/PolicySubscribe.tsx";
 import Docs from "./pages/Docs.tsx";
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/preview" element={<Preview />} />
       <Route path="/x402-demo" element={<X402Demo />} />
       <Route path="/anchor-demo" element={<AnchorDemo />} />
+      <Route path="/withdraw-demo" element={<WithdrawDemo />} />
       <Route path="/loja" element={<Store />} />
       <Route path="/s/:subId" element={<PolicySubscribe />} />
       <Route path="/docs" element={<Docs />} />

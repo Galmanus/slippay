@@ -8,6 +8,10 @@
 //! verification is exercised in the M4 testnet end-to-end run.
 
 #![cfg(test)]
+// The crate is `#![no_std]`; the `testutils` feature links std for the host
+// test build, so `std` is available here for filesystem reads (used by the
+// harness↔ABI regression test below).
+extern crate std;
 use super::*;
 use soroban_sdk::{
     auth::{Context, ContractContext},
@@ -15,8 +19,43 @@ use soroban_sdk::{
     vec, Address, BytesN, Env, IntoVal, Symbol, Vec,
 };
 
+/// SECURITY_AUDIT C3 · default absolute per-charge ceiling for tests. Chosen
+/// generously above every amount/cap exercised in the existing suite (max
+/// per-charge cap used is 35_000_000) so pre-C3 tests keep passing unchanged.
+/// The dedicated C3 tests deploy with a TIGHT ceiling to exercise the guard.
+const TEST_MAX_ABS: i128 = 1_000_000_000;
+
+/// SECURITY_AUDIT C2 · `deploy` now registers WITH constructor args, so init is
+/// ATOMIC with deploy — there is no separate `wallet.init(...)` step and no
+/// un-inited window. Uses a fresh random admin and the generous default
+/// ceiling. Tests that assert on a specific admin use `deploy_with_admin`;
+/// tests that exercise the C3 ceiling use `deploy_with_ceiling`.
 fn deploy(env: &Env) -> (Address, SmartWalletClient<'_>) {
-    let id = env.register(SmartWallet, ());
+    deploy_with(env, &Address::generate(env), TEST_MAX_ABS)
+}
+
+/// Deploy with a caller-chosen admin (atomic constructor) and the default
+/// generous ceiling. Used by tests that need the admin address to assert on
+/// (e.g. merchant==admin / admin-in-allowlist rejection).
+fn deploy_with_admin<'a>(env: &'a Env, admin: &Address) -> (Address, SmartWalletClient<'a>) {
+    deploy_with(env, admin, TEST_MAX_ABS)
+}
+
+/// Deploy with a caller-chosen absolute per-charge ceiling (atomic
+/// constructor). Used by the C3 ceiling tests. Admin is a fresh random address.
+fn deploy_with_ceiling(env: &Env, ceiling: i128) -> (Address, SmartWalletClient<'_>) {
+    deploy_with(env, &Address::generate(env), ceiling)
+}
+
+fn deploy_with<'a>(
+    env: &'a Env,
+    admin: &Address,
+    ceiling: i128,
+) -> (Address, SmartWalletClient<'a>) {
+    let id = env.register(
+        SmartWallet,
+        (dummy_pubkey(env), dummy_cred_id(env), admin.clone(), ceiling),
+    );
     let client = SmartWalletClient::new(env, &id);
     (id, client)
 }
@@ -27,8 +66,8 @@ fn dummy_pubkey(env: &Env) -> BytesN<65> {
     // secp256r1_verify so the value is irrelevant beyond shape.
     let mut bytes = [0u8; 65];
     bytes[0] = 0x04;
-    for i in 1..65 {
-        bytes[i] = i as u8;
+    for (i, b) in bytes.iter_mut().enumerate().skip(1) {
+        *b = i as u8;
     }
     BytesN::from_array(env, &bytes)
 }
@@ -41,13 +80,72 @@ fn dummy_cred_id(env: &Env) -> BytesN<32> {
 // M2 public-surface tests
 // ──────────────────────────────────────────────────────────────────────
 
+// ──────────────────────────────────────────────────────────────────────
+// C2: atomic deploy+init via __constructor (no un-inited front-run window)
+// ──────────────────────────────────────────────────────────────────────
+
+/// SECURITY_AUDIT C2: the constructor runs ATOMICALLY at deploy, so the wallet
+/// is fully initialized the instant it exists — there is no separate init step
+/// and no window a front-runner can exploit. We prove the state landed by
+/// reading it back through the public surface immediately after register, with
+/// NO intervening init call.
 #[test]
-fn init_persists_passkey() {
+fn constructor_initializes_atomically() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    let (_id, wallet) = deploy_with_admin(&env, &admin);
+
+    // Usable immediately post-deploy with no init call: install a policy and
+    // read it back. If the constructor had not run, install_policy would error
+    // NotInitialized (no admin / no ceiling in instance storage).
+    let merchant = Address::generate(&env);
+    let token = Address::generate(&env);
+    wallet.install_policy(&merchant, &token, &100, &150, &60, &0);
+    let policy = wallet.get_policy(&merchant);
+    assert_eq!(policy.merchant, merchant);
+    assert_eq!(policy.amount_per_charge, 100);
+}
+
+/// SECURITY_AUDIT C2: the standalone `init` is now a guarded no-op. The
+/// constructor already ran at deploy, so ANY direct `init` call — including a
+/// front-runner attempting the old C2 exploit (claim ownership in the
+/// deploy→init window) — must error `AlreadyInitialized`. It can never reset
+/// state or re-claim the wallet.
+#[test]
+fn init_after_constructor_is_rejected() {
     let env = Env::default();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
-    let res = wallet.try_init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
-    assert!(res.is_err(), "second init must reject");
+    // A would-be front-runner's init attempt with their own pubkey/admin.
+    let attacker = Address::generate(&env);
+    let res = wallet.try_init(&dummy_pubkey(&env), &dummy_cred_id(&env), &attacker);
+    assert!(res.is_err(), "init after constructor must reject (no re-claim)");
+    // The guarded no-op panics with the AlreadyInitialized contract error;
+    // assert on the soroban Error code carried back through try_init.
+    match res {
+        Err(Ok(e)) => assert_eq!(
+            e,
+            soroban_sdk::Error::from(Error::AlreadyInitialized),
+            "must reject with AlreadyInitialized"
+        ),
+        other => panic!("expected AlreadyInitialized, got {:?}", other),
+    }
+}
+
+/// SECURITY_AUDIT C3: a constructor with a non-positive absolute ceiling is
+/// rejected (a zero/negative ceiling would make every install impossible and
+/// is a misconfiguration). Uses `try_register`-equivalent: the construct panics,
+/// surfaced via a direct register attempt wrapped in the test harness.
+#[test]
+#[should_panic(expected = "#10")] // InvalidConfig = 10
+fn constructor_rejects_nonpositive_ceiling() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    // ceiling = 0 → constructor must panic (InvalidConfig).
+    let _ = env.register(
+        SmartWallet,
+        (dummy_pubkey(&env), dummy_cred_id(&env), admin, 0i128),
+    );
 }
 
 #[test]
@@ -56,7 +154,6 @@ fn install_and_get_policy() {
     env.mock_all_auths();
 
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -86,7 +183,6 @@ fn revoke_flips_flag() {
     env.mock_all_auths();
 
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -102,7 +198,6 @@ fn install_with_invalid_config_panics() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -117,7 +212,6 @@ fn revoke_nonexistent_policy_panics() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     assert!(wallet.try_revoke_policy(&merchant).is_err());
@@ -146,7 +240,6 @@ fn policy_match_authorizes_within_cap() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -164,7 +257,6 @@ fn policy_match_rejects_over_cap() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -182,7 +274,6 @@ fn policy_match_rejects_revoked() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -201,7 +292,6 @@ fn policy_match_rejects_expired() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     env.ledger().with_mut(|li| { li.timestamp = 1_000; });
     let merchant = Address::generate(&env);
@@ -223,7 +313,6 @@ fn policy_match_enforces_interval() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     env.ledger().with_mut(|li| { li.timestamp = 1_000; });
     let merchant = Address::generate(&env);
@@ -256,8 +345,7 @@ fn policy_match_enforces_interval() {
 fn policy_match_returns_false_for_unknown_merchant() {
     let env = Env::default();
     env.mock_all_auths();
-    let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
+    let (id, _wallet) = deploy(&env);
 
     let unknown_merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -273,7 +361,6 @@ fn policy_match_returns_false_for_wrong_token() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -297,7 +384,6 @@ fn install_rejects_max_above_multiplier() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -308,6 +394,120 @@ fn install_rejects_max_above_multiplier() {
     wallet.install_policy(&merchant, &token, &100, &1_000, &60, &0);
 }
 
+// ──────────────────────────────────────────────────────────────────────
+// C3: immutable absolute per-charge ceiling, independent of the ratio guards
+// ──────────────────────────────────────────────────────────────────────
+
+/// SECURITY_AUDIT C3: install_policy must reject an `amount_per_charge` above
+/// the immutable absolute ceiling, EVEN when the ratio guard (max <= amount*10)
+/// passes trivially. This is the exact compromised-admin drain the C3 finding
+/// describes: set amount = balance, max = amount (ratio 1x, passes N1), but the
+/// absolute ceiling bites.
+#[test]
+fn install_policy_rejects_amount_above_absolute_ceiling() {
+    let env = Env::default();
+    env.mock_all_auths();
+    // Tight ceiling: 1_000. A compromised admin tries amount = max = 5_000
+    // (ratio 1x → N1 passes), which must be rejected by the absolute ceiling.
+    let (_id, wallet) = deploy_with_ceiling(&env, 1_000);
+
+    let merchant = Address::generate(&env);
+    let token = Address::generate(&env);
+
+    let r = wallet.try_install_policy(&merchant, &token, &5_000, &5_000, &60, &0);
+    assert!(r.is_err(), "amount above absolute ceiling must be rejected");
+    match r {
+        Err(Ok(e)) => assert_eq!(
+            e,
+            soroban_sdk::Error::from(Error::ExceedsAbsoluteCeiling),
+            "must reject with ExceedsAbsoluteCeiling"
+        ),
+        other => panic!("expected ExceedsAbsoluteCeiling, got {:?}", other),
+    }
+}
+
+/// SECURITY_AUDIT C3: install_policy must also reject a `max_per_charge` above
+/// the absolute ceiling even when `amount_per_charge` is within it. Here
+/// amount=200 (within ceiling 1_000), max=2_000 (ratio 10x → N1 passes), but
+/// max exceeds the absolute ceiling → reject.
+#[test]
+fn install_policy_rejects_max_above_absolute_ceiling() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy_with_ceiling(&env, 1_000);
+
+    let merchant = Address::generate(&env);
+    let token = Address::generate(&env);
+
+    let r = wallet.try_install_policy(&merchant, &token, &200, &2_000, &60, &0);
+    assert!(r.is_err(), "max above absolute ceiling must be rejected");
+    match r {
+        Err(Ok(e)) => assert_eq!(e, soroban_sdk::Error::from(Error::ExceedsAbsoluteCeiling)),
+        other => panic!("expected ExceedsAbsoluteCeiling, got {:?}", other),
+    }
+}
+
+/// SECURITY_AUDIT C3: within-ceiling install_policy still passes (the guard does
+/// not break the legitimate path). amount=200, max=1_000 (== ceiling, boundary),
+/// ratio 5x (N1 passes) → accept.
+#[test]
+fn install_policy_within_absolute_ceiling_passes() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy_with_ceiling(&env, 1_000);
+
+    let merchant = Address::generate(&env);
+    let token = Address::generate(&env);
+
+    // Boundary: max == ceiling must be accepted.
+    wallet.install_policy(&merchant, &token, &200, &1_000, &60, &0);
+    let p = wallet.get_policy(&merchant);
+    assert_eq!(p.max_per_charge, 1_000, "within-ceiling install must land");
+}
+
+/// SECURITY_AUDIT C3: install_agent_session must reject a `per_tx_cap` above the
+/// absolute ceiling even when the A2.3 ratio guard (window_cap <= per_tx*100)
+/// passes. per_tx=5_000 > ceiling 1_000, window_cap=5_000 (ratio 1x) → reject.
+#[test]
+fn install_agent_session_rejects_per_tx_above_absolute_ceiling() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy_with_ceiling(&env, 1_000);
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    let token = Address::generate(&env);
+    let pk = agent_pk(&env);
+    let (_to, allow) = one_recipient(&env);
+
+    let r = wallet.try_install_agent_session(&pk, &token, &5_000, &600, &5_000, &0, &allow, &ssl_h(&env));
+    assert!(r.is_err(), "per_tx_cap above absolute ceiling must be rejected");
+    match r {
+        Err(Ok(e)) => assert_eq!(
+            e,
+            soroban_sdk::Error::from(Error::ExceedsAbsoluteCeiling),
+            "must reject with ExceedsAbsoluteCeiling"
+        ),
+        other => panic!("expected ExceedsAbsoluteCeiling, got {:?}", other),
+    }
+}
+
+/// SECURITY_AUDIT C3: within-ceiling install_agent_session still passes.
+/// per_tx=1_000 (== ceiling, boundary), window_cap=1_000 → accept.
+#[test]
+fn install_agent_session_within_absolute_ceiling_passes() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy_with_ceiling(&env, 1_000);
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    let token = Address::generate(&env);
+    let pk = agent_pk(&env);
+    let (_to, allow) = one_recipient(&env);
+
+    // Boundary: per_tx_cap == ceiling must be accepted.
+    wallet.install_agent_session(&pk, &token, &1_000, &600, &1_000, &0, &allow, &ssl_h(&env));
+    let s = wallet.get_agent_session(&pk);
+    assert_eq!(s.per_tx_cap, 1_000, "within-ceiling session install must land");
+}
+
 #[test]
 fn install_rejects_merchant_equals_admin() {
     // SECURITY_AUDIT H3: refuse to install a policy where the admin is
@@ -315,9 +515,8 @@ fn install_rejects_merchant_equals_admin() {
     // to themselves.
     let env = Env::default();
     env.mock_all_auths();
-    let (_id, wallet) = deploy(&env);
     let admin = Address::generate(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &admin);
+    let (_id, wallet) = deploy_with_admin(&env, &admin);
 
     let token = Address::generate(&env);
     // merchant == admin → must reject
@@ -332,7 +531,6 @@ fn install_rejects_merchant_equals_wallet_self() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let token = Address::generate(&env);
     let r = wallet.try_install_policy(&id, &token, &10, &10, &60, &0);
@@ -344,7 +542,6 @@ fn policy_match_returns_false_for_non_transfer_fn() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let merchant = Address::generate(&env);
     let token = Address::generate(&env);
@@ -369,6 +566,11 @@ fn agent_pk(env: &Env) -> BytesN<32> {
     BytesN::from_array(env, &[7u8; 32])
 }
 
+/// Stand-in governing-spec hash for tests that don't assert on provenance.
+fn ssl_h(env: &Env) -> BytesN<32> {
+    BytesN::from_array(env, &[0xABu8; 32])
+}
+
 /// A non-empty allowlist with a single fresh recipient. A2 forbids installing
 /// with an empty allowlist, so every install helper now threads a recipient.
 /// Tests that need to assert on the recipient build their own and pass it
@@ -383,7 +585,6 @@ fn install_and_get_agent_session() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let token = Address::generate(&env);
     let (recipient, allow) = one_recipient(&env);
@@ -395,6 +596,7 @@ fn install_and_get_agent_session() {
         &50_000_000,   // window_cap 50 USDC
         &0,            // no expiry
         &allow,
+        &ssl_h(&env),
     );
 
     let s = wallet.get_agent_session(&agent_pk(&env));
@@ -411,17 +613,102 @@ fn install_and_get_agent_session() {
     assert_eq!(s.allow_recipients.get(0).unwrap(), recipient);
 }
 
+/// SSL/Axl provenance: the session must record the sha256 of the .ssl spec
+/// that governed the agent at install time, so any spend is provably tied to a
+/// specific, immutable governing policy (the on-chain half of the drift proof).
+#[test]
+fn agent_session_records_ssl_hash() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy(&env);
+
+    let token = Address::generate(&env);
+    let (_recipient, allow) = one_recipient(&env);
+    let ssl_hash = BytesN::from_array(&env, &[0x5a; 32]);
+    wallet.install_agent_session(
+        &agent_pk(&env),
+        &token,
+        &10_000_000,
+        &86_400,
+        &50_000_000,
+        &0,
+        &allow,
+        &ssl_hash,
+    );
+
+    let s = wallet.get_agent_session(&agent_pk(&env));
+    assert_eq!(s.ssl_hash, ssl_hash, "ssl_hash (governing spec provenance) must round-trip on the session");
+}
+
+/// REGRESSION (testnet e2e harness ↔ ABI binding): `ssl_hash` is a REQUIRED
+/// positional on `install_agent_session` (added in the C3 audit). The typed unit
+/// tests thread it via the generated client, but the raw-CLI testnet harness
+/// (`scripts/e2e-agent-wallet-testnet.mjs`) builds the `stellar contract invoke`
+/// command as a string the spec validator never sees at compile time. A rewrite
+/// of that harness dropped `--ssl_hash`, so the invoke would fail with a
+/// missing-argument error on testnet and the e2e could never pass — invisible to
+/// `cargo test` because the harness is off-chain.
+///
+/// This test binds the harness to the ABI: it reads the harness source and
+/// asserts the `install_agent_session` invoke carries `--ssl_hash`. If the arg
+/// is dropped again (or the ABI re-requires it without a harness update), this
+/// fails here, in the suite that gates the change. No on-chain call is made.
+#[test]
+fn testnet_e2e_harness_threads_ssl_hash_into_install_invoke() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    let harness_path = std::path::Path::new(manifest_dir)
+        .join("../../scripts/e2e-agent-wallet-testnet.mjs");
+    let src = std::fs::read_to_string(&harness_path).unwrap_or_else(|e| {
+        panic!("cannot read testnet e2e harness at {:?}: {}", harness_path, e)
+    });
+
+    // Find the `install_agent_session` invoke command. The harness emits exactly
+    // one such CLI call; locate it and bound the inspected slice to that command
+    // (terminated by the `|| true` guard the harness wraps each invoke in).
+    let inv_at = src
+        .find("install_agent_session")
+        .expect("harness must invoke install_agent_session");
+    let tail = &src[inv_at..];
+    let cmd_end = tail.find("|| true").unwrap_or(tail.len());
+    let invoke_cmd = &tail[..cmd_end];
+
+    assert!(
+        invoke_cmd.contains("--ssl_hash"),
+        "testnet e2e harness invoke of install_agent_session is missing the now-required \
+         --ssl_hash arg; the on-chain e2e would fail with a missing-argument error. \
+         Invoke command inspected:\n{}",
+        invoke_cmd
+    );
+}
+
+/// SECURITY_AUDIT (agent-session reinstall): installing over an EXISTING session
+/// pubkey silently reset cur_spent/prev_spent/epoch_start and un-revoked it,
+/// defeating the proved 2*window_cap exposure bound (which assumes the
+/// accumulator starts at (0,0) and only grows). Reinstall must be REJECTED so a
+/// session pubkey's accumulator can never be reset — a new delegation uses a new pubkey.
+#[test]
+fn reinstall_of_existing_agent_session_is_rejected() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet) = deploy(&env);
+    let (_to, allow) = one_recipient(&env);
+    let token = Address::generate(&env);
+    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &allow, &ssl_h(&env));
+    let r = wallet.try_install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &allow, &ssl_h(&env));
+    assert!(r.is_err(), "reinstall of an existing session pubkey must be rejected (no silent budget reset)");
+}
+
 /// Install with a single fresh recipient in the allowlist; returns the
 /// recipient so the caller can build matching transfer contexts.
 fn install_session(env: &Env, wallet: &SmartWalletClient, token: &Address, per_tx: i128, window_s: u64, window_cap: i128, expires_at: u64) -> Address {
     let (to, allow) = one_recipient(env);
-    wallet.install_agent_session(&agent_pk(env), token, &per_tx, &window_s, &window_cap, &expires_at, &allow);
+    wallet.install_agent_session(&agent_pk(env), token, &per_tx, &window_s, &window_cap, &expires_at, &allow, &ssl_h(env));
     to
 }
 
 /// Install with a caller-supplied recipient allowlist.
 fn install_session_to(env: &Env, wallet: &SmartWalletClient, token: &Address, per_tx: i128, window_s: u64, window_cap: i128, expires_at: u64, allow: &Vec<Address>) {
-    wallet.install_agent_session(&agent_pk(env), token, &per_tx, &window_s, &window_cap, &expires_at, allow);
+    wallet.install_agent_session(&agent_pk(env), token, &per_tx, &window_s, &window_cap, &expires_at, allow, &ssl_h(env));
 }
 
 #[test]
@@ -429,7 +716,6 @@ fn agent_authorizes_within_caps_and_tracks_spend() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 10, 600, 25, 0);
@@ -448,7 +734,6 @@ fn agent_rejects_over_per_tx_cap() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 10, 600, 25, 0);
@@ -464,7 +749,6 @@ fn agent_rejects_over_window_cap() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 10, 600, 25, 0);
@@ -484,7 +768,6 @@ fn agent_window_resets_after_window_elapses() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 10, 600, 25, 0);
@@ -509,7 +792,6 @@ fn agent_rejects_revoked_session() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 10, 600, 25, 0);
@@ -526,7 +808,6 @@ fn install_agent_session_rejects_invalid_config() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let pk = agent_pk(&env);
@@ -535,16 +816,16 @@ fn install_agent_session_rejects_invalid_config() {
     // thread a valid recipient to isolate the config check under test.
     let (_to, allow) = one_recipient(&env);
     // per_tx_cap <= 0
-    assert!(wallet.try_install_agent_session(&pk, &token, &0, &600, &25, &0, &allow).is_err());
+    assert!(wallet.try_install_agent_session(&pk, &token, &0, &600, &25, &0, &allow, &ssl_h(&env)).is_err());
     // window_cap < per_tx_cap (a single allowed tx can't fit the window)
-    assert!(wallet.try_install_agent_session(&pk, &token, &10, &600, &5, &0, &allow).is_err());
+    assert!(wallet.try_install_agent_session(&pk, &token, &10, &600, &5, &0, &allow, &ssl_h(&env)).is_err());
     // window_seconds below floor — would silently disable the aggregate cap
     // (window rolls every call), collapsing to per-tx-only enforcement
-    assert!(wallet.try_install_agent_session(&pk, &token, &10, &30, &25, &0, &allow).is_err());
+    assert!(wallet.try_install_agent_session(&pk, &token, &10, &30, &25, &0, &allow, &ssl_h(&env)).is_err());
     // expires_at already in the past
-    assert!(wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &500, &allow).is_err());
+    assert!(wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &500, &allow, &ssl_h(&env)).is_err());
     // boundary valid config is accepted (window_cap == per_tx_cap, floor window)
-    wallet.install_agent_session(&pk, &token, &10, &60, &10, &0, &allow);
+    wallet.install_agent_session(&pk, &token, &10, &60, &10, &0, &allow, &ssl_h(&env));
 }
 
 // ──────────────────────────────────────────────────────────────────────
@@ -558,13 +839,12 @@ fn install_agent_session_rejects_empty_allowlist() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let pk = agent_pk(&env);
 
     let empty = Vec::new(&env);
-    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &0, &empty);
+    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &0, &empty, &ssl_h(&env));
     assert!(r.is_err(), "empty allowlist must be rejected");
 }
 
@@ -574,15 +854,14 @@ fn install_agent_session_rejects_admin_in_allowlist() {
     // recipient and drain the wallet to itself via the agent path.
     let env = Env::default();
     env.mock_all_auths();
-    let (_id, wallet) = deploy(&env);
     let admin = Address::generate(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &admin);
+    let (_id, wallet) = deploy_with_admin(&env, &admin);
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let pk = agent_pk(&env);
 
     let allow = vec![&env, admin.clone()];
-    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &0, &allow);
+    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &0, &allow, &ssl_h(&env));
     assert!(r.is_err(), "admin in allowlist must be rejected");
 }
 
@@ -593,13 +872,12 @@ fn install_agent_session_rejects_self_in_allowlist() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let pk = agent_pk(&env);
 
     let allow = vec![&env, id.clone()];
-    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &0, &allow);
+    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &25, &0, &allow, &ssl_h(&env));
     assert!(r.is_err(), "wallet self in allowlist must be rejected");
 }
 
@@ -610,17 +888,16 @@ fn install_agent_session_rejects_window_cap_above_multiplier() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let pk = agent_pk(&env);
     let (_to, allow) = one_recipient(&env);
 
     // per_tx=10, window_cap=1001 → 1001 > 10*100, must reject.
-    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &1_001, &0, &allow);
+    let r = wallet.try_install_agent_session(&pk, &token, &10, &600, &1_001, &0, &allow, &ssl_h(&env));
     assert!(r.is_err(), "window_cap > per_tx_cap*100 must be rejected");
     // per_tx=10, window_cap=1000 → boundary == 10*100, must accept.
-    wallet.install_agent_session(&pk, &token, &10, &600, &1_000, &0, &allow);
+    wallet.install_agent_session(&pk, &token, &10, &600, &1_000, &0, &allow, &ssl_h(&env));
 }
 
 #[test]
@@ -629,13 +906,12 @@ fn install_agent_session_accepts_valid_nonempty_allowlist() {
     let env = Env::default();
     env.mock_all_auths();
     let (_id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let pk = agent_pk(&env);
     let (recipient, allow) = one_recipient(&env);
 
-    wallet.install_agent_session(&pk, &token, &10, &600, &25, &0, &allow);
+    wallet.install_agent_session(&pk, &token, &10, &600, &25, &0, &allow, &ssl_h(&env));
     let s = wallet.get_agent_session(&pk);
     assert_eq!(s.allow_recipients.len(), 1);
     assert_eq!(s.allow_recipients.get(0).unwrap(), recipient);
@@ -646,7 +922,6 @@ fn agent_rejects_expired_session() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 10, 600, 25, 2_000);
@@ -671,6 +946,7 @@ fn session_with_allowlist(env: &Env, allow: Vec<Address>) -> super::AgentSession
         expires_at: 0,
         revoked: false,
         allow_recipients: allow,
+        ssl_hash: ssl_h(env),
     }
 }
 
@@ -697,11 +973,10 @@ fn agent_context_authorizes_allowed_recipient_within_budget() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = Address::generate(&env);
-    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &vec![&env, to.clone()]);
+    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &vec![&env, to.clone()], &ssl_h(&env));
 
     let ctx = make_transfer_ctx(&env, &token, &id, &to, 10);
     env.as_contract(&id, || {
@@ -715,12 +990,11 @@ fn agent_context_rejects_unlisted_recipient() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let listed = Address::generate(&env);
     let unlisted = Address::generate(&env);
-    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &vec![&env, listed.clone()]);
+    wallet.install_agent_session(&agent_pk(&env), &token, &10, &600, &25, &0, &vec![&env, listed.clone()], &ssl_h(&env));
 
     let ctx = make_transfer_ctx(&env, &token, &id, &unlisted, 10);
     env.as_contract(&id, || {
@@ -734,7 +1008,6 @@ fn agent_context_ignores_non_transfer() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     install_session(&env, &wallet, &token, 10, 600, 25, 0);
@@ -761,7 +1034,6 @@ fn agent_transfer_chokepoint_rejects_unlisted_recipient_directly() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let listed = Address::generate(&env);
@@ -792,7 +1064,6 @@ fn agent_sliding_window_bounds_2x_burst_across_boundary() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     // W = 600, window_cap = 100, per_tx = 100.
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
@@ -834,7 +1105,6 @@ fn agent_sliding_window_decays_prev_epoch_linearly() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     // W = 1000, window_cap = 100, per_tx = 100.
     env.ledger().with_mut(|li| li.timestamp = 0);
     let token = Address::generate(&env);
@@ -881,7 +1151,6 @@ fn agent_sliding_window_resets_after_two_windows() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     env.ledger().with_mut(|li| li.timestamp = 1_000);
     let token = Address::generate(&env);
     let to = install_session(&env, &wallet, &token, 100, 600, 100, 0);
@@ -919,7 +1188,6 @@ fn agent_sliding_window_hard_ceiling_caps_delayed_straddle() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
     let token = Address::generate(&env);
     env.ledger().with_mut(|li| li.timestamp = 60);
     let to = install_session(&env, &wallet, &token, 12, 60, 12, 0);
@@ -970,6 +1238,7 @@ fn agent_sliding_window_hard_ceiling_caps_delayed_straddle() {
         expires_at: 0,
         revoked: false,
         allow_recipients: allow2,
+        ssl_hash: ssl_h(&env),
     };
     env.as_contract(&id, || {
         let key = super::DataKey::AgentSession(agent_pk(&env));
@@ -1006,7 +1275,6 @@ fn pull_policy_authorizes_multi_context_all_match() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let m1 = Address::generate(&env);
     let m2 = Address::generate(&env);
@@ -1031,7 +1299,6 @@ fn pull_policy_authorizes_multi_context_one_unmatched() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let m1 = Address::generate(&env);
     let unknown = Address::generate(&env);
@@ -1056,7 +1323,6 @@ fn pull_policy_authorizes_propagates_policy_violation_err() {
     let env = Env::default();
     env.mock_all_auths();
     let (id, wallet) = deploy(&env);
-    wallet.init(&dummy_pubkey(&env), &dummy_cred_id(&env), &Address::generate(&env));
 
     let m1 = Address::generate(&env);
     let token = Address::generate(&env);
