@@ -12,6 +12,8 @@ import Preview from "./pages/Preview.tsx";
 import X402Demo from "./pages/X402Demo.tsx";
 import AnchorDemo from "./pages/AnchorDemo.tsx";
 import WithdrawDemo from "./pages/WithdrawDemo.tsx";
+import BioTest from "./pages/BioTest.tsx";
+import PayDemo from "./pages/PayDemo.tsx";
 import Store from "./pages/Store.tsx";
 import PolicySubscribe from "./pages/PolicySubscribe.tsx";
 import Docs from "./pages/Docs.tsx";
@@ -28,6 +30,8 @@ export default function App() {
       <Route path="/x402-demo" element={<X402Demo />} />
       <Route path="/anchor-demo" element={<AnchorDemo />} />
       <Route path="/withdraw-demo" element={<WithdrawDemo />} />
+      <Route path="/bio" element={<BioTest />} />
+      <Route path="/pay" element={<PayDemo />} />
       <Route path="/loja" element={<Store />} />
       <Route path="/s/:subId" element={<PolicySubscribe />} />
       <Route path="/docs" element={<Docs />} />

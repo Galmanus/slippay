@@ -1337,3 +1337,77 @@ fn pull_policy_authorizes_propagates_policy_violation_err() {
         assert!(matches!(r, Err(Error::AmountExceedsCap)), "policy violation must propagate Err: {:?}", r);
     });
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// REAL WebAuthn assertion verification (the "biometric pays" core).
+// Generates a real secp256r1/P-256 key, builds a genuine WebAuthn assertion
+// (authenticatorData + clientDataJSON with the base64url challenge + ECDSA
+// signature over SHA256(authData || SHA256(clientData))), and proves the
+// contract's __check_auth path (verify_webauthn) ACCEPTS it — and rejects a
+// mismatched challenge. This is what a Face ID / fingerprint tap produces.
+// ─────────────────────────────────────────────────────────────────────────
+#[test]
+fn webauthn_assertion_verifies_and_binds_to_payload() {
+    use p256::ecdsa::{signature::Signer, Signature, SigningKey};
+    use p256::elliptic_curve::sec1::ToEncodedPoint;
+    use sha2::{Digest, Sha256};
+
+    let env = Env::default();
+
+    // The device passkey (deterministic seed for a reproducible test).
+    let signing = SigningKey::from_slice(&[0x11u8; 32]).unwrap();
+    let vk = signing.verifying_key();
+    let ep = vk.to_encoded_point(false); // 0x04 || X || Y = 65 bytes
+    let pk_arr: [u8; 65] = ep.as_bytes().try_into().unwrap();
+    let pubkey = BytesN::from_array(&env, &pk_arr);
+
+    // Host auth payload (Soroban gives __check_auth a Hash<32>).
+    let payload = env.crypto().sha256(&Bytes::from_array(&env, &[0xABu8; 16]));
+    let payload_arr = payload.to_array();
+
+    // The frontend sets the WebAuthn challenge = base64url(payload). Reuse the
+    // contract's own encoder so the bytes match exactly.
+    let chal_bytes = crate::base64url_nopad(&env, &payload_arr);
+    let chal_vec: std::vec::Vec<u8> = chal_bytes.iter().collect();
+    let chal_str = std::str::from_utf8(&chal_vec).unwrap();
+    let cdj = std::format!(
+        "{{\"type\":\"webauthn.get\",\"challenge\":\"{}\",\"origin\":\"https://slippay.cc\"}}",
+        chal_str
+    );
+    let client_data_json = Bytes::from_slice(&env, cdj.as_bytes());
+
+    // authenticatorData: 37 bytes (rpIdHash[32] + flags + signCount). Content
+    // is irrelevant to the signature check beyond being signed over.
+    let ad = [0x49u8; 37];
+    let authenticator_data = Bytes::from_array(&env, &ad);
+
+    // Signature base = authData || SHA256(clientData); the authenticator signs
+    // SHA256(base). p256's Signer hashes with SHA256 internally.
+    let cd_hash = Sha256::digest(cdj.as_bytes());
+    let mut base = std::vec::Vec::new();
+    base.extend_from_slice(&ad);
+    base.extend_from_slice(&cd_hash);
+    let sig: Signature = signing.sign(&base);
+    let sig_arr: [u8; 64] = sig.to_bytes().as_slice().try_into().unwrap();
+    let signature = BytesN::from_array(&env, &sig_arr);
+
+    // GOOD assertion → accepted.
+    let good = WebAuthnAuth {
+        authenticator_data: authenticator_data.clone(),
+        client_data_json: client_data_json.clone(),
+        signature: signature.clone(),
+    };
+    assert!(
+        crate::verify_webauthn(&env, &pubkey, &payload, &good).is_ok(),
+        "real WebAuthn assertion must verify"
+    );
+
+    // WRONG challenge (different payload) → rejected at the binding step,
+    // before crypto. Proves replay/cross-tx defense.
+    let other_payload = env.crypto().sha256(&Bytes::from_array(&env, &[0x01u8; 16]));
+    assert_eq!(
+        crate::verify_webauthn(&env, &pubkey, &other_payload, &good),
+        Err(Error::SignatureInvalid),
+        "assertion bound to a different payload must be rejected"
+    );
+}
