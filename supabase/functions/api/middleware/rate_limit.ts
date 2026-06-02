@@ -16,6 +16,7 @@
 // `retry-after` header.
 
 import type { Context, Next } from "hono";
+import { clientIp, type ConnInfo } from "../lib/client_ip.ts";
 
 interface Bucket {
   tokens: number;
@@ -44,12 +45,11 @@ function sweepIfDue() {
   }
 }
 
+// Audit-005 · H1 — derive the bucket key from the trusted connection IP, NOT
+// the client-forgeable left-most X-Forwarded-For hop. See lib/client_ip.ts.
+// On Deno, Hono exposes the connection info (with remoteAddr) as `c.env`.
 function defaultKey(c: Context): string {
-  const xff = c.req.header("x-forwarded-for");
-  if (xff) return xff.split(",")[0]!.trim();
-  const ra = c.req.header("x-real-ip");
-  if (ra) return ra;
-  return "anon";
+  return clientIp(c.req, c.env as ConnInfo | undefined);
 }
 
 export function rateLimit(cfg: LimiterConfig) {

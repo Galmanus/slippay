@@ -362,25 +362,39 @@ cd contracts/subscription && cargo test --release
 
 ## Production deploy (current)
 
-The live stack on `165.22.10.194` is provisioned PM2-native:
+The live stack on `165.22.10.194` is provisioned PM2-native. There is **no git
+checkout on the server** and **no `deploy` user** — `/opt/slippay-backend` is a
+plain directory kept in sync by rsync from the laptop, and everything runs as
+the `manuel` user. Deploys are: build locally → rsync up → install/build/reload
+on the VPS → verify by checksum.
 
 ```sh
 # server prereqs (one-time, root): nginx, certbot, node 20, pm2, ufw, fail2ban
-# deploy user prereqs (one-time, user-space): pnpm via npm, deno binary
+# manuel-user prereqs (one-time, user-space): pnpm via npm, deno binary
 
-# from the laptop:
-rsync -az --exclude node_modules/ --exclude .git/ --exclude '.env*' \
-  --exclude 'apps/*/dist/' --exclude 'packages/*/dist/' \
-  ./ deploy@host:/opt/slippay-backend/
+# from the laptop — build first, then rsync the tree up.
+# --checksum compares content hashes (not mtimes) so a rebuilt file with an
+# unchanged timestamp is still transferred.
+pnpm -r build
+rsync -az --checksum --exclude node_modules/ --exclude .git/ --exclude '.env*' \
+  ./ manuel@165.22.10.194:/opt/slippay-backend/
 
-ssh deploy@host '
+ssh manuel@165.22.10.194 '
   cd /opt/slippay-backend
   pnpm install --frozen-lockfile
   pnpm -r build
   cd supabase/functions/api && deno cache index.ts && cd /opt/slippay-backend
   pm2 reload ecosystem.config.cjs --update-env
 '
+
+# verify the deployed listener entrypoint matches the local build (checksum gate):
+sha256sum apps/listener/dist/main.js
+ssh manuel@165.22.10.194 'sha256sum /opt/slippay-backend/apps/listener/dist/main.js'
+# expected: identical hashes; if they differ the rsync did not land — re-run it.
 ```
+
+The web app (`app.slippay.cc`) is deployed the same way: built on the laptop and
+rsync'd to `/opt/slippay-backend/apps/web/dist`, served by nginx (not Vercel/git).
 
 Secrets live in `/opt/slippay-backend/.env` (mode 600), never committed:
 
