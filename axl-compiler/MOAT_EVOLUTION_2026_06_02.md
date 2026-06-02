@@ -70,13 +70,26 @@ load-bearing.
   bound K, tight, minimal, verdict, onchain_params, backend }`.
 - `axlc verify-cert <spec.axl> <cert.json>` recomputes the spec hash, re-discharges,
   and asserts byte-equality with the certificate. Exit 0 = valid, 2 = mismatch/
-  refuted. **This is what a CI merge-gate or a third-party auditor runs** — it
-  closes gap #1.
-- `spec_sha256` is a real, std-only SHA-256 of the canonicalized spec — the genuine
-  value for the contract's `ssl_hash`, closing gap #3.
-- `onchain` block derives the install-param relationship from the **proved** K, so
-  the conformance test can read K from the cert instead of hard-coding it — closes
-  gap #2.
+  refuted. **This is the SUBSTRATE a CI merge-gate or a third-party auditor runs**
+  — it makes gap #1 *closable* (the gate is not yet wired into `test.yml`).
+- `spec_sha256` is a real, std-only SHA-256 of the spec bytes — the genuine value
+  for the contract's `ssl_hash` (gap #3: provided, but the e2e scripts are not yet
+  rewired to thread it).
+- `onchain` block carries the **proved** K, so the conformance test *can* read K
+  from the cert instead of hard-coding `window_cap*2` (gap #2: enabled — `test.rs`
+  is not yet rewired to read it).
+
+> **Precise scope — read this (adversarial cross-check, post-ship).** A 60-agent
+> adversarial panel re-ran after ship and was right to flag a blur in the framing
+> above. What this ships is the **off-chain half**: a verifiable provenance hash +
+> a drift-catching verification command. It does **NOT** make the chain enforce the
+> proof — `ssl_hash` is still inert on-chain (`lib.rs:170-176`: "the contract does
+> not interpret it"; the smart-wallet crate has no dependency on axl-compiler), and
+> the conformance constant in `test.rs:1490` is still a literal. So these "gaps" are
+> *enabled to close*, not closed. And substrate ≠ moat: the standard/forcing-function
+> only becomes a moat with downstream adoption (a second prover, an insurer, an
+> on-chain cert registry), of which there is **zero** today. The shipped code is
+> real and green; the word "closes" in the earlier draft over-reached to "enables."
 
 Zero new dependencies (std-only hand-rolled SHA-256, tested against NIST vectors).
 No contract change (no collision with your uncommitted `test.rs`). Nothing deployed.
@@ -124,14 +137,45 @@ evidence-backed fix for the three gaps. But the *strategic* choice is yours:
 - **(A) Standard-first** (what I built toward): make the certificate the forcing
   function — CI gate + contract requires a valid cert hash + publish the cert format.
   Moat = adoption. Failure mode: nobody else adopts → it is just internal rigor.
-- **(B) Proof-depth** (multi-agent global cap is the one non-theater new proof —
-  N sessions each spend 2×cap with no global ceiling, `lib.rs` confirms it is
-  unenforced). Moat = closing a real composition attack. Failure mode: more to port.
-- **(C) Both**, sequenced A→B.
+- **(B) Security fix, NOT a proof** — the cross-check confirmed the multi-agent
+  hole is REAL (each `AgentSession` is independently keyed at `lib.rs:240` with its
+  own `cur_spent`; grep for global/aggregate/cross-session returns empty → K
+  sessions each drain up to 2×window_cap, no wallet-wide ceiling). But it also
+  showed the honest fix is a **one-line shared wallet counter** in the existing
+  chokepoint (`if wallet_total + amount > 2*G { Err }` beside `cur_spent` at
+  ~`lib.rs:1002`), NOT a z3 proof — proving it adds no moat (a competitor copies the
+  counter). So B is worth doing for SAFETY, on its own merits, decoupled from moat.
+- **(C) Both** — A for rigor/standard substrate, B for the real safety hole.
 
-My read of the evidence: **A first** (it is the only one the readers call a real
-moat), B as a security fix regardless of moat. But this is a product-direction call
-and you are the source — decide in the morning.
+My read of the evidence: **A is substrate, not a moat by itself** (it only becomes
+a moat with adoption that does not exist yet); **B is a genuine safety fix** the
+chain needs regardless. This is a product-direction call and you are the source —
+decide in the morning.
+
+## Adversarial cross-check verdict (60-agent panel, post-ship)
+
+I re-ran the adversarial verify panel after shipping. Honest result: **0 of 17
+candidates survived; 14 flagged theater** — including my own certificate direction.
+The skeptics were aggressive (default-refute), so 0/17 is partly calibration — but
+the objections to the certificate work are **specific and code-grounded**, not
+generic, so I take them. The three that converge and are correct:
+
+1. **The chain enforces nothing about the proof.** `ssl_hash` is inert
+   (`lib.rs:170-176`), the smart-wallet crate doesn't depend on axl-compiler, and
+   off-chain CI is the only thing that would check conformance. My "weld the proof
+   to the on-chain enforcer" was the *gap described as if shipped*.
+2. **"New proof" directions are mostly theater** because the properties are either
+   already structurally true on-chain (allowlist immutability is single-writer by
+   construction; recipient allowlist is already enforced at `lib.rs:1019-1024`) or
+   the real fix is a one-liner (global_budget). z3 proving a finite ground
+   membership (`forall r in {a,b}: r in {a,b}`) is instant and meaningless.
+3. **Zero downstream adoption** = the standard-moat is unbuilt by definition; the
+   company's own brief says "no forcing function yet" (`agent-governance-x402.md:50-51`).
+
+What survives this honestly: the shipped certificate is **useful audit/CI rigor**
+(real provenance hash, drift-catching verification) and a **necessary precondition**
+for the standard-moat — but it is not itself the moat, and the on-chain enforcement
+half is not built. I'd rather you have this sharp than have my first framing.
 
 ## Falsifiable
 
