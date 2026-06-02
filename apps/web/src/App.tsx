@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home.tsx";
+import Agents from "./pages/Agents.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
@@ -23,6 +24,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/agents" element={<Agents />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/checkout/:order_id" element={<Checkout />} />

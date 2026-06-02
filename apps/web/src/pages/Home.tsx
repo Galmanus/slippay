@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
 import { Reveal } from "../components/Reveal.tsx";
-import { X402Carousel } from "../components/X402Carousel.tsx";
 import { PayFlowDemo } from "../components/PayFlowDemo.tsx";
 import { useLang, type Lang } from "../lib/lang.ts";
 import { homeCopy } from "../copy/home.tsx";
@@ -183,7 +182,7 @@ export default function Home() {
             (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
           style={scrolled ? undefined : { textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
         >
-          <Link to="/x402-demo" className="hover:opacity-60 transition-opacity">x402 demo</Link>
+          <Link to="/agents" className="hover:opacity-60 transition-opacity">{t.nav.agents}</Link>
           <a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60 transition-opacity">{t.nav.docs}</a>
           <a href="#proof" className="hover:opacity-60 transition-opacity">{t.nav.how}</a>
           <Link to="/login" className="hover:opacity-60 transition-opacity">{t.nav.login}</Link>
@@ -226,7 +225,7 @@ export default function Home() {
           <nav className="menu-stagger flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
             {[
               { to: "/", label: t.nav.home },
-              { to: "/x402-demo", label: "x402 demo" },
+              { to: "/agents", label: t.nav.agents },
               { to: "https://slippay.gitbook.io/slippay-docs", label: t.nav.docs },
               { to: "/login", label: t.nav.login },
             ].map(l => (
@@ -426,69 +425,33 @@ export default function Home() {
             <ProofFact n="04" title={t.proof.invariantLabel} body={t.proof.invariantBody} />
           </div>
 
-          {/* the agent roadmap — a quiet builder link, NOT a second lime CTA.
-              The only high-contrast ask on the page is "Entrar na lista". The
-              agent proof is for builders, so it sits at low visual weight next
-              to the for-builders toggle below. */}
+          {/* quiet handoff to the builder/agent surface — the proof artifacts,
+              the axlc spend-limit certificate and the x402 backing now live on
+              /agents so this page stays zero-tech. Low visual weight: the only
+              high-contrast ask here remains "Entrar na lista". */}
           <div className="mt-16 flex justify-center">
-            <Link to="/x402-demo"
+            <Link to="/agents"
               className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853] transition-colors border-b border-[#f1eee7]/20 pb-1">
               {t.proof.seeItWork} <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
-
-          {/* the runnable certificate — demoted behind a "for builders" toggle */}
-          <details className="group mt-12 max-w-[64ch] mx-auto border border-[#f1eee7]/15 overflow-hidden">
-            <summary className="flex items-center justify-between gap-3 px-5 md:px-6 py-3.5 cursor-pointer list-none select-none font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853]">
-              <span className="flex items-center gap-2">
-                <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" />
-                {t.proof.codeToggle}
-              </span>
-              <span className="transition-transform group-open:rotate-180">▾</span>
-            </summary>
-            <div className="border-t border-[#f1eee7]/15 px-5 md:px-6 py-3 font-mono text-[10px] tracking-tight text-[#f1eee7]/45 normal-case">
-              {t.proof.codeAside}
-            </div>
-            <pre className="px-5 md:px-8 py-6 overflow-x-auto font-mono text-[11px] md:text-[13px] leading-[1.7] text-[#f1eee7]/90 whitespace-pre border-t border-[#f1eee7]/15">
-{t.proof.code}
-            </pre>
-            <div className="border-t border-[#f1eee7]/15 px-5 md:px-8 py-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-[#b5e853] font-mono">
-              <span className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                {t.proof.runline}
-              </span>
-              <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
-                 className="text-[#f1eee7]/55 hover:text-[#b5e853]">
-                {t.proof.specLink}
-              </a>
-            </div>
-          </details>
         </div>
       </Reveal>
 
-      {/* ───────── 4 · THE STANDARD ─────────
-          x402's PUBLIC backing = authority for the technology Slippay builds on.
-          Brief. The honest disclaimer (Slippay is not a member) stays. */}
+      {/* ───────── 4 · BRIDGE → /agents ─────────
+          The single handoff from the human story (A) to the builder/agent
+          surface (B). One line + one quiet button. The home stays zero-tech;
+          x402 backing, the axlc certificate and the mainnet artifacts live on
+          /agents for the people who came for that. */}
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center mb-6">
-            {t.standard.label}
-          </div>
-          <h2 className="text-[6vw] md:text-[2.2vw] font-medium leading-[1.12] tracking-[-0.02em] max-w-[26ch] mx-auto text-center">
-            {t.standard.h2}
-          </h2>
-          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono text-center mt-10 mb-6">
-            {t.standard.backersLabel}
-          </div>
-          <X402Carousel />
-          <div className="max-w-[72ch] mx-auto mt-4">
-            <p className="text-[11px] leading-relaxed text-[#0a0a0a]/50 text-center max-w-[62ch] mx-auto">
-              {t.standard.source}
-            </p>
-            <p className="mt-6 text-base md:text-lg leading-[1.5] text-[#0a0a0a]/85 text-center max-w-[52ch] mx-auto">
-              {t.standard.bridge}
-            </p>
-          </div>
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 text-center">
+          <p className="text-2xl md:text-4xl font-medium tracking-[-0.025em] leading-[1.15] max-w-[20ch] mx-auto">
+            {t.bridge.line}
+          </p>
+          <Link to="/agents"
+            className="lift inline-flex items-center gap-3 mt-9 border border-[#0a0a0a]/30 px-7 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] transition-colors">
+            {t.bridge.button} <span>→</span>
+          </Link>
         </div>
       </Reveal>
 
@@ -519,24 +482,14 @@ export default function Home() {
             </div>
           </div>
 
-          {/* live-on-mainnet proof — verifiable, NOT a customer-volume claim */}
-          <div className="mt-10 max-w-[1000px] mx-auto border border-[#b5e853]/35 p-6 md:p-8 lift">
-            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] font-mono text-[#b5e853] mb-3">
-              <span className="inline-block w-1.5 h-1.5 bg-[#b5e853] animate-pulse" /> {t.status.mainnetLabel}
-            </div>
-            <p className="text-sm md:text-base text-[#f1eee7]/80 leading-relaxed max-w-[68ch]">{t.status.mainnetBody}</p>
-            <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs">
-              <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
-                target="_blank" rel="noopener noreferrer"
-                className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetContract} ↗</a>
-              <a href="https://stellar.expert/explorer/public/tx/05ae429b926d94770166e3425c77210260d2db0083fa81053059612775e510be"
-                target="_blank" rel="noopener noreferrer"
-                className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetTx} ↗</a>
-              <a href="https://stellar.expert/explorer/public/tx/d9a7d17a18719ece53535d51423b8951f37b163e170a7bea2cb4d9588471ec31"
-                target="_blank" rel="noopener noreferrer"
-                className="text-[#f1eee7]/70 hover:text-[#b5e853] underline underline-offset-4 transition-colors">{t.status.mainnetBio} ↗</a>
-            </div>
-            <p className="mt-4 text-xs text-[#f1eee7]/45 italic max-w-[62ch]">{t.status.mainnetNote}</p>
+          {/* the live-on-mainnet artifacts moved to /agents (proof-first there).
+              A quiet pointer keeps the trust signal reachable without putting
+              explorer hashes on the zero-tech human page. */}
+          <div className="mt-10 text-center">
+            <Link to="/agents"
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853] transition-colors border-b border-[#f1eee7]/20 pb-1">
+              {t.status.mainnetLabel} <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
           </div>
 
           {/* one final ask — monumental */}
