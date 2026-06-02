@@ -319,16 +319,15 @@ export default function Home() {
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">┃ é assim que paga</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">{t.payflow.label}</div>
             <h2 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98] max-w-[14ch]">
-              Aponta. Olha. Pago.<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
+              {t.payflow.h2}<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
             </h2>
             <p className="mt-6 text-base md:text-lg text-[#0a0a0a]/75 leading-relaxed max-w-[44ch]">
-              Aponta a câmera no QR, olha pra tela, e o dólar sai — sem senha, sem
-              frase de doze palavras. Seu rosto autoriza, a blockchain confirma.
+              {t.payflow.body}
             </p>
             <Link to="/pay" className="lift inline-flex items-center gap-3 mt-8 bg-[#0a0a0a] text-[#f1eee7] px-7 py-4 text-[11px] uppercase tracking-[0.22em]">
-              Testa no seu celular <span>→</span>
+              {t.payflow.cta} <span>→</span>
             </Link>
           </div>
           <div className="flex justify-center md:pr-6">

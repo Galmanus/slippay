@@ -56,6 +56,9 @@ export interface HomeStrings {
     demoCta: string;          // "Ver a demo x402 →"
     back: string;             // "← a conta em dólar"
   };
+  // PAYMENT FLOW — the biometric "point, look, paid" section next to the
+  // animated device. Was hardcoded PT; now bilingual.
+  payflow: { label: string; h2: string; body: string; cta: string };
   hero: {
     badge: string; eyebrow: string; h1: ReactNode; sub: ReactNode; cta: string; status: ReactNode;
   };
@@ -141,6 +144,12 @@ const pt: HomeStrings = {
     standardLabel: "┃ O padrão que torna isso possível",
     demoCta: "Ver a demo x402",
     back: "← a conta em dólar",
+  },
+  payflow: {
+    label: "┃ é assim que paga",
+    h2: "Pague tocando na tela",
+    body: "Aponta a câmera no QR, olha pra tela, e o dólar sai — sem senha, sem frase de doze palavras. Seu rosto autoriza, a blockchain confirma.",
+    cta: "Testa no seu celular",
   },
   hero: {
     badge: "Acesso antecipado — entre na lista",
@@ -263,6 +272,12 @@ const en: HomeStrings = {
     standardLabel: "┃ The standard that makes it possible",
     demoCta: "See the x402 demo",
     back: "← the dollar account",
+  },
+  payflow: {
+    label: "┃ this is how you pay",
+    h2: "Pay with a touch",
+    body: "Point the camera at the QR, look at the screen, and the dollar goes out — no password, no twelve-word phrase. Your face authorizes, the blockchain confirms.",
+    cta: "Try it on your phone",
   },
   hero: {
     badge: "Early access — join the list",

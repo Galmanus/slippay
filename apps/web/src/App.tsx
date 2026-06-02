@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home.tsx";
 import Agents from "./pages/Agents.tsx";
+import Comprovante from "./pages/Comprovante.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
@@ -25,6 +26,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/agents" element={<Agents />} />
+      <Route path="/comprovante/:txhash" element={<Comprovante />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/checkout/:order_id" element={<Checkout />} />
