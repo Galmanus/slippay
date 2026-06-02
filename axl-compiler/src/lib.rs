@@ -36,12 +36,14 @@
 //!   from `Null` (present JSON null); relational ops follow JS Abstract
 //!   Relational Comparison; `==`/`!=` are strict equality.
 
+pub mod certify;
 pub mod compile;
 pub mod error;
 pub mod json;
 pub mod parse;
 pub mod predicate;
 pub mod prove;
+pub mod sha256;
 pub mod smt;
 pub mod value;
 
