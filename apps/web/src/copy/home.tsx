@@ -40,8 +40,22 @@ import type { Lang } from "../lib/lang.ts";
 const dot = <span className="inline-block align-baseline ml-1.5 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853]" />;
 
 export interface HomeStrings {
-  nav: { how: string; docs: string; login: string; signup: string; home: string };
+  nav: { how: string; docs: string; login: string; signup: string; home: string; agents: string };
   mobileFooter: string;
+  // BRIDGE — the single handoff line + button from the human landing (A) to the
+  // builder/agent page (B). Sits low on the home page; the home stays zero-tech.
+  bridge: { line: ReactNode; button: string };
+  // AGENTS PAGE (Narrativa B) — the credibility surface for builders, investors
+  // and the Stellar ecosystem. Leads with the verifiable on-chain artifacts, NOT
+  // the abstract claim. Framed WITH Stellar's passkey primitive, never "first".
+  agents: {
+    badge: string; h1: ReactNode; sub: ReactNode;
+    liveLabel: string;        // eyebrow over the mainnet proof (the lead)
+    certLabel: string;        // eyebrow over the axlc spend-limit proof
+    standardLabel: string;    // eyebrow over the x402 backing
+    demoCta: string;          // "Ver a demo x402 →"
+    back: string;             // "← a conta em dólar"
+  };
   hero: {
     badge: string; eyebrow: string; h1: ReactNode; sub: ReactNode; cta: string; status: ReactNode;
   };
@@ -112,8 +126,22 @@ export interface HomeStrings {
 }
 
 const pt: HomeStrings = {
-  nav: { how: "Como funciona", docs: "Docs", login: "Entrar", signup: "Entrar na lista", home: "Início" },
+  nav: { how: "Como funciona", docs: "Docs", login: "Entrar", signup: "Entrar na lista", home: "Início", agents: "Agents" },
   mobileFooter: "você ganha em dólar · o dólar chega e fica dólar · vira real no Pix só quando você quiser",
+  bridge: {
+    line: <>Uma conta feita para humanos hoje <em className="font-light">e agentes amanhã.</em></>,
+    button: "Conheça Agents",
+  },
+  agents: {
+    badge: "Para builders e a economia de agentes",
+    h1: <>Pagamentos entre agentes,<br/><em className="not-italic">com o limite provado.{dot}</em></>,
+    sub: <>Construído sobre o primitivo de passkey da Stellar. O que a gente acrescenta: <em className="font-light">provar, on-chain, que um agente não passa do limite que você definir</em> — e mostrar isso liquidado na mainnet, não no slide. Rede de teste para o limite do agente; mainnet e auditoria de fora a seguir.</>,
+    liveLabel: "┃ Já vive na mainnet pública — confere on-chain",
+    certLabel: "┃ O limite do agente, provado por máquina",
+    standardLabel: "┃ O padrão que torna isso possível",
+    demoCta: "Ver a demo x402",
+    back: "← a conta em dólar",
+  },
   hero: {
     badge: "Acesso antecipado — entre na lista",
     eyebrow: "PARA QUEM RECEBE EM DÓLAR E JÁ VIU A CONTA CONGELAR",
@@ -220,8 +248,22 @@ $ axlc prove agent_budget.axl
 };
 
 const en: HomeStrings = {
-  nav: { how: "How it works", docs: "Docs", login: "Log in", signup: "Join the list", home: "Home" },
+  nav: { how: "How it works", docs: "Docs", login: "Log in", signup: "Join the list", home: "Home", agents: "Agents" },
   mobileFooter: "you earn in dollars · the dollar arrives and stays a dollar · it becomes reais on Pix only when you choose",
+  bridge: {
+    line: <>An account built for humans today <em className="font-light">and agents tomorrow.</em></>,
+    button: "Explore Agents",
+  },
+  agents: {
+    badge: "For builders and the agent economy",
+    h1: <>Agent-to-agent payments,<br/><em className="not-italic">with the limit proven.{dot}</em></>,
+    sub: <>Built on Stellar's passkey primitive. What we add: <em className="font-light">proving, on-chain, that an agent can't exceed the limit you set</em> — and showing it settled on mainnet, not on a slide. Testnet for the agent limit; mainnet and an outside audit to come.</>,
+    liveLabel: "┃ Already live on public mainnet — verify on-chain",
+    certLabel: "┃ The agent's limit, machine-proven",
+    standardLabel: "┃ The standard that makes it possible",
+    demoCta: "See the x402 demo",
+    back: "← the dollar account",
+  },
   hero: {
     badge: "Early access — join the list",
     eyebrow: "FOR PEOPLE WHO EARN IN DOLLARS AND HAVE WATCHED AN ACCOUNT FREEZE",
