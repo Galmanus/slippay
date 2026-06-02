@@ -26,10 +26,11 @@
 use std::io::Read;
 use std::process::ExitCode;
 
+use axl_compiler::certify::{build_certificate, verify as verify_certificate};
 use axl_compiler::compile::{compile_agent, enforce, to_request_config, Registries};
 use axl_compiler::json;
 use axl_compiler::parse::{parse_agent, AgentSpec};
-use axl_compiler::prove::{detect_backend, discharge, Certificate, ProveError};
+use axl_compiler::prove::{detect_backend, discharge, Backend, Certificate, ProveError};
 use axl_compiler::smt::{self, Obligation};
 use axl_compiler::value::Value;
 use axl_compiler::{Ceiling, CompileError, InferenceContract, InvariantDecl};
@@ -97,13 +98,21 @@ USAGE:
     axlc request <spec.axl> --tools <tools.json> --schemas <schemas.json>
     axlc enforce <spec.axl> --tools <tools.json> --schemas <schemas.json> --ctx <ctx.json>
     axlc prove   <spec.axl> [--emit-smt]
+    axlc certify <spec.axl>
+    axlc verify-cert <spec.axl> --cert <cert.json>
 
 Use '-' as <spec.axl> to read the spec from stdin.
 
+`certify` discharges the invariant and emits a deterministic proof-carrying
+certificate (JSON) to stdout: spec SHA-256, proved bound K, tightness, and the
+on-chain binding (ssl_hash + window_cap_multiplier). `verify-cert` re-discharges
+and asserts the provided certificate reproduces — the merge-gate / third-party
+check that the deployed bound has not drifted from its proof.
+
 EXIT CODES:
-    0  ok
+    0  ok (prove ISSUED / verify-cert VALID)
     1  usage / compile error
-    2  enforce found predicate violations, OR prove REFUSED (no provable bound)";
+    2  enforce violations, prove/certify REFUSED, OR verify-cert INVALID (drift)";
 
 fn run() -> Result<i32, CliError> {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -124,6 +133,8 @@ fn run() -> Result<i32, CliError> {
         "request" => cmd_request(rest),
         "enforce" => cmd_enforce(rest),
         "prove" => cmd_prove(rest),
+        "certify" => cmd_certify(rest),
+        "verify-cert" => cmd_verify_cert(rest),
         other => Err(CliError::Usage(format!("unknown subcommand '{other}'\n\n{USAGE}"))),
     }
 }
@@ -134,6 +145,7 @@ struct Parsed {
     tools: Option<String>,
     schemas: Option<String>,
     ctx: Option<String>,
+    cert: Option<String>,
     emit_smt: bool,
 }
 
@@ -143,6 +155,7 @@ fn parse_flags(args: &[String]) -> Result<Parsed, CliError> {
         tools: None,
         schemas: None,
         ctx: None,
+        cert: None,
         emit_smt: false,
     };
     let mut i = 0;
@@ -157,6 +170,9 @@ fn parse_flags(args: &[String]) -> Result<Parsed, CliError> {
             }
             "--ctx" => {
                 p.ctx = Some(take_value(args, &mut i, "--ctx")?);
+            }
+            "--cert" => {
+                p.cert = Some(take_value(args, &mut i, "--cert")?);
             }
             "--emit-smt" => {
                 p.emit_smt = true;
@@ -337,6 +353,69 @@ fn cmd_prove(args: &[String]) -> Result<i32, CliError> {
         Certificate::Refused { reason } => {
             println!("  CERTIFICATE: REFUSED — {reason}. Fail-closed.");
             // REFUSED is a non-conformant verdict => exit 2 (same family as enforce).
+            Ok(2)
+        }
+    }
+}
+
+/// Shared by `certify` and `verify-cert`: parse the spec, require an `invariant`,
+/// fail-closed family check, detect a backend, discharge with z3, and assemble the
+/// certificate [`Value`]. Returns `(certificate, is_issued, backend)`.
+fn discharge_to_certificate(src: &str) -> Result<(Value, bool, Backend), CliError> {
+    let spec = parse_agent(src)?;
+    let inv = match &spec.invariant {
+        Some(i) => i,
+        None => {
+            return Err(CliError::Usage(format!(
+                "agent '{}' declares no `invariant -> ...` directive; nothing to certify",
+                spec.name
+            )))
+        }
+    };
+    // Fail closed on an unsupported family BEFORE discharge (mirrors cmd_prove).
+    smt::emit(inv, representative_obligation(inv))?;
+    let backend = detect_backend().ok_or(CliError::Prove(ProveError::NoSolver))?;
+    let cert = discharge(backend, inv)?;
+    let is_issued = matches!(cert, Certificate::Issued { .. });
+    let cert_value = build_certificate(src, &spec.name, inv, &cert, backend.describe());
+    Ok((cert_value, is_issued, backend))
+}
+
+/// `axlc certify <spec.axl>` — discharge the invariant and emit a deterministic
+/// proof-carrying certificate (JSON) to stdout. Exit 0 = ISSUED, 2 = REFUSED
+/// (the certificate is emitted either way; the exit code lets CI gate on it).
+fn cmd_certify(args: &[String]) -> Result<i32, CliError> {
+    let flags = parse_flags(args)?;
+    let src = read_spec(&flags.spec_path)?;
+    let (cert_value, is_issued, _backend) = discharge_to_certificate(&src)?;
+    println!("{}", json::to_string_pretty(&cert_value));
+    Ok(if is_issued { 0 } else { 2 })
+}
+
+/// `axlc verify-cert <spec.axl> --cert <cert.json>` — re-discharge the spec and
+/// assert the provided certificate reproduces. This is the merge-gate / third-
+/// party check: it catches any drift between the deployed bound and its proof,
+/// and any spec edit not re-certified (spec_sha256 mismatch). Exit 0 = VALID,
+/// 2 = INVALID (fail-closed).
+fn cmd_verify_cert(args: &[String]) -> Result<i32, CliError> {
+    let flags = parse_flags(args)?;
+    let src = read_spec(&flags.spec_path)?;
+    let cert_path = require(&flags.cert, "--cert")?;
+    let provided = read_json_file(cert_path)?;
+    let (recomputed, _is_issued, backend) = discharge_to_certificate(&src)?;
+    match verify_certificate(&provided, &recomputed) {
+        Ok(()) => {
+            println!(
+                "VALID — certificate reproduces (re-discharged via {}).",
+                backend.describe()
+            );
+            Ok(0)
+        }
+        Err(mismatches) => {
+            eprintln!("INVALID — certificate does not reproduce (proof/spec drift):");
+            for m in &mismatches {
+                eprintln!("  - {m}");
+            }
             Ok(2)
         }
     }
