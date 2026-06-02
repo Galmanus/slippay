@@ -9,43 +9,45 @@ import { isSafeWebhookUrl, isBlockedIp, validateWebhookUrl } from "../src/ssrf.j
 
 const mockLookup = lookup as unknown as ReturnType<typeof vi.fn>;
 
+// allowLocal === false is the production default (full guard on every network);
+// allowLocal === true is the dev-only escape hatch (lightweight path).
 describe("isSafeWebhookUrl", () => {
   it("accepts https URLs to public hosts", () => {
-    expect(isSafeWebhookUrl("https://example.com/wh", "mainnet")).toBe(true);
+    expect(isSafeWebhookUrl("https://example.com/wh", false)).toBe(true);
   });
 
-  it("rejects http on mainnet", () => {
-    expect(isSafeWebhookUrl("http://example.com/wh", "mainnet")).toBe(false);
+  it("rejects http when allowLocal is false", () => {
+    expect(isSafeWebhookUrl("http://example.com/wh", false)).toBe(false);
   });
 
-  it("allows http on testnet (dev convenience)", () => {
-    expect(isSafeWebhookUrl("http://example.com/wh", "testnet")).toBe(true);
+  it("allows http when allowLocal is true (dev convenience)", () => {
+    expect(isSafeWebhookUrl("http://example.com/wh", true)).toBe(true);
   });
 
-  it("rejects RFC1918 destinations on mainnet", () => {
+  it("rejects RFC1918 destinations when allowLocal is false", () => {
     for (const url of ["http://10.0.0.1/wh", "https://192.168.1.1/wh", "https://172.16.0.5/wh"]) {
-      expect(isSafeWebhookUrl(url, "mainnet")).toBe(false);
+      expect(isSafeWebhookUrl(url, false)).toBe(false);
     }
   });
 
-  it("rejects localhost on mainnet", () => {
-    expect(isSafeWebhookUrl("https://localhost/wh", "mainnet")).toBe(false);
-    expect(isSafeWebhookUrl("https://127.0.0.1/wh", "mainnet")).toBe(false);
-    expect(isSafeWebhookUrl("https://[::1]/wh", "mainnet")).toBe(false);
+  it("rejects localhost when allowLocal is false", () => {
+    expect(isSafeWebhookUrl("https://localhost/wh", false)).toBe(false);
+    expect(isSafeWebhookUrl("https://127.0.0.1/wh", false)).toBe(false);
+    expect(isSafeWebhookUrl("https://[::1]/wh", false)).toBe(false);
   });
 
   it("rejects malformed URLs", () => {
-    expect(isSafeWebhookUrl("not a url", "mainnet")).toBe(false);
-    expect(isSafeWebhookUrl("ftp://example.com", "mainnet")).toBe(false);
+    expect(isSafeWebhookUrl("not a url", false)).toBe(false);
+    expect(isSafeWebhookUrl("ftp://example.com", false)).toBe(false);
   });
 
-  it("rejects URLs with embedded credentials on mainnet", () => {
-    expect(isSafeWebhookUrl("https://user:pass@example.com/wh", "mainnet")).toBe(false);
+  it("rejects URLs with embedded credentials when allowLocal is false", () => {
+    expect(isSafeWebhookUrl("https://user:pass@example.com/wh", false)).toBe(false);
   });
 
-  it("rejects non-standard ports on mainnet", () => {
-    expect(isSafeWebhookUrl("https://example.com:8080/wh", "mainnet")).toBe(false);
-    expect(isSafeWebhookUrl("https://example.com:443/wh", "mainnet")).toBe(true);
+  it("rejects non-standard ports when allowLocal is false", () => {
+    expect(isSafeWebhookUrl("https://example.com:8080/wh", false)).toBe(false);
+    expect(isSafeWebhookUrl("https://example.com:443/wh", false)).toBe(true);
   });
 });
 
@@ -103,25 +105,25 @@ describe("isBlockedIp", () => {
 describe("validateWebhookUrl · DNS rebinding defense", () => {
   beforeEach(() => mockLookup.mockReset());
 
-  it("rejects mainnet URL whose DNS resolves to 169.254.169.254", async () => {
+  it("rejects URL whose DNS resolves to 169.254.169.254 (allowLocal=false)", async () => {
     mockLookup.mockResolvedValueOnce([{ address: "169.254.169.254", family: 4 }]);
-    const r = await validateWebhookUrl("https://rebind.attacker.example/wh", "mainnet");
+    const r = await validateWebhookUrl("https://rebind.attacker.example/wh", false);
     expect(r.safe).toBe(false);
     if (!r.safe) expect(r.reason).toMatch(/^blocked_ip:/);
   });
 
-  it("rejects mainnet URL whose DNS returns any private IP among many", async () => {
+  it("rejects URL whose DNS returns any private IP among many (allowLocal=false)", async () => {
     mockLookup.mockResolvedValueOnce([
       { address: "8.8.8.8", family: 4 },
       { address: "10.0.0.5", family: 4 },
     ]);
-    const r = await validateWebhookUrl("https://multihome.example/wh", "mainnet");
+    const r = await validateWebhookUrl("https://multihome.example/wh", false);
     expect(r.safe).toBe(false);
   });
 
-  it("accepts and pins mainnet URL with public IP", async () => {
+  it("accepts and pins URL with public IP (allowLocal=false)", async () => {
     mockLookup.mockResolvedValueOnce([{ address: "93.184.216.34", family: 4 }]);
-    const r = await validateWebhookUrl("https://example.com/wh", "mainnet");
+    const r = await validateWebhookUrl("https://example.com/wh", false);
     expect(r.safe).toBe(true);
     if (r.safe) {
       expect(r.target.ip).toBe("93.184.216.34");
@@ -131,7 +133,32 @@ describe("validateWebhookUrl · DNS rebinding defense", () => {
   });
 
   it("rejects literal IP in URL that's in blocklist (no DNS path)", async () => {
-    const r = await validateWebhookUrl("https://169.254.169.254/latest/meta-data/", "mainnet");
+    const r = await validateWebhookUrl("https://169.254.169.254/latest/meta-data/", false);
+    expect(r.safe).toBe(false);
+  });
+});
+
+// M3 regression guard: the entire SSRF defense used to be gated behind a
+// `network === "mainnet"` check that was NEVER true on prod (STELLAR_NETWORK=
+// PUBLIC coerced to "public", not "mainnet"). With the fail-closed allowLocal
+// flag, a webhook_url resolving to a blocked literal IP must be rejected
+// regardless of network — i.e. whenever allowLocal is false. Audit-003 L1.
+describe("M3 · blocklist enforced on all networks (allowLocal=false)", () => {
+  beforeEach(() => mockLookup.mockReset());
+
+  it("rejects http://169.254.169.254/ (cloud IMDS) regardless of network", async () => {
+    const r = await validateWebhookUrl("http://169.254.169.254/", false);
+    expect(r.safe).toBe(false);
+  });
+
+  it("rejects http://127.0.0.1/ (loopback) regardless of network", async () => {
+    const r = await validateWebhookUrl("http://127.0.0.1/", false);
+    expect(r.safe).toBe(false);
+  });
+
+  it("rejects a hostname resolving to 127.0.0.1 (DNS path) regardless of network", async () => {
+    mockLookup.mockResolvedValueOnce([{ address: "127.0.0.1", family: 4 }]);
+    const r = await validateWebhookUrl("https://loopback.attacker.example/wh", false);
     expect(r.safe).toBe(false);
   });
 });

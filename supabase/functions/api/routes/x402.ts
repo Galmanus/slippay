@@ -23,7 +23,7 @@
 // columns on orders. Total ~150 LOC. Audit-002/003/004 fixes apply
 // unchanged.
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import type { SupabaseClient } from "supabase";
 import { z } from "zod";
 import { NETWORK, ORDER_DEFAULT_EXPIRY_MINUTES } from "@slippay/shared";
@@ -32,6 +32,22 @@ import { rateLimit } from "../middleware/rate_limit.ts";
 import { serviceClient } from "../lib/supabase.ts";
 import { generateMemo } from "../lib/memo.ts";
 import { mapDbError } from "../lib/db-error.ts";
+import { clientIp, type ConnInfo } from "../lib/client_ip.ts";
+
+// Audit-005 · H1 — hard cap on concurrent OPEN pending orders per
+// (resource, client_id). The GET below reuses an existing open intent rather
+// than minting a new row, so a well-behaved caller never approaches this; the
+// cap only bites a caller deliberately trying to flood pending rows (e.g. by
+// rotating nothing-but still hammering). Generous enough not to break retries.
+const MAX_PENDING_PER_CLIENT_RESOURCE = 20;
+// Coarser cap across ALL clients for a single resource, so a distributed
+// flood (many client ids) still can't mint unbounded rows against one
+// resource. Tune via env if a resource legitimately has high concurrency.
+const MAX_PENDING_PER_RESOURCE = (() => {
+  const raw = Deno.env.get("X402_MAX_PENDING_PER_RESOURCE");
+  const n = raw ? Number.parseInt(raw, 10) : 500;
+  return Number.isFinite(n) && n > 0 ? n : 500;
+})();
 
 type Vars = { merchant: { id: string; [k: string]: unknown }; supabase: SupabaseClient };
 const r = new Hono<{ Variables: Vars }>();
@@ -101,12 +117,13 @@ r.get("/", requireApiKey, async (c) => {
   return c.json({ resources: data ?? [] });
 });
 
-// Helper: derive a stable-ish client id. v0.1 = first hop of XFF or socket
-// IP; v0.2 can switch to a buyer-provided X-PAYMENT-INTENT header.
-function clientIdOf(c: Parameters<Parameters<typeof r.get>[1]>[0]): string {
-  const xff = c.req.header("x-forwarded-for");
-  if (xff) return xff.split(",")[0]!.trim();
-  return c.req.header("x-real-ip") ?? "anon";
+// Helper: derive a stable-ish client id from the TRUSTED connection IP (not
+// the client-forgeable left-most XFF hop — see lib/client_ip.ts). This id
+// keys both the per-client order reuse and the abuse caps below; deriving it
+// from a spoofable header would let any caller mint unbounded pending orders.
+// v0.2 can switch to a buyer-provided X-PAYMENT-INTENT header.
+function clientIdOf(c: Context<{ Variables: Vars }>): string {
+  return clientIp(c.req, c.env as ConnInfo | undefined);
 }
 
 // GET /v1/x402/:slug — the x402 endpoint itself
@@ -152,6 +169,38 @@ r.get("/:slug", async (c) => {
   if (stillOpen) {
     memo = existing.memo as string;
   } else {
+    // Audit-005 · H1 — before minting a brand-new pending row, enforce hard
+    // caps on the number of still-open (pending, non-expired) orders. Without
+    // this, a caller that never pays can mint one row per request. We count
+    // both per (resource, client) and per resource so neither a single client
+    // nor a distributed flood of client ids can grow orders unbounded.
+    const nowIso = new Date().toISOString();
+    const { count: clientPending } = await sb.from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("x402_resource_id", res.id)
+      .eq("x402_client_id", clientId)
+      .eq("status", "pending")
+      .gt("expires_at", nowIso);
+    if ((clientPending ?? 0) >= MAX_PENDING_PER_CLIENT_RESOURCE) {
+      return c.json(
+        { error: "too_many_pending_orders", scope: "client", retry_after_sec: 60 },
+        429,
+        { "retry-after": "60" },
+      );
+    }
+    const { count: resourcePending } = await sb.from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("x402_resource_id", res.id)
+      .eq("status", "pending")
+      .gt("expires_at", nowIso);
+    if ((resourcePending ?? 0) >= MAX_PENDING_PER_RESOURCE) {
+      return c.json(
+        { error: "too_many_pending_orders", scope: "resource", retry_after_sec: 60 },
+        429,
+        { "retry-after": "60" },
+      );
+    }
+
     memo = await generateMemo();
     const expiresAt = new Date(Date.now() + ORDER_DEFAULT_EXPIRY_MINUTES * 60_000).toISOString();
     const { error: ordErr } = await sb.from("orders").insert({
@@ -205,7 +254,7 @@ r.get("/:slug", async (c) => {
   });
 });
 
-function serveContent(c: Parameters<Parameters<typeof r.get>[1]>[0], res: {
+function serveContent(c: Context<{ Variables: Vars }>, res: {
   inline_content?: string | null;
   inline_mime?: string | null;
   redirect_url?: string | null;

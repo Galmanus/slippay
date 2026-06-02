@@ -76,17 +76,34 @@ pnpm dlx supabase@latest db dump --schema public --data-only=false 2>&1 \
 
 ## phase 3 · rebuild + redeploy listener
 
-The listener now depends on `undici` and `ipaddr.js` (audit-003 L1). Push the
-repo to the VPS, install, and restart:
+The listener now depends on `undici` and `ipaddr.js` (audit-003 L1). The VPS is
+NOT a git checkout — `/opt/slippay-backend` is a plain directory synced from the
+laptop via rsync (there is no `deploy` user; deploys run as `manuel`). Build on
+the laptop, rsync the tree up, then install + reload on the VPS:
 
 ```bash
-# On the VPS, pull the latest mainline + install with frozen lockfile
-ssh manuel@165.22.10.194 'cd /opt/slippay-backend && git fetch origin && git checkout main && git pull --ff-only && pnpm install --frozen-lockfile && pnpm -r run build'
+# 1. From the laptop: build, then rsync the repo to the VPS (excludes vcs/dev/secrets).
+#    --checksum makes rsync compare content hashes, not just mtimes, so a rebuilt
+#    file with an unchanged timestamp is still transferred.
+cd ~/projects/slippay
+pnpm -r run build
+rsync -az --checksum \
+  --exclude node_modules/ --exclude .git/ --exclude '.env*' \
+  ./ manuel@165.22.10.194:/opt/slippay-backend/
 
-# Reload PM2 (zero-downtime; keeps PM2-managed env vars)
+# 2. On the VPS: install with frozen lockfile + rebuild in place.
+ssh manuel@165.22.10.194 'cd /opt/slippay-backend && pnpm install --frozen-lockfile && pnpm -r run build'
+
+# 3. Verify the deployed listener entrypoint matches what was built locally (checksum gate).
+#    The listener is tsc-compiled (not bundled); pm2 runs dist/main.js.
+sha256sum apps/listener/dist/main.js
+ssh manuel@165.22.10.194 'sha256sum /opt/slippay-backend/apps/listener/dist/main.js'
+# Expected: identical hashes. If they differ, the rsync did not land — re-run step 1.
+
+# 4. Reload PM2 (zero-downtime; keeps PM2-managed env vars).
 ssh manuel@165.22.10.194 'pm2 reload ecosystem.config.cjs --update-env'
 
-# Tail logs for 30s to confirm clean start (no SSRF blowups, no env errors)
+# 5. Tail logs for 30s to confirm clean start (no SSRF blowups, no env errors).
 ssh manuel@165.22.10.194 'pm2 logs --lines 50 --nostream'
 ```
 

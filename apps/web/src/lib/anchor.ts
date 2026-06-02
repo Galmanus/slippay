@@ -43,6 +43,22 @@ export interface BuyerWallet {
 
 const STORAGE_KEY = "slippay.anchor.buyer.v1";
 
+// SECURITY (audit L3): this module persists a Stellar SECRET key to localStorage
+// in cleartext. That is acceptable ONLY for throwaway TESTNET demo wallets. Real
+// funds (PUBLIC network) MUST use a passkey / external wallet (Freighter et al.
+// via src/lib/wallet.ts) and never touch localStorage. We assert the app is on
+// testnet (same env the rest of the app reads — see wallet.ts:8) before writing.
+function assertTestnetForLocalSecret(): void {
+  const network = (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase();
+  if (network !== "TESTNET") {
+    throw new Error(
+      "anchor.ts: refusing to persist a Stellar secret to localStorage on " +
+        `network "${network}". Real funds must use a passkey / external wallet, ` +
+        "not localStorage-stored secrets.",
+    );
+  }
+}
+
 export function getOrCreateBuyer(): BuyerWallet {
   const cached = localStorage.getItem(STORAGE_KEY);
   if (cached) {
@@ -51,6 +67,8 @@ export function getOrCreateBuyer(): BuyerWallet {
       if (parsed.publicKey && parsed.secretKey) return parsed;
     } catch { /* fall through */ }
   }
+  // Fail closed: never mint + store a fresh secret outside testnet.
+  assertTestnetForLocalSecret();
   const kp = Keypair.random();
   const wallet: BuyerWallet = { publicKey: kp.publicKey(), secretKey: kp.secret() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));

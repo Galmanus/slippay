@@ -1,7 +1,5 @@
 node_modules
 dist
-.env
-.env.local
 *.log
 .DS_Store
 .turbo
@@ -9,7 +7,18 @@ supabase/.temp
 .vercel
 .fly
 *.tsbuildinfo
-.env.docker
+
+# Env files — NEVER commit (audit L4). VITE_-prefixed values get inlined into
+# the world-readable bundle, and server .env holds secrets. Ignore all .env*
+# everywhere, but keep *.example templates tracked.
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
 
 # Rust / Soroban build artifacts
 target/

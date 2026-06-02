@@ -90,22 +90,28 @@ export type ValidationResult =
 /**
  * Pre-flight URL shape check (sync, cheap). Returns false on obviously bad URLs
  * so callers can mark deliveries dead without paying DNS cost.
+ *
+ * `allowLocal` is a dev-only escape hatch (config.allowLocalWebhooks). When
+ * false — the production default on EVERY network, including testnet — the full
+ * guard applies (https-only, allowed ports, reject local hostnames + literal
+ * blocked IPs). When true, the historical lightweight path is kept so local
+ * mock servers (example.com, localhost) work in tests. Audit-003 L1.
  */
-export function isSafeWebhookUrl(url: string, network: "testnet" | "mainnet"): boolean {
+export function isSafeWebhookUrl(url: string, allowLocal: boolean): boolean {
   let parsed: URL;
   try { parsed = new URL(url); } catch { return false; }
   if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return false;
-  if (network === "mainnet" && parsed.protocol !== "https:") return false;
+  if (!allowLocal && parsed.protocol !== "https:") return false;
   if (parsed.username || parsed.password) return false; // no embedded creds
   const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, "");
   if (!host) return false;
-  if (network === "mainnet" && LOCAL_HOSTNAMES.has(host)) return false;
+  if (!allowLocal && LOCAL_HOSTNAMES.has(host)) return false;
   // Reject hostnames that are literal IPs in the blocked set (skip DNS).
-  if (network === "mainnet" && ipaddr.isValid(host) && isBlockedIp(host)) {
+  if (!allowLocal && ipaddr.isValid(host) && isBlockedIp(host)) {
     return false;
   }
   const port = parsed.port ? Number(parsed.port) : (parsed.protocol === "https:" ? 443 : 80);
-  if (network === "mainnet" && !ALLOWED_PORTS.has(port)) return false;
+  if (!allowLocal && !ALLOWED_PORTS.has(port)) return false;
   return true;
 }
 
@@ -117,11 +123,11 @@ export function isSafeWebhookUrl(url: string, network: "testnet" | "mainnet"): b
  */
 export async function validateWebhookUrl(
   url: string,
-  network: "testnet" | "mainnet",
+  allowLocal: boolean,
 ): Promise<ValidationResult> {
   let parsed: URL;
   try { parsed = new URL(url); } catch { return { safe: false, reason: "invalid_url" }; }
-  if (!isSafeWebhookUrl(url, network)) return { safe: false, reason: "preflight_rejected" };
+  if (!isSafeWebhookUrl(url, allowLocal)) return { safe: false, reason: "preflight_rejected" };
 
   const protocol = parsed.protocol as "http:" | "https:";
   const port = parsed.port ? Number(parsed.port) : (protocol === "https:" ? 443 : 80);
@@ -130,7 +136,7 @@ export async function validateWebhookUrl(
 
   // If host is a literal IP, no DNS step — just re-validate against blocklist.
   if (ipaddr.isValid(host)) {
-    if (network === "mainnet" && isBlockedIp(host)) {
+    if (!allowLocal && isBlockedIp(host)) {
       return { safe: false, reason: "ip_blocked" };
     }
     const family = (ipaddr.parse(host).kind() === "ipv4" ? 4 : 6) as 4 | 6;
@@ -148,7 +154,7 @@ export async function validateWebhookUrl(
   }
   if (addrs.length === 0) return { safe: false, reason: "no_dns_records" };
 
-  if (network === "mainnet") {
+  if (!allowLocal) {
     for (const a of addrs) {
       if (isBlockedIp(a.address)) {
         return { safe: false, reason: `blocked_ip:${a.address}` };
