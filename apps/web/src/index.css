@@ -81,6 +81,34 @@ html { scroll-behavior: smooth; }
 @keyframes pf-spin { to { transform: rotate(360deg); } }
 @keyframes pf-pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+/* — cinematic upgrade — */
+/* device floats + a hair of perspective tilt */
+@keyframes pf-bob {
+  0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+  50%      { transform: translateY(-12px) rotateX(1.5deg) rotateY(-2deg); }
+}
+/* diagonal screen glare sweeping slowly across the glass */
+@keyframes pf-glare {
+  0%   { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+  18%  { opacity: 0.55; }
+  42%  { opacity: 0; }
+  100% { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+}
+/* ambient lime stage glow — gentle, brighter handled per-phase via opacity */
+@keyframes pf-glow { 0%,100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.12); opacity: .85; } }
+/* QR corner brackets breathing */
+@keyframes pf-bracket { 0%,100% { opacity: .45; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1); } }
+/* Face ID concentric pulse rings */
+@keyframes pf-ring { 0% { transform: scale(0.6); opacity: .7; } 100% { transform: scale(1.9); opacity: 0; } }
+/* Face ID scan bar travelling over the dot mesh */
+@keyframes pf-mesh { 0%,100% { transform: translateY(-42px); opacity: 0; } 10%,90% { opacity: 1; } 50% { transform: translateY(42px); } }
+/* success ring burst on paid */
+@keyframes pf-burst { 0% { transform: scale(0.3); opacity: .8; } 100% { transform: scale(2.4); opacity: 0; } }
+/* checkmark stroke draw-in */
+@keyframes pf-draw { to { stroke-dashoffset: 0; } }
+/* soft rise for paid text */
+@keyframes pf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
 /* Editorial range slider — square thumb, ink on a thin track. No rounding. */
 .slip-range { -webkit-appearance: none; appearance: none; height: 2px; background: rgba(10,10,10,0.18); cursor: pointer; }
 .slip-range:focus { outline: none; }
