@@ -331,7 +331,7 @@ export default function Home() {
               Testa no seu celular <span>→</span>
             </Link>
           </div>
-          <div className="flex justify-center md:justify-end">
+          <div className="flex justify-center md:pr-6">
             <PayFlowDemo />
           </div>
         </div>
