@@ -106,30 +106,25 @@ export default function AgentHome() {
       {/* HERO */}
       <section className="relative">
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 pt-8 md:pt-24 pb-20 md:pb-36">
-          <div className="grid lg:grid-cols-[1.1fr_minmax(360px,420px)] gap-10 lg:gap-20 items-center">
-            <div className="hero-in">
-              <Eyebrow>dólar de verdade, no automático</Eyebrow>
-              <h1 className="text-[44px] leading-[0.95] md:text-[80px] md:leading-[0.92] font-semibold tracking-[-0.045em] max-w-[15ch]">
-                <span className="mask-clip"><span className="mask-up">Seu dinheiro, no automático.</span></span>
-              </h1>
-              <div className="lg:hidden mt-9">
-                <LivePaymentCard />
-              </div>
-              <p className="mt-9 text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[46ch]">
-                A SlipPay deixa o seu dinheiro em dólar trabalhar sozinho. Ela recebe os seus pagamentos
-                e paga as suas contas, na hora, sem maquininha e sem estorno.
-                <span className="text-[#0a0a0a] font-medium"> O dinheiro continua sendo seu, e ela só faz o que você autorizou.</span>
-              </p>
-              <div className="mt-11 flex flex-wrap items-center gap-7">
-                <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Testar grátis</Link>
-                <a href="#precos" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Quanto custa?</a>
-              </div>
-              <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">grátis pra testar · sem cartão</p>
-              <p className="mt-7 text-[15px] text-[#0a0a0a]/50 leading-relaxed max-w-[44ch]">
-                Pra SaaS, agências, e-commerce e empresas que pagam ou recebem em dólar.
-              </p>
+          <div className="hero-in flex flex-col items-center text-center">
+            <Eyebrow>dólar de verdade, no automático</Eyebrow>
+            <h1 className="text-[44px] leading-[0.95] md:text-[80px] md:leading-[0.92] font-semibold tracking-[-0.045em] max-w-[15ch] mx-auto">
+              <span className="mask-clip"><span className="mask-up">Seu dinheiro, no automático.</span></span>
+            </h1>
+            <p className="mt-9 text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[48ch] mx-auto">
+              A SlipPay deixa o seu dinheiro em dólar trabalhar sozinho. Ela recebe os seus pagamentos
+              e paga as suas contas, na hora, sem maquininha e sem estorno.
+              <span className="text-[#0a0a0a] font-medium"> O dinheiro continua sendo seu, e ela só faz o que você autorizou.</span>
+            </p>
+            <div className="mt-11 flex flex-wrap items-center justify-center gap-7">
+              <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Testar grátis</Link>
+              <a href="#precos" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Quanto custa?</a>
             </div>
-            <div className="hero-in hidden lg:block">
+            <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">grátis pra testar · sem cartão</p>
+            <p className="mt-7 text-[15px] text-[#0a0a0a]/50 leading-relaxed max-w-[44ch] mx-auto">
+              Pra SaaS, agências, e-commerce e empresas que pagam ou recebem em dólar.
+            </p>
+            <div className="mt-14 w-full max-w-[420px] mx-auto">
               <LivePaymentCard />
             </div>
           </div>
@@ -138,7 +133,7 @@ export default function AgentHome() {
 
       {/* TRUST STRIP — credibilidade honesta (parceiros de tech, não depoimento falso) */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-7 flex flex-wrap items-center gap-x-8 gap-y-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
+        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-7 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
           <span>construído sobre</span>
           <span className="text-[#0a0a0a]/75">Stellar</span>
           <span className="opacity-30">·</span>
@@ -150,26 +145,26 @@ export default function AgentHome() {
 
       {/* O QUE SE REPETE — uma linha */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28 text-center">
           <Eyebrow>o que o agente cuida</Eyebrow>
-          <p className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.08] max-w-[22ch]">
+          <p className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.08] max-w-[22ch] mx-auto">
             O agente cuida dos pagamentos que seguem regras previsíveis.
           </p>
-          <p className="mt-7 text-xl text-[#0a0a0a]/55 leading-relaxed max-w-[46ch]">Assinaturas, APIs, fornecedores, prestadores e outras cobranças recorrentes.</p>
+          <p className="mt-7 text-xl text-[#0a0a0a]/55 leading-relaxed max-w-[46ch] mx-auto">Assinaturas, APIs, fornecedores, prestadores e outras cobranças recorrentes.</p>
         </div>
       </section>
 
       {/* MAIS BARATO QUE A STRIPE */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 text-center">
           <Eyebrow>mais barato e mais seguro que a stripe</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[13ch]">Economize ~3% em cada transação.</h2>
-          <p className="mt-8 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch]">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[13ch] mx-auto">Economize ~3% em cada transação.</h2>
+          <p className="mt-8 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch] mx-auto">
             Cartão e Stripe levam perto de 3% de cada venda. No Brasil, mais ainda. Na Stellar, mover
             dinheiro custa frações de centavo. A SlipPay repassa essa economia pra você:
             <span className="text-[#0a0a0a] font-medium"> a mesma venda, com uma fração da taxa, e sem chargeback.</span>
           </p>
-          <div className="mt-12 grid sm:grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12 max-w-[680px]">
+          <div className="mt-12 grid sm:grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12 max-w-[680px] mx-auto text-left">
             <div className="bg-white p-7 md:p-8">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">cartão / stripe</div>
               <div className="mt-4 text-4xl font-semibold tabular-nums tracking-[-0.03em]"><CountUp to={2.9} format={(n) => `~${n.toFixed(1).replace(".", ",")}%+`} /></div>
@@ -181,7 +176,7 @@ export default function AgentHome() {
               <div className="mt-2 text-[14px] text-[#f1eee7]/60 leading-snug">taxa de rede quase zero · final em segundos · sem chargeback</div>
             </div>
           </div>
-          <p className="mt-12 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch]">
+          <p className="mt-12 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch] mx-auto">
             E mais seguro. A Stripe é centralizada: segura o seu dinheiro e pode congelar a sua conta a
             qualquer momento. <span className="text-[#0a0a0a] font-medium">A SlipPay é non-custodial: o dinheiro nunca sai da sua carteira, e ninguém consegue travar.</span>
           </p>
@@ -190,9 +185,9 @@ export default function AgentHome() {
 
       {/* COMO USAR HOJE — pro CNPJ com conta no banco */}
       <section className="border-t border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 text-center">
           <Eyebrow dark>tem conta no nubank, bb ou bradesco?</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[14ch]">Veja como começar, com o que você já tem.</h2>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[14ch] mx-auto">Veja como começar, com o que você já tem.</h2>
           <div className="mt-16 grid md:grid-cols-3 gap-12 md:gap-10">
             {[
               ["01", "Crie sua conta", "Com o seu rosto, em um minuto. Sem senha, sem frase pra decorar, sem cartão. De graça."],
@@ -202,11 +197,11 @@ export default function AgentHome() {
               <div key={n}>
                 <div className="font-mono text-[12px] text-[#b5e853] mb-4">{n}</div>
                 <div className="text-2xl font-semibold tracking-[-0.02em]">{h}</div>
-                <p className="mt-3 text-[15px] text-[#f1eee7]/60 leading-relaxed">{b}</p>
+                <p className="mt-3 text-[15px] text-[#f1eee7]/60 leading-relaxed max-w-[34ch] mx-auto">{b}</p>
               </div>
             ))}
           </div>
-          <p className="mt-14 text-lg text-[#f1eee7]/55 leading-relaxed max-w-[54ch]">
+          <p className="mt-14 text-lg text-[#f1eee7]/55 leading-relaxed max-w-[54ch] mx-auto">
             O Pix direto pra dólar, sem passar por corretora, está chegando. E se você quiser, a gente
             coloca o seu primeiro dólar junto com você, na mão. <a href="/signup" className="text-[#b5e853] hover:underline underline-offset-4">Fale com a gente.</a>
           </p>
@@ -215,14 +210,14 @@ export default function AgentHome() {
 
       {/* MULTI-CHAIN — aceita USDC de qualquer chain via CCTP */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28 text-center">
           <Eyebrow>traga seu dólar de qualquer lugar</Eyebrow>
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.02] max-w-[16ch]">Aceita USDC de qualquer blockchain.</h2>
-          <p className="mt-7 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch]">
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.02] max-w-[16ch] mx-auto">Aceita USDC de qualquer blockchain.</h2>
+          <p className="mt-7 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch] mx-auto">
             Seu dólar chega na carteira vindo de Ethereum, Base, Solana e mais de 15 redes, pela tecnologia da Circle (CCTP).
             Dólar nativo, queimado e mintado pela própria Circle: <span className="text-[#0a0a0a] font-medium">sem bridge de risco, sem token embrulhado.</span>
           </p>
-          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
+          <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
             {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Unichain", "Linea", "+ mais"].map((c) => (
               <span key={c} className="flex items-center gap-2"><span className="text-[#65a30d]">◆</span>{c}</span>
             ))}
@@ -232,25 +227,25 @@ export default function AgentHome() {
 
       {/* CONTROLE — a frase que mata a objeção */}
       <section className="border-t border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-28 md:py-40">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-28 md:py-40 text-center">
           <Eyebrow dark>controle total</Eyebrow>
-          <h2 className="text-5xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[12ch]">
+          <h2 className="text-5xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[12ch] mx-auto">
             O agente não decide. <span className="text-[#b5e853]">Ele executa.</span>
           </h2>
-          <p className="mt-9 text-xl text-[#f1eee7]/65 leading-relaxed max-w-[46ch]">
+          <p className="mt-9 text-xl text-[#f1eee7]/65 leading-relaxed max-w-[46ch] mx-auto">
             <span className="text-[#f1eee7] font-medium">Seu dinheiro nunca sai do seu controle.</span> Você
             define as regras, e antes de cada pagamento o agente verifica quem vai receber, quanto pode
             gastar, se está dentro da política e se o limite ainda existe.
           </p>
-          <div className="mt-12 flex flex-wrap gap-x-10 gap-y-4 font-mono text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55">
+          <div className="mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4 font-mono text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55">
             {["quem recebe", "quanto", "política", "limite"].map((c) => (
               <span key={c} className="flex items-center gap-2.5"><span className="text-[#b5e853]">✓</span>{c}</span>
             ))}
           </div>
-          <p className="mt-14 text-2xl md:text-3xl font-medium tracking-[-0.02em] text-[#f1eee7]/90 max-w-[26ch]">
+          <p className="mt-14 text-2xl md:text-3xl font-medium tracking-[-0.02em] text-[#f1eee7]/90 max-w-[26ch] mx-auto">
             O agente pode se enganar. A regra que protege o seu dinheiro, não. Fora dela, ele para e te chama.
           </p>
-          <div className="mt-12 max-w-[560px]">
+          <div className="mt-12 max-w-[560px] mx-auto text-left">
             <RuleSandbox />
           </div>
         </div>
@@ -258,16 +253,16 @@ export default function AgentHome() {
 
       {/* EXEMPLO — concreto, R$ */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 grid md:grid-cols-[1fr_1fr] gap-16 lg:gap-24 items-center">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 flex flex-col items-center text-center">
           <div>
             <Eyebrow>um exemplo</Eyebrow>
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[12ch]">R$40 mil por mês, no automático.</h2>
-            <p className="mt-8 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[40ch]">
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[16ch] mx-auto">R$40 mil por mês, no automático.</h2>
+            <p className="mt-8 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[44ch] mx-auto">
               O agente executa os pagamentos recorrentes dentro das regras aprovadas, e só pede ajuda
               quando algo foge do padrão.
             </p>
           </div>
-          <div>
+          <div className="mt-14 w-full max-w-[420px] mx-auto text-left">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/40 pb-6">uma empresa · todo mês</div>
             {[
               ["APIs", "R$20.000"],
@@ -289,36 +284,38 @@ export default function AgentHome() {
 
       {/* PROVA */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 grid md:grid-cols-[1fr_1fr] gap-16 items-center">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 flex flex-col items-center text-center">
           <div>
             <Eyebrow>já está funcionando</Eyebrow>
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[12ch]">Não é promessa.</h2>
-            <p className="mt-8 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[42ch]">
+            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto">Não é promessa.</h2>
+            <p className="mt-8 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[46ch] mx-auto">
               Dinheiro real já está se movendo com a SlipPay. Você não precisa confiar na nossa palavra:
               acompanha os pagamentos, confere os limites e verifica cada transação você mesmo. Não é
               simulação. Não é protótipo.
             </p>
-            <div className="mt-9 flex flex-wrap items-center gap-7">
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
               <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#0a0a0a] text-[#f1eee7]">Verificar on-chain<span className="w-1.5 h-1.5 rounded-full bg-[#b5e853]" /></a>
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/35">movido a Stellar + USDC</span>
             </div>
           </div>
-          <MandateDemo />
+          <div className="mt-14 w-full max-w-[440px] mx-auto text-left">
+            <MandateDemo />
+          </div>
         </div>
       </section>
 
       {/* VISÃO — a alma do manifesto, dark */}
       <section className="border-t border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-40">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#b5e853] mb-6">a nossa visão</div>
-          <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.96] max-w-[18ch]">
+          <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.96] max-w-[18ch] mx-auto">
             Dólar de verdade, <span className="text-[#b5e853]">simples como um aplicativo.</span>
           </h2>
-          <p className="mt-12 text-xl md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[54ch]">
+          <p className="mt-12 text-xl md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[54ch] mx-auto">
             Dinheiro em dólar que trabalha sozinho e continua sendo seu. Sem virar engenheiro, sem decorar
             jargão. A IA faz o trabalho pesado, e a regra que protege o seu dinheiro nunca depende dela.
           </p>
-          <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[22ch]">
+          <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[24ch] mx-auto">
             A tecnologia mais avançada, simples de usar.
           </p>
           <a href="/manifesto" className="mt-10 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#b5e853] border-b border-[#b5e853]/40 hover:border-[#b5e853] pb-1">Leia o manifesto</a>
@@ -327,12 +324,12 @@ export default function AgentHome() {
 
       {/* PREÇOS — comece grátis */}
       <section id="precos" className="border-t border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32">
+        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 text-center">
           <Eyebrow>preços</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[14ch]">Comece grátis. Pague quando valer a pena.</h2>
-          <p className="mt-8 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[50ch]">14 dias grátis, sem cartão. Depois, um plano sob medida pro tamanho da sua operação. A gente acerta o preço quando o agente já estiver te poupando trabalho.</p>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[16ch] mx-auto">Comece grátis. Pague quando valer a pena.</h2>
+          <p className="mt-8 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[50ch] mx-auto">14 dias grátis, sem cartão. Depois, um plano sob medida pro tamanho da sua operação. A gente acerta o preço quando o agente já estiver te poupando trabalho.</p>
 
-          <div className="mt-16 grid md:grid-cols-3 gap-8">
+          <div className="mt-16 grid md:grid-cols-3 gap-8 text-left">
             {TIERS.map((t) => (
               <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#65a30d]" : "border-t border-[#0a0a0a]/15"}`}>
                 <div className="flex items-baseline justify-between">
@@ -344,11 +341,11 @@ export default function AgentHome() {
             ))}
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center gap-x-7 gap-y-4">
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
             <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Testar grátis</Link>
             <a href="/signup" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Fale com a gente</a>
           </div>
-          <p className="mt-10 text-[14px] text-[#0a0a0a]/45 max-w-[60ch] leading-relaxed">
+          <p className="mt-10 text-[14px] text-[#0a0a0a]/45 max-w-[60ch] leading-relaxed mx-auto">
             O dinheiro é sempre seu, nunca fica conosco, e cada pagamento dá pra conferir.
           </p>
         </div>
@@ -356,10 +353,10 @@ export default function AgentHome() {
 
       {/* FAQ */}
       <section className="border-t border-[#0a0a0a]/10">
-        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-32 text-center">
           <Eyebrow>perguntas frequentes</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[14ch]">Ainda com dúvida?</h2>
-          <div className="mt-14 max-w-[820px]">
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto">Ainda com dúvida?</h2>
+          <div className="mt-14 max-w-[820px] mx-auto text-left">
             {FAQ.map(([q, a], i) => {
               const open = openFaq === i;
               return (
