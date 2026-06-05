@@ -15,6 +15,7 @@ import { Logo } from "../components/Logo";
 import { QrScanner } from "../components/QrScanner";
 import { decodeRequest, stroopsToXlm, type PayRequest } from "../lib/slippayqr";
 import { createPasskey, payViaRelayer, type PasskeyHandle } from "../lib/passkey";
+import { FaceScan } from "../components/FaceScan";
 
 const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
   ?? "https://api.slippay.cc/api/v1/relayer";
@@ -126,6 +127,16 @@ export default function PayDemo() {
             2 · Pagar uma cobrança (QR)
           </button>
         </div>
+
+        {/* face-scan moment — visualizes the authorization (the real prompt is the OS modal) */}
+        {(busy || payHash) && (
+          <div className="mt-8 max-w-[360px] rounded-2xl border border-[#0a0a0a]/10 bg-white/40 py-4">
+            <FaceScan state={payHash && !busy ? "done" : "scanning"} />
+            <div className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 pb-1">
+              {payHash && !busy ? "autorizado pelo seu rosto" : "aguardando seu rosto…"}
+            </div>
+          </div>
+        )}
 
         {/* confirm screen — see WHO and HOW MUCH before your face authorizes */}
         {req && (
