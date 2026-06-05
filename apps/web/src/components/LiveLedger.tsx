@@ -14,7 +14,7 @@ const _CONTRACT = "https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OM
 const ENTRIES: Entry[] = [
   { tag: "pagamento", detail: "chegou em 6 segundos", glyph: "ok", href: _TX },
   { tag: "na conta", detail: "direto, no seu nome", glyph: "ok", href: _CONTRACT },
-  { tag: "taxa", detail: "0,98% · cartão leva ~8%", glyph: "ok" },
+  { tag: "taxa", detail: "2,97% · cartão leva ~8%", glyph: "ok" },
   { tag: "estorno", detail: "não existe aqui", glyph: "ok" },
   { tag: "espera", detail: "zero · é na hora", glyph: "ok" },
   { tag: "tudo público", detail: "qualquer um confere", glyph: "ok", href: _CONTRACT },

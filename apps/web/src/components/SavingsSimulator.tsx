@@ -1,11 +1,11 @@
-// Interactive "volume that never sleeps" calculator — the 5% model.
-// Agents pay 24/7; the merchant absorbs a flat 5% and collects the rest in
-// dollars, final, with zero chargebacks. Honest: this is NOT a "cheaper than
-// Stripe" claim (5% > 2.9%). It sells what cards can't do — certainty, finality,
-// dollars, and agents that can pay at all.
+// Interactive "volume that never sleeps" calculator — the 2.97% flat model.
+// Agents pay 24/7; the merchant absorbs a flat 2.97% and collects the rest in
+// dollars, final, with zero chargebacks. Honest: this is roughly at parity with
+// a card rate (2.97% vs ~2.9%). It sells what cards can't do: certainty,
+// finality, dollars, and agents that can pay at all.
 import { useMemo, useState } from "react";
 
-const FEE = 0.047;
+const FEE = 0.0297;
 const fmt = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
@@ -43,7 +43,7 @@ export function SavingsSimulator() {
     <section className="border-t border-[#0a0a0a]/10">
       <div data-reveal className="max-w-[1180px] mx-auto px-5 md:px-10 py-20 md:py-28">
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/45 mb-4">agents pay 24/7 · do the math</div>
-        <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] max-w-[22ch]">4.7% flat. In dollars. Final. Zero chargebacks.</h2>
+        <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] max-w-[22ch]">2.97% flat. In dollars. Final. Zero chargebacks.</h2>
 
         <div className="mt-12 grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
           {/* controls */}
@@ -69,7 +69,7 @@ export function SavingsSimulator() {
             <div className="font-mono text-[11px] text-[#f1eee7]/50 mt-3">in dollars · final in ~5s · no chargebacks</div>
 
             <div className="mt-8 pt-6 border-t border-[#f1eee7]/12 flex items-baseline justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/45">SlipPay fee · 4.7% flat</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/45">SlipPay fee · 2.97% flat</span>
               <span className="text-2xl md:text-3xl font-semibold tabular-nums">{fmt(fee)}</span>
             </div>
           </div>

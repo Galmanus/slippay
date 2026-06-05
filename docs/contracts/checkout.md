@@ -66,10 +66,10 @@ config.
 - `amount > 0` required.
 - Atomicity: net-to-merchant and fee-to-platform settle together or not at all.
 
-A note on fee figures: SlipPay surfaces quote different fee values in different
-places (for example 0.98% in the legacy billing API versus the `fee_bps = 300`
-on this testnet deployment). Treat the fee as a configured parameter of the
-deployed instance, not a single canonical platform rate.
+A note on fee figures: the fee is a configured parameter of the deployed
+instance. The API default is 297 bp (2.97%); this testnet checkout contract was
+deployed with `fee_bps = 300` (3%). A mainnet checkout deployment should be
+constructed with the canonical 297 bp to match the API.
 
 ## Status & honest limitations
 
