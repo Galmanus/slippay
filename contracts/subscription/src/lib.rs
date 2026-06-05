@@ -72,6 +72,20 @@ pub enum DataKey {
     // subscription. autocharge_attested won't settle without a fresh signature
     // from this key. Set by the merchant via set_attester.
     Attester(BytesN<32>),
+    // v0.4: contract-global platform fee config, set once at deploy via the
+    // constructor (immutable). Applied to the autonomous charge paths.
+    PlatformFee,
+}
+
+/// Contract-global platform fee, fixed at deploy time. `fee_bps` is the platform
+/// fee in basis points (297 = 2.97%), taken out of each autonomous charge
+/// (autocharge / autocharge_attested) and routed to `platform`. The merchant
+/// receives `amount - fee`. fee_bps = 0 disables the fee leg entirely.
+#[contracttype]
+#[derive(Clone, Debug)]
+pub struct PlatformFee {
+    pub platform: Address,
+    pub fee_bps: u32,
 }
 
 #[contracterror]
@@ -94,6 +108,20 @@ pub struct SubscriptionContract;
 
 #[contractimpl]
 impl SubscriptionContract {
+    /// Deploy-time, immutable platform fee config. `fee_bps` (basis points,
+    /// 297 = 2.97%, max 1000 = 10%) is taken out of every autonomous charge
+    /// (autocharge / autocharge_attested) and routed to `platform`; the merchant
+    /// receives `amount - fee`. fee_bps = 0 means no fee leg (the rail runs free).
+    /// Set atomically at deploy so there is no front-running window on a public
+    /// network — the fee recipient and rate are bound to the contract instance.
+    pub fn __constructor(env: Env, platform: Address, fee_bps: u32) {
+        if fee_bps > 1000 {
+            panic_with_error!(&env, Error::InvalidConfig);
+        }
+        env.storage().instance().set(&DataKey::PlatformFee, &PlatformFee { platform, fee_bps });
+        env.storage().instance().extend_ttl(TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+    }
+
     /// Buyer authorizes a new subscription. Returns a deterministic 32-byte id.
     /// Both buyer and contract authentication are required at the host level
     /// (require_auth invocations).
@@ -442,12 +470,27 @@ impl SubscriptionContract {
             panic_with_error!(env, Error::MaxPeriodsReached);
         }
 
+        // Platform fee leg (inescapable on the autonomous rail). The fee is taken
+        // OUT of `amount`: the merchant receives `amount - fee`, the platform
+        // receives `fee`, and the buyer's total debit stays `amount`. Both legs are
+        // pulled via transfer_from against the buyer's one standing allowance, so
+        // the allowance cap still bounds the total. fee_bps is capped at 1000 (10%)
+        // by the constructor, so fee < amount always and `amount - fee` stays > 0.
         let client = token::Client::new(env, &sub.token);
+        let cfg: Option<PlatformFee> = env.storage().instance().get(&DataKey::PlatformFee);
+        let fee: i128 = match &cfg {
+            Some(c) if c.fee_bps > 0 => sub.amount * (c.fee_bps as i128) / 10_000,
+            _ => 0,
+        };
+        if fee > 0 {
+            let platform = cfg.as_ref().unwrap().platform.clone();
+            client.transfer_from(&env.current_contract_address(), &sub.buyer, &platform, &fee);
+        }
         client.transfer_from(
             &env.current_contract_address(),
             &sub.buyer,
             &sub.merchant,
-            &sub.amount,
+            &(sub.amount - fee),
         );
 
         sub.charges_done = sub.charges_done

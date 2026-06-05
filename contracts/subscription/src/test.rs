@@ -13,13 +13,20 @@ struct Fixture<'a> {
     contract: SubscriptionContractClient<'a>,
     buyer: Address,
     merchant: Address,
+    platform: Address,
     token: Address,
     token_admin: Address,
     sac_admin: StellarAssetClient<'a>,
     sac_user: TokenClient<'a>,
 }
 
+// Default fixture: platform fee disabled (fee_bps = 0) so the existing
+// behaviour (merchant receives the full amount) is unchanged.
 fn setup<'a>() -> Fixture<'a> {
+    setup_with_fee(0)
+}
+
+fn setup_with_fee<'a>(fee_bps: u32) -> Fixture<'a> {
     let env = Env::default();
     // mock_all_auths_allowing_non_root_auth permits nested contract auth like
     // SAC.transfer requiring the buyer's auth — mock_all_auths alone only
@@ -28,6 +35,7 @@ fn setup<'a>() -> Fixture<'a> {
 
     let buyer = Address::generate(&env);
     let merchant = Address::generate(&env);
+    let platform = Address::generate(&env);
     let token_admin = Address::generate(&env);
 
     // Issue a SAC-style asset (testutils mints freely via admin client).
@@ -39,11 +47,12 @@ fn setup<'a>() -> Fixture<'a> {
     // Mint 1000 tokens to buyer so charges have funds.
     sac_admin.mint(&buyer, &1_000_000_000_i128); // 100 with 7 decimals
 
-    let contract_id = env.register_contract(None, SubscriptionContract);
+    // Deploy with the platform fee config bound at construction.
+    let contract_id = env.register(SubscriptionContract, (platform.clone(), fee_bps));
     let contract = SubscriptionContractClient::new(&env, &contract_id);
 
     Fixture {
-        env, contract, buyer, merchant,
+        env, contract, buyer, merchant, platform,
         token: token_addr, token_admin, sac_admin, sac_user,
     }
 }
@@ -235,6 +244,74 @@ fn autocharge_attested_attestation_is_single_use_per_charge() {
     let (_pk, sig1) = sign_attestation(&[1u8; 32], &id_arr, 1, na);
     f.contract.autocharge_attested(&id, &na, &BytesN::from_array(&f.env, &sig1));
     assert_eq!(f.sac_user.balance(&f.merchant), before + 20_000_000);
+}
+
+// --- v0.4 platform fee on the autonomous rail ---
+
+#[test]
+fn autocharge_splits_platform_fee() {
+    // The autonomous rail captures the platform fee out of each charge: the
+    // merchant receives amount - fee, the platform receives fee, the buyer's
+    // total debit is unchanged (amount), and the whole amount is pulled from the
+    // standing allowance. This is the inescapable on-chain capture.
+    let f = setup_with_fee(297); // 2.97%
+    let id = BytesN::from_array(&f.env, &[20u8; 32]);
+    f.env.ledger().with_mut(|l| { l.timestamp = 1_000_000; });
+    f.contract.create(
+        &f.buyer, &f.merchant, &f.token,
+        &10_000_000_i128, &(30 * DAY), &0, &0, &id,
+    );
+    let exp = f.env.ledger().sequence() + 100_000;
+    f.sac_user.approve(&f.buyer, &f.contract.address, &100_000_000_i128, &exp);
+
+    let merch_before = f.sac_user.balance(&f.merchant);
+    let plat_before = f.sac_user.balance(&f.platform);
+    let buyer_before = f.sac_user.balance(&f.buyer);
+
+    f.contract.autocharge(&id);
+
+    let fee = 10_000_000_i128 * 297 / 10_000; // 297_000
+    assert_eq!(f.sac_user.balance(&f.merchant), merch_before + 10_000_000 - fee);
+    assert_eq!(f.sac_user.balance(&f.platform), plat_before + fee);
+    assert_eq!(f.sac_user.balance(&f.buyer), buyer_before - 10_000_000);
+    // Whole amount (merchant leg + fee leg) is debited from the one allowance.
+    assert_eq!(f.sac_user.allowance(&f.buyer, &f.contract.address), 90_000_000);
+}
+
+#[test]
+fn autocharge_attested_splits_platform_fee() {
+    // The attested (integrity-gated) path captures the fee too — this is the
+    // path that monetizes the proof: a fee on every charge that only settles
+    // with a fresh, valid integrity attestation.
+    let f = setup_with_fee(297);
+    let id_arr = [21u8; 32];
+    let id = BytesN::from_array(&f.env, &id_arr);
+    f.env.ledger().with_mut(|l| { l.timestamp = 1_000_000; });
+    f.contract.create(&f.buyer, &f.merchant, &f.token, &10_000_000_i128, &(30 * DAY), &0, &0, &id);
+    let exp = f.env.ledger().sequence() + 100_000;
+    f.sac_user.approve(&f.buyer, &f.contract.address, &100_000_000_i128, &exp);
+
+    let not_after = 2_000_000u64;
+    let (pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+
+    let merch_before = f.sac_user.balance(&f.merchant);
+    let plat_before = f.sac_user.balance(&f.platform);
+    f.contract.autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &sig));
+
+    let fee = 10_000_000_i128 * 297 / 10_000;
+    assert_eq!(f.sac_user.balance(&f.merchant), merch_before + 10_000_000 - fee);
+    assert_eq!(f.sac_user.balance(&f.platform), plat_before + fee);
+}
+
+#[test]
+#[should_panic]
+fn constructor_rejects_excessive_fee_bps() {
+    // fee_bps is capped at 1000 (10%); deploying with more must fail.
+    let env = Env::default();
+    env.mock_all_auths_allowing_non_root_auth();
+    let platform = Address::generate(&env);
+    let _ = env.register(SubscriptionContract, (platform, 1001u32));
 }
 
 #[test]
