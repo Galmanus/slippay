@@ -12,6 +12,9 @@ const server = new rpc.Server(RPC);
 const kp = Keypair.fromSecret(process.env.DEPLOYER_SECRET);
 const wasm = readFileSync(process.env.WASM);
 const FEE = String(Number(BASE_FEE) * 10000);
+// v0.4 __constructor(platform, fee_bps): platform fee recipient + bps (297 = 2.97%).
+const PLATFORM = process.env.PLATFORM || "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";
+const FEE_BPS = Number(process.env.FEE_BPS || "297");
 
 async function submit(op, label) {
   const src = await server.getAccount(kp.publicKey());
@@ -40,10 +43,16 @@ async function main() {
   const wasmHashHex = Buffer.from(wasmHash).toString("hex");
   console.log("WASM HASH:", wasmHashHex);
 
-  // 2. create contract instance from the uploaded wasm hash
-  const salt = hash(Buffer.from(`slippay-sub-${process.env.SALT_TAG || "v2"}-${kp.publicKey()}`));
+  // 2. create contract instance from the uploaded wasm hash, running the v0.4
+  // constructor (platform fee recipient + fee_bps) atomically at deploy.
+  const salt = hash(Buffer.from(`slippay-sub-${process.env.SALT_TAG || "v4"}-${kp.publicKey()}`));
+  const constructorArgs = [
+    new Address(PLATFORM).toScVal(),
+    xdr.ScVal.scvU32(FEE_BPS),
+  ];
+  console.log("constructor:", PLATFORM, "fee_bps", FEE_BPS);
   const create = await submit(
-    Operation.createCustomContract({ address: new Address(kp.publicKey()), wasmHash, salt }),
+    Operation.createCustomContract({ address: new Address(kp.publicKey()), wasmHash, salt, constructorArgs }),
     "create",
   );
   // contract id is the return of createContract (an address scval)

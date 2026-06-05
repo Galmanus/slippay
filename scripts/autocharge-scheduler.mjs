@@ -24,8 +24,8 @@ const NET = (process.env.STELLAR_NETWORK || "testnet").toLowerCase();
 const IS_MAINNET = NET === "mainnet" || NET === "public";
 const PASSPHRASE = IS_MAINNET ? Networks.PUBLIC : Networks.TESTNET;
 const RPC_URL = process.env.RPC || (IS_MAINNET ? "https://soroban-mainnet.stellar.org" : "https://soroban-testnet.stellar.org");
-// v0.2 contract (autocharge), mainnet, deployed 2026-06-03.
-const DEFAULT_CONTRACT = process.env.CONTRACT || "CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP";
+// v0.4 contract (autocharge + attestation gate + 2.97% platform fee), mainnet, deployed 2026-06-05.
+const DEFAULT_CONTRACT = process.env.CONTRACT || "CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RELAYER_SECRET = process.env.RELAYER_SECRET;

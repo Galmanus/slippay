@@ -169,10 +169,16 @@ that, on the v0.3 path, only settles with a fresh valid integrity attestation.
 - v0.1 and v0.2 are live on mainnet. v0.3 (`autocharge_attested` / `set_attester`
   with on-chain `ed25519_verify`) is proven on testnet only and is NOT deployed
   on mainnet. Mainnet runs v0.2 without the gate.
-- The v0.4 platform fee leg (constructor + on-chain fee split) is implemented and
-  unit-tested (16/16) but NOT yet deployed to any network. The mainnet contracts
-  in the table above predate it and capture no fee on-chain today; capturing the
-  fee requires deploying this version and pointing the rail at it.
+- The v0.4 platform fee leg (constructor + on-chain fee split) is LIVE on mainnet
+  as of 2026-06-05: contract `CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U`
+  (constructor platform `GCEYFLGN…`, fee_bps 297). The fee split is proven on-chain
+  on testnet (`CDO4DEBW…`, merchant +970300 / platform +29700 stroops on a 0.1 XLM
+  autocharge). The rail (web, scheduler, API) points at this contract. Note: the
+  attestation gate (`autocharge_attested`) ships in this contract but stays inactive
+  per subscription until an attester is bound via `set_attester`; the plain
+  `autocharge` path (allowance + fee, no gate) is what runs by default. Capture is
+  still gated on real volume — no paying subscriptions exist yet, so realized fees
+  are zero until merchants onboard.
 - No third-party audit of the subscription contract (v0.1/v0.2/v0.3). The
   existing audits 001-006 cover the WooCommerce plugin only. A self-run
   adversarial audit harness exists on testnet (`CCPIR4DN…`, 2026-06-03).
