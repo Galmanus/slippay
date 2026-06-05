@@ -53,8 +53,8 @@ export default function LandingV2() {
         <div className="max-w-[1400px] mx-auto">
           <Index n="001" label="payments, on autopilot" />
           <div className="mt-8 grid lg:grid-cols-[1.35fr_0.65fr] gap-12 lg:gap-8 items-end">
-            <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.82] text-[clamp(3rem,13vw,12rem)] break-words hyphens-none" style={display}>
-              Your<br />money,<br /><span className="text-[#0a0a0a]/30">on</span><br />auto<span className="text-[#65a30d]">pilot.</span>
+            <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,9.5vw,7.5rem)] break-words" style={display}>
+              Your<br />money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#65a30d]">pilot.</span>
             </h1>
             <div className="lg:pb-4">
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">live · mainnet</div>
@@ -119,7 +119,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-36 grid md:grid-cols-[1fr_1fr] gap-12 items-end">
           <div>
             <Index n="004" label="the price" />
-            <p className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(4.5rem,16vw,13rem)] break-words" style={display}>
+            <p className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(4rem,13vw,10.5rem)] break-words" style={display}>
               2.97<span className="text-[#65a30d]">%</span>
             </p>
           </div>
