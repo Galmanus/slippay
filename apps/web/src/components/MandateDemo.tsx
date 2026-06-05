@@ -9,10 +9,10 @@
 import { useEffect, useState } from "react";
 
 const STEPS = [
-  ["Aprove com Face ID", "um toque de passkey · sem seed phrase · você define o teto"],
-  ["Ele cobra sozinho", "puxa 0,05 USDC · sem re-assinar"],
-  ["Liquida na Stellar", "~5s · taxa < $0,01"],
-  ["Prova on-chain", "transação pública e verificável"],
+  ["Approve with Face ID", "one passkey tap · no seed phrase · you set the cap"],
+  ["It charges itself", "pulls 0.05 USDC · no re-signing"],
+  ["Settles on Stellar", "~5s · fee < $0.01"],
+  ["On-chain proof", "public, verifiable transaction"],
 ];
 const CAP = 0.2;
 const CHARGE = 0.05;
@@ -65,13 +65,13 @@ export function MandateDemo() {
     <button
       onClick={() => setRun((x) => x + 1)}
       className="block w-full text-left border border-[#0a0a0a]/20 rounded-2xl p-8 bg-white shadow-[0_18px_50px_-24px_rgba(10,10,10,0.30)] cursor-pointer"
-      aria-label="Repetir a demo do mandato"
+      aria-label="Replay the mandate demo"
     >
       <div className="flex items-center justify-between mb-7">
-        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/45">mandato recorrente · demo</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/45">recurring mandate · demo</span>
         <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/45 flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: GOLD }} />
-          {capped ? "no teto" : "ativo"}
+          {capped ? "at cap" : "active"}
         </span>
       </div>
 
@@ -97,7 +97,7 @@ export function MandateDemo() {
             <div className="min-w-0">
               <div className="text-[15px] font-semibold leading-tight flex items-center gap-2">
                 {t}
-                {isActive && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">rodando…</span>}
+                {isActive && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">running…</span>}
               </div>
               <div className="font-mono text-[11px] text-[#0a0a0a]/50 mt-1">{d}</div>
             </div>
@@ -107,25 +107,25 @@ export function MandateDemo() {
 
       {/* cap meter — the safety, shown */}
       <div className="mt-2 mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-        <span>gasto neste período</span>
+        <span>spent this period</span>
         <span>{spent.toFixed(2)} / {CAP.toFixed(2)} USDC</span>
       </div>
       <div className="h-1.5 w-full rounded-full bg-[#0a0a0a]/10 overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: GOLD }} />
       </div>
       <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] h-4" style={{ color: capped ? "#0a0a0a" : "rgba(10,10,10,0.45)" }}>
-        {capped ? "teto atingido — não puxa mais um centavo ✓" : `ciclo ${Math.max(1, charges)} · dentro do teto`}
+        {capped ? "cap reached — won't pull another cent ✓" : `cycle ${Math.max(1, charges)} · within cap`}
       </div>
 
       <span
         onClick={(e) => { e.stopPropagation(); window.open(TX, "_blank", "noopener"); }}
         className="mt-5 flex items-center justify-between border-t border-[#0a0a0a]/10 pt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
       >
-        <span>cobrança real · liquidada · 0,05 USDC</span>
+        <span>real charge · settled · 0.05 USDC</span>
         <span>tx 5da9741f ↗</span>
       </span>
 
-      <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.18em] text-[#0a0a0a]/30">clique pra repetir</div>
+      <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.18em] text-[#0a0a0a]/30">click to replay</div>
     </button>
   );
 }

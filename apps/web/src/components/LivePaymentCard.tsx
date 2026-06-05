@@ -13,10 +13,10 @@ const LIVE_ACCOUNT = "GCYEAQWXDR3MXHU364KIFOLSL2FIZL5RYXEKO3QVQ3WTQCWY64BXBRNR";
 const HORIZON = "https://horizon.stellar.org";
 
 const STEPS = [
-  { at: 250, key: "init", label: "pagamento recorrente", meta: "conta de API" },
-  { at: 1050, key: "limit", label: "checagem de política", meta: "fornecedor aprovado" },
-  { at: 1900, key: "route", label: "dentro do teto mensal", meta: "$5.000/mês" },
-  { at: 3500, key: "settle", label: "executado · liquidado", meta: "final · 4,9s" },
+  { at: 250, key: "init", label: "recurring payment", meta: "API bill" },
+  { at: 1050, key: "limit", label: "policy check", meta: "approved vendor" },
+  { at: 1900, key: "route", label: "within monthly cap", meta: "$5,000/mo" },
+  { at: 3500, key: "settle", label: "executed · settled", meta: "final · 4.9s" },
 ];
 const ROUTE_START = 1900; // STEPS route .at
 const SETTLE_AT = 3500;   // STEPS settle .at
@@ -127,19 +127,19 @@ export function LivePaymentCard() {
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#b5e853] shadow-[0_0_10px_#b5e853]" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">agente · rodando pagamentos</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">agent · running payments</span>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/40">Stellar · mainnet</span>
         </div>
 
         {/* amount */}
         <div className="relative mt-7">
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40 mb-1.5">valor pago</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40 mb-1.5">amount paid</div>
           <div className="text-5xl md:text-[56px] leading-none font-semibold tabular-nums tracking-[-0.03em]"
             style={{ color: "#b5e853", textShadow: "0 0 30px rgba(74,222,128,.18)" }}>
             {fmt(amount)}
           </div>
-          <div className="font-mono text-[11px] text-[#f1eee7]/45 mt-2.5">em dólar · não-custodial · final</div>
+          <div className="font-mono text-[11px] text-[#f1eee7]/45 mt-2.5">in dollars · non-custodial · final</div>
         </div>
 
         {/* steps */}
@@ -181,7 +181,7 @@ export function LivePaymentCard() {
             tx <span className="text-[#b5e853]">{txHash.slice(0, 10)}…</span>
           </span>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#b5e853] group-hover:underline underline-offset-4">
-            verificar on-chain ↗
+            verify on-chain ↗
           </span>
         </a>
       </div>
