@@ -53,8 +53,8 @@ export default function LandingV2() {
         <div className="max-w-[1400px] mx-auto">
           <Index n="001" label="payments, on autopilot" />
           <div className="mt-8 grid lg:grid-cols-[1.35fr_0.65fr] gap-12 lg:gap-8 items-end">
-            <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.82] text-[clamp(3.5rem,13vw,12rem)]" style={display}>
-              Your<br />money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#65a30d]">pilot.</span>
+            <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.82] text-[clamp(3rem,13vw,12rem)] break-words hyphens-none" style={display}>
+              Your<br />money,<br /><span className="text-[#0a0a0a]/30">on</span><br />auto<span className="text-[#65a30d]">pilot.</span>
             </h1>
             <div className="lg:pb-4">
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">live · mainnet</div>
@@ -82,7 +82,7 @@ export default function LandingV2() {
       <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-36">
           <Index n="002" label="what it does" />
-          <p className="mt-10 font-semibold tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6vw,5.5rem)] max-w-[18ch]" style={display}>
+          <p className="mt-10 font-semibold tracking-[-0.04em] leading-[1.0] text-[clamp(2rem,7vw,5.5rem)] max-w-[18ch] break-words" style={display}>
             Pay with your face. <span className="text-[#0a0a0a]/35">No app, no password, no seed phrase.</span>
           </p>
         </div>
@@ -92,7 +92,7 @@ export default function LandingV2() {
       <section id="proof" className="bg-[#0a0a0a] text-[#f1eee7]">
         <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-40">
           <Index n="003" label="live on the main network" dark />
-          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,11vw,10rem)]" style={display}>
+          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,10rem)] break-words" style={display}>
             This isn't<br />a demo.<br /><span className="text-[#b5e853]">It's running.</span>
           </h2>
           <div className="mt-16 grid md:grid-cols-3 gap-10 max-w-[1000px]">
@@ -119,7 +119,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-36 grid md:grid-cols-[1fr_1fr] gap-12 items-end">
           <div>
             <Index n="004" label="the price" />
-            <p className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(4rem,14vw,13rem)]" style={display}>
+            <p className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(4.5rem,16vw,13rem)] break-words" style={display}>
               2.97<span className="text-[#65a30d]">%</span>
             </p>
           </div>
@@ -134,7 +134,7 @@ export default function LandingV2() {
       <section className="bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-28 md:py-48">
           <Index n="005" label="start" dark />
-          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,12vw,11rem)]" style={display}>
+          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,12vw,11rem)] break-words" style={display}>
             Set it<br />once.<br /><span className="text-[#b5e853]">Done.</span>
           </h2>
           <div className="mt-14 flex flex-wrap items-center gap-7">
