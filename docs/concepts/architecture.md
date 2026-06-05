@@ -74,7 +74,7 @@ Routes:
 - `/v1/merchants` (JWT) — merchant profile, including the merchant Stellar
   address and webhook secret.
 - `/v1/orders` (API key) — fee computed, persisted, and exposed per order
-  (98 bp default). `GET /v1/orders/:id?t=` is public, token-gated, PII-stripped.
+  (297 bp default). `GET /v1/orders/:id?t=` is public, token-gated, PII-stripped.
 - `/v1/subscriptions` (API key), plus `/onchain-charge`, which builds an
   unsigned Soroban charge XDR; the buyer signs externally.
 - `/v1/billing/fees` — aggregate fee reporting.
@@ -280,9 +280,8 @@ DER-to-raw64 low-S normalized signature -> a `("Passkey", {...})` auth entry ->
 the relayer signs the outer envelope (gas only) and submits. Funds move only
 because the on-chain `__check_auth` accepts the passkey assertion.
 
-The displayed fee copy differs across surfaces. This reference does not pin a
-single fee number; it describes the fee mechanism instead. The legacy API
-computes 98 bp by default.
+The platform fee is configurable per merchant via `platform_fee_bp`. The API
+default is 297 bp (2.97%). The fee is computed, persisted, and exposed per order.
 
 ## How a payment flows (human, one-shot order)
 

@@ -152,7 +152,7 @@ export default function Checkout() {
                             merchantAddress: order.merchant_stellar_address,
                             platformAddress,
                             usdcAmount: order.usdc_amount,
-                            platformFeeBp: 100,
+                            platformFeeBp: 297, // 2.97% canonical (ideally read order.platform_fee_bp)
                             memo: order.memo,
                             network,
                             maxTime: Math.floor(new Date(order.expires_at).getTime() / 1000),
