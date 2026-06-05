@@ -9,6 +9,11 @@ export const config = {
   supabaseUrl: need("SUPABASE_URL"),
   supabaseServiceRoleKey: need("SUPABASE_SERVICE_ROLE_KEY"),
   network: rawNetwork,
+  // The merchants.network column stores "testnet"|"mainnet" (lowercase). The
+  // listener must only watch merchants on the SAME network it streams, or it
+  // tries to stream a testnet address against mainnet Horizon (or vice-versa)
+  // and the stream errors forever. Map the Stellar-facing shape to that column.
+  merchantNetwork: rawNetwork === "TESTNET" ? "testnet" : "mainnet",
   // Fail-closed gating flag: anything not explicitly TESTNET is treated as
   // mainnet. `network` keeps its Stellar-facing "TESTNET"|"PUBLIC" shape (used
   // by horizon/manager); this flag is the one the SSRF guard keys off of so a
