@@ -1,3 +1,9 @@
+> **Historical reference.** The mainnet deploy described here has been executed:
+> the subscription/transfer contracts are live on mainnet (`PUBLIC`). Kept as a
+> reference for the deploy procedure. The remaining open step is a v0.3 redeploy
+> (the attestation gate, proven on testnet, is not yet on mainnet). For the
+> current deploy mechanism, see `docs/ops/deploy.md`.
+
 # slippay mainnet runbook
 
 - **status:** ready to execute
