@@ -37,7 +37,7 @@ export default function Manifesto() {
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
         <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
-          <Link to="/v2" className="hidden sm:inline hover:text-[#0a0a0a]">Home</Link>
+          <Link to="/" className="hidden sm:inline hover:text-[#0a0a0a]">Home</Link>
           <Link to="/pay" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-[#f1eee7] hover:opacity-90">Try it free</Link>
         </nav>
       </header>
@@ -128,7 +128,7 @@ export default function Manifesto() {
           </p>
           <div className="mt-14 flex flex-wrap items-center gap-7">
             <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
-            <Link to="/v2" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">Back home</Link>
+            <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">Back home</Link>
           </div>
           <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
         </div>

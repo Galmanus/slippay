@@ -32,7 +32,8 @@ import Conformidade from "./pages/Conformidade.tsx";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<AgentHome />} />
+      <Route path="/" element={<LandingV2 />} />
+      <Route path="/v1" element={<AgentHome />} />
       <Route path="/v2" element={<LandingV2 />} />
       <Route path="/human" element={<Home />} />
       <Route path="/verify" element={<Verify />} />
