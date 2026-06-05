@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+// Robust mainnet upload+deploy of the subscription v0.2 wasm, surfacing the REAL
+// RPC error (the stellar CLI's "submission timeout" is opaque). Same proven
+// pattern that landed the mainnet charge: simulate → assemble → sign → send →
+// poll up to 120s. Two steps: uploadContractWasm, then createContract.
+import * as S from "../apps/web/node_modules/@stellar/stellar-sdk/lib/index.js";
+import { readFileSync } from "node:fs";
+const { rpc, Keypair, Networks, TransactionBuilder, Operation, Address, hash, xdr, BASE_FEE } = S;
+
+const RPC = process.env.RPC || "https://mainnet.sorobanrpc.com";
+const server = new rpc.Server(RPC);
+const kp = Keypair.fromSecret(process.env.DEPLOYER_SECRET);
+const wasm = readFileSync(process.env.WASM);
+const FEE = String(Number(BASE_FEE) * 10000);
+
+async function submit(op, label) {
+  const src = await server.getAccount(kp.publicKey());
+  const tx = new TransactionBuilder(src, { fee: FEE, networkPassphrase: Networks.PUBLIC })
+    .addOperation(op).setTimeout(120).build();
+  const sim = await server.simulateTransaction(tx);
+  if (rpc.Api.isSimulationError(sim)) throw new Error(`[${label}] SIM: ${sim.error}`);
+  const asm = rpc.assembleTransaction(tx, sim).build();
+  asm.sign(kp);
+  const sent = await server.sendTransaction(asm);
+  console.log(`[${label}] send: ${sent.status} ${sent.hash} ${sent.errorResult ? JSON.stringify(sent.errorResult) : ""}`);
+  if (sent.status === "ERROR") throw new Error(`[${label}] send ERROR`);
+  let res = await server.getTransaction(sent.hash);
+  for (let i = 0; i < 120 && res.status === "NOT_FOUND"; i++) { await new Promise(r => setTimeout(r, 1000)); res = await server.getTransaction(sent.hash); }
+  console.log(`[${label}] final: ${res.status} ${sent.hash}`);
+  if (res.status !== "SUCCESS") throw new Error(`[${label}] ${res.status}: ${JSON.stringify(res.resultXdr ?? res)}`);
+  return { res, hash: sent.hash };
+}
+
+async function main() {
+  console.log("deployer:", kp.publicKey(), "| wasm bytes:", wasm.length, "| rpc:", RPC);
+
+  // 1. upload wasm
+  const up = await submit(Operation.uploadContractWasm({ wasm }), "upload");
+  const wasmHash = up.res.returnValue.bytes();
+  const wasmHashHex = Buffer.from(wasmHash).toString("hex");
+  console.log("WASM HASH:", wasmHashHex);
+
+  // 2. create contract instance from the uploaded wasm hash
+  const salt = hash(Buffer.from(`slippay-sub-${process.env.SALT_TAG || "v2"}-${kp.publicKey()}`));
+  const create = await submit(
+    Operation.createCustomContract({ address: new Address(kp.publicKey()), wasmHash, salt }),
+    "create",
+  );
+  // contract id is the return of createContract (an address scval)
+  let contractId;
+  try { contractId = Address.fromScVal(create.res.returnValue).toString(); } catch { contractId = "(parse: check explorer)"; }
+  console.log("\n=== DEPLOYED (MAINNET) ===");
+  console.log("contract id:", contractId);
+  console.log("explorer:", `https://stellar.expert/explorer/public/contract/${contractId}`);
+}
+
+main().catch(e => { console.error("FAILED:", e?.message ?? e); process.exit(1); });

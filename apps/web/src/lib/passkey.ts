@@ -205,7 +205,7 @@ export async function fundWalletXlm(opts: {
 }): Promise<void> {
   const passphrase = opts.network === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
   const server = new rpc.Server(HORIZON_RPC[opts.network]!, { allowHttp: false });
-  const sac = Asset.native().contractId(passphrase);
+  const sac = payAssetSac(opts.network, (opts as { asset?: "USDC" | "XLM" }).asset, passphrase);
   const op = Operation.invokeHostFunction({
     func: xdr.HostFunction.hostFunctionTypeInvokeContract(new xdr.InvokeContractArgs({
       contractAddress: new Address(sac).toScAddress(),
@@ -238,17 +238,29 @@ export async function fundWalletXlm(opts: {
  *  `recipient`, authorized by a live Face ID / fingerprint tap. `feeSource`
  *  pays the network fee and submits (in production this is a relayer; for the
  *  demo it is a funded testnet account). Returns the settled tx hash. */
+// Resolve the SAC contract for the asset being paid. Absent/"XLM" → native SAC
+// (preserves the original demo behavior); "USDC" → the Circle USDC SAC, so the
+// same biometric+QR flow settles dollars instead of XLM.
+function payAssetSac(network: "TESTNET" | "PUBLIC", asset: "USDC" | "XLM" | undefined, passphrase: string): string {
+  if (asset !== "USDC") return Asset.native().contractId(passphrase);
+  const issuer = network === "PUBLIC"
+    ? "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+    : ((import.meta.env.VITE_USDC_ISSUER as string | undefined) ?? "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5");
+  return new Asset("USDC", issuer).contractId(passphrase);
+}
+
 export async function payWithBiometric(opts: {
   network: "TESTNET" | "PUBLIC";
   walletId: string;
   recipient: string;
   amount: string; // stroops
+  asset?: "USDC" | "XLM";
   feeSource: Keypair;
   credId?: Uint8Array;
 }): Promise<string> {
   const passphrase = opts.network === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
   const server = new rpc.Server(HORIZON_RPC[opts.network]!, { allowHttp: false });
-  const sac = Asset.native().contractId(passphrase);
+  const sac = payAssetSac(opts.network, (opts as { asset?: "USDC" | "XLM" }).asset, passphrase);
   const scAddr = (id: string) => new Address(id).toScVal();
   const i128 = (n: string) => nativeToScVal(BigInt(n), { type: "i128" });
 
@@ -326,4 +338,105 @@ export async function payWithBiometric(opts: {
   }
   if (res.status !== "SUCCESS") throw new Error("payment failed: " + res.status);
   return sent.hash;
+}
+
+/** Mainnet biometric payment via the gas-sponsor relayer (option A, zero
+ *  friction — no wallet connect). Identical auth construction to
+ *  `payWithBiometric`, but the tx SOURCE is the relayer's sponsor account and
+ *  we never hold its key: we build + simulate + assemble, then POST the XDR
+ *  (with the Face-ID auth entry attached) to the relayer, which validates it is
+ *  a bounded slippay transfer, signs the envelope (pays gas only), and submits.
+ *  The user's funds move ONLY because the on-chain __check_auth accepts the
+ *  passkey assertion — the relayer cannot move them. Returns the settled hash. */
+export async function payViaRelayer(opts: {
+  network: "TESTNET" | "PUBLIC";
+  relayerBase: string; // e.g. https://api.slippay.cc/api/v1/relayer
+  sponsor: string; // sponsor pubkey — the tx source / fee payer
+  walletId: string;
+  recipient: string;
+  amount: string; // stroops
+  asset?: "USDC" | "XLM";
+  credId?: Uint8Array;
+}): Promise<string> {
+  const passphrase = opts.network === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
+  const server = new rpc.Server(HORIZON_RPC[opts.network]!, { allowHttp: false });
+  const sac = payAssetSac(opts.network, (opts as { asset?: "USDC" | "XLM" }).asset, passphrase);
+  const scAddr = (id: string) => new Address(id).toScVal();
+  const i128 = (n: string) => nativeToScVal(BigInt(n), { type: "i128" });
+
+  const invocation = new xdr.SorobanAuthorizedInvocation({
+    function: xdr.SorobanAuthorizedFunction.sorobanAuthorizedFunctionTypeContractFn(
+      new xdr.InvokeContractArgs({
+        contractAddress: new Address(sac).toScAddress(),
+        functionName: "transfer",
+        args: [scAddr(opts.walletId), scAddr(opts.recipient), i128(opts.amount)],
+      }),
+    ),
+    subInvocations: [],
+  });
+
+  const { sequence } = await server.getLatestLedger();
+  const sigExp = sequence + 200;
+  const nonce = (BigInt(Date.now()) * 1000n + BigInt(Math.floor(Math.random() * 1000))).toString();
+  const preimage = xdr.HashIdPreimage.envelopeTypeSorobanAuthorization(
+    new xdr.HashIdPreimageSorobanAuthorization({
+      networkId: hash(toB(new TextEncoder().encode(passphrase))),
+      nonce: xdr.Int64.fromString(nonce),
+      signatureExpirationLedger: sigExp,
+      invocation,
+    }),
+  );
+  const payload = new Uint8Array(hash(preimage.toXDR()));
+
+  // ← the only human action: Face ID / fingerprint signs the payload.
+  const a = await getAssertion(payload, opts.credId);
+
+  const walletAuth = xdr.ScVal.scvVec([
+    xdr.ScVal.scvSymbol("Passkey"),
+    xdr.ScVal.scvMap([
+      new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("authenticator_data"), val: xdr.ScVal.scvBytes(toB(a.authenticatorData)) }),
+      new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("client_data_json"), val: xdr.ScVal.scvBytes(toB(a.clientDataJSON)) }),
+      new xdr.ScMapEntry({ key: xdr.ScVal.scvSymbol("signature"), val: xdr.ScVal.scvBytes(toB(a.signature)) }),
+    ]),
+  ]);
+  const authEntry = new xdr.SorobanAuthorizationEntry({
+    credentials: xdr.SorobanCredentials.sorobanCredentialsAddress(
+      new xdr.SorobanAddressCredentials({
+        address: new Address(opts.walletId).toScAddress(),
+        nonce: xdr.Int64.fromString(nonce),
+        signatureExpirationLedger: sigExp,
+        signature: walletAuth,
+      }),
+    ),
+    rootInvocation: invocation,
+  });
+
+  const op = Operation.invokeHostFunction({
+    func: xdr.HostFunction.hostFunctionTypeInvokeContract(
+      new xdr.InvokeContractArgs({
+        contractAddress: new Address(sac).toScAddress(),
+        functionName: "transfer",
+        args: [scAddr(opts.walletId), scAddr(opts.recipient), i128(opts.amount)],
+      }),
+    ),
+    auth: [authEntry],
+  });
+
+  // Source = the relayer's sponsor account (it pays the fee). We never sign.
+  const src = await server.getAccount(opts.sponsor);
+  const tx = new TransactionBuilder(src, { fee: String(Number(BASE_FEE) * 100), networkPassphrase: passphrase })
+    .addOperation(op).setTimeout(60).build();
+  const sim = await server.simulateTransaction(tx);
+  if (rpc.Api.isSimulationError(sim)) throw new Error("biometric auth rejected: " + sim.error);
+  const assembled = rpc.assembleTransaction(tx, sim).build();
+
+  // Hand the assembled (unsigned) XDR to the relayer to sponsor + submit.
+  const resp = await fetch(`${opts.relayerBase}/submit`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ xdr: assembled.toXDR() }),
+  });
+  const j = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(`relayer rejected: ${j.reason ?? j.error ?? resp.status}`);
+  return j.hash as string;
 }

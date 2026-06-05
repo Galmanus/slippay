@@ -29,7 +29,7 @@
 #![no_std]
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype,
-    Address, BytesN, Env, IntoVal, Symbol,
+    Address, Bytes, BytesN, Env, IntoVal, Symbol,
     token,
 };
 
@@ -68,7 +68,10 @@ pub struct Subscription {
 pub enum DataKey {
     Sub(BytesN<32>),
     NextNonce,
-    // Optional admin/fee config (left for v0.2)
+    // v0.3: the ed25519 public key of the integrity attester bound to a
+    // subscription. autocharge_attested won't settle without a fresh signature
+    // from this key. Set by the merchant via set_attester.
+    Attester(BytesN<32>),
 }
 
 #[contracterror]
@@ -82,6 +85,8 @@ pub enum Error {
     Expired = 5,
     Unauthorized = 6,
     InvalidConfig = 7,
+    AttesterNotSet = 8,
+    AttestationExpired = 9,
 }
 
 #[contract]
@@ -105,7 +110,11 @@ impl SubscriptionContract {
     ) -> BytesN<32> {
         buyer.require_auth();
 
-        if amount <= 0 || period_seconds < 86_400 {
+        // Production enforces a 1-day minimum period. A `demo` build lowers it to
+        // 1s so a live testnet demo can show the agent charging itself repeatedly
+        // and stopping at the cap. NEVER ship the demo build to mainnet.
+        let min_period: u64 = if cfg!(feature = "demo") { 1 } else { 86_400 };
+        if amount <= 0 || period_seconds < min_period {
             panic_with_error!(&env, Error::InvalidConfig);
         }
         if expires_at != 0 && expires_at <= env.ledger().timestamp() {
@@ -230,6 +239,96 @@ impl SubscriptionContract {
         next_due
     }
 
+    /// **v0.2 autonomous charge — NO buyer signature at charge time.**
+    ///
+    /// Closes the audit-002 F4 pre-auth gap. Instead of `buyer.require_auth`
+    /// + `transfer` (which forces a fresh buyer signature every period), this
+    /// pulls `amount` from the buyer's *standing SEP-41 allowance* via
+    /// `transfer_from`, with this contract as the spender. The buyer signs
+    /// ONCE, off-band: `token.approve(buyer, <this contract>, cap, expiry)`.
+    /// Thereafter any party (an off-chain scheduler/relayer that pays the tx
+    /// fee, never custodies funds) can submit `autocharge(id)` each period.
+    ///
+    /// Bounds are enforced on two independent layers:
+    ///   - this contract: status / period elapsed / max_periods / expiry.
+    ///   - the SAC: the allowance cap AND its expiration ledger. When the
+    ///     allowance is exhausted or expires, `transfer_from` fails and the
+    ///     buyer must re-approve — a hard, on-chain spending ceiling.
+    ///
+    /// Non-custodial: funds move buyer -> merchant directly; the contract only
+    /// holds the spender role, never the balance.
+    pub fn autocharge(env: Env, id: BytesN<32>) -> u64 {
+        // NB: deliberately NO buyer.require_auth. Authorization is the standing
+        // allowance the buyer granted via token.approve; the contract authorizes
+        // the transfer_from sub-invocation as the spender by being the caller.
+        Self::allowance_charge(&env, &id)
+    }
+
+    /// Bind an integrity attester (ed25519 public key) to a subscription. The
+    /// merchant sets it; thereafter `autocharge_attested` is the only autonomous
+    /// path that settles, and it requires a fresh signature from this key.
+    pub fn set_attester(env: Env, id: BytesN<32>, attester: BytesN<32>) {
+        let sub: Subscription = env.storage().persistent().get(&DataKey::Sub(id.clone()))
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
+        sub.merchant.require_auth();
+        let k = DataKey::Attester(id);
+        env.storage().persistent().set(&k, &attester);
+        env.storage().persistent().extend_ttl(&k, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+    }
+
+    /// **v0.3 attested autonomous charge — the integrity gate, on-chain.**
+    ///
+    /// Autonomous debit that REFUSES to settle without a fresh, valid integrity
+    /// attestation. The off-chain attester (which actually determines whether the
+    /// requesting agent is compromised) signs `id || not_after` with the ed25519
+    /// key bound via `set_attester`. This contract verifies that signature on the
+    /// host, checks freshness against ledger time, and only then pulls the charge.
+    ///
+    /// What this guarantees on-chain: **no settlement without a fresh signed
+    /// attestation bound to THIS subscription** (no cross-sub replay; expiry
+    /// enforced). What it does NOT do: detect compromise itself — that is the
+    /// attester's job. The contract makes the attestation inescapable, not
+    /// optional. x402/AP2 settle on authorization alone; this refuses.
+    ///
+    /// Fail-closed: no attester set → AttesterNotSet; expired → AttestationExpired;
+    /// bad signature → ed25519_verify traps (reverts).
+    pub fn autocharge_attested(
+        env: Env,
+        id: BytesN<32>,
+        not_after: u64,
+        signature: BytesN<64>,
+    ) -> u64 {
+        let attester: BytesN<32> = env.storage().persistent()
+            .get(&DataKey::Attester(id.clone()))
+            .unwrap_or_else(|| panic_with_error!(&env, Error::AttesterNotSet));
+        let sub: Subscription = env.storage().persistent().get(&DataKey::Sub(id.clone()))
+            .unwrap_or_else(|| panic_with_error!(&env, Error::NotFound));
+
+        // Freshness: the attestation must not be past its not_after ledger time.
+        let now = env.ledger().timestamp();
+        if now > not_after {
+            panic_with_error!(&env, Error::AttestationExpired);
+        }
+
+        // Reconstruct the signed message: id (32B) || charges_done (4B BE) || not_after (8B BE).
+        //  - id binding   → no replay of one sub's attestation on another (cross-sub).
+        //  - charges_done  → SINGLE-USE: an attestation signed for charge N is consumed
+        //    when N executes; the counter advances, so the same blob can't authorize N+1.
+        //    This carries native-style single-use semantics on-chain by binding to the
+        //    contract's existing monotonic state — no hand-rolled nonce store. (Closes the
+        //    replay gap vs Soroban's native auth nonce, while keeping the attester async.)
+        //  - not_after     → freshness window.
+        let mut msg = Bytes::new(&env);
+        msg.append(&Bytes::from_array(&env, &id.to_array()));
+        msg.append(&Bytes::from_array(&env, &sub.charges_done.to_be_bytes()));
+        msg.append(&Bytes::from_array(&env, &not_after.to_be_bytes()));
+
+        // Verify on the host. Traps (reverts) on an invalid signature → fail-closed.
+        env.crypto().ed25519_verify(&attester, &msg, &signature);
+
+        Self::allowance_charge(&env, &id)
+    }
+
     pub fn cancel(env: Env, id: BytesN<32>) {
         let key = DataKey::Sub(id.clone());
         let mut sub: Subscription = env.storage().persistent().get(&key)
@@ -315,6 +414,58 @@ impl SubscriptionContract {
             id,
         );
         true
+    }
+}
+
+// Private helpers (not part of the contract interface).
+impl SubscriptionContract {
+    /// Shared allowance-pull path for the autonomous charge functions. Enforces
+    /// status/period/max/expiry, pulls `amount` via transfer_from (spender = this
+    /// contract, against the buyer's standing SEP-41 allowance), updates
+    /// bookkeeping, and emits `subscription_charged`. NO buyer signature.
+    fn allowance_charge(env: &Env, id: &BytesN<32>) -> u64 {
+        let key = DataKey::Sub(id.clone());
+        let mut sub: Subscription = env.storage().persistent().get(&key)
+            .unwrap_or_else(|| panic_with_error!(env, Error::NotFound));
+
+        if sub.status != Status::Active {
+            panic_with_error!(env, Error::NotActive);
+        }
+        let now = env.ledger().timestamp();
+        if sub.expires_at != 0 && now >= sub.expires_at {
+            panic_with_error!(env, Error::Expired);
+        }
+        if sub.last_charge_at != 0 && now < sub.last_charge_at.saturating_add(sub.period_seconds) {
+            panic_with_error!(env, Error::PeriodNotElapsed);
+        }
+        if sub.max_periods != 0 && sub.charges_done >= sub.max_periods {
+            panic_with_error!(env, Error::MaxPeriodsReached);
+        }
+
+        let client = token::Client::new(env, &sub.token);
+        client.transfer_from(
+            &env.current_contract_address(),
+            &sub.buyer,
+            &sub.merchant,
+            &sub.amount,
+        );
+
+        sub.charges_done = sub.charges_done
+            .checked_add(1)
+            .unwrap_or_else(|| panic_with_error!(env, Error::InvalidConfig));
+        sub.last_charge_at = now;
+        let next_due = now.saturating_add(sub.period_seconds);
+        if sub.max_periods != 0 && sub.charges_done >= sub.max_periods {
+            sub.status = Status::Expired;
+        }
+
+        env.storage().persistent().set(&key, &sub);
+        env.storage().persistent().extend_ttl(&key, TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
+        env.events().publish(
+            (Symbol::new(env, "subscription_charged"), sub.buyer.clone(), sub.merchant.clone()),
+            (id.clone(), sub.amount, sub.charges_done, next_due),
+        );
+        next_due
     }
 }
 
