@@ -8,6 +8,8 @@ import { Logo } from "../components/Logo.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { ConnectWallet } from "../components/ConnectWallet.tsx";
+import { RuleSandbox } from "../components/RuleSandbox.tsx";
+import { CountUp } from "../components/CountUp.tsx";
 import { useEffect, useState } from "react";
 
 const AUDIT_CONTRACT = "CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN";
@@ -170,7 +172,7 @@ export default function AgentHome() {
           <div className="mt-12 grid sm:grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12 max-w-[680px]">
             <div className="bg-white p-7 md:p-8">
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">cartão / stripe</div>
-              <div className="mt-4 text-4xl font-semibold tabular-nums tracking-[-0.03em]">~2,9%+</div>
+              <div className="mt-4 text-4xl font-semibold tabular-nums tracking-[-0.03em]"><CountUp to={2.9} format={(n) => `~${n.toFixed(1).replace(".", ",")}%+`} /></div>
               <div className="mt-2 text-[14px] text-[#0a0a0a]/55 leading-snug">por transação, e ainda sujeito a chargeback</div>
             </div>
             <div className="bg-[#0a0a0a] text-[#f1eee7] p-7 md:p-8">
@@ -248,6 +250,9 @@ export default function AgentHome() {
           <p className="mt-14 text-2xl md:text-3xl font-medium tracking-[-0.02em] text-[#f1eee7]/90 max-w-[26ch]">
             O agente pode se enganar. A regra que protege o seu dinheiro, não. Fora dela, ele para e te chama.
           </p>
+          <div className="mt-12 max-w-[560px]">
+            <RuleSandbox />
+          </div>
         </div>
       </section>
 
@@ -276,7 +281,7 @@ export default function AgentHome() {
             ))}
             <div className="flex items-baseline justify-between pt-6 mt-2 border-t-2 border-[#0a0a0a]">
               <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#65a30d]">pago pelo agente</span>
-              <span className="text-3xl font-semibold tabular-nums">R$40 mil</span>
+              <span className="text-3xl font-semibold tabular-nums"><CountUp to={40} format={(n) => `R$${Math.round(n)} mil`} /></span>
             </div>
           </div>
         </div>

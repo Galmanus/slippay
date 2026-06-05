@@ -4,9 +4,13 @@
 // The motion is decorative; the tx hash is not. Re-runs every ~8s.
 import { useEffect, useRef, useState } from "react";
 
-const TX_HASH = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
-const TX_URL = `https://stellar.expert/explorer/public/tx/${TX_HASH}`;
-const AMOUNT = 1240; // USD
+const FALLBACK_TX = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
+const FALLBACK_AMOUNT = 1240; // USD
+// Live proof: pull the latest real mainnet payment to this account so the card
+// shows fresh on-chain activity, not a frozen example. Falls back to the known
+// real tx above if Horizon is slow or unreachable.
+const LIVE_ACCOUNT = "GCYEAQWXDR3MXHU364KIFOLSL2FIZL5RYXEKO3QVQ3WTQCWY64BXBRNR";
+const HORIZON = "https://horizon.stellar.org";
 
 const STEPS = [
   { at: 250, key: "init", label: "pagamento recorrente", meta: "conta de API" },
@@ -27,7 +31,31 @@ export function LivePaymentCard() {
   const [amount, setAmount] = useState(0);
   const [showTx, setShowTx] = useState(false);
   const [cycle, setCycle] = useState(0);
+  const [txHash, setTxHash] = useState(FALLBACK_TX);
+  const [payAmount, setPayAmount] = useState(FALLBACK_AMOUNT);
+  const txUrl = `https://stellar.expert/explorer/public/tx/${txHash}`;
   const raf = useRef<number | null>(null);
+
+  // Fetch the latest real mainnet payment once; keep fallback on any failure.
+  useEffect(() => {
+    let cancelled = false;
+    const ctrl = new AbortController();
+    const timer = window.setTimeout(() => ctrl.abort(), 8000);
+    (async () => {
+      try {
+        const r = await fetch(`${HORIZON}/accounts/${LIVE_ACCOUNT}/payments?order=desc&limit=5&include_failed=false`, { signal: ctrl.signal });
+        if (!r.ok) return;
+        const j = await r.json();
+        const recs: Array<Record<string, unknown>> = j?._embedded?.records ?? [];
+        const p = recs.find((x) => typeof x.amount === "string" && typeof x.transaction_hash === "string");
+        if (!p || cancelled) return;
+        setTxHash(p.transaction_hash as string);
+        const amt = Math.round(parseFloat(p.amount as string));
+        if (amt > 0) setPayAmount(amt);
+      } catch { /* keep fallback */ }
+    })();
+    return () => { cancelled = true; ctrl.abort(); window.clearTimeout(timer); };
+  }, []);
 
   useEffect(() => {
     setShown(0); setRoute(0); setAmount(0); setShowTx(false);
@@ -55,9 +83,9 @@ export function LivePaymentCard() {
       const up = () => {
         const p = Math.min(1, (performance.now() - start) / dur);
         const eased = 1 - Math.pow(1 - p, 3);
-        setAmount(AMOUNT * eased);
+        setAmount(payAmount * eased);
         if (p < 1) raf.current = requestAnimationFrame(up);
-        else setAmount(AMOUNT);
+        else setAmount(payAmount);
       };
       raf.current = requestAnimationFrame(up);
     }, SETTLE_AT));
@@ -69,7 +97,7 @@ export function LivePaymentCard() {
       timers.forEach(clearTimeout);
       if (raf.current) cancelAnimationFrame(raf.current);
     };
-  }, [cycle]);
+  }, [cycle, payAmount]);
 
   return (
     <div className="lpc relative">
@@ -141,7 +169,7 @@ export function LivePaymentCard() {
         </div>
 
         {/* tx proof */}
-        <a href={TX_URL} target="_blank" rel="noreferrer"
+        <a href={txUrl} target="_blank" rel="noreferrer"
           className="relative mt-6 flex items-center justify-between gap-3 rounded-xl px-4 py-3.5 transition-all duration-700 group"
           style={{
             opacity: showTx ? 1 : 0,
@@ -150,7 +178,7 @@ export function LivePaymentCard() {
             border: "1px solid rgba(74,222,128,.22)",
           }}>
           <span className="font-mono text-[11px] text-[#f1eee7]/70">
-            tx <span className="text-[#b5e853]">{TX_HASH.slice(0, 10)}…</span>
+            tx <span className="text-[#b5e853]">{txHash.slice(0, 10)}…</span>
           </span>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#b5e853] group-hover:underline underline-offset-4">
             verificar on-chain ↗
