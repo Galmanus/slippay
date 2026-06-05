@@ -120,6 +120,8 @@ Persistent keys (`DataKey`):
   period_seconds, max_periods, expires_at, charges_done, last_charge_at, status }`.
 - `NextNonce` → id derivation counter.
 - `Attester(BytesN<32>)` → ed25519 attester public key (v0.3).
+- `PlatformFee` (instance storage) → `{ platform, fee_bps }`, set once at deploy
+  via the constructor (v0.4).
 
 `Status` is one of `active`, `paused`, `cancelled`, `expired`. Every persistent
 set is followed by `extend_ttl(17280, 535000)`.
@@ -138,11 +140,39 @@ set is followed by `extend_ttl(17280, 535000)`.
   cargo-feature artifact that must not reach mainnet.
 - `checked_add` overflow defense on arithmetic.
 
+## Platform fee (v0.4)
+
+The contract captures the platform fee on-chain, on the autonomous rail, so
+revenue is collected at settlement time with no off-chain invoicing.
+
+- **Set at deploy, immutable.** `__constructor(platform, fee_bps)` binds the fee
+  recipient and rate to the contract instance. Setting it atomically at deploy
+  removes any front-running window on a public network. `fee_bps` is capped at
+  1000 (10%); `fee_bps = 0` disables the fee leg entirely (the rail runs free).
+- **Inescapable on the autonomous rail.** `autocharge` and `autocharge_attested`
+  take the fee out of `amount`: the merchant receives `amount - fee`, the
+  platform receives `fee = amount * fee_bps / 10000`, and the buyer's total debit
+  stays `amount`. Both legs are pulled from the buyer's one standing SEP-41
+  allowance, so the allowance cap still bounds the total.
+- **Why only the autonomous rail.** The fee is on the autonomous, attested path
+  (the agent product), not on v0.1 `charge` (which requires a fresh buyer
+  signature each period). Routing around the fee would mean giving up the
+  autonomous product, so capture is effectively inescapable for the product.
+- **Canonical rate is 297 bp (2.97%).** A mainnet deployment should pass
+  `fee_bps = 297` to match the API default.
+
+This is the on-chain monetization of the attested charge: a fee on every charge
+that, on the v0.3 path, only settles with a fresh valid integrity attestation.
+
 ## Status & honest limitations
 
 - v0.1 and v0.2 are live on mainnet. v0.3 (`autocharge_attested` / `set_attester`
   with on-chain `ed25519_verify`) is proven on testnet only and is NOT deployed
   on mainnet. Mainnet runs v0.2 without the gate.
+- The v0.4 platform fee leg (constructor + on-chain fee split) is implemented and
+  unit-tested (16/16) but NOT yet deployed to any network. The mainnet contracts
+  in the table above predate it and capture no fee on-chain today; capturing the
+  fee requires deploying this version and pointing the rail at it.
 - No third-party audit of the subscription contract (v0.1/v0.2/v0.3). The
   existing audits 001-006 cover the WooCommerce plugin only. A self-run
   adversarial audit harness exists on testnet (`CCPIR4DN…`, 2026-06-03).
