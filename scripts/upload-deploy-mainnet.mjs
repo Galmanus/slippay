@@ -43,6 +43,14 @@ async function main() {
   const wasmHashHex = Buffer.from(wasmHash).toString("hex");
   console.log("WASM HASH:", wasmHashHex);
 
+  // Upload-only mode: e.g. the smart-wallet wasm, where per-user instances are
+  // created on demand by the relayer, not a single contract here.
+  if (process.env.SKIP_CREATE === "1") {
+    console.log("\n=== UPLOADED (MAINNET, no instance) ===");
+    console.log("wasm hash:", wasmHashHex);
+    return;
+  }
+
   // 2. create contract instance from the uploaded wasm hash, running the v0.4
   // constructor (platform fee recipient + fee_bps) atomically at deploy.
   const salt = hash(Buffer.from(`slippay-sub-${process.env.SALT_TAG || "v4"}-${kp.publicKey()}`));

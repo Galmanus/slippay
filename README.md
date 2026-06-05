@@ -23,7 +23,7 @@ Mainnet is Stellar `PUBLIC`. Honest testnet/mainnet seam:
 | Subscription v0.1 (buyer signs each charge) | **mainnet** | `CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN` (wasm `1dbda19a…`, 2026-05-16) |
 | Subscription v0.2 autocharge (SEP-41 allowance, no per-period signature) | **mainnet** | `CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP` (wasm `f8cfed71…`, 2026-06-03) |
 | **Subscription v0.4** (autocharge + attestation gate + 2.97% on-chain platform fee) — the live rail | **mainnet** | `CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U` (wasm `4312612c…`, 2026-06-05; fee proven on testnet `CDO4DEBW…`) |
-| Smart wallet (WebAuthn/passkey custom account) | testnet only | template `CAQZWVRPWW7UBCKPFECNGAZW7YDRVSRWP6FVA4V32Q74ZCNVIPOVK4OM` |
+| Smart wallet (WebAuthn/passkey custom account) | **mainnet** | wasm uploaded `8e9b6760…` (2026-06-05); per-user instances deployed on demand by the gas-sponsor relayer. Testnet template `CAQZWVRP…`. The `/pay` biometric flow runs on mainnet via the relayer (sponsor `GBI4NVNP…`). |
 | Checkout (atomic fee split) | testnet only | `CBO2COBZUTHH4II4JCQRZVO4RKDUIUH4MXZTAWOYVUZIVYI47UIDQCWQ` (no tests yet) |
 | `@slippay/mcp` (agent MCP server) | npm | v0.2.0 |
 | `@slippay/attester` (integrity oracle) | npm | v0.1.0 |
