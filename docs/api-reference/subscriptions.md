@@ -7,9 +7,15 @@ pays the order; the listener confirms; SlipPay fires `subscription.charged`.
 > **v0.1**: off-chain orchestrated. Each period requires an active call to
 > `/charge`. The buyer signs each individual order.
 >
-> **v0.2** (planned, see [SCF proposal](../scf/soroban-subscription-proposal.md)):
-> Soroban contract pre-authorizes the contract to debit the buyer wallet
-> automatically. No buyer signature needed per cycle.
+> **v0.2** (LIVE on mainnet): the Soroban subscription contract
+> (`CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP`, deployed
+> 2026-06-03) debits the buyer wallet against a standing SEP-41 allowance the
+> buyer granted once. No buyer signature needed per cycle. The off-chain
+> scheduler fires `autocharge(id)` via a relayer (fee-payer only). See
+> [contracts/subscription](../contracts/subscription.md) for the on-chain model.
+>
+> The v0.3 on-chain attestation gate is proven on testnet only and is NOT on
+> mainnet; mainnet runs v0.2 without the gate.
 
 ## The Subscription object
 

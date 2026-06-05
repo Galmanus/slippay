@@ -1,3 +1,8 @@
+> **Historical.** Mainnet is already live: the subscription/transfer contracts
+> are deployed on Stellar mainnet (`PUBLIC`). This pre-launch readiness checklist
+> is kept for reference only. For deploys, see `docs/ops/deploy.md`. For the
+> current network seam (mainnet vs testnet per contract), see the quickstarts.
+
 # SlipPay — Mainnet Readiness Checklist
 
 > Cross-reference: `docs/superpowers/specs/2026-05-07-slippay-design.md` §9 (security checklist)
