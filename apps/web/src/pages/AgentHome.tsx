@@ -14,6 +14,11 @@ import { useEffect, useState } from "react";
 
 const AUDIT_CONTRACT = "CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN";
 const AUDIT_URL = `https://stellar.expert/explorer/public/contract/${AUDIT_CONTRACT}`;
+// The live recurring-payment rail on mainnet, and a real payment that already settled.
+const LIVE_CONTRACT = "CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U";
+const LIVE_CONTRACT_URL = `https://stellar.expert/explorer/public/contract/${LIVE_CONTRACT}`;
+const REAL_TX = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
+const REAL_TX_URL = `https://stellar.expert/explorer/public/tx/${REAL_TX}`;
 
 const TIERS = [
   { name: "Starter", price: "R$2,500", per: "/mo", who: "to start and test", featured: false },
@@ -111,10 +116,10 @@ export default function AgentHome() {
             <h1 className="text-[44px] leading-[0.95] md:text-[80px] md:leading-[0.92] font-semibold tracking-[-0.045em] max-w-[15ch] mx-auto">
               <span className="mask-clip"><span className="mask-up">Your money, on autopilot.</span></span>
             </h1>
-            <p className="mt-9 text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[48ch] mx-auto">
-              SlipPay puts your dollars to work on their own. It receives your payments
-              and pays your bills, instantly, with no card terminal and no chargebacks.
-              <span className="text-[#0a0a0a] font-medium"> The money stays yours, and it only does what you authorized.</span>
+            <p className="mt-9 text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[46ch] mx-auto">
+              Keep your money in dollars and let it pay your bills by itself, the moment
+              they're due. No card machine, no chargebacks.
+              <span className="text-[#0a0a0a] font-medium"> The money stays yours, and it only does what you allow.</span>
             </p>
             <div className="mt-11 flex flex-wrap items-center justify-center gap-7">
               <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
@@ -122,7 +127,7 @@ export default function AgentHome() {
             </div>
             <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">free to try · no card</p>
             <p className="mt-7 text-[15px] text-[#0a0a0a]/50 leading-relaxed max-w-[44ch] mx-auto">
-              For SaaS, agencies, e-commerce, and companies that pay or get paid in dollars.
+              For anyone who pays or gets paid in dollars — from a freelancer to a company.
             </p>
             <div className="mt-14 w-full max-w-[420px] mx-auto">
               <LivePaymentCard />
@@ -137,9 +142,39 @@ export default function AgentHome() {
           <span>built on</span>
           <span className="text-[#0a0a0a]/75">Stellar</span>
           <span className="opacity-30">·</span>
-          <span className="text-[#0a0a0a]/75">Circle · USDC + CCTP</span>
+          <span className="text-[#0a0a0a]/75">Circle · USDC</span>
           <span className="opacity-30">·</span>
-          <span>every payment verifiable on-chain</span>
+          <span>every payment public &amp; checkable</span>
+        </div>
+      </section>
+
+      {/* LIVE ON MAINNET — honest, verifiable reinforcement */}
+      <section className="border-t border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
+        <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28 text-center">
+          <Eyebrow dark>live on the main network today</Eyebrow>
+          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[16ch] mx-auto">
+            This isn't a demo. <span className="text-[#b5e853]">It's running.</span>
+          </h2>
+          <p className="mt-8 text-xl text-[#f1eee7]/65 leading-relaxed max-w-[46ch] mx-auto">
+            Real money already moves through SlipPay on the live network. You don't have to
+            trust us — open any payment and check it yourself.
+          </p>
+          <div className="mt-12 grid sm:grid-cols-3 gap-8 max-w-[860px] mx-auto text-left">
+            {[
+              ["Pays by itself", "Recurring payments charge themselves, on schedule. Live on the main network."],
+              ["Pay with your face", "Create an account and pay with Face ID. No app, no password, no seed phrase."],
+              ["Public & checkable", "Every payment is recorded in the open. Anyone can verify it, anytime."],
+            ].map(([h, b]) => (
+              <div key={h}>
+                <div className="text-lg font-semibold tracking-[-0.01em] text-[#b5e853]">{h}</div>
+                <p className="mt-2 text-[15px] text-[#f1eee7]/60 leading-relaxed">{b}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
+            <a href={REAL_TX_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#b5e853] text-[#0a0a0a]">See a real payment ↗</a>
+            <a href={LIVE_CONTRACT_URL} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/60 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">The live contract ↗</a>
+          </div>
         </div>
       </section>
 
@@ -212,10 +247,10 @@ export default function AgentHome() {
       <section className="border-t border-[#0a0a0a]/10">
         <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28 text-center">
           <Eyebrow>bring your dollars from anywhere</Eyebrow>
-          <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.02] max-w-[16ch] mx-auto">Accepts USDC from any blockchain.</h2>
-          <p className="mt-7 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[52ch] mx-auto">
-            Your dollars land in the wallet from Ethereum, Base, Solana, and 15+ networks, via Circle's technology (CCTP).
-            Native dollars, burned and minted by Circle itself: <span className="text-[#0a0a0a] font-medium">no risky bridge, no wrapped token.</span>
+          <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.03em] leading-[1.02] max-w-[18ch] mx-auto">Already have digital dollars somewhere else?</h2>
+          <p className="mt-7 text-xl text-[#0a0a0a]/60 leading-relaxed max-w-[50ch] mx-auto">
+            If your dollars are on another network, bring them in. They arrive in your wallet
+            as <span className="text-[#0a0a0a] font-medium">real dollars, straight from Circle</span> — the company behind USDC.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
             {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Unichain", "Linea", "+ mais"].map((c) => (
