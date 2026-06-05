@@ -1,8 +1,8 @@
-// /manifesto — Quem somos + manifesto visionário. Tema: a tecnologia de ponta
-// de mover dinheiro (liquidação instantânea, dólar programável, prova on-chain,
-// agentes autônomos) que sempre foi privilégio de governos e grande capital,
-// agora na mão de qualquer empresa, com uma experiência que não exige entender
-// nada disso. Voz humana, sem travessão. Paleta da landing.
+// /manifesto — Quem somos + visão. Tema: a tecnologia de ponta de mover dinheiro
+// (liquidação instantânea, dólar digital, prova on-chain, agentes autônomos),
+// antes complicada e cara, agora simples e ao alcance de qualquer empresa, com
+// uma experiência que não exige entender nada disso. Voz humana, calma, simples,
+// sem teor político, sem travessão. Paleta da landing.
 
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
@@ -27,12 +27,12 @@ export default function Manifesto() {
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 pt-14 md:pt-28 pb-20 md:pb-32">
           <Eyebrow>quem somos nós</Eyebrow>
           <h1 className="text-[40px] leading-[0.97] md:text-[80px] md:leading-[0.92] font-semibold tracking-[-0.045em] max-w-[18ch]">
-            A gente não aceitou que dinheiro de verdade fosse privilégio.
+            A gente quis um dinheiro mais simples. E construiu.
           </h1>
           <p className="mt-10 text-xl md:text-2xl text-[#0a0a0a]/65 leading-relaxed max-w-[54ch]">
-            Não somos um banco. Não somos mais uma fintech. Somos um time pequeno e teimoso, no Brasil,
-            construindo a infraestrutura de dinheiro que a gente sempre quis ter e nunca pôde comprar.
-            A melhor tecnologia financeira do mundo existe há anos. Ela só não era pra você.
+            Não somos um banco. Não somos mais uma fintech. Somos um time pequeno no Brasil, construindo
+            o dinheiro que a gente sempre quis usar: em dólar, na hora, simples. A melhor tecnologia
+            financeira do mundo existe há anos. A gente deixou ela simples de usar.
           </p>
         </div>
       </section>
@@ -42,7 +42,7 @@ export default function Manifesto() {
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32">
           <Eyebrow>somos o que você queria, mas não sabia</Eyebrow>
           <h2 className="text-3xl md:text-[56px] md:leading-[1.05] font-semibold tracking-[-0.035em] max-w-[20ch]">
-            Você conversa com uma IA todo dia. Sente o poder. E sabe que ela erra.
+            Você conversa com uma IA todo dia. Já confia nela. E sabe que ela erra.
           </h2>
           <p className="mt-10 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[54ch]">
             A inteligência artificial já mudou o seu jeito de trabalhar. No fundo você sente que ela pode
@@ -66,22 +66,20 @@ export default function Manifesto() {
         </div>
       </section>
 
-      {/* A VISÃO — dólar digital, soberania individual */}
+      {/* A VISÃO — dólar digital, simples e acessível */}
       <section className="border-b border-[#0a0a0a]/10">
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32">
           <Eyebrow>a nossa visão</Eyebrow>
           <h2 className="text-3xl md:text-[56px] md:leading-[1.05] font-semibold tracking-[-0.035em] max-w-[20ch]">
-            Sua moeda pode falhar. O seu dinheiro não precisa falhar com ela.
+            Dólar de verdade, no seu bolso.
           </h2>
           <p className="mt-10 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[56ch]">
-            A história da América Latina está cheia de moedas que viraram pó da noite pro dia. Quem tinha
-            dólar atravessou. Quem não tinha viu o trabalho de uma vida evaporar. A proteção sempre foi
-            privilégio de quem já tinha acesso.
+            Ter dinheiro em dólar costumava ser complicado: conta lá fora, papelada e taxas altas. Por isso
+            quase sempre ficava longe do dia a dia de quem empreende.
           </p>
           <p className="mt-7 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[56ch]">
-            A gente existe pra virar esse jogo. Dólar de verdade, digital, sem fronteira e sem burocracia,
-            no bolso de qualquer pessoa. Não pra especular. Pra você nunca mais depender da sorte do seu
-            país pra proteger o que é seu.
+            A SlipPay deixa simples. Dólar digital, sem fronteira e sem burocracia, no bolso de qualquer
+            pessoa. Não pra especular. Pra você ter uma reserva forte, do jeito mais fácil.
           </p>
         </div>
       </section>
@@ -99,7 +97,7 @@ export default function Manifesto() {
           </p>
           <p className="mt-7 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[56ch]">
             Você não vira engenheiro pra proteger o seu dinheiro. Você só usa, do mesmo jeito que usa
-            qualquer aplicativo. <span className="text-[#0a0a0a] font-medium">Esse poder agora é das pessoas comuns.</span>
+            qualquer aplicativo. <span className="text-[#0a0a0a] font-medium">Simples assim.</span>
           </p>
         </div>
       </section>
@@ -109,13 +107,12 @@ export default function Manifesto() {
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32">
           <Eyebrow>o manifesto</Eyebrow>
           <p className="text-3xl md:text-[56px] md:leading-[1.05] font-semibold tracking-[-0.035em] max-w-[20ch]">
-            Por décadas, mover dinheiro de verdade foi um clube fechado.
+            Por muito tempo, mover dinheiro de verdade foi complicado e caro.
           </p>
           <p className="mt-10 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[56ch]">
             Liquidação que acontece em segundos. Dólar que obedece regras escritas em código. Prova
-            matemática de cada centavo que se move. Tudo isso já existia. Só que trancado dentro de bancos
-            centrais, fundos soberanos e mesas de Wall Street. Quem trabalha, vende e empreende ficava do
-            lado de fora, pagando caro e esperando dias.
+            matemática de cada centavo que se move. Tudo isso já existia, mas era difícil de acessar e
+            cobrava caro. Quem vende e empreende pagava mais e esperava dias.
           </p>
         </div>
       </section>
@@ -124,12 +121,12 @@ export default function Manifesto() {
       <section className="border-b border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-40">
           <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.96] max-w-[16ch]">
-            A gente pegou a chave. <span className="text-[#b5e853]">E entregou pra você.</span>
+            A gente deixou isso simples. <span className="text-[#b5e853]">E colocou na sua mão.</span>
           </h2>
           <p className="mt-12 text-xl md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[52ch]">
-            A mesma tecnologia que move bilhões entre governos move os dois mil reais do seu fornecedor.
-            Na mesma velocidade. Com a mesma segurança. Sem maquininha, sem custódia, sem pedir licença pra
-            ninguém. O que era poder de Estado virou ferramenta de quem acorda cedo.
+            A mesma tecnologia que move grandes volumes move os dois mil reais do seu fornecedor. Na mesma
+            velocidade, com a mesma segurança. Sem maquininha e sem custódia. Tecnologia de ponta, simples
+            de usar.
           </p>
         </div>
       </section>
@@ -154,9 +151,9 @@ export default function Manifesto() {
       <section className="bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-28 md:py-44 text-center">
           <p className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[1.0] max-w-[20ch] mx-auto">
-            A revolução não é a tecnologia. <span className="text-[#b5e853]">É quem finalmente pode usá-la.</span>
+            A tecnologia mais avançada, <span className="text-[#b5e853]">do jeito mais simples.</span>
           </p>
-          <p className="mt-10 text-xl text-[#f1eee7]/60 max-w-[34ch] mx-auto">Poder de governo, na mão de quem faz a economia girar.</p>
+          <p className="mt-10 text-xl text-[#f1eee7]/60 max-w-[34ch] mx-auto">Dinheiro em dólar, no seu controle, sem complicação.</p>
           <div className="mt-14 flex justify-center">
             <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Começar agora</Link>
           </div>

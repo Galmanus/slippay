@@ -114,9 +114,8 @@ export default function AgentHome() {
                 <LivePaymentCard />
               </div>
               <p className="mt-9 text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[46ch]">
-                A SlipPay coloca no seu bolso o que antes era só dos bancos e dos grandes: dinheiro em dólar
-                que trabalha sozinho. Ela recebe os seus pagamentos e paga as suas contas, na hora, sem
-                maquininha e sem estorno.
+                A SlipPay deixa o seu dinheiro em dólar trabalhar sozinho. Ela recebe os seus pagamentos
+                e paga as suas contas, na hora, sem maquininha e sem estorno.
                 <span className="text-[#0a0a0a] font-medium"> O dinheiro continua sendo seu, e ela só faz o que você autorizou.</span>
               </p>
               <div className="mt-11 flex flex-wrap items-center gap-7">
@@ -308,15 +307,14 @@ export default function AgentHome() {
         <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-40">
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#b5e853] mb-6">a nossa visão</div>
           <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.96] max-w-[18ch]">
-            Sua moeda pode falhar. <span className="text-[#b5e853]">O seu dinheiro não precisa falhar com ela.</span>
+            Dólar de verdade, <span className="text-[#b5e853]">simples como um aplicativo.</span>
           </h2>
           <p className="mt-12 text-xl md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[54ch]">
-            Dinheiro forte, em dólar, que sempre foi privilégio de banco e de quem já tinha acesso, agora
-            cabe no bolso de qualquer empresa. Sem virar engenheiro, sem decorar jargão. A IA faz o trabalho
-            pesado, e a regra que protege o seu dinheiro nunca depende dela.
+            Dinheiro em dólar que trabalha sozinho e continua sendo seu. Sem virar engenheiro, sem decorar
+            jargão. A IA faz o trabalho pesado, e a regra que protege o seu dinheiro nunca depende dela.
           </p>
           <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[22ch]">
-            O poder que era dos grandes, agora é seu.
+            A tecnologia mais avançada, simples de usar.
           </p>
           <a href="/manifesto" className="mt-10 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#b5e853] border-b border-[#b5e853]/40 hover:border-[#b5e853] pb-1">Leia o manifesto</a>
         </div>
@@ -385,7 +383,7 @@ export default function AgentHome() {
       <section className="border-t border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-32 md:py-44 text-center">
           <h2 className="text-5xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[18ch] mx-auto">Configure as regras uma vez.</h2>
-          <p className="mt-8 text-xl text-[#f1eee7]/60 leading-relaxed max-w-[42ch] mx-auto">Pare de aprovar os mesmos pagamentos para sempre. Teste grátis, sem cartão. O poder que era só dos grandes, agora na sua mão.</p>
+          <p className="mt-8 text-xl text-[#f1eee7]/60 leading-relaxed max-w-[42ch] mx-auto">Pare de aprovar os mesmos pagamentos para sempre. Teste grátis, sem cartão. A forma simples de deixar o seu dinheiro trabalhar sozinho.</p>
           <div className="mt-12 flex justify-center">
             <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Testar grátis</Link>
           </div>
