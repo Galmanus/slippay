@@ -9,6 +9,13 @@ import { signTx } from "../lib/wallet.ts";
 
 type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "paid" | "error";
 
+// Network-aware explorer base. On mainnet a hardcoded /testnet/ link points at the
+// wrong network (broken link + wrong UX). Derive it from the configured network.
+const EXPLORER_BASE =
+  (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() === "PUBLIC"
+    ? "https://stellar.expert/explorer/public/tx"
+    : "https://stellar.expert/explorer/testnet/tx";
+
 function isEmbedded(): boolean {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search);
@@ -169,7 +176,7 @@ export default function Checkout() {
                       <div className="mt-6 border-l-2 border-amber-500 pl-4">
                         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/70">Tx submitted · awaiting confirmation</div>
                         <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
-                           href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                           href={`${EXPLORER_BASE}/${txHash}`} target="_blank" rel="noreferrer">
                           {txHash}
                         </a>
                       </div>
@@ -182,7 +189,7 @@ export default function Checkout() {
                         </div>
                         {txHash && (
                           <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
-                             href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                             href={`${EXPLORER_BASE}/${txHash}`} target="_blank" rel="noreferrer">
                             {txHash}
                           </a>
                         )}

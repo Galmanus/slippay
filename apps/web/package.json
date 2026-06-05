@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
+    "@fontsource/space-grotesk": "^5.2.10",
+    "@fontsource/space-mono": "^5.2.9",
     "@slippay/shared": "workspace:*",
     "@stellar/stellar-sdk": "^15.1.0",
     "@supabase/supabase-js": "^2.45.4",

@@ -19,21 +19,23 @@ import {
   Horizon,
 } from "@stellar/stellar-sdk";
 
-export const ANCHOR_HOME = "https://testanchor.stellar.org";
+// Anchor is config-driven so the SAME SEP-10 + SEP-24 on-ramp flow can point at
+// any Stellar anchor — testanchor today, MoneyGram Ramps once partner-approved.
+// MoneyGram swap = set these envs (VITE_ANCHOR_HOME=https://<moneygram-anchor>,
+// VITE_ANCHOR_ASSET_CODE=USDC, VITE_ANCHOR_ISSUER=GA5ZSEJY...), no code change.
+const env = import.meta.env as Record<string, string | undefined>;
+export const ANCHOR_HOME = env.VITE_ANCHOR_HOME ?? "https://testanchor.stellar.org";
 export const ANCHOR_AUTH = `${ANCHOR_HOME}/auth`;
 export const ANCHOR_SEP24 = `${ANCHOR_HOME}/sep24`;
 export const HORIZON_TESTNET = "https://horizon-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
 
-// SRT (Stellar Reference Token) is the testanchor's controlled-mint
-// reference asset · always has liquidity. We default to SRT because the
-// USDC test-pool at testanchor.stellar.org periodically drains, which
-// surfaces as "resulting balance is not within the allowed range" in
-// the SAC contract simulation. Production swaps SRT → USDC, same flow.
+// Default to SRT (testanchor's always-liquid reference token); the testanchor
+// USDC pool drains periodically. Override to USDC for MoneyGram via env.
 export const ANCHOR_SRT_ISSUER =
   "GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B";
-export const ANCHOR_ASSET_CODE = "SRT";
-export const ANCHOR_ASSET_ISSUER = ANCHOR_SRT_ISSUER;
+export const ANCHOR_ASSET_CODE = env.VITE_ANCHOR_ASSET_CODE ?? "SRT";
+export const ANCHOR_ASSET_ISSUER = env.VITE_ANCHOR_ISSUER ?? ANCHOR_SRT_ISSUER;
 export const ANCHOR_ASSET = new Asset(ANCHOR_ASSET_CODE, ANCHOR_ASSET_ISSUER);
 
 export interface BuyerWallet {

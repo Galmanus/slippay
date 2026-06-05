@@ -87,6 +87,157 @@ fn create_then_charge_then_cancel() {
 }
 
 #[test]
+fn autocharge_pulls_from_allowance_and_respects_period() {
+    let f = setup();
+    let id = BytesN::from_array(&f.env, &[9u8; 32]);
+    f.env.ledger().with_mut(|l| { l.timestamp = 1_000_000; });
+
+    f.contract.create(
+        &f.buyer, &f.merchant, &f.token,
+        &10_000_000_i128, &(30 * DAY), &12, &0, &id,
+    );
+
+    // Buyer pre-approves the subscription contract as spender — the ONE signature.
+    let exp = f.env.ledger().sequence() + 100_000;
+    f.sac_user.approve(&f.buyer, &f.contract.address, &100_000_000_i128, &exp);
+
+    let merch_before = f.sac_user.balance(&f.merchant);
+    let buyer_before = f.sac_user.balance(&f.buyer);
+
+    let next = f.contract.autocharge(&id);
+    assert_eq!(next, 1_000_000 + 30 * DAY);
+    assert_eq!(f.sac_user.balance(&f.merchant), merch_before + 10_000_000);
+    assert_eq!(f.sac_user.balance(&f.buyer), buyer_before - 10_000_000);
+    // Allowance is debited by the pulled amount.
+    assert_eq!(f.sac_user.allowance(&f.buyer, &f.contract.address), 90_000_000);
+
+    // Second autocharge within the period fails (period gate still holds).
+    assert!(f.contract.try_autocharge(&id).is_err());
+
+    // After the period, it charges again WITHOUT a new buyer signature.
+    f.env.ledger().with_mut(|l| { l.timestamp += 30 * DAY; });
+    f.contract.autocharge(&id);
+    assert_eq!(f.sac_user.balance(&f.merchant), merch_before + 20_000_000);
+}
+
+#[test]
+fn autocharge_needs_no_signature_at_charge_time() {
+    let f = setup();
+    let id = BytesN::from_array(&f.env, &[7u8; 32]);
+    f.env.ledger().with_mut(|l| { l.timestamp = 1_000_000; });
+
+    f.contract.create(
+        &f.buyer, &f.merchant, &f.token,
+        &10_000_000_i128, &(30 * DAY), &0, &0, &id,
+    );
+    let exp = f.env.ledger().sequence() + 100_000;
+    f.sac_user.approve(&f.buyer, &f.contract.address, &100_000_000_i128, &exp);
+
+    // Clear ALL mocked auths: no buyer, no relayer signature in the context.
+    // The standing allowance is the only authorization — this is autonomy.
+    f.env.set_auths(&[]);
+
+    let merch_before = f.sac_user.balance(&f.merchant);
+    f.contract.autocharge(&id);
+    assert_eq!(f.sac_user.balance(&f.merchant), merch_before + 10_000_000);
+}
+
+// --- v0.3 attested autonomous charge (the on-chain integrity gate) ---
+
+fn sign_attestation(seed: &[u8; 32], id: &[u8; 32], charges_done: u32, not_after: u64) -> ([u8; 32], [u8; 64]) {
+    use ed25519_dalek::{Signer, SigningKey};
+    let sk = SigningKey::from_bytes(seed);
+    let pk = sk.verifying_key().to_bytes();
+    // message = id (32) || charges_done (4 BE) || not_after (8 BE) — matches the contract.
+    let mut msg = [0u8; 44];
+    msg[..32].copy_from_slice(id);
+    msg[32..36].copy_from_slice(&charges_done.to_be_bytes());
+    msg[36..].copy_from_slice(&not_after.to_be_bytes());
+    (pk, sk.sign(&msg).to_bytes())
+}
+
+fn setup_attested<'a>(id_arr: &[u8; 32]) -> (Fixture<'a>, BytesN<32>) {
+    let f = setup();
+    let id = BytesN::from_array(&f.env, id_arr);
+    f.env.ledger().with_mut(|l| { l.timestamp = 1_000_000; });
+    f.contract.create(&f.buyer, &f.merchant, &f.token, &10_000_000_i128, &(30 * DAY), &0, &0, &id);
+    let exp = f.env.ledger().sequence() + 100_000;
+    f.sac_user.approve(&f.buyer, &f.contract.address, &100_000_000_i128, &exp);
+    (f, id)
+}
+
+#[test]
+fn autocharge_attested_settles_with_valid_attestation() {
+    let id_arr = [3u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+
+    let not_after = 2_000_000u64; // now is 1_000_000 → fresh
+    let (pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+
+    let before = f.sac_user.balance(&f.merchant);
+    f.contract.autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &sig));
+    assert_eq!(f.sac_user.balance(&f.merchant), before + 10_000_000);
+}
+
+#[test]
+fn autocharge_attested_rejects_without_attester() {
+    let id_arr = [4u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+    let not_after = 2_000_000u64;
+    let (_pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    // No set_attester → AttesterNotSet.
+    assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &sig)).is_err());
+}
+
+#[test]
+fn autocharge_attested_rejects_expired_attestation() {
+    let id_arr = [5u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+    let not_after = 500_000u64; // BEFORE now (1_000_000) → expired
+    let (pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+    assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &sig)).is_err());
+}
+
+#[test]
+fn autocharge_attested_rejects_tampered_signature() {
+    let id_arr = [6u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+    let not_after = 2_000_000u64;
+    let (pk, _sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+    // A signature over a DIFFERENT not_after — valid ed25519 but wrong message.
+    let (_pk2, wrong_sig) = sign_attestation(&[1u8; 32], &id_arr, 0, 1_999_999u64);
+    assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &wrong_sig)).is_err());
+}
+
+#[test]
+fn autocharge_attested_attestation_is_single_use_per_charge() {
+    let id_arr = [8u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+    let na = 9_999_999u64; // far-future not_after — so freshness is NOT the limiter; single-use is.
+    let (pk, sig0) = sign_attestation(&[1u8; 32], &id_arr, 0, na); // bound to charge #0
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+
+    let before = f.sac_user.balance(&f.merchant);
+    f.contract.autocharge_attested(&id, &na, &BytesN::from_array(&f.env, &sig0));
+    assert_eq!(f.sac_user.balance(&f.merchant), before + 10_000_000);
+
+    // advance past the period — the period gate alone would now allow a 2nd charge.
+    f.env.ledger().with_mut(|l| { l.timestamp += 30 * DAY; });
+
+    // REPLAY the charge-#0 attestation → must FAIL: charges_done is now 1, the signed
+    // message no longer matches, ed25519 traps. Native-style single-use, on-chain.
+    assert!(f.contract.try_autocharge_attested(&id, &na, &BytesN::from_array(&f.env, &sig0)).is_err());
+
+    // a FRESH attestation bound to charge #1 settles — proves single-use, not frozen.
+    let (_pk, sig1) = sign_attestation(&[1u8; 32], &id_arr, 1, na);
+    f.contract.autocharge_attested(&id, &na, &BytesN::from_array(&f.env, &sig1));
+    assert_eq!(f.sac_user.balance(&f.merchant), before + 20_000_000);
+}
+
+#[test]
 fn max_periods_caps_charges() {
     let f = setup();
     let id = BytesN::from_array(&f.env, &[2u8; 32]);

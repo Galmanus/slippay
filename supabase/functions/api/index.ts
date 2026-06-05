@@ -9,6 +9,7 @@ import ask from "./routes/ask.ts";
 import x402 from "./routes/x402.ts";
 import billing from "./routes/billing.ts";
 import metrics from "./routes/metrics.ts";
+import relayer from "./routes/relayer.ts";
 
 const api = new Hono().basePath("/api");
 api.use("*", errorMiddleware);
@@ -42,6 +43,9 @@ api.route("/v1/ask", ask);
 // unauthenticated payer-side gated GET share this base path.
 api.route("/v1/x402-resources", x402);
 api.route("/v1/x402", x402);
+// Gas-sponsor relayer for the biometric payment flow (pays network fees only;
+// user funds stay in the Face-ID-controlled passkey wallet — see relayer.ts).
+api.route("/v1/relayer", relayer);
 
 const app = new Hono();
 app.route("/", api);

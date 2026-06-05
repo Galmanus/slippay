@@ -1,8 +1,11 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import AgentHome from "./pages/AgentHome.tsx";
+import Verify from "./pages/Verify.tsx";
 import Home from "./pages/Home.tsx";
 import Agents from "./pages/Agents.tsx";
 import Comprovante from "./pages/Comprovante.tsx";
 import Checkout from "./pages/Checkout.tsx";
+import Sub from "./pages/Sub.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
@@ -20,16 +23,23 @@ import Cobrar from "./pages/Cobrar.tsx";
 import Store from "./pages/Store.tsx";
 import PolicySubscribe from "./pages/PolicySubscribe.tsx";
 import Docs from "./pages/Docs.tsx";
+import Security from "./pages/Security.tsx";
+import Manifesto from "./pages/Manifesto.tsx";
+import Investidores from "./pages/Investidores.tsx";
+import Conformidade from "./pages/Conformidade.tsx";
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<AgentHome />} />
+      <Route path="/human" element={<Home />} />
+      <Route path="/verify" element={<Verify />} />
       <Route path="/agents" element={<Agents />} />
       <Route path="/comprovante/:txhash" element={<Comprovante />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/checkout/:order_id" element={<Checkout />} />
+      <Route path="/sub/:id" element={<Sub />} />
       <Route path="/demo" element={<Demo />} />
       <Route path="/preview" element={<Preview />} />
       <Route path="/x402-demo" element={<X402Demo />} />
@@ -42,6 +52,13 @@ export default function App() {
       <Route path="/s/:subId" element={<PolicySubscribe />} />
       <Route path="/docs" element={<Docs />} />
       <Route path="/docs/*" element={<Docs />} />
+      <Route path="/seguranca" element={<Security />} />
+      <Route path="/security" element={<Security />} />
+      <Route path="/manifesto" element={<Manifesto />} />
+      <Route path="/investidores" element={<Investidores />} />
+      <Route path="/pitch" element={<Investidores />} />
+      <Route path="/conformidade" element={<Conformidade />} />
+      <Route path="/compliance" element={<Conformidade />} />
       <Route path="/dashboard" element={<Dashboard />}>
         <Route index element={<Navigate to="orders" replace />} />
         <Route path="orders" element={<DashboardOrders />} />

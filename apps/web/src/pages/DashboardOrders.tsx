@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "../lib/apiAuth.ts";
 
+const EXPLORER_BASE =
+  (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() === "PUBLIC"
+    ? "https://stellar.expert/explorer/public/tx"
+    : "https://stellar.expert/explorer/testnet/tx";
+
 interface OrderRow {
   id: string;
   external_ref: string | null;
@@ -89,7 +94,7 @@ export default function DashboardOrders() {
                   </td>
                   <td className="font-mono text-xs">
                     {o.tx_hash
-                      ? <a href={`https://stellar.expert/explorer/testnet/tx/${o.tx_hash}`}
+                      ? <a href={`${EXPLORER_BASE}/${o.tx_hash}`}
                            target="_blank" rel="noreferrer"
                            className="border-b border-[#0a0a0a] hover:border-[#b5e853]">
                           {o.tx_hash.slice(0,8)}

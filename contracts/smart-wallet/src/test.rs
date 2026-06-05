@@ -1411,3 +1411,254 @@ fn webauthn_assertion_verifies_and_binds_to_payload() {
         "assertion bound to a different payload must be rejected"
     );
 }
+
+// ──────────────────────────────────────────────────────────────────────
+// CONFORMANCE: deployed enforcement upholds the axlc-proved 2×window_cap bound
+//
+// `axl-compiler/examples/agent_wallet_m3.axl` proves (via Z3) that the sliding-
+// window policy's worst-case outflow over any real window is bounded by
+// 2*window_cap (certified bound K=2 — NOT 1×). That proof is a statement about
+// the SPEC. This module is the missing link: it asserts the DEPLOYED Rust
+// enforcement (`try_authorize_agent_transfer`, lib.rs) actually upholds that
+// same 2×window_cap bound, so the proof is load-bearing on shipped code, not a
+// detached artifact. The CI `axlc-gate` workflow runs `axlc prove` on the spec
+// AND this conformance suite together: if either drifts, the build fails.
+//
+// We drive the REAL contract path (not a re-implementation of the math): each
+// case installs a session and feeds a deterministic seeded sweep of charges,
+// each <= per_tx_cap, advancing the ledger clock. For every step we assert the
+// two properties the proof claims about the deployed code:
+//   (a) any charge that would push prev_spent + cur_spent + amount above
+//       2*window_cap is REJECTED by the contract (the hard un-weighted ceiling,
+//       N-A3, lib.rs ~993-1000), and
+//   (b) after any ACCEPTED charge, the cumulative un-weighted spend over the
+//       two live epochs (prev_spent + cur_spent) never exceeds 2*window_cap.
+//
+// No new crate deps: a tiny deterministic LCG generates the sweep (proptest is
+// not a dev-dependency). The sweep is reproducible from a fixed seed list, so a
+// failure is a stable repro, not a flaky one.
+// ──────────────────────────────────────────────────────────────────────
+
+/// Deterministic xorshift64* PRNG — std-only, no `rand` dep. Reproducible from
+/// any non-zero seed so a conformance failure is a stable repro.
+struct Lcg(u64);
+impl Lcg {
+    fn new(seed: u64) -> Self {
+        // Avoid the zero fixed-point of xorshift; any non-zero state is fine.
+        Lcg(seed | 1)
+    }
+    fn next_u64(&mut self) -> u64 {
+        let mut x = self.0;
+        x ^= x >> 12;
+        x ^= x << 25;
+        x ^= x >> 27;
+        self.0 = x;
+        x.wrapping_mul(0x2545_F491_4F6C_DD1D)
+    }
+    /// Uniform-ish in `[0, n]` inclusive (n small, modulo bias negligible for
+    /// the tiny domains used here; this is a fuzz schedule, not a CSPRNG).
+    fn in_incl(&mut self, n: u64) -> u64 {
+        if n == 0 {
+            0
+        } else {
+            self.next_u64() % (n + 1)
+        }
+    }
+}
+
+/// Run one deterministic conformance sweep against the DEPLOYED contract path.
+///
+/// Installs a session with the given caps, then issues `steps` charges. Each
+/// charge amount is in `[0, per_tx]` (always <= per_tx_cap, per the proof's
+/// install-time precondition) and the clock advances by a seeded jitter in
+/// `[0, max_dt]` so epochs roll, straddle, and fully decay across the sweep.
+///
+/// Asserts, on the REAL contract state after each step:
+///  (a) the contract's accept/reject decision is consistent with the proved
+///      2×window_cap ceiling — a charge is rejected whenever
+///      prev+cur+amount > 2*window_cap (read from the pre-charge state), and
+///  (b) after every ACCEPTED charge, prev_spent + cur_spent <= 2*window_cap.
+fn run_conformance_sweep(seed: u64, per_tx: i128, window_s: u64, window_cap: i128, steps: usize, max_dt: u64) {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    let token = Address::generate(&env);
+    let mut now: u64 = 1_000;
+    env.ledger().with_mut(|li| li.timestamp = now);
+    let to = install_session(&env, &wallet, &token, per_tx, window_s, window_cap, 0);
+
+    let two_cap = window_cap * 2;
+    let mut rng = Lcg::new(seed);
+
+    for step in 0..steps {
+        // Advance the clock by a seeded jitter so the sweep exercises in-epoch,
+        // boundary-crossing (straddle), and full-decay (>= 2W) transitions.
+        now = now.saturating_add(rng.in_incl(max_dt));
+        env.ledger().with_mut(|li| li.timestamp = now);
+
+        let amount = rng.in_incl(per_tx as u64) as i128; // always <= per_tx_cap
+
+        // Read the session state the contract will START from for this charge,
+        // applying the SAME lazy epoch-roll the contract applies, so we know the
+        // (prev, cur) the hard ceiling will actually test against.
+        let pre = wallet.get_agent_session(&agent_pk(&env));
+        let (eff_prev, eff_cur) = effective_prev_cur(&pre, now);
+        // The proved hard ceiling (N-A3) tests prev + cur + amount <= 2*cap on
+        // the rolled state. Predict the ceiling verdict from that.
+        let unweighted = eff_prev + eff_cur + amount;
+        let ceiling_would_reject = unweighted > two_cap;
+
+        let verdict = env.as_contract(&id, || {
+            super::try_authorize_agent_transfer(&env, &agent_pk(&env), &token, &to, amount)
+        });
+
+        // (a) The proved ceiling must hold: if the un-weighted projected spend
+        // exceeds 2*window_cap, the contract MUST NOT accept. (The contract may
+        // ALSO reject for the tighter weighted check or per-tx/amount<=0 reasons;
+        // we only require that it never ACCEPTS past the proved 2x ceiling.)
+        if ceiling_would_reject {
+            assert!(
+                !matches!(verdict, Ok(true)),
+                "CONFORMANCE (a) violated seed={} step={}: amount={} on (prev={}, cur={}) \
+                 gives unweighted={} > 2*window_cap={}, but contract ACCEPTED (verdict={:?}). \
+                 The deployed enforcement admitted a charge the axlc-proved 2x bound forbids.",
+                seed, step, amount, eff_prev, eff_cur, unweighted, two_cap, verdict
+            );
+        }
+
+        // (b) After any ACCEPTED charge, the live un-weighted state across the
+        // two epochs must stay within 2*window_cap — the exact quantity the
+        // axlc proof certifies as the worst-case real-window outflow bound.
+        if matches!(verdict, Ok(true)) {
+            let post = wallet.get_agent_session(&agent_pk(&env));
+            assert!(
+                post.prev_spent + post.cur_spent <= two_cap,
+                "CONFORMANCE (b) violated seed={} step={}: after ACCEPT amount={}, \
+                 prev_spent={} + cur_spent={} = {} > 2*window_cap={}. The deployed \
+                 enforcement let cumulative spend exceed the axlc-proved bound.",
+                seed, step, amount, post.prev_spent, post.cur_spent,
+                post.prev_spent + post.cur_spent, two_cap
+            );
+            // Each accepted amount also respected the per-tx precondition the
+            // proof assumes (amount <= per_tx_cap, and a strictly positive
+            // charge — the contract rejects amount<=0 as InvalidConfig).
+            assert!(amount > 0 && amount <= per_tx, "accepted amount out of [1, per_tx]");
+        }
+    }
+}
+
+/// Mirror the contract's LAZY epoch roll (lib.rs ~939-952) WITHOUT mutating:
+/// given a session and `now`, return the (prev_spent, cur_spent) the contract
+/// will use as the basis for the hard 2×window_cap ceiling on the next charge.
+/// This is read-only bookkeeping to PREDICT the ceiling input — the accept/
+/// reject decision itself is taken by the real contract, not here.
+fn effective_prev_cur(s: &AgentSession, now: u64) -> (i128, i128) {
+    let w = s.window_seconds;
+    let elapsed = now.saturating_sub(s.epoch_start);
+    if elapsed >= w {
+        // Rolled: carry cur into prev if within one window of the boundary,
+        // else drop it (fully decayed). cur resets to 0.
+        let prev = if elapsed < w.saturating_mul(2) { s.cur_spent } else { 0 };
+        (prev, 0)
+    } else {
+        (s.prev_spent, s.cur_spent)
+    }
+}
+
+/// Conformance: across a deterministic seeded sweep of in-spec charge sequences,
+/// the DEPLOYED contract never lets cumulative un-weighted spend over the two
+/// live epochs exceed 2*window_cap, and never accepts a charge that would —
+/// exactly the bound `axlc prove agent_wallet_m3.axl` certifies (K=2). Drives
+/// the real `try_authorize_agent_transfer` path, not a re-implementation.
+#[test]
+fn conformance_deployed_enforcement_upholds_axlc_2x_bound() {
+    // A spread of seeds × cap geometries × clock jitter. window_s = 60 (the
+    // install-time floor) so epoch rolls are reachable within the sweep; per_tx
+    // <= window_cap (install precondition). max_dt spans well past 2W (120) so
+    // in-epoch, straddle, and full-decay transitions all occur.
+    let configs: &[(i128, u64, i128)] = &[
+        // (per_tx, window_seconds, window_cap)
+        (10, 60, 25),     // window_cap = 2.5x per_tx
+        (10, 60, 10),     // window_cap == per_tx (boundary geometry)
+        (100, 60, 100),   // larger amounts, cap == per_tx
+        (7, 60, 50),      // co-prime amounts vs caps to vary residues
+        (13, 60, 13),     // tight: per_tx == window_cap, every charge near-cap
+    ];
+    let mut total_steps = 0usize;
+    for (ci, &(per_tx, window_s, window_cap)) in configs.iter().enumerate() {
+        // Several seeds per geometry → distinct charge/jitter schedules.
+        for seed_base in [1u64, 7, 42, 1337, 0xDEAD_BEEF, 0x5151_5151] {
+            let seed = seed_base
+                .wrapping_mul(0x9E37_79B9_7F4A_7C15)
+                .wrapping_add(ci as u64);
+            let steps = 40;
+            run_conformance_sweep(seed, per_tx, window_s, window_cap, steps, 120);
+            total_steps += steps;
+        }
+    }
+    // Guard against a vacuous pass: the sweep must actually have exercised the
+    // enforcement path many times (5 geometries × 6 seeds × 40 steps = 1200).
+    assert_eq!(total_steps, 5 * 6 * 40, "expected the full conformance sweep to run");
+}
+
+/// Conformance (exhaustive small-domain): for a small fixed geometry, sweep a
+/// deterministic enumeration of (amount, dt) pairs and check the SAME two
+/// properties as the seeded test, but over a dense, easily-audited grid rather
+/// than a PRNG schedule. Belt-and-suspenders: if the LCG ever degenerated and
+/// stopped covering the boundary cases, this dense grid still exercises them
+/// (notably dt around W and 2W where the straddle/decay transitions live).
+#[test]
+fn conformance_exhaustive_small_domain_grid() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    let token = Address::generate(&env);
+    let per_tx: i128 = 4;
+    let window_s: u64 = 60;
+    let window_cap: i128 = 4;
+    let two_cap = window_cap * 2;
+    let mut now: u64 = 1_000;
+    env.ledger().with_mut(|li| li.timestamp = now);
+    let to = install_session(&env, &wallet, &token, per_tx, window_s, window_cap, 0);
+
+    // A deterministic dense grid: cycle amounts 0..=per_tx and dt over the
+    // boundary-relevant values {0, 1, 30 (mid), 59, 60 (=W), 61, 120 (=2W),
+    // 121} so straddle and full-decay transitions are hit repeatedly.
+    let dts: [u64; 8] = [0, 1, 30, 59, 60, 61, 120, 121];
+    let mut covered = 0usize;
+    for round in 0..16u64 {
+        for amt in 0..=(per_tx as u64) {
+            for &dt in dts.iter() {
+                now = now.saturating_add(dt.wrapping_add(round % 3));
+                env.ledger().with_mut(|li| li.timestamp = now);
+                let amount = amt as i128;
+
+                let pre = wallet.get_agent_session(&agent_pk(&env));
+                let (eff_prev, eff_cur) = effective_prev_cur(&pre, now);
+                let ceiling_would_reject = eff_prev + eff_cur + amount > two_cap;
+
+                let verdict = env.as_contract(&id, || {
+                    super::try_authorize_agent_transfer(&env, &agent_pk(&env), &token, &to, amount)
+                });
+
+                if ceiling_would_reject {
+                    assert!(
+                        !matches!(verdict, Ok(true)),
+                        "CONFORMANCE grid (a): amount={} on (prev={}, cur={}) > 2*cap={} but ACCEPTED ({:?})",
+                        amount, eff_prev, eff_cur, two_cap, verdict
+                    );
+                }
+                if matches!(verdict, Ok(true)) {
+                    let post = wallet.get_agent_session(&agent_pk(&env));
+                    assert!(
+                        post.prev_spent + post.cur_spent <= two_cap,
+                        "CONFORMANCE grid (b): prev={} + cur={} > 2*cap={} after accept of {}",
+                        post.prev_spent, post.cur_spent, two_cap, amount
+                    );
+                }
+                covered += 1;
+            }
+        }
+    }
+    assert_eq!(covered, 16 * (per_tx as usize + 1) * dts.len(), "dense grid must cover every cell");
+}

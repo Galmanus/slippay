@@ -33,6 +33,7 @@ export default function Cobrar() {
     const uri = encodeRequest({
       to: recipient.publicKey(),
       amount: String(Math.round(amount * 1e7)),
+      asset: "USDC",
       label: "Slippay",
     });
     QRCode.toDataURL(uri, { margin: 1, width: 320, color: { dark: "#0a0a0a", light: "#f1eee7" } })
@@ -58,7 +59,7 @@ export default function Cobrar() {
             <button key={p} onClick={() => setAmount(p)}
               className={"lift px-5 py-3 text-sm font-mono tabular-nums border transition-colors " +
                 (amount === p ? "bg-[#0a0a0a] text-[#f1eee7] border-[#0a0a0a]" : "border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60")}>
-              {p} XLM
+              {p} USDC
             </button>
           ))}
         </div>
@@ -69,7 +70,7 @@ export default function Cobrar() {
           ) : (
             <div className="w-[280px] h-[280px] border border-[#0a0a0a]/15 flex items-center justify-center text-xs text-[#0a0a0a]/45">gerando…</div>
           )}
-          <div className="mt-5 text-2xl font-medium tabular-nums">{amount} XLM</div>
+          <div className="mt-5 text-2xl font-medium tabular-nums">{amount} USDC</div>
           <div className="mt-2 text-[10px] uppercase tracking-[0.22em] font-mono"
             style={{ color: ready ? "#3f7d20" : "rgba(10,10,10,0.45)" }}>
             {err ? "✗ " + err : ready ? "● pronto pra receber" : "preparando…"}

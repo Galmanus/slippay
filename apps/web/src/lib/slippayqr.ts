@@ -8,12 +8,14 @@
 
 export interface PayRequest {
   to: string;
-  amount: string; // stroops
+  amount: string; // stroops (7-decimal; USDC and XLM both use 7 decimals)
+  asset?: "USDC" | "XLM"; // default USDC for new charges; absent → legacy XLM
   label?: string;
 }
 
 export function encodeRequest(r: PayRequest): string {
   const p = new URLSearchParams({ to: r.to, amount: r.amount });
+  if (r.asset) p.set("asset", r.asset);
   if (r.label) p.set("label", r.label);
   return `slippay:pay?${p.toString()}`;
 }
@@ -28,7 +30,12 @@ export function decodeRequest(raw: string): PayRequest {
   if (!to || !amount) throw new Error("QR incompleto (falta destinatário ou valor).");
   if (!/^[GC][A-Z2-7]{55}$/.test(to)) throw new Error("Endereço do QR é inválido.");
   if (!/^\d+$/.test(amount)) throw new Error("Valor do QR é inválido.");
-  return { to, amount, label: p.get("label") || undefined };
+  const asset = p.get("asset");
+  return {
+    to, amount,
+    asset: asset === "USDC" || asset === "XLM" ? asset : undefined,
+    label: p.get("label") || undefined,
+  };
 }
 
 /** stroops → human XLM string, e.g. "3000000" → "0,3". */

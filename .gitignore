@@ -36,3 +36,10 @@ apps/web/public/hero.png.*_rejected
 
 # deploy secrets — never commit
 contracts/subscription/.mainnet-deploy.env
+contracts/*/.mainnet-deploy.env
+contracts/*/.testnet-deploy.env
+
+# build / deploy scratch artifacts
+*.err
+*.xdr
+**/_relayer_bringup.mjs

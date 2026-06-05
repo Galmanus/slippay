@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Premium type — Space Grotesk (display/body) + Space Mono (labels). */
+html, body { font-family: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+
 /* Keyframes used by PolicyDemoAnimation (Tailwind arbitrary
    `animate-[name_duration_easing]` references). */
 @keyframes fadeIn {
@@ -75,6 +79,41 @@ html { scroll-behavior: smooth; }
 }
 .lift:hover { transform: translateY(-3px); }
 .lift:active { transform: translateY(-1px); }
+
+/* Scroll-reveal — fail-safe: only hidden once JS marks the root .js-reveal,
+   so no-JS / failed-observer users always see content. */
+.js-reveal [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity 820ms var(--ease-out-expo), transform 820ms var(--ease-out-expo); }
+.js-reveal [data-reveal].reveal-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .js-reveal [data-reveal] { opacity: 1; transform: none; transition: none; } }
+
+/* Hero copy — smooth fade-up entrance on load. */
+@keyframes heroIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.hero-in { animation: heroIn 900ms var(--ease-out-expo) both; }
+@media (prefers-reduced-motion: reduce) { .hero-in { animation: none; } }
+
+/* Scroll progress bar (top). */
+.scroll-progress { position: fixed; top: 0; left: 0; height: 2px; background: #65a30d; width: 0; z-index: 60; will-change: width; }
+
+/* Headline mask-rise — lines wipe up into view (editorial reveal). */
+@keyframes maskUp { from { transform: translateY(115%); } to { transform: translateY(0); } }
+.mask-clip { display: block; overflow: hidden; padding-bottom: 0.06em; }
+.mask-up { display: block; animation: maskUp 1100ms var(--ease-out-expo) both; }
+@media (prefers-reduced-motion: reduce) { .mask-up { animation: none; } }
+
+/* Animated nav underline. */
+.navlink { position: relative; }
+.navlink::after { content: ""; position: absolute; left: 0; bottom: -4px; height: 1px; width: 100%; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 320ms var(--ease-out-expo); }
+.navlink:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* Bold marquee band (Yeezy ticker). */
+@keyframes slip-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.slip-marquee-track { display: inline-flex; white-space: nowrap; animation: slip-marquee 38s linear infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .slip-marquee-track { animation: none; } }
+
+/* Hero image — slow Ken Burns drift (free "living hero", no video gen). */
+@keyframes kenburns { 0% { transform: scale(1.04); } 100% { transform: scale(1.09); } }
+.kenburns { animation: kenburns 30s ease-in-out infinite alternate; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .kenburns { animation: none; transform: scale(1.04); } }
 
 /* PayFlowDemo (landing payment animation). */
 @keyframes pf-sweep { 0%, 100% { top: 4%; } 50% { top: 92%; } }
