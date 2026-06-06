@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
-import { LiveProof } from "../components/LiveProof.tsx";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -158,8 +157,6 @@ export default function LandingV2() {
           </div>
         </div>
       </section>
-
-      <section className={sec}><div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8"><LiveProof prominent lang={lang} /></div></section>
 
       {/* SECOND HERO */}
       <section className={sec}><div data-reveal className={inner}>
