@@ -51,6 +51,11 @@ const COPY = {
     rails: { stamp: "the rails", h: "Built on modern rails.", lines: ["Powered by stablecoins, blockchain settlement, and FX liquidity providers.", "You see the result. Not the infrastructure."] },
     proof: { stamp: "real transactions", h: "Real transactions.", lines: ["Live, verifiable blockchain transfers."], btnReal: "See a real payment ↗", btnContract: "The live contract ↗" },
     notbank: { stamp: "not a bank", h: "Not a bank.", lead: "A global money layer built on USDC:", items: ["fast BRL → stablecoin conversion", "global transfers", "user-controlled automation"] },
+    faq: { stamp: "questions", h: "Before you ask.", items: [
+      ["Can I withdraw in dollars?", "Yes. The balance is real dollars (USDC) and it's yours. Send it, spend it, or move it to any wallet that accepts USDC, anytime. Nothing is locked."],
+      ["Can I transfer to another account?", "Yes, instantly, to any address, in seconds. Your biometrics sign it, no one else."],
+      ["And the fees?", "No monthly fee, no hidden charges. The Pix → dollar conversion carries a small margin (~1%). Moving money on-chain costs fractions of a cent."],
+    ] as [string, string][] },
     cta: { stamp: "start", h: "Start now.", lines: ["Move from Pix to USDC in seconds.", "Hold, send, or automate — your choice."], btn: "Get started", note: "No card • 2 minutes • biometrics",
       supportLabel: "support the team", supportText: "Built solo in Brazil. If this earned your respect, send us a few dollars, one touch, no app.", supportBtn: "Support with $10 ↗", footer: "slippay · global money, in one tap · live on mainnet" },
   },
@@ -89,6 +94,11 @@ const COPY = {
     rails: { stamp: "os rails", h: "Construído em rails modernos.", lines: ["Movido por stablecoins, liquidação em blockchain e provedores de liquidez de câmbio.", "Você vê o resultado. Não a infraestrutura."] },
     proof: { stamp: "transações reais", h: "Transações reais.", lines: ["Transferências em blockchain, ao vivo e verificáveis."], btnReal: "Ver um pagamento real ↗", btnContract: "O contrato no ar ↗" },
     notbank: { stamp: "não é um banco", h: "Não é um banco.", lead: "Uma camada global de dinheiro construída sobre USDC:", items: ["conversão rápida BRL → stablecoin", "transferências globais", "automação controlada por você"] },
+    faq: { stamp: "perguntas", h: "Antes de perguntar.", items: [
+      ["Posso sacar em dólar?", "Pode. O saldo é dólar de verdade (USDC) e é seu. Envie, gaste ou leve pra qualquer carteira que aceite USDC, a qualquer hora. Nada fica preso."],
+      ["Posso transferir pra outra conta?", "Pode, na hora, pra qualquer endereço, em segundos. Quem assina é a sua biometria, mais ninguém."],
+      ["E as taxas?", "Sem mensalidade, sem tarifa escondida. A conversão Pix → dólar tem uma pequena margem (~1%). Mover dinheiro on-chain custa frações de centavo."],
+    ] as [string, string][] },
     cta: { stamp: "comece", h: "Comece agora.", lines: ["Vá de Pix a USDC em segundos.", "Guarde, envie ou automatize — você escolhe."], btn: "Começar", note: "Sem cartão • 2 minutos • biometria",
       supportLabel: "apoie o time", supportText: "Feito sozinho no Brasil. Se ganhou teu respeito, manda uns dólares, um toque, sem app.", supportBtn: "Apoiar com $10 ↗", footer: "slippay · dinheiro global, em um toque · ao vivo na mainnet" },
   },
@@ -280,6 +290,20 @@ export default function LandingV2() {
         <p className="mt-8 text-xl text-[#0a0a0a]/65">{t.notbank.lead}</p>
         <div className="mt-5 flex flex-col items-center gap-2 text-lg md:text-xl">
           {t.notbank.items.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{x}</span>)}
+        </div>
+      </div></section>
+
+      {/* FAQ — remove objections */}
+      <section className={sec}><div data-reveal className="max-w-[820px] mx-auto px-6 md:px-12 py-24 md:py-36">
+        <div className="text-center"><Index n="·" label={t.faq.stamp} /></div>
+        <h2 className="mt-10 text-center font-bold tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6vw,3.75rem)]" style={display}>{t.faq.h}</h2>
+        <div className="mt-12 max-w-[680px] mx-auto flex flex-col">
+          {t.faq.items.map(([q, a], i) => (
+            <div key={i} className="border-t border-[#0a0a0a]/12 py-7">
+              <div className="text-xl md:text-2xl font-semibold tracking-[-0.02em]" style={display}>{q}</div>
+              <p className="mt-2 text-[16px] md:text-[17px] leading-relaxed text-[#0a0a0a]/60 max-w-[60ch]">{a}</p>
+            </div>
+          ))}
         </div>
       </div></section>
 
