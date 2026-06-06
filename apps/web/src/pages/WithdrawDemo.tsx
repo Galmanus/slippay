@@ -218,7 +218,7 @@ export default function WithdrawDemo() {
     }
   }
 
-  const klein = "#b5e853";
+  const klein = "#FDDA24";
   const busy = phase !== "idle" && phase !== "done" && phase !== "error";
 
   return (
@@ -240,10 +240,10 @@ export default function WithdrawDemo() {
           ┃ 010 · Off-ramp · SEP-10 + SEP-24 withdraw · testnet
         </div>
         <div className="mb-4 inline-flex flex-wrap gap-2 font-mono text-[10px] uppercase tracking-[0.18em]">
-          <span className="px-2.5 py-1 bg-[#b5e853] text-[#0a0a0a]">
+          <span className="px-2.5 py-1 bg-[#FDDA24] text-[#0a0a0a]">
             asset · {ANCHOR_ASSET_CODE}
           </span>
-          <span className="px-2.5 py-1 bg-[#0a0a0a] text-[#b5e853]">
+          <span className="px-2.5 py-1 bg-[#0a0a0a] text-[#FDDA24]">
             issuer · {ANCHOR_ASSET_ISSUER.slice(0, 6)}…{ANCHOR_ASSET_ISSUER.slice(-6)}
           </span>
           <span className="px-2.5 py-1 bg-white/60 text-[#0a0a0a] border border-[#0a0a0a]/15">
@@ -392,7 +392,7 @@ export default function WithdrawDemo() {
               <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3">
                 ┃ log
               </div>
-              <div className="bg-[#0a0a0a] text-[#b5e853] font-mono text-xs p-4 h-72 overflow-y-auto whitespace-pre-wrap">
+              <div className="bg-[#0a0a0a] text-[#FDDA24] font-mono text-xs p-4 h-72 overflow-y-auto whitespace-pre-wrap">
                 {log.length === 0 ? "// ready · click Start withdraw\n" : log.join("\n")}
               </div>
             </div>

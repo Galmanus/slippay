@@ -24,7 +24,7 @@ export function Logo({ to = "/", variant = "ink", size = "md" }: LogoProps) {
         <path d="M20.8 11.3c-2.7-2.1-7.6-1.6-7.6 2.1 0 3.6 6.8 2.6 6.8 6.3 0 3.7-4.9 4.2-7.6 2.2"
               stroke={fg} strokeWidth="3.1" strokeLinecap="round" strokeLinejoin="round" />
         {/* verdict node — the single gold punctum (on-chain proof) */}
-        <circle cx="16" cy="3.4" r="2.5" fill="#65a30d" />
+        <circle cx="16" cy="3.4" r="2.5" fill="#A16207" />
       </svg>
       <span className={`${text} tracking-[-0.04em] font-semibold leading-none`} style={{ color: fg }}>
         slippay

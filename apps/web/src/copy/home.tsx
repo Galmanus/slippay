@@ -37,7 +37,7 @@ import type { Lang } from "../lib/lang.ts";
 //     jargon in headlines — say "dollars", "a test version", "no password to
 //     memorize"). Jargon only in the for-builders footnote, if at all.
 
-const dot = <span className="inline-block align-baseline ml-1.5 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853]" />;
+const dot = <span className="inline-block align-baseline ml-1.5 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#FDDA24]" />;
 
 export interface HomeStrings {
   nav: { how: string; docs: string; login: string; signup: string; home: string; agents: string };

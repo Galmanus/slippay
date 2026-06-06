@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { createDemoOrder } from "../lib/api.ts";
 
-const KLEIN = "#b5e853";
+const KLEIN = "#FDDA24";
 
 // A fictional storefront ("Ateliê Norte") used for the end-user purchase
 // demo. The product is priced in BRL; checkout converts to USDC live and

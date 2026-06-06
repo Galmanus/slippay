@@ -68,7 +68,7 @@ export function QrScanner({ onScan, onClose }: { onScan: (text: string) => void;
       <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" muted playsInline />
       <canvas ref={canvasRef} className="hidden" />
       {/* framing reticle */}
-      <div className="relative z-10 w-[70vw] max-w-[300px] aspect-square border-2 border-[#b5e853]" />
+      <div className="relative z-10 w-[70vw] max-w-[300px] aspect-square border-2 border-[#FDDA24]" />
       <div className="relative z-10 mt-8 text-[#f1eee7] text-sm font-mono uppercase tracking-[0.18em]">
         {err ?? "aponta pro QR de cobrança"}
       </div>

@@ -19,7 +19,7 @@ interface OrderRow {
 
 const STATUS_DOT: Record<string, string> = {
   pending: "bg-amber-500",
-  paid: "bg-[#b5e853]",
+  paid: "bg-[#FDDA24]",
   underpaid: "bg-orange-500",
   expired: "bg-[#0a0a0a]/30",
   cancelled: "bg-[#0a0a0a]/30",
@@ -96,7 +96,7 @@ export default function DashboardOrders() {
                     {o.tx_hash
                       ? <a href={`${EXPLORER_BASE}/${o.tx_hash}`}
                            target="_blank" rel="noreferrer"
-                           className="border-b border-[#0a0a0a] hover:border-[#b5e853]">
+                           className="border-b border-[#0a0a0a] hover:border-[#FDDA24]">
                           {o.tx_hash.slice(0,8)}
                         </a>
                       : <span className="text-[#0a0a0a]/30">—</span>}

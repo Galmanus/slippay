@@ -10,7 +10,7 @@ const AUDIT_CONTRACT = "CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN
 const AUDIT_URL = `https://stellar.expert/explorer/public/contract/${AUDIT_CONTRACT}`;
 
 function Eyebrow({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
-  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#b5e853]" : "text-[#65a30d]"} mb-6`}>{children}</div>;
+  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#A16207]"} mb-6`}>{children}</div>;
 }
 
 function Block({ k, title, children }: { k: string; title: string; children: React.ReactNode }) {
@@ -18,7 +18,7 @@ function Block({ k, title, children }: { k: string; title: string; children: Rea
     <section className="border-t border-[#0a0a0a]/10">
       <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-16 md:py-24 grid md:grid-cols-[200px_1fr] gap-8 md:gap-16">
         <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#65a30d]">{k}</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#A16207]">{k}</div>
           <h2 className="mt-3 text-2xl md:text-3xl font-semibold tracking-[-0.02em] leading-tight">{title}</h2>
         </div>
         <div className="text-[17px] text-[#0a0a0a]/75 leading-relaxed space-y-5">{children}</div>
@@ -28,7 +28,7 @@ function Block({ k, title, children }: { k: string; title: string; children: Rea
 }
 
 const Li = ({ children }: { children: React.ReactNode }) => (
-  <li className="flex gap-3"><span className="text-[#65a30d] shrink-0">·</span><span>{children}</span></li>
+  <li className="flex gap-3"><span className="text-[#A16207] shrink-0">·</span><span>{children}</span></li>
 );
 
 export default function Investidores() {
@@ -38,7 +38,7 @@ export default function Investidores() {
         <Link to="/"><Logo /></Link>
         <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
           <Link to="/" className="hover:text-[#0a0a0a]">Home</Link>
-          <a href="mailto:manuel@bluewaveai.online" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#b5e853] text-[#0a0a0a] hover:opacity-90">Falar com a gente</a>
+          <a href="mailto:manuel@bluewaveai.online" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] hover:opacity-90">Falar com a gente</a>
         </nav>
       </header>
 
@@ -89,15 +89,15 @@ export default function Investidores() {
 
       <Block k="diferenciação" title="Por que não é só mais um.">
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#65a30d] mb-2">vs Stripe / cartões</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#A16207] mb-2">vs Stripe / cartões</div>
           <p>Stripe é custódia, aprovação centralizada e risco de bloqueio. A SlipPay é não-custodial, execução automática e regras imutáveis.</p>
         </div>
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#65a30d] mb-2">vs automação tradicional</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#A16207] mb-2">vs automação tradicional</div>
           <p>Os sistemas atuais dependem de um backend confiável. A SlipPay move a lógica crítica para o contrato on-chain.</p>
         </div>
         <div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#65a30d] mb-2">vs agentes de IA financeiros</div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#A16207] mb-2">vs agentes de IA financeiros</div>
           <p>Agentes são vulneráveis a prompt injection e a ataques. A SlipPay isola a decisão (IA) da execução (contrato).</p>
         </div>
       </Block>
@@ -109,11 +109,11 @@ export default function Investidores() {
           <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.035em] leading-[1.0] max-w-[20ch]">O modelo de ameaça assume o comprometimento total do agente.</h2>
           <div className="mt-10 grid sm:grid-cols-2 gap-x-12 gap-y-3 max-w-[60ch] text-lg text-[#f1eee7]/65">
             {["Prompt injection", "Tool abuse", "Memória corrompida", "Dependências maliciosas"].map((x) => (
-              <div key={x} className="flex gap-3 border-t border-[#f1eee7]/12 pt-3"><span className="text-[#b5e853]">·</span><span>{x}</span></div>
+              <div key={x} className="flex gap-3 border-t border-[#f1eee7]/12 pt-3"><span className="text-[#FDDA24]">·</span><span>{x}</span></div>
             ))}
           </div>
           <p className="mt-10 text-xl md:text-2xl text-[#f1eee7]/80 max-w-[44ch] leading-relaxed">
-            Mesmo assim, <span className="text-[#b5e853] font-medium">o agente não consegue mover fundos fora das regras do contrato.</span>
+            Mesmo assim, <span className="text-[#FDDA24] font-medium">o agente não consegue mover fundos fora das regras do contrato.</span>
           </p>
         </div>
       </section>
@@ -154,13 +154,13 @@ export default function Investidores() {
           <Eyebrow dark>a tese</Eyebrow>
           <p className="text-lg text-[#f1eee7]/55 max-w-[44ch] leading-relaxed">Hoje, empresas automatizam pagamentos confiando em infraestrutura centralizada.</p>
           <h2 className="mt-8 text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.97] max-w-[20ch]">
-            Empresas definem as regras, e o dinheiro <span className="text-[#b5e853]">executa sozinho dentro delas.</span>
+            Empresas definem as regras, e o dinheiro <span className="text-[#FDDA24]">executa sozinho dentro delas.</span>
           </h2>
           <p className="mt-12 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch]">
             A próxima camada de pagamentos não é bancária. É programável.
           </p>
           <div className="mt-14 flex flex-wrap gap-4">
-            <a href="mailto:manuel@bluewaveai.online" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Falar com a gente</a>
+            <a href="mailto:manuel@bluewaveai.online" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Falar com a gente</a>
             <Link to="/seguranca" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] border border-[#f1eee7]/25 hover:border-[#f1eee7]">A arquitetura de segurança</Link>
           </div>
           <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30">slippay · a forma segura de deixar software mover dinheiro</div>

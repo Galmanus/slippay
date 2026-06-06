@@ -210,7 +210,7 @@ export default function Docs() {
                     className={
                       "block py-1.5 text-sm tracking-tight " +
                       (d.slug === slug
-                        ? "text-[#0a0a0a] border-l-2 border-[#b5e853] pl-3"
+                        ? "text-[#0a0a0a] border-l-2 border-[#FDDA24] pl-3"
                         : "text-[#0a0a0a]/65 hover:text-[#0a0a0a] pl-3")
                     }
                   >
@@ -235,7 +235,7 @@ export default function Docs() {
                           className={
                             "block py-1.5 text-sm leading-snug tracking-tight transition-colors " +
                             (d.slug === slug
-                              ? "text-[#0a0a0a] border-l-2 border-[#b5e853] pl-3 font-medium"
+                              ? "text-[#0a0a0a] border-l-2 border-[#FDDA24] pl-3 font-medium"
                               : "text-[#0a0a0a]/65 hover:text-[#0a0a0a] pl-3 border-l-2 border-transparent")
                           }
                         >
@@ -268,7 +268,7 @@ export default function Docs() {
               <Reveal delay={80}>
                 <h1 className="text-[8vw] md:text-[3.6vw] font-medium leading-[1.02] tracking-[-0.035em] max-w-[26ch]">
                   {doc.title}
-                  <span className="inline-block align-baseline ml-2 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853]" />
+                  <span className="inline-block align-baseline ml-2 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#FDDA24]" />
                 </h1>
               </Reveal>
               <Reveal delay={140}>
@@ -343,7 +343,7 @@ export default function Docs() {
       <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1600px] mx-auto px-5 md:px-10 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] font-mono">
           <div>SLIPPAY · documentation · live on Stellar PUBLIC</div>
-          <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="text-[#b5e853] hover:opacity-80">
+          <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="text-[#FDDA24] hover:opacity-80">
             SSL Spec ↗
           </a>
         </div>

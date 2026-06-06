@@ -147,7 +147,7 @@ function LossCalculator({ t }: { t: { label: string; title: string; lossLabel: s
 function ProofFact({ n, title, body }: { n: string; title: string; body: string }) {
   return (
     <div className="group lift">
-      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30 mb-3 transition-colors duration-300 group-hover:text-[#b5e853]">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30 mb-3 transition-colors duration-300 group-hover:text-[#FDDA24]">
         {n}
       </div>
       <div className="text-lg md:text-xl tracking-tight font-medium leading-[1.25]">{title}</div>
@@ -189,7 +189,7 @@ export default function Home() {
           <LangToggle lang={lang} setLang={setLang} />
           <Link to="/signup"
             style={{ textShadow: "none" }}
-            className="lift bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
+            className="lift bg-[#FDDA24] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
             <span className="inline-block w-1 h-1 bg-[#0a0a0a]" />
             {t.nav.signup}
           </Link>
@@ -249,7 +249,7 @@ export default function Home() {
             <Link
               to="/signup"
               onClick={() => setMobileMenu(false)}
-              className="mt-8 bg-[#b5e853] text-[#0a0a0a] py-4 text-center text-sm uppercase tracking-[0.22em] font-medium flex items-center justify-center gap-3"
+              className="mt-8 bg-[#FDDA24] text-[#0a0a0a] py-4 text-center text-sm uppercase tracking-[0.22em] font-medium flex items-center justify-center gap-3"
             >
               <span className="inline-block w-1.5 h-1.5 bg-[#0a0a0a]" />
               {t.nav.signup}
@@ -293,11 +293,11 @@ export default function Home() {
       {/* HERO TEXT — centered, monumental, single CTA */}
       <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-10 md:pt-24 pb-20 md:pb-32 relative">
         {/* ambient lime aurora — slow drift behind the hero, editorial not gaudy */}
-        <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(181,232,83,0.22), transparent 70%)", filter: "blur(6px)" }} />
+        <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(253,218,36,0.22), transparent 70%)", filter: "blur(6px)" }} />
         <div className="relative flex flex-col items-center text-center">
           <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-6">
             <span className="flex items-center gap-2 normal-case tracking-tight">
-              <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+              <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
               {t.hero.badge}
             </span>
           </div>
@@ -321,7 +321,7 @@ export default function Home() {
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">{t.payflow.label}</div>
             <h2 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98] max-w-[14ch]">
-              {t.payflow.h2}<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
+              {t.payflow.h2}<span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] ml-2 align-baseline" />
             </h2>
             <p className="mt-6 text-base md:text-lg text-[#0a0a0a]/75 leading-relaxed max-w-[44ch]">
               {t.payflow.body}
@@ -359,7 +359,7 @@ export default function Home() {
               </p>
             </div>
             <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#FDDA24] font-mono">
                 {t.gap.b3Label}
               </div>
               <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/90">
@@ -387,7 +387,7 @@ export default function Home() {
               <Reveal key={s.n} delay={i * 100} className="lift border border-[#0a0a0a]/15 bg-white/40 p-7 md:p-9">
                 <div className="flex items-center gap-3">
                   <span className="text-5xl md:text-6xl font-medium tracking-[-0.05em] tabular-nums text-[#0a0a0a]/12 leading-none">{s.n}</span>
-                  <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+                  <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
                 </div>
                 <div className="text-xl md:text-2xl font-medium tracking-tight mt-5">{s.t}</div>
                 <p className="mt-3 text-sm md:text-base text-[#0a0a0a]/70 leading-relaxed">{s.b}</p>
@@ -430,7 +430,7 @@ export default function Home() {
               high-contrast ask here remains "Entrar na lista". */}
           <div className="mt-16 flex justify-center">
             <Link to="/agents"
-              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853] transition-colors border-b border-[#f1eee7]/20 pb-1">
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#FDDA24] transition-colors border-b border-[#f1eee7]/20 pb-1">
               {t.proof.seeItWork} <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
@@ -464,19 +464,19 @@ export default function Home() {
           </div>
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15 overflow-hidden max-w-[1000px] mx-auto">
             <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cNetwork}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cNetwork}</div>
               <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cNetworkV}</div>
             </div>
             <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cAudit}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cAudit}</div>
               <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cAuditV}</div>
             </div>
             <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cBound}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cBound}</div>
               <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cBoundV}</div>
             </div>
             <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#b5e853]">{t.status.cChain}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cChain}</div>
               <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cChainV}</div>
             </div>
           </div>
@@ -486,7 +486,7 @@ export default function Home() {
               explorer hashes on the zero-tech human page. */}
           <div className="mt-10 text-center">
             <Link to="/agents"
-              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#b5e853] transition-colors border-b border-[#f1eee7]/20 pb-1">
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#FDDA24] transition-colors border-b border-[#f1eee7]/20 pb-1">
               {t.status.mainnetLabel} <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
@@ -494,7 +494,7 @@ export default function Home() {
           {/* one final ask — monumental */}
           <div className="mt-24 md:mt-32 text-center flex flex-col items-center">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-8 tabular-nums">
-              {t.cta.kicker} <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
+              {t.cta.kicker} <span className="inline-block w-2 h-2 bg-[#FDDA24] ml-2 align-middle" />
             </div>
             <h2 className="title-grad-dark text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
               {t.cta.h2}
@@ -504,7 +504,7 @@ export default function Home() {
             </p>
             <div className="mt-12 flex flex-col sm:flex-row items-center gap-5">
               <Link to="/signup"
-                className="lift inline-flex items-center gap-3 bg-[#b5e853] text-[#0a0a0a] px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium hover:bg-[#c3f06a]">
+                className="lift inline-flex items-center gap-3 bg-[#FDDA24] text-[#0a0a0a] px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium hover:bg-[#c3f06a]">
                 {t.cta.button} <span>→</span>
               </Link>
               <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
@@ -555,13 +555,13 @@ export default function Home() {
 
           <div className="pt-16 pb-8 leading-none">
             <span className="block text-[#f1eee7] text-[20vw] md:text-[14vw] font-medium tracking-[-0.05em] -mb-4">
-              slippay<span className="text-[#b5e853]">.</span>
+              slippay<span className="text-[#FDDA24]">.</span>
             </span>
           </div>
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
             <div>© 2026 · SlipPay · v0.2</div>
-            <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN" target="_blank" rel="noopener noreferrer" className="hover:text-[#b5e853] transition-colors">stellar · subscription contract · CBJMQ6ZY…SEVQN ↗</a>
+            <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN" target="_blank" rel="noopener noreferrer" className="hover:text-[#FDDA24] transition-colors">stellar · subscription contract · CBJMQ6ZY…SEVQN ↗</a>
             <div>Blumenau · BR</div>
           </div>
         </div>

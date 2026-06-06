@@ -63,7 +63,7 @@ function Card({ m }: { m: Member }) {
       <div className="text-base font-semibold tracking-tight text-[#0a0a0a]">{m.name}</div>
       <p className="mt-3 text-[13px] leading-[1.5] text-[#0a0a0a]/65 flex-1">{m.desc}</p>
       <span className="mt-5 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/70 group-hover:text-[#0a0a0a]">
-        <span className="border-b-2 border-[#b5e853] pb-0.5">Visit website</span>
+        <span className="border-b-2 border-[#FDDA24] pb-0.5">Visit website</span>
         <span className="group-hover:translate-x-0.5 transition-transform">→</span>
       </span>
     </a>

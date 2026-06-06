@@ -55,7 +55,7 @@ export default function Dashboard() {
         <main className="flex-1 flex items-center">
           <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-16 py-16">
             <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-              <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+              <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
               001. Onboard
             </div>
             <div className="md:col-span-6">
@@ -122,7 +122,7 @@ export default function Dashboard() {
             <div className="text-base mt-1 truncate">{merchant.display_name}</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/55 mt-3">Network</div>
             <div className="flex items-center gap-2 mt-1">
-              <span className={`inline-block w-1.5 h-1.5 ${merchant.network === "mainnet" ? "bg-[#b5e853]" : "bg-amber-400"}`} />
+              <span className={`inline-block w-1.5 h-1.5 ${merchant.network === "mainnet" ? "bg-[#FDDA24]" : "bg-amber-400"}`} />
               <span className="text-sm">{merchant.network}</span>
             </div>
           </div>

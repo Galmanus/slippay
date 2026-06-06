@@ -111,7 +111,7 @@ export default function Checkout() {
       <main className="flex-1 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
           <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-            <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+            <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
             001. Pay with crypto
           </div>
 
@@ -182,9 +182,9 @@ export default function Checkout() {
                       </div>
                     )}
                     {submitState === "paid" && (
-                      <div className="mt-6 border-l-2 border-[#b5e853] pl-4">
+                      <div className="mt-6 border-l-2 border-[#FDDA24] pl-4">
                         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a] flex items-center gap-2">
-                          <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" />
+                          <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" />
                           Payment confirmed
                         </div>
                         {txHash && (

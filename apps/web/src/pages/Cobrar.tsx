@@ -51,7 +51,7 @@ export default function Cobrar() {
           ┃ cobrar · mostre o QR pro cliente
         </div>
         <h1 className="text-4xl md:text-5xl font-medium tracking-[-0.04em] leading-[0.98]">
-          Quanto cobrar?<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
+          Quanto cobrar?<span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] ml-2 align-baseline" />
         </h1>
 
         <div className="mt-8 flex flex-wrap justify-center gap-2">

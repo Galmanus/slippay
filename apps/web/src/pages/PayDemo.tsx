@@ -1,22 +1,18 @@
-// /pay — REAL biometric payment on Stellar, fully on your phone.
-//
-// "Criar conta" mints a device passkey (Face ID); the gas-sponsor relayer
-// deploys a smart-wallet bound to it and fronts a small float. "Pagar" moves
-// XLM out — authorized ONLY by a live Face ID tap, verified on-chain by the
-// wallet's __check_auth. No seed phrase, no typing, NO wallet-connect.
-//
-// The relayer pays network fees only (it cannot move your money — only your
-// Face ID can). Network + sponsor come from GET /relayer/info; mainnet when the
-// relayer is configured with a PUBLIC sponsor.
+// /pay — REAL biometric payment on Stellar, fully on your phone. Editorial
+// monumental register (matches the landing): Space Grotesk display, index stamp,
+// Stellar yellow. Same logic as before — a device passkey (Face ID) is minted,
+// the gas-sponsor relayer deploys a smart-wallet bound to it and fronts a small
+// float, and "pay" moves funds authorized ONLY by a live Face ID tap, verified
+// on-chain by the wallet's __check_auth. The relayer pays network fees only.
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Logo } from "../components/Logo";
 import { QrScanner } from "../components/QrScanner";
 import { decodeRequest, stroopsToXlm, type PayRequest } from "../lib/slippayqr";
 import { createPasskey, payViaRelayer, type PasskeyHandle } from "../lib/passkey";
 import { FaceScan } from "../components/FaceScan";
 
+const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
   ?? "https://api.slippay.cc/api/v1/relayer";
 
@@ -42,19 +38,19 @@ export default function PayDemo() {
   async function onCreateAccount() {
     setBusy(true); setPayHash(null); setLog([]);
     try {
-      add("conectando ao relayer (patrocina só as taxas)…");
+      add("connecting to the relayer (it only sponsors fees)…");
       const info = await fetch(`${RELAYER_BASE}/info`).then((r) => r.json()).catch(() => ({}));
-      if (!info.sponsor) throw new Error("relayer indisponível: " + (info.error ?? "sem resposta"));
+      if (!info.sponsor) throw new Error("relayer unavailable: " + (info.error ?? "no response"));
       setSponsor(info.sponsor);
       setNetwork(info.network === "PUBLIC" ? "PUBLIC" : "TESTNET");
       add(`✅ relayer ${info.network}`);
 
-      add("toca o Face ID pra criar tua passkey…");
+      add("tap Face ID to create your passkey…");
       const h = await createPasskey("slippay");
       setHandle(h);
-      add("✅ passkey criada (sua chave, ninguém mais tem)");
+      add("✅ passkey created (your key, no one else has it)");
 
-      add("criando tua carteira on-chain (uns segundos)…");
+      add("creating your wallet on-chain (a few seconds)…");
       const resp = await fetch(`${RELAYER_BASE}/deploy`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -62,11 +58,11 @@ export default function PayDemo() {
       });
       const j = await resp.json().catch(() => ({}));
       if (!resp.ok || !j.wallet_id) {
-        throw new Error("deploy falhou: " + (j.reason ?? j.error ?? resp.status));
+        throw new Error("deploy failed: " + (j.reason ?? j.error ?? resp.status));
       }
       setWallet(j.wallet_id);
-      add(`✅ carteira: ${short(j.wallet_id)} · saldo inicial ${stroopsToXlm(j.funded)} XLM`);
-      add("conta pronta. Escaneia um QR de cobrança.");
+      add(`✅ wallet: ${short(j.wallet_id)} · starting balance ${stroopsToXlm(j.funded)} XLM`);
+      add("account ready. Scan a payment QR.");
     } catch (e) { add(`✗ ${(e as Error).message}`); } finally { setBusy(false); }
   }
 
@@ -75,7 +71,7 @@ export default function PayDemo() {
     try {
       const r = decodeRequest(text);
       setReq(r);
-      add(`QR lido: ${stroopsToXlm(r.amount)} ${r.asset ?? "USDC"} → ${short(r.to)}`);
+      add(`QR read: ${stroopsToXlm(r.amount)} ${r.asset ?? "USDC"} → ${short(r.to)}`);
     } catch (e) { add(`✗ ${(e as Error).message}`); }
   }
 
@@ -83,7 +79,7 @@ export default function PayDemo() {
     if (!handle || !wallet || !sponsor || !req) return;
     setBusy(true); setPayHash(null);
     try {
-      add(`toca o Face ID pra pagar ${stroopsToXlm(req.amount)} ${req.asset ?? "USDC"}…`);
+      add(`tap Face ID to pay ${stroopsToXlm(req.amount)} ${req.asset ?? "USDC"}…`);
       const hash = await payViaRelayer({
         network, relayerBase: RELAYER_BASE, sponsor,
         walletId: wallet, recipient: req.to, amount: req.amount,
@@ -91,66 +87,70 @@ export default function PayDemo() {
       });
       setPayHash(hash);
       setReq(null);
-      add(`✅ PAGO · tx ${short(hash)}`);
+      add(`✅ PAID · tx ${short(hash)}`);
     } catch (e) { add(`✗ ${(e as Error).message}`); } finally { setBusy(false); }
   }
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <header className="px-5 md:px-10 py-5 flex items-center justify-between border-b border-[#0a0a0a]/8">
-        <Logo />
-        <Link to="/" className="text-[10px] uppercase tracking-[0.22em] hover:opacity-60">Home</Link>
+      <header className="px-6 md:px-12 py-7 flex items-center justify-between">
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
+        <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
       </header>
-      <main className="max-w-[680px] mx-auto px-5 md:px-10 pt-12 pb-24">
-        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">
-          ┃ demo grátis · um pagamento de verdade · {network === "PUBLIC" ? "mainnet" : "testnet"}
+
+      <main className="max-w-[720px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-28">
+        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
+          <span className="text-[#0a0a0a]/70">001</span>
+          <span className="h-px w-8 bg-current opacity-40" />
+          <span>pay with your face · {network === "PUBLIC" ? "mainnet" : "testnet"}</span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98]">
-          Veja o pagamento sair.<span className="inline-block w-2.5 h-2.5 bg-[#65a30d] ml-2 align-baseline" />
+
+        <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,6.5rem)] break-words" style={display}>
+          Pay with <span className="text-[#A16207]">your face.</span>
         </h1>
-        <p className="mt-6 text-base text-[#0a0a0a]/75 leading-relaxed max-w-[52ch]">
-          Esse é o trilho que seu agente usa pra pagar as contas. Crie uma carteira
-          com Face ID e dispare um pagamento de verdade — autorizado só pelo seu
-          rosto e verificado na blockchain. Grátis, no seu celular.
+        <p className="mt-8 text-xl leading-relaxed max-w-[48ch] text-[#0a0a0a]/75">
+          This is the rail your agent uses to pay. Create a wallet with Face ID and send a real
+          payment — authorized only by your face, verified on-chain.
+          <span className="text-[#0a0a0a] font-medium"> Free, on your phone. No app, no seed phrase.</span>
         </p>
-        <a href="/anchor-demo" className="mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-0.5">
-          Sem dólar ainda? Adicionar fundos<span className="text-[#0a0a0a]/40">→</span>
+        <a href="/anchor-demo" className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-0.5">
+          No dollars yet? Add funds<span className="text-[#0a0a0a]/40">→</span>
         </a>
 
-        <div className="mt-10 flex flex-col gap-3 max-w-[360px]">
+        <div className="mt-12 flex flex-col gap-3 max-w-[380px]">
           <button onClick={onCreateAccount} disabled={busy}
-            className="lift px-6 py-4 bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
-            1 · Criar minha carteira (Face ID)
+            className="lift px-7 py-4 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
+            1 · Create my wallet (Face ID)
           </button>
           <button onClick={() => setScanning(true)} disabled={busy || !wallet}
-            className="lift px-6 py-4 bg-[#b5e853] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
-            2 · Pagar uma cobrança (QR)
+            className="lift px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
+            2 · Pay a request (QR)
           </button>
         </div>
 
-        {/* face-scan moment — visualizes the authorization (the real prompt is the OS modal) */}
+        {/* face-scan moment — the real prompt is the OS modal */}
         {(busy || payHash) && (
-          <div className="mt-8 max-w-[360px] rounded-2xl border border-[#0a0a0a]/10 bg-white/40 py-4">
+          <div className="mt-8 max-w-[380px] rounded-2xl border border-[#0a0a0a]/10 bg-white/40 py-4">
             <FaceScan state={payHash && !busy ? "done" : "scanning"} />
             <div className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 pb-1">
-              {payHash && !busy ? "autorizado pelo seu rosto" : "aguardando seu rosto…"}
+              {payHash && !busy ? "authorized by your face" : "waiting for your face…"}
             </div>
           </div>
         )}
 
-        {/* confirm screen — see WHO and HOW MUCH before your face authorizes */}
+        {/* confirm — see WHO and HOW MUCH before your face authorizes */}
         {req && (
-          <div className="mt-8 p-6 border-2 border-[#0a0a0a] max-w-[360px]">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-3">Confirma o pagamento</div>
-            <div className="text-4xl font-medium tabular-nums tracking-[-0.03em]">{stroopsToXlm(req.amount)} <span className="text-base text-[#0a0a0a]/55">{req.asset ?? "USDC"}</span></div>
-            <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">para {short(req.to, 8, 8)}</div>
+          <div className="mt-8 p-6 rounded-2xl border-2 border-[#0a0a0a] max-w-[380px]">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-3">Confirm the payment</div>
+            <div className="text-4xl font-medium tabular-nums tracking-[-0.03em]" style={display}>{stroopsToXlm(req.amount)} <span className="text-base text-[#0a0a0a]/55">{req.asset ?? "USDC"}</span></div>
+            <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">to {short(req.to, 8, 8)}</div>
             <button onClick={onPayReq} disabled={busy}
-              className="lift mt-5 w-full px-6 py-4 bg-[#b5e853] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
-              {busy ? "…" : "Autorizar com o rosto"}
+              className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
+              {busy ? "…" : "Authorize with your face"}
             </button>
             <button onClick={() => setReq(null)} disabled={busy}
               className="mt-2 w-full px-6 py-3 text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
-              Cancelar
+              Cancel
             </button>
           </div>
         )}
@@ -158,30 +158,30 @@ export default function PayDemo() {
         {scanning && <QrScanner onScan={onScanned} onClose={() => setScanning(false)} />}
 
         {payHash && (
-          <div className="mt-8 p-5 border" style={{ borderColor: "#3f7d20" }}>
-            <div className="text-lg font-medium" style={{ color: "#3f7d20" }}>✅ Pago. O dinheiro se moveu de verdade.</div>
+          <div className="mt-8 p-6 rounded-2xl border-2 border-[#A16207] max-w-[420px]">
+            <div className="text-lg font-medium" style={{ color: "#A16207" }}>✅ Paid. The money really moved.</div>
             <a href={`https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`} target="_blank" rel="noopener noreferrer"
               className="text-xs font-mono underline underline-offset-4 mt-2 inline-block break-all">
-              ver na blockchain ↗
+              view on the blockchain ↗
             </a>
             <p className="text-sm text-[#0a0a0a]/70 mt-2">
-              Nenhuma senha. Só teu rosto autorizou — e o contrato verificou on-chain.
+              No password. Only your face authorized it — and the contract verified it on-chain.
             </p>
           </div>
         )}
 
-        <div className="mt-8">
+        <div className="mt-10">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3">┃ log</div>
-          <div className="bg-[#0a0a0a] text-[#b5e853] font-mono text-xs p-4 min-h-[180px] whitespace-pre-wrap break-all">
-            {log.length === 0 ? "// toca em 1 · Criar minha carteira\n" : log.join("\n")}
+          <div className="bg-[#0a0a0a] text-[#FDDA24] font-mono text-xs p-4 rounded-xl min-h-[180px] whitespace-pre-wrap break-all">
+            {log.length === 0 ? "// tap 1 · Create my wallet\n" : log.join("\n")}
           </div>
         </div>
 
         <p className="mt-6 text-xs text-[#0a0a0a]/45 leading-relaxed">
           {network === "PUBLIC"
-            ? "Mainnet — dinheiro real. O relayer patrocina só a taxa de rede; teu dinheiro fica na carteira que só teu rosto move."
-            : "Testnet (dinheiro de mentira, grátis) — pra provar o fluxo no seu aparelho."}
-          {" "}Precisa de Face ID / Touch ID / digital + navegador moderno.
+            ? "Mainnet — real money. The relayer sponsors only the network fee; your money stays in the wallet that only your face can move."
+            : "Testnet (free play money) — to prove the flow on your device."}
+          {" "}Needs Face ID / Touch ID / fingerprint + a modern browser.
         </p>
       </main>
     </div>

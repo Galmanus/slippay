@@ -12,7 +12,7 @@ const AUDIT_CONTRACT = "CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN
 const AUDIT_URL = `https://stellar.expert/explorer/public/contract/${AUDIT_CONTRACT}`;
 
 function Eyebrow({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
-  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#b5e853]" : "text-[#65a30d]"} mb-6`}>{children}</div>;
+  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#A16207]"} mb-6`}>{children}</div>;
 }
 
 const PILLARS = [
@@ -31,7 +31,7 @@ export default function Conformidade() {
         <Link to="/"><Logo /></Link>
         <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
           <Link to="/" className="hover:text-[#0a0a0a]">Home</Link>
-          <a href="mailto:manuel@bluewaveai.online" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#b5e853] text-[#0a0a0a] hover:opacity-90">Falar com a gente</a>
+          <a href="mailto:manuel@bluewaveai.online" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] hover:opacity-90">Falar com a gente</a>
         </nav>
       </header>
 
@@ -55,7 +55,7 @@ export default function Conformidade() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-20 md:py-32">
           <Eyebrow dark>o princípio</Eyebrow>
           <h2 className="text-3xl md:text-5xl font-semibold tracking-[-0.035em] leading-[1.0] max-w-[20ch]">
-            A regra vive no contrato. <span className="text-[#b5e853]">Não na pessoa, nem no agente.</span>
+            A regra vive no contrato. <span className="text-[#FDDA24]">Não na pessoa, nem no agente.</span>
           </h2>
           <p className="mt-10 text-xl text-[#f1eee7]/70 leading-relaxed max-w-[52ch]">
             Quem decide o pagamento é a IA. Quem executa e valida é o contrato. Um agente comprometido, um
@@ -72,7 +72,7 @@ export default function Conformidade() {
           <div className="mt-12 grid md:grid-cols-2 gap-x-14 gap-y-9">
             {PILLARS.map(([t, b]) => (
               <div key={t} className="flex gap-4 border-t border-[#0a0a0a]/12 pt-6">
-                <span className="text-[#65a30d] text-lg shrink-0 leading-none mt-1">✓</span>
+                <span className="text-[#A16207] text-lg shrink-0 leading-none mt-1">✓</span>
                 <div>
                   <div className="text-[19px] font-semibold tracking-[-0.01em]">{t}</div>
                   <p className="mt-2 text-[15px] text-[#0a0a0a]/65 leading-relaxed">{b}</p>
@@ -123,7 +123,7 @@ export default function Conformidade() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.045em] leading-[1.0] max-w-[20ch] mx-auto">Inovação a favor de quem fiscaliza, não contra.</h2>
           <div className="mt-12 flex flex-wrap justify-center gap-4">
-            <a href="mailto:manuel@bluewaveai.online" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Falar com a gente</a>
+            <a href="mailto:manuel@bluewaveai.online" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Falar com a gente</a>
             <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] border border-[#f1eee7]/25 hover:border-[#f1eee7]">Ver o contrato on-chain</a>
             <Link to="/seguranca" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] border border-[#f1eee7]/25 hover:border-[#f1eee7]">A arquitetura de segurança</Link>
           </div>
