@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 
 const STEPS = [
-  ["Approve with Face ID", "one passkey tap · no seed phrase · you set the cap"],
+  ["Approve with a touch", "one passkey tap · no seed phrase · you set the cap"],
   ["It charges itself", "pulls 0.05 USDC · no re-signing"],
   ["Settles on Stellar", "~5s · fee < $0.01"],
   ["On-chain proof", "public, verifiable transaction"],
@@ -64,7 +64,7 @@ export function MandateDemo() {
   return (
     <button
       onClick={() => setRun((x) => x + 1)}
-      className="block w-full text-left border border-[#0a0a0a]/20 rounded-2xl p-8 bg-white shadow-[0_18px_50px_-24px_rgba(10,10,10,0.30)] cursor-pointer"
+      className="block w-full text-left text-[#0a0a0a] border border-[#0a0a0a]/20 rounded-2xl p-8 bg-white shadow-[0_18px_50px_-24px_rgba(10,10,10,0.30)] cursor-pointer"
       aria-label="Replay the mandate demo"
     >
       <div className="flex items-center justify-between mb-7">
