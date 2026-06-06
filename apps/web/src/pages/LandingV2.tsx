@@ -235,7 +235,7 @@ export default function LandingV2() {
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.hero.note}</span>
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-[#0a0a0a]/65">
-            {t.hero.trust.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#6f6862]">✓</span>{x}</span>)}
+            {t.hero.trust.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{x}</span>)}
           </div>
           <div className="mt-14 w-full max-w-[420px] mx-auto">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">{t.hero.liveTag}</div>
@@ -256,7 +256,7 @@ export default function LandingV2() {
           <div className="mt-10 grid sm:grid-cols-2 gap-x-10 gap-y-4 max-w-[760px] mx-auto">
             {t.why.items.map((it) => (
               <div key={it} className="flex items-baseline gap-3 text-lg md:text-xl text-[#0a0a0a]/80">
-                <span className="text-[#6f6862] shrink-0">✓</span><span>{it}</span>
+                <span className="text-[#FDDA24] shrink-0">✓</span><span>{it}</span>
               </div>
             ))}
           </div>
@@ -327,7 +327,7 @@ export default function LandingV2() {
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.25rem,7vw,5.5rem)]" style={display}>{t.guard.h}</h2>
           <p className="mt-8 text-xl text-[#0a0a0a]/70">{t.guard.body}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-lg">
-            {t.guard.checks.map((c) => <span key={c} className="flex items-center gap-2"><span className="text-[#6f6862]">✓</span>{c}</span>)}
+            {t.guard.checks.map((c) => <span key={c} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{c}</span>)}
           </div>
           <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch]" style={display}>{t.guard.fail}</p>
           <div className="mt-12 w-full max-w-[440px] mx-auto text-left"><MandateDemo /></div>

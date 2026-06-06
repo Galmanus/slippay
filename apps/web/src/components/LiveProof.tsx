@@ -51,7 +51,7 @@ export function LiveProof({ dark = false, prominent = false, lang = "en" }: { da
     return (
       <div className="mx-auto max-w-[760px] rounded-full border border-[#0a0a0a]/12 bg-white/50 px-6 md:px-8 py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] md:text-[13px] tracking-[-0.01em] text-[#0a0a0a]/70">
         <span className="flex items-center gap-2.5 font-medium text-[#0a0a0a]">
-          <span className="w-2 h-2 rounded-full bg-[#6f6862] animate-pulse" /> {t.liveBig}
+          <span className="w-2 h-2 rounded-full bg-[#FDDA24] animate-pulse" /> {t.liveBig}
         </span>
         {last && <span className="text-[#0a0a0a]/55">{t.last} <span className="tabular-nums text-[#0a0a0a]/80">{rel(last, lang)}</span></span>}
         <span className="text-[#0a0a0a]/55">{t.cheapBig}</span>

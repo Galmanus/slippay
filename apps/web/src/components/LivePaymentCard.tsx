@@ -114,7 +114,7 @@ export function LivePaymentCard() {
 
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#cabfb0] shadow-[0_0_10px_#cabfb0]" />
+            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#FDDA24] shadow-[0_0_10px_#FDDA24]" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55 whitespace-nowrap">agent · active</span>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#f1eee7]/40 whitespace-nowrap">Stellar · mainnet</span>
@@ -151,7 +151,7 @@ export function LivePaymentCard() {
         <div className="relative mt-6 h-[52px]">
           <div className="absolute inset-0 flex items-center justify-center gap-2.5 rounded-xl transition-opacity duration-300"
             style={{ opacity: phase === "verify" ? 1 : 0, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)" }}>
-            <span className="lpc-spin inline-block w-3.5 h-3.5 rounded-full border-2 border-[#cabfb0]/30 border-t-[#cabfb0]" />
+            <span className="lpc-spin inline-block w-3.5 h-3.5 rounded-full border-2 border-[#FDDA24]/30 border-t-[#FDDA24]" />
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#f1eee7]/60">verifying on-chain…</span>
           </div>
           <a href={txUrl} target="_blank" rel="noreferrer"
