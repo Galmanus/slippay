@@ -149,8 +149,9 @@ export default function LandingV2() {
       {/* HERO */}
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
-          <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
-<span style={mark}>Global money, instantly</span>
+          <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.9] text-[clamp(2.25rem,9.5vw,7rem)] mx-auto flex flex-col items-center gap-2" style={display}>
+            <span style={mark}>Global money,</span>
+            <span style={mark}>instantly</span>
           </h1>
           <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[28ch] mx-auto" style={display}>
             {t.hero.sub.split("USDC").flatMap((part, i) => i === 0 ? [part] : [<span key={i} style={mark}>USDC</span>, part])}
