@@ -190,9 +190,9 @@ export default function LandingV2() {
         <div className="text-center"><Index n="·" label={t.simple.stamp} /></div>
         <h2 className="mt-10 text-center font-bold tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6vw,3.75rem)] max-w-[20ch] mx-auto" style={display}>{t.simple.h}</h2>
         <div className="mt-12 flex flex-col gap-7 max-w-[640px] mx-auto">
-          {t.simple.beats.map(([icon, text], i) => (
+          {t.simple.beats.map(([, text], i) => (
             <div key={i} className="flex gap-4 items-start">
-              <span className="text-2xl shrink-0 leading-none mt-1">{icon}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] shrink-0 mt-2.5" />
               <p className="text-lg md:text-xl leading-relaxed text-[#0a0a0a]/75">{text}</p>
             </div>
           ))}
