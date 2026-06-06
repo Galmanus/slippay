@@ -19,12 +19,13 @@ const COPY = {
   en: {
     nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
     hero: {
-      axis: "payments infrastructure",
+      axis: "financial automation",
       h1a: "Your money.", h1acc: "On autopilot.",
-      sub: "Hold dollars. Fund with Pix. Let approved payments run themselves.",
-      b1: "Stop approving the same bills every month. Add money with Pix, keep it in dollars, and let SlipPay handle recurring payments automatically — but only within the rules you set.",
-      b2: "No bank holding your money. No cards. No crypto expertise required.",
-      cta: "Get started free with Pix", note: "2 minutes • no card required • no seed phrases", liveTag: "live · mainnet",
+      sub: "Add reais with Pix. Hold dollars. Approve once — the rest happens on its own.",
+      control: "You set the limits, the recipients and the budget. If it falls outside the rule, it doesn't pay.",
+      cta: "Get started free", note: "2 minutes • no card • no seed phrases",
+      trust: ["Your money stays yours", "No bank holding your balance", "Payments final in seconds", "Up to ~3% cheaper than cards"],
+      liveTag: "live · mainnet",
     },
     why: { stamp: "why people switch", items: ["Your money stays in your wallet", "You set the limits", "Payments settle in seconds", "Pause or cancel anytime", "No chargebacks", "Lower fees than cards"] },
     pain: {
@@ -86,12 +87,13 @@ const COPY = {
   pt: {
     nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
     hero: {
-      axis: "infraestrutura de pagamentos",
+      axis: "automação financeira",
       h1a: "Seu dinheiro.", h1acc: "No automático.",
-      sub: "Tenha dólar. Carregue com Pix. Deixe os pagamentos aprovados rodarem sozinhos.",
-      b1: "Pare de aprovar as mesmas contas todo mês. Coloque dinheiro com Pix, mantenha em dólar, e deixe o SlipPay cuidar dos pagamentos recorrentes automaticamente — mas só dentro das regras que você definir.",
-      b2: "Sem banco segurando seu dinheiro. Sem cartão. Sem precisar entender de cripto.",
-      cta: "Começar grátis com Pix", note: "2 minutos • sem cartão • sem seed phrase", liveTag: "ao vivo · mainnet",
+      sub: "Coloque reais com Pix. Guarde em dólar. Aprove uma vez — o resto acontece sozinho.",
+      control: "Você define os limites, os destinatários e o orçamento. Se sair da regra, não paga.",
+      cta: "Começar grátis", note: "2 minutos • sem cartão • sem seed phrase",
+      trust: ["Seu dinheiro continua seu", "Sem banco segurando saldo", "Pagamentos finais em segundos", "Até ~3% mais barato que cartão"],
+      liveTag: "ao vivo · mainnet",
     },
     why: { stamp: "por que trocam", items: ["Seu dinheiro fica na sua carteira", "Você define os limites", "Pagamentos em segundos", "Pause ou cancele quando quiser", "Sem estorno", "Taxas menores que cartão"] },
     pain: {
@@ -198,16 +200,16 @@ export default function LandingV2() {
         ::selection { background: #FDDA24; color: #0a0a0a; }
         section h2 { text-wrap: balance; }
       `}</style>
-      <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
+      <header className="relative px-6 md:px-12 py-7 flex items-center justify-between bg-[#0a0a0a] text-[#f1eee7]">
         <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
-        <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
-          {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#0a0a0a]">{label}</Link>)}
-          <span className="hidden md:inline"><LangToggle /></span>
-          <Link to="/account" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-[#f1eee7] hover:opacity-90">{t.nav.tryFree}</Link>
+        <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55">
+          {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#FDDA24]">{label}</Link>)}
+          <span className="hidden md:inline"><LangToggle dark /></span>
+          <Link to="/account" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] hover:opacity-90">{t.nav.tryFree}</Link>
           <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="md:hidden flex flex-col gap-[5px] p-1">
-            <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-transform ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`} />
-            <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
-            <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-transform ${menuOpen ? "-translate-y-[7px] -rotate-45" : ""}`} />
+            <span className={`block w-6 h-[2px] bg-[#f1eee7] transition-transform ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`} />
+            <span className={`block w-6 h-[2px] bg-[#f1eee7] transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
+            <span className={`block w-6 h-[2px] bg-[#f1eee7] transition-transform ${menuOpen ? "-translate-y-[7px] -rotate-45" : ""}`} />
           </button>
         </nav>
         {menuOpen && (
@@ -219,22 +221,24 @@ export default function LandingV2() {
         )}
       </header>
 
-      {/* HERO */}
-      <section className="px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-28">
+      {/* HERO (dark — Stellar yellow sings) */}
+      <section className="bg-[#0a0a0a] text-[#f1eee7] px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-28">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
-          <Index n="—" label={t.hero.axis} />
+          <Index n="—" label={t.hero.axis} dark />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] break-words mx-auto" style={display}>
-            {t.hero.h1a}<br /><span style={{ color: "#FDDA24", WebkitTextStrokeWidth: "2px", WebkitTextStrokeColor: "#0a0a0a", paintOrder: "stroke fill" }}>{t.hero.h1acc}</span>
+            {t.hero.h1a}<br /><span className="text-[#FDDA24]">{t.hero.h1acc}</span>
           </h1>
-          <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch] mx-auto" style={display}>{t.hero.sub}</p>
-          <p className="mt-8 text-lg md:text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/70">{t.hero.b1}</p>
-          <p className="mt-4 text-[15px] text-[#0a0a0a]/55 max-w-[44ch] mx-auto">{t.hero.b2}</p>
+          <p className="mt-8 text-xl md:text-2xl leading-relaxed max-w-[42ch] mx-auto text-[#f1eee7]/85" style={display}>{t.hero.sub}</p>
+          <p className="mt-5 text-base md:text-lg leading-relaxed max-w-[48ch] mx-auto text-[#f1eee7]/55">{t.hero.control}</p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
             <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.hero.cta}</Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.hero.note}</span>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#f1eee7]/40">{t.hero.note}</span>
+          </div>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-[#f1eee7]/65">
+            {t.hero.trust.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{x}</span>)}
           </div>
           <div className="mt-14 w-full max-w-[420px] mx-auto">
-            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">{t.hero.liveTag}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#f1eee7]/40 mb-4">{t.hero.liveTag}</div>
             <LivePaymentCard />
           </div>
         </div>
