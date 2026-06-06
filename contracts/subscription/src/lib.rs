@@ -101,6 +101,7 @@ pub enum Error {
     InvalidConfig = 7,
     AttesterNotSet = 8,
     AttestationExpired = 9,
+    AttesterRequired = 10,
 }
 
 #[contract]
@@ -286,6 +287,12 @@ impl SubscriptionContract {
     /// Non-custodial: funds move buyer -> merchant directly; the contract only
     /// holds the spender role, never the balance.
     pub fn autocharge(env: Env, id: BytesN<32>) -> u64 {
+        // INESCAPABLE GATE: once a subscription has an attester bound, the ungated
+        // path refuses — settlement must go through `autocharge_attested` with a
+        // fresh, valid attestation. No back door around the integrity check.
+        if env.storage().persistent().has(&DataKey::Attester(id.clone())) {
+            panic_with_error!(&env, Error::AttesterRequired);
+        }
         // NB: deliberately NO buyer.require_auth. Authorization is the standing
         // allowance the buyer granted via token.approve; the contract authorizes
         // the transfer_from sub-invocation as the spender by being the caller.
