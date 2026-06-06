@@ -69,24 +69,6 @@ function Typewriter({ text, delay = 0, speed = 60 }: { text: string; delay?: num
   return <span>{text.slice(0, n)}<span className="tw-caret" style={{ color: "#FDDA24" }}>▋</span></span>;
 }
 
-// Clip-mask reveal — words rise up from behind a mask. Transform-only (no blur),
-// so it's buttery on the GPU. `start` offsets the cascade (ms), `step` per word.
-function Reveal({ text, start = 0, step = 75, style }: { text: string; start?: number; step?: number; style?: React.CSSProperties }) {
-  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) return <span style={style}>{text}</span>;
-  const words = text.split(" ");
-  return (
-    <span style={style}>
-      {words.map((w, i) => (
-        <span key={i}>
-          <span className="rise-mask"><span className="rise-inner" style={{ animationDelay: `${start + i * step}ms` }}>{w}</span></span>
-          {i < words.length - 1 ? " " : ""}
-        </span>
-      ))}
-    </span>
-  );
-}
-
 function Index({ n, label, typed = false }: { n: string; label: string; typed?: boolean }) {
   return (
     <div className="flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em]" style={{ color: GRAY }}>
@@ -132,7 +114,7 @@ export default function LandingV2() {
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}section h2{text-wrap:balance}@keyframes twBlink{0%,49%{opacity:1}50%,100%{opacity:0}}.tw-caret{animation:twBlink 1.05s steps(1,end) infinite;margin-left:1px}@keyframes riseUp{from{transform:translateY(108%)}to{transform:translateY(0)}}.rise-mask{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.04em}.rise-inner{display:inline-block;animation:riseUp .9s cubic-bezier(.16,1,.3,1) both;will-change:transform}@media (prefers-reduced-motion:reduce){.rise-inner{animation:none}}`}</style>
+      <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}section h2{text-wrap:balance}@keyframes twBlink{0%,49%{opacity:1}50%,100%{opacity:0}}.tw-caret{animation:twBlink 1.05s steps(1,end) infinite;margin-left:1px}`}</style>
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
@@ -158,7 +140,7 @@ export default function LandingV2() {
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
-            <Reveal text={t.hero.h1a} /><br /><Reveal text={t.hero.h1acc} start={600} style={{ color: GRAY }} />
+            {t.hero.h1a}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
           </h1>
           <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[24ch] mx-auto" style={display}>{t.hero.sub}</p>
           <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55">{t.hero.reassure}</p>
