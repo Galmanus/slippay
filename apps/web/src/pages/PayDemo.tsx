@@ -102,11 +102,11 @@ export default function PayDemo() {
         <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
           <span className="text-[#0a0a0a]/70">001</span>
           <span className="h-px w-8 bg-current opacity-40" />
-          <span>pay with your face · {network === "PUBLIC" ? "mainnet" : "testnet"}</span>
+          <span>pay with a touch · {network === "PUBLIC" ? "mainnet" : "testnet"}</span>
         </div>
 
         <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,6.5rem)] break-words" style={display}>
-          Pay with <span className="text-[#0a0a0a]">your face.</span>
+          Pay with <span className="text-[#0a0a0a]">a touch.</span>
         </h1>
         <p className="mt-8 text-xl leading-relaxed max-w-[48ch] text-[#0a0a0a]/75">
           This is the rail your agent uses to pay. Create a wallet with Face ID and send a real
