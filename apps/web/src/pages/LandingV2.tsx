@@ -55,15 +55,17 @@ const COPY = {
   },
 } as const;
 
-function Typewriter({ text }: { text: string }) {
+function Typewriter({ text, delay = 0, speed = 60 }: { text: string; delay?: number; speed?: number }) {
   const [n, setN] = useState(0);
   useEffect(() => {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setN(text.length); return; }
     setN(0);
-    let i = 0;
-    const id = window.setInterval(() => { i += 1; setN(i); if (i >= text.length) window.clearInterval(id); }, 60);
-    return () => window.clearInterval(id);
-  }, [text]);
+    let i = 0; let id = 0;
+    const start = window.setTimeout(() => {
+      id = window.setInterval(() => { i += 1; setN(i); if (i >= text.length) window.clearInterval(id); }, speed);
+    }, delay);
+    return () => { window.clearTimeout(start); if (id) window.clearInterval(id); };
+  }, [text, delay, speed]);
   return <span>{text.slice(0, n)}<span className="tw-caret" style={{ color: "#FDDA24" }}>▋</span></span>;
 }
 
@@ -139,7 +141,7 @@ export default function LandingV2() {
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="—" label={t.hero.axis} typed />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
-            {t.hero.h1a}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
+            {t.hero.h1a}<br /><span style={{ color: GRAY }}><Typewriter text={t.hero.h1acc} delay={700} speed={90} /></span>
           </h1>
           <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[24ch] mx-auto" style={display}>{t.hero.sub}</p>
           <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55">{t.hero.reassure}</p>
