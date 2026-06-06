@@ -201,7 +201,7 @@ export default function LandingV2() {
         section h2 { text-wrap: balance; }
       `}</style>
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between bg-[#f1eee7] text-[#0a0a0a]">
-        <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
+        <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#6f6862]">{label}</Link>)}
           <span className="hidden md:inline"><LangToggle /></span>
