@@ -31,7 +31,7 @@ import PolicySubscribe from "./pages/PolicySubscribe.tsx";
 import Docs from "./pages/Docs.tsx";
 import Security from "./pages/Security.tsx";
 import Manifesto from "./pages/Manifesto.tsx";
-import Investidores from "./pages/Investidores.tsx";
+import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
 
 export default function App() {
@@ -68,8 +68,9 @@ export default function App() {
       <Route path="/seguranca" element={<Security />} />
       <Route path="/security" element={<Security />} />
       <Route path="/manifesto" element={<Manifesto />} />
-      <Route path="/investidores" element={<Investidores />} />
-      <Route path="/pitch" element={<Investidores />} />
+      <Route path="/investors" element={<Investors />} />
+      <Route path="/investidores" element={<Investors />} />
+      <Route path="/pitch" element={<Investors />} />
       <Route path="/conformidade" element={<Conformidade />} />
       <Route path="/compliance" element={<Conformidade />} />
       <Route path="/dashboard" element={<Dashboard />}>

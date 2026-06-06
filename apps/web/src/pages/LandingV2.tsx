@@ -17,7 +17,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   en: {
-    nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
+    nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", investors: "Investors", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
     hero: {
       h1pre: "Global ", h1mark: "money", h1post: "", h1acc: "in one tap.",
       sub: "Pix in. USDC out. Directly to your wallet in seconds.",
@@ -44,7 +44,7 @@ const COPY = {
       supportLabel: "support the team", supportText: "Built solo in Brazil. If this earned your respect, send us a few dollars, one touch, no app.", supportBtn: "Support with $10 ↗", footer: "slippay · global money, in one tap · live on mainnet" },
   },
   pt: {
-    nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
+    nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", investors: "Investidores", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
     hero: {
       h1pre: "", h1mark: "Dinheiro", h1post: " global", h1acc: "em um toque.",
       sub: "Pix entra. USDC sai. Direto na sua carteira em segundos.",
@@ -93,7 +93,7 @@ export default function LandingV2() {
   });
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
-  const NAV: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.security, "/security"], [t.nav.live, "/cockpit"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.manifesto, "/manifesto"], [t.nav.login, "/account"]];
+  const NAV: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.security, "/security"], [t.nav.live, "/cockpit"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"], [t.nav.login, "/account"]];
 
   useEffect(() => {
     const root = document.documentElement;
