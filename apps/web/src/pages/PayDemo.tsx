@@ -42,7 +42,7 @@ export default function PayDemo() {
   const [busy, setBusy] = useState(false);
   const [payHash, setPayHash] = useState<string | null>(null);
   const [paidLabel, setPaidLabel] = useState<string | null>(null);
-  const [paidReq, setPaidReq] = useState<{ to: string; amount: string; asset: string } | null>(null);
+  const [paidReq, setPaidReq] = useState<{ to: string; amount: string; asset: string; at: string } | null>(null);
   // premium status model (replaces the dev log)
   const [flow, setFlow] = useState<null | "create" | "pay">(null);
   const [step, setStep] = useState(0);
@@ -93,7 +93,7 @@ export default function PayDemo() {
         asset: req.asset ?? "USDC", credId: handle.credId,
       });
       setStep(2); setPayHash(hash); setPaidLabel(label);
-      setPaidReq({ to: req.to, amount: req.amount, asset: req.asset ?? "USDC" });
+      setPaidReq({ to: req.to, amount: req.amount, asset: req.asset ?? "USDC", at: new Date().toLocaleString() });
       setReq(null);
     } catch (e) { setError(friendly(e)); } finally { setBusy(false); }
   }
@@ -186,16 +186,36 @@ export default function PayDemo() {
                   <div className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-[#FDDA24]" style={display}>Paid.</div>
                   {paidLabel && <div className="mt-1 text-lg tabular-nums text-[#f1eee7]/85">{paidLabel}</div>}
                   <div className="mt-1 font-mono text-[11px] text-[#f1eee7]/45">moved on-chain · only your touch authorized it</div>
-                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                    <Link
-                      to={`/comprovante/${payHash}?to=${paidReq?.to ?? ""}&amount=${paidReq ? stroopsToXlm(paidReq.amount) : ""}&asset=${paidReq?.asset ?? "USDC"}&net=${explorerNet}`}
-                      className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">
-                      Get receipt ↗
-                    </Link>
-                    <a href={`https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">
-                      On the blockchain ↗
-                    </a>
+                  {/* inline receipt — generated right here, on the same screen */}
+                  <div className="mt-6 mx-auto max-w-[360px] rounded-2xl bg-[#f1eee7]/[0.04] border border-[#f1eee7]/12 p-5 text-left">
+                    <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">
+                      <span>receipt</span>
+                      <span className="text-[#FDDA24]">✓ verified on-chain</span>
+                    </div>
+                    <div className="mt-4 divide-y divide-[#f1eee7]/8 text-[13px]">
+                      {[
+                        ["Amount", paidLabel ?? ""],
+                        ["To", short(paidReq?.to ?? "", 8, 6)],
+                        ["From", "your wallet · " + short(wallet ?? "", 6, 4)],
+                        ["Network", network === "PUBLIC" ? "Stellar mainnet" : "Stellar testnet"],
+                        ["When", paidReq?.at ?? ""],
+                      ].map(([k, v]) => (
+                        <div key={k} className="flex items-baseline justify-between gap-4 py-2">
+                          <span className="text-[#f1eee7]/45">{k}</span>
+                          <span className="font-mono text-[12px] text-[#f1eee7]/90 text-right break-all">{v}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-baseline justify-between gap-4 py-2">
+                        <span className="text-[#f1eee7]/45">Tx</span>
+                        <a href={`https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`} target="_blank" rel="noopener noreferrer"
+                          className="font-mono text-[12px] text-[#FDDA24] hover:underline underline-offset-4 break-all text-right">
+                          {short(payHash, 8, 6)} ↗
+                        </a>
+                      </div>
+                    </div>
+                    <div className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#f1eee7]/35 leading-relaxed">
+                      Public &amp; permanent · anyone can verify this payment on the blockchain.
+                    </div>
                   </div>
                 </div>
               )}
