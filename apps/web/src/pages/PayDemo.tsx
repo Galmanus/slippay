@@ -28,6 +28,8 @@ function short(s: string, h = 6, t = 6) { return s.length <= h + t + 1 ? s : `${
 function friendly(e: unknown): string {
   const m = (e as Error)?.message ?? String(e);
   if (/NotAllowed|timed out|not allowed|abort|cancel/i.test(m)) return "We couldn't read your biometrics. Tap to try again.";
+  if (/balance|insufficient|trustline|trust line|#10\b|#13\b/i.test(m)) return "This wallet has no USDC yet. Add money (Pix → USDC) first, then pay.";
+  if (/rejected|simulation|sim failed|Contract,|HostError|Error\(/i.test(m)) return "The network rejected this payment — usually the wallet has no USDC, or no USDC trustline yet. Add money first.";
   if (/relayer|sponsor|no response/i.test(m)) return "Our network sponsor is waking up. Try again in a moment.";
   if (/deploy/i.test(m)) return "Your wallet didn't finish setting up. Tap to try again.";
   return "Something interrupted the flow. Tap to try again.";
@@ -48,6 +50,7 @@ export default function PayDemo() {
   const [flow, setFlow] = useState<null | "create" | "pay">(null);
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [rawErr, setRawErr] = useState<string | null>(null);
   const [verified, setVerified] = useState<"checking" | "ok" | "fail">("checking");
   const [shared, setShared] = useState(false);
 
@@ -115,7 +118,7 @@ export default function PayDemo() {
       if (!resp.ok || !j.wallet_id) throw new Error("deploy: " + (j.reason ?? j.error ?? resp.status));
       setWallet(j.wallet_id);
       setStep(3);
-    } catch (e) { setError(friendly(e)); } finally { setBusy(false); }
+    } catch (e) { setError(friendly(e)); setRawErr((e as Error)?.message ?? String(e)); } finally { setBusy(false); }
   }
 
   function onScanned(text: string) {
@@ -138,7 +141,7 @@ export default function PayDemo() {
       setStep(2); setPayHash(hash); setPaidLabel(label);
       setPaidReq({ to: req.to, amount: req.amount, asset: req.asset ?? "USDC", at: new Date().toLocaleString() });
       setReq(null);
-    } catch (e) { setError(friendly(e)); } finally { setBusy(false); }
+    } catch (e) { setError(friendly(e)); setRawErr((e as Error)?.message ?? String(e)); } finally { setBusy(false); }
   }
 
   const accountReady = !!wallet;
@@ -285,6 +288,7 @@ export default function PayDemo() {
               {error && (
                 <div className="mt-6">
                   <div className="text-lg font-medium tracking-[-0.01em]">{error}</div>
+                  {rawErr && <div className="mt-2 font-mono text-[10px] text-[#0a0a0a]/40 break-all max-w-[420px]">{rawErr.slice(0, 240)}</div>}
                   <button
                     onClick={() => (flow === "pay" && handle && wallet ? setScanning(true) : onCreateAccount())}
                     className="lift mt-4 inline-flex items-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#cabfb0] text-[#0a0a0a]">
