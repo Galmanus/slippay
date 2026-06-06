@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPasskey } from "../lib/passkey";
 import { loadAccount, saveAccount, clearAccount, type Account as Acct } from "../lib/account";
-import { buildOnrampUrl, transakConfigured } from "../lib/onramp";
 import { LiveProof } from "../components/LiveProof";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
@@ -140,12 +139,11 @@ export default function Account() {
               </div>
             </div>
 
-            <button
-              onClick={() => { if (transakConfigured()) window.open(buildOnrampUrl(acct.walletId), "_blank", "noopener"); }}
-              disabled={!transakConfigured()}
-              className="lift mt-6 w-full max-w-[520px] px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[12px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
-              {transakConfigured() ? "Add money · Pix → dollars" : "Add money · Pix → dollars (configuring)"}
-            </button>
+            <Link
+              to="/buy"
+              className="lift mt-6 inline-flex w-full max-w-[520px] items-center justify-center px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[12px] uppercase tracking-[0.22em] font-medium">
+              Add money · Pix → dollars
+            </Link>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[520px]">
               <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Pay</Link>
