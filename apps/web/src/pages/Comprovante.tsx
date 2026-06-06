@@ -389,6 +389,16 @@ export default function Comprovante() {
         )}
 
         <p className="mt-6 text-[11px] leading-relaxed text-[#0a0a0a]/45 text-center max-w-[46ch] mx-auto">{isObl ? t.footerObl : t.footerClaim}</p>
+
+        {/* k-factor: a shared receipt is a landing page — recruit the viewer */}
+        <div className="mt-10 max-w-[460px] mx-auto text-center border-t border-[#0a0a0a]/10 pt-8">
+          <div className="text-lg font-medium tracking-[-0.01em]">Pay or get paid with one touch.</div>
+          <p className="mt-2 text-sm text-[#0a0a0a]/55">No app, no seed phrase. Real dollars — and you verify everything yourself.</p>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <Link to="/pay" className="rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Pay with a touch →</Link>
+            <Link to="/cobrar" className="text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Get paid →</Link>
+          </div>
+        </div>
       </main>
     </div>
   );
