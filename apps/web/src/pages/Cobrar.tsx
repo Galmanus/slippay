@@ -4,7 +4,7 @@
 // receive address.) Amounts are kept small for the live demo (the demo wallet is
 // funded with 0.2 USDC).
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import QRCode from "qrcode";
 import { encodeRequest } from "../lib/slippayqr";
@@ -18,7 +18,6 @@ export default function Cobrar() {
   const [amount, setAmount] = useState(0.1);
   const [qr, setQr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const gen = useRef(false);
 
   useEffect(() => {
     const uri = encodeRequest({
