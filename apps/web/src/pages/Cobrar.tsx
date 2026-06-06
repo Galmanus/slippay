@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import QRCode from "qrcode";
 import { encodeRequest } from "../lib/slippayqr";
+import { LiveProof } from "../components/LiveProof";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 // Real mainnet recipient (has a USDC trustline). Demo "merchant" receive address.
@@ -89,6 +90,7 @@ export default function Cobrar() {
           The customer opens <Link to="/pay" className="underline">/pay</Link>, points the camera at this QR,
           sees the amount, and authorizes with a touch. Real dollars (USDC), on the main network.
         </p>
+        <div className="mt-12"><LiveProof /></div>
       </main>
     </div>
   );

@@ -6,6 +6,7 @@
 
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { LiveProof } from "../components/LiveProof.tsx";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 const REAL_TX = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
@@ -130,7 +131,8 @@ export default function Manifesto() {
             <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">Back home</Link>
           </div>
-          <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
+          <div className="mt-16"><LiveProof dark /></div>
+          <div className="mt-12 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
         </div>
       </section>
     </div>

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
 import { CountUp } from "../components/CountUp.tsx";
+import { LiveProof } from "../components/LiveProof.tsx";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 const LIVE_CONTRACT = "CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U";
@@ -114,10 +115,8 @@ export default function LandingV2() {
 
       {/* TRUST STRIP */}
       <section className="border-t border-[#0a0a0a]/12">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-7 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
-          <span>built on</span><span className="text-[#0a0a0a]/75">Stellar</span>
-          <span className="opacity-30">·</span><span className="text-[#0a0a0a]/75">Circle · USDC</span>
-          <span className="opacity-30">·</span><span>every payment public &amp; checkable</span>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-7">
+          <LiveProof />
         </div>
       </section>
 

@@ -38,6 +38,7 @@ import { useEffect, useState } from "react";
 import { useParams, useSearchParams, Link } from "react-router-dom";
 import QRCode from "qrcode";
 import { Logo } from "../components/Logo.tsx";
+import { LiveProof } from "../components/LiveProof.tsx";
 import { useLang } from "../lib/lang.ts";
 import {
   HORIZON, DEFAULT_SUB_CONTRACT, judgeObligation, readObligation, readTransfer,
@@ -398,6 +399,7 @@ export default function Comprovante() {
             <Link to="/pay" className="rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Pay with a touch →</Link>
             <Link to="/cobrar" className="text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Get paid →</Link>
           </div>
+          <div className="mt-8"><LiveProof /></div>
         </div>
       </main>
     </div>
