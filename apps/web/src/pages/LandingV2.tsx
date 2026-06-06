@@ -115,8 +115,8 @@ export default function LandingV2() {
 
       {/* TRUST STRIP */}
       <section className="border-t border-[#0a0a0a]/12">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-7">
-          <LiveProof />
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8">
+          <LiveProof prominent />
         </div>
       </section>
 

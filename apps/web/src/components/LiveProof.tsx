@@ -19,7 +19,7 @@ function rel(iso: string): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-export function LiveProof({ dark = false }: { dark?: boolean }) {
+export function LiveProof({ dark = false, prominent = false }: { dark?: boolean; prominent?: boolean }) {
   const [last, setLast] = useState<string | null>(null);
   const [, force] = useState(0);
 
@@ -41,6 +41,19 @@ export function LiveProof({ dark = false }: { dark?: boolean }) {
   const muted = dark ? "rgba(241,238,231,.5)" : "rgba(10,10,10,.5)";
   const accent = dark ? "#FDDA24" : "#A16207";
   const Dot = () => <span className="opacity-30">·</span>;
+
+  if (prominent) {
+    return (
+      <div className="mx-auto max-w-[760px] rounded-full border border-[#0a0a0a]/12 bg-white/40 px-6 md:px-8 py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] md:text-[13px] tracking-[-0.01em] text-[#0a0a0a]/70">
+        <span className="flex items-center gap-2.5 font-medium text-[#0a0a0a]">
+          <span className="w-2 h-2 rounded-full bg-[#FDDA24] animate-pulse" /> Real money is moving on mainnet
+        </span>
+        {last && <span className="text-[#0a0a0a]/55">last payment <span className="tabular-nums text-[#0a0a0a]/80">{rel(last)}</span></span>}
+        <span className="text-[#0a0a0a]/55">~3% cheaper than cards, every time</span>
+        <Link to="/cockpit" className="font-medium hover:opacity-70 transition-opacity" style={{ color: "#A16207" }}>See it live ↗</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-mono text-[10px] md:text-[11px] uppercase tracking-[0.18em]" style={{ color: muted }}>
