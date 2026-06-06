@@ -190,9 +190,15 @@ export default function LandingV2() {
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+      <style>{`
+        html { scroll-behavior: smooth; }
+        ::selection { background: #FDDA24; color: #0a0a0a; }
+        section[id] { scroll-margin-top: 1.5rem; }
+        section h2 { text-wrap: balance; }
+      `}</style>
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
-        <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
+        <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => (
             href.startsWith("#")
               ? <a key={href} href={href} className="hidden md:inline hover:text-[#0a0a0a]">{label}</a>
