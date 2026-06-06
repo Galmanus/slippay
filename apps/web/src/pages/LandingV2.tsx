@@ -139,7 +139,6 @@ export default function LandingV2() {
       {/* HERO */}
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
-          <Index n="—" label={t.hero.axis} typed />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
             {t.hero.h1a}<br /><span style={{ color: GRAY }}><Typewriter text={t.hero.h1acc} delay={700} speed={90} /></span>
           </h1>
