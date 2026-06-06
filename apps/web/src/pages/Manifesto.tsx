@@ -47,7 +47,7 @@ export default function Manifesto() {
         <div className="max-w-[1400px] mx-auto">
           <Index n="001" label="who we are" />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] break-words max-w-[16ch]" style={display}>
-            We wanted<br />simpler money.<br /><span className="text-[#A16207]">So we built it.</span>
+            We wanted<br />simpler money.<br /><span className="text-[#0a0a0a]">So we built it.</span>
           </h1>
           <p className="mt-12 text-xl md:text-2xl leading-relaxed max-w-[54ch] text-[#0a0a0a]/70">
             We're not a bank. Not another fintech. A small team in Brazil, building the money we

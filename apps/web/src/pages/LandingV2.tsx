@@ -74,7 +74,7 @@ export default function LandingV2() {
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="001" label="payments, on autopilot" />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8.5rem)] break-words mx-auto" style={display}>
-            Your money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#A16207]">pilot.</span>
+            Your money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#0a0a0a]">pilot.</span>
           </h1>
           <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[46ch] mx-auto text-[#0a0a0a]/75">
             Keep your money in dollars and let it pay your bills by itself, the moment they're due.
@@ -117,7 +117,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <Index n="003" label="cheaper & safer than stripe" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6.5rem)] max-w-[15ch] mx-auto break-words" style={display}>
-            Save ~3% on <span className="text-[#A16207]">every transaction.</span>
+            Save ~3% on <span className="text-[#0a0a0a]">every transaction.</span>
           </h2>
           <p className="mt-8 text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/60">
             Cards and Stripe take close to 3% of every sale. On Stellar, moving money costs fractions
@@ -179,7 +179,7 @@ export default function LandingV2() {
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
             {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "+ more"].map((c) => (
-              <span key={c} className="flex items-center gap-2"><span className="text-[#A16207]">◆</span>{c}</span>
+              <span key={c} className="flex items-center gap-2"><span className="text-[#0a0a0a]">◆</span>{c}</span>
             ))}
           </div>
         </div>
@@ -210,7 +210,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 flex flex-col items-center text-center">
           <Index n="007" label="an example" />
           <h2 className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,11vw,8.5rem)] mx-auto" style={display}>
-            R$<CountUp to={40} format={(n) => `${Math.round(n)}k`} /><span className="text-[#A16207]">/mo</span>
+            R$<CountUp to={40} format={(n) => `${Math.round(n)}k`} /><span className="text-[#0a0a0a]">/mo</span>
           </h2>
           <p className="mt-8 text-xl leading-relaxed max-w-[44ch] mx-auto text-[#0a0a0a]/65">
             The agent runs the recurring payments within the approved rules, and only asks for help when something falls outside the norm.
@@ -224,7 +224,7 @@ export default function LandingV2() {
               </div>
             ))}
             <div className="flex items-baseline justify-between pt-6 mt-2 border-t-2 border-[#0a0a0a]">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#A16207]">paid by the agent</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]">paid by the agent</span>
               <span className="text-3xl font-semibold tabular-nums" style={display}>R$40k</span>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
           <Index n="009" label="our vision" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.88] text-[clamp(2.5rem,9vw,8rem)] max-w-[16ch] mx-auto break-words" style={display}>
-            Real dollars, <span className="text-[#A16207]">as simple as an app.</span>
+            Real dollars, <span className="text-[#0a0a0a]">as simple as an app.</span>
           </h2>
           <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[54ch] mx-auto text-[#0a0a0a]/70">
             Dollars that work on their own and stay yours. No becoming an engineer, no memorizing jargon. The AI does the heavy lifting, and the rule that protects your money never depends on it.
@@ -278,7 +278,7 @@ export default function LandingV2() {
               <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#A16207]" : "border-t border-[#0a0a0a]/15"}`}>
                 <div className="flex items-baseline justify-between">
                   <span className="text-lg font-semibold tracking-[-0.01em]" style={display}>{t.name}</span>
-                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A16207]">most chosen</span>}
+                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]">most chosen</span>}
                 </div>
                 <div className="mt-3 text-[15px] text-[#0a0a0a]/55">{t.who}</div>
               </div>
@@ -302,8 +302,8 @@ export default function LandingV2() {
               return (
                 <div key={q} className="border-t border-[#0a0a0a]/12 last:border-b">
                   <button onClick={() => setOpenFaq(open ? null : i)} className="w-full flex items-center justify-between gap-6 py-6 text-left group" aria-expanded={open}>
-                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#A16207] transition-colors" style={display}>{q}</span>
-                    <span className={`shrink-0 text-2xl leading-none text-[#A16207] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
+                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#0a0a0a] transition-colors" style={display}>{q}</span>
+                    <span className={`shrink-0 text-2xl leading-none text-[#0a0a0a] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
                   </button>
                   <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
                     <div className="overflow-hidden"><p className="pb-7 text-lg text-[#0a0a0a]/65 leading-relaxed">{a}</p></div>

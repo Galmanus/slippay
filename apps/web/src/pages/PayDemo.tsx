@@ -106,7 +106,7 @@ export default function PayDemo() {
         </div>
 
         <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,6.5rem)] break-words" style={display}>
-          Pay with <span className="text-[#A16207]">your face.</span>
+          Pay with <span className="text-[#0a0a0a]">your face.</span>
         </h1>
         <p className="mt-8 text-xl leading-relaxed max-w-[48ch] text-[#0a0a0a]/75">
           This is the rail your agent uses to pay. Create a wallet with Face ID and send a real
