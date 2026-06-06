@@ -14,6 +14,7 @@ import { CountUp } from "../components/CountUp.tsx";
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 const LIVE_CONTRACT = "CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U";
 const REAL_TX = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
+const LIVE_CONTRACT_TEAM = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P"; // team USDC address
 const xurl = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
 
 const TIERS = [
@@ -347,7 +348,15 @@ export default function LandingV2() {
             <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <a href="#proof" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">See it running</a>
           </div>
-          <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
+          <div className="mt-16 pt-10 border-t border-[#f1eee7]/10">
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#FDDA24]">support the team</div>
+            <p className="mt-3 text-[15px] text-[#f1eee7]/60 max-w-[42ch]">Built solo in Brazil. If this earned your respect, send us a few dollars — one touch, no app.</p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link to={`/pay?to=${LIVE_CONTRACT_TEAM}&amount=1000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Support with a touch ↗</Link>
+              <span className="font-mono text-[10px] text-[#f1eee7]/40 break-all max-w-[280px]">USDC · {LIVE_CONTRACT_TEAM}</span>
+            </div>
+          </div>
+          <div className="mt-16 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
         </div>
       </section>
     </div>

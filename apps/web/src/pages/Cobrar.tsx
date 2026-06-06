@@ -18,6 +18,17 @@ export default function Cobrar() {
   const [amount, setAmount] = useState(0.1);
   const [qr, setQr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const payLink = `${typeof window !== "undefined" ? window.location.origin : "https://app.slippay.cc"}/pay?to=${RECIPIENT}&amount=${Math.round(amount * 1e7)}&asset=USDC`;
+  async function sharePay() {
+    const data = { title: "Pay me with SlipPay", text: `Pay ${amount} USDC — one touch, no app:`, url: payLink };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      await navigator.clipboard?.writeText(payLink);
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+    } catch { /* dismissed */ }
+  }
 
   useEffect(() => {
     const uri = encodeRequest({
@@ -67,6 +78,11 @@ export default function Cobrar() {
             style={{ color: err ? "#b00" : "#A16207" }}>
             {err ? "✗ " + err : "● ready to receive · mainnet"}
           </div>
+          <button onClick={sharePay}
+            className="lift mt-6 inline-flex items-center justify-center rounded-full px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7] font-medium">
+            {copied ? "Pay link copied ✓" : "Share pay link"}
+          </button>
+          <div className="mt-3 font-mono text-[10px] text-[#0a0a0a]/40 max-w-[300px] mx-auto break-all">{payLink}</div>
         </div>
 
         <p className="mt-10 text-xs text-[#0a0a0a]/45 leading-relaxed max-w-[46ch] mx-auto">
