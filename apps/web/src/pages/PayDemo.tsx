@@ -53,6 +53,16 @@ export default function PayDemo() {
   const explorerNet = network === "PUBLIC" ? "public" : "testnet";
   const buzz = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* unsupported */ } };
 
+  // zero-friction pay link: a shared link like /pay?to=…&amount=…&asset=USDC
+  // pre-fills the request — no QR scan needed. Open link -> touch -> paid.
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const to = sp.get("to"); const amount = sp.get("amount"); const asset = sp.get("asset");
+    if (to && amount && /^[GC][A-Z2-7]{55}$/.test(to) && /^\d+$/.test(amount)) {
+      setReq({ to, amount, asset: asset === "USDC" || asset === "XLM" ? asset : undefined });
+    }
+  }, []);
+
   // living receipt: actually re-check the tx on the network when it lands.
   useEffect(() => {
     if (!payHash) return;
@@ -168,10 +178,17 @@ export default function PayDemo() {
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-3">Confirm the payment</div>
             <div className="text-4xl font-medium tabular-nums tracking-[-0.03em]" style={display}>{stroopsToXlm(req.amount)} <span className="text-base text-[#0a0a0a]/55">{req.asset ?? "USDC"}</span></div>
             <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">to {short(req.to, 8, 8)}</div>
-            <button onClick={onPayReq}
-              className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium">
-              Authorize with a touch
-            </button>
+            {wallet ? (
+              <button onClick={onPayReq}
+                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium">
+                Authorize with a touch
+              </button>
+            ) : (
+              <button onClick={onCreateAccount}
+                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] font-medium">
+                Create wallet to pay (a touch)
+              </button>
+            )}
             <button onClick={() => setReq(null)}
               className="mt-2 w-full px-6 py-3 text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
               Cancel
