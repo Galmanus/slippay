@@ -98,14 +98,15 @@ export default function LandingV2() {
             Your money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#0a0a0a]">pilot.</span>
           </h1>
           <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[46ch] mx-auto text-[#0a0a0a]/75">
-            Keep your money in dollars and let it pay your bills by itself, the moment they're due.
+            Add money with <span className="text-[#0a0a0a] font-medium">Pix</span> and keep it in dollars — then let it pay
+            your bills by itself, the moment they're due.
             <span className="text-[#0a0a0a] font-medium"> It stays yours, and only does what you allow.</span>
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">free · no card · no seed phrase</span>
+            <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Add money with Pix</Link>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">free to start · no card · 2 minutes</span>
           </div>
-          <p className="mt-6 text-[15px] text-[#0a0a0a]/50 max-w-[44ch] mx-auto">For anyone who pays or gets paid in dollars — from a freelancer to a company.</p>
+          <p className="mt-6 text-[15px] text-[#0a0a0a]/50 max-w-[44ch] mx-auto">As simple as any app you already use. No crypto knowledge needed.</p>
           <div className="mt-14 w-full max-w-[420px] mx-auto">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">live · mainnet</div>
             <LivePaymentCard />
@@ -161,7 +162,7 @@ export default function LandingV2() {
           <div className="mt-16 grid md:grid-cols-3 gap-12 md:gap-10">
             {[
               ["01", "Create your account", "With your face, in a minute. No password, no phrase to memorize, no card. Free."],
-              ["02", "Your money becomes dollars", "From your bank account you buy digital dollars and send them to your wallet. We guide you step by step; it takes a few minutes."],
+              ["02", "Add money with Pix", "Top up in seconds with Pix — like any app you already use. Your reais become dollars instantly. No card, no crypto know-how."],
               ["03", "The agent takes over", "You set how much it can spend and to whom. Then it pays your bills in dollars, on its own, always within your rules."],
             ].map(([n, h, b]) => (
               <div key={n}>
