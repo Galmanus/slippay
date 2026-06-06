@@ -244,8 +244,8 @@ export default function Comprovante() {
     r.level === "amber"
       ? (!r.transfer ? t.aContractSub : (isObl && r.obligationError) ? t.aOblFailSub : t.aUnboundSub)
       : "";
-  const bg = r.level === "green" ? "#FDDA24" : r.level === "red" ? "#b91c1c" : "#0a0a0a";
-  const fg = r.level === "green" ? "#0a0a0a" : "#f1eee7";
+  const bg = r.level === "green" ? "#6f6862" : r.level === "red" ? "#b91c1c" : "#0a0a0a";
+  const fg = "#f1eee7";
 
   // which transfer fields are in conflict (red), per path
   const v = r.verdict;
@@ -289,7 +289,7 @@ export default function Comprovante() {
             {/* VERDICT banner — the chain's decision, in plain language */}
             <div className="px-7 md:px-9 py-8 text-center" style={{ background: bg, color: fg }}>
               <div className="font-mono text-[10px] uppercase tracking-[0.24em] opacity-70">{t.receipt} · slippay · {t.net(net)}</div>
-              <div className="mx-auto mt-5 w-[56px] h-[56px] flex items-center justify-center" style={{ background: fg === "#0a0a0a" ? "#0a0a0a" : "transparent", border: r.level === "green" ? "none" : `2px solid ${fg}`, borderRadius: r.level === "green" ? 0 : 999 }}>
+              <div className="mx-auto mt-5 w-[56px] h-[56px] flex items-center justify-center" style={{ background: r.level === "green" ? "#0a0a0a" : "transparent", border: r.level === "green" ? "none" : `2px solid ${fg}`, borderRadius: r.level === "green" ? 0 : 999 }}>
                 {r.level === "green"
                   ? <svg width="30" height="30" viewBox="0 0 44 44" fill="none"><path d="M11 23l8 8 14-16" stroke="#FDDA24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   : r.level === "red"
@@ -299,7 +299,7 @@ export default function Comprovante() {
               <div className="mt-5 text-2xl md:text-3xl font-medium tracking-[-0.02em]">{headline}</div>
               <p className="mt-3 text-sm leading-relaxed opacity-85 max-w-[42ch] mx-auto">{sub}</p>
               {/* trust badge — strong vs weak, stated explicitly */}
-              <div className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] px-2.5 py-1 border" style={{ borderColor: fg === "#0a0a0a" ? "rgba(10,10,10,0.25)" : "rgba(241,238,231,0.3)" }}>
+              <div className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] px-2.5 py-1 border" style={{ borderColor: "rgba(241,238,231,0.3)" }}>
                 <span className="inline-block w-1.5 h-1.5" style={{ background: isObl ? "#FDDA24" : fg }} />
                 {isObl ? t.badgeObl : t.badgeClaim}
               </div>
@@ -332,7 +332,7 @@ export default function Comprovante() {
                 <>
                   <div className="flex items-center gap-2 mt-6 mb-3">
                     <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.oblSays}</span>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#0a0a0a] bg-[#FDDA24] px-1.5 py-0.5">{t.badgeObl}</span>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#f1eee7] bg-[#6f6862] px-1.5 py-0.5">{t.badgeObl}</span>
                   </div>
                   <dl className="space-y-3 text-sm">
                     <Row label={t.amount} value={fmt(stroopsToUnits(r.obligation.amountStroops), assetCodeOf(r))} mono mismatch={isMismatch && !!v && !v.amountOk} />
@@ -363,7 +363,7 @@ export default function Comprovante() {
 
             {/* RITUAL — verify yourself, don't trust a screenshot */}
             <div className="px-7 md:px-9 py-7 bg-[#0a0a0a] text-[#f1eee7]">
-              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#FDDA24] mb-3">
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#6f6862] mb-3">
                 <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" />{t.ritualTitle}
               </div>
               <div className="flex gap-5 items-center">

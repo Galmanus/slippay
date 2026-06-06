@@ -70,7 +70,7 @@ export default function Account() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
       </header>
 
@@ -89,17 +89,17 @@ export default function Account() {
             </p>
 
             {bioOk === false && (
-              <div className="mt-10 max-w-[440px] rounded-2xl border border-[#A16207]/40 bg-[#A16207]/[0.06] p-5">
+              <div className="mt-10 max-w-[440px] rounded-2xl border border-[#6f6862]/40 bg-[#6f6862]/[0.06] p-5">
                 <div className="text-[15px] font-medium tracking-[-0.01em]" style={display}>This device has no biometrics.</div>
                 <p className="mt-1.5 text-sm text-[#0a0a0a]/65 leading-relaxed">
                   SlipPay creates your account with Face ID, Touch ID or a fingerprint — a computer without it can't.
-                  Open <span className="font-mono text-[#A16207]">app.slippay.cc/account</span> on your phone to create it in one touch.
+                  Open <span className="font-mono text-[#6f6862]">app.slippay.cc/account</span> on your phone to create it in one touch.
                 </p>
               </div>
             )}
 
             <button onClick={createAccount} disabled={busy || bioOk === false}
-              className="lift mt-8 w-full max-w-[400px] px-7 py-5 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[12px] uppercase tracking-[0.22em] disabled:opacity-40">
+              className="lift mt-8 w-full max-w-[400px] px-7 py-5 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[12px] uppercase tracking-[0.22em] disabled:opacity-40">
               {busy ? (step || "…") : bioOk === false ? "Open on your phone to create" : "Create my account (one touch)"}
             </button>
 
@@ -122,7 +122,7 @@ export default function Account() {
               <span className="text-[#0a0a0a]/70">✓</span><span className="h-px w-8 bg-current opacity-40" /><span>you're in · {acct.network === "PUBLIC" ? "mainnet" : "testnet"}</span>
             </div>
             <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,6rem)]" style={display}>
-              Welcome <span className="text-[#A16207]">back.</span>
+              Welcome <span className="text-[#6f6862]">back.</span>
             </h1>
 
             <div className="mt-12 rounded-2xl border border-[#0a0a0a]/12 p-7 max-w-[520px]">
@@ -148,7 +148,7 @@ export default function Account() {
             </button>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[520px]">
-              <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#0a0a0a] text-[#f1eee7]">Pay</Link>
+              <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Pay</Link>
               <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Get paid</Link>
               <Link to="/withdraw-demo" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Withdraw</Link>
               <Link to="/cockpit" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Live</Link>

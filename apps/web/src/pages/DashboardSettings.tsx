@@ -80,9 +80,9 @@ export default function DashboardSettings() {
       </h1>
 
       {revealedKey && (
-        <div className="mb-12 border-2 border-[#FDDA24] bg-[#FDDA24]/10 p-6">
+        <div className="mb-12 border-2 border-[#6f6862] bg-[#6f6862]/10 p-6">
           <div className="flex items-center gap-3">
-            <span className="inline-block w-3 h-3 bg-[#FDDA24]" />
+            <span className="inline-block w-3 h-3 bg-[#6f6862]" />
             <div className="text-xs uppercase tracking-[0.18em]">Your API key</div>
           </div>
           <p className="text-sm text-[#0a0a0a]/70 mt-2">

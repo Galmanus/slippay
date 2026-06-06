@@ -45,39 +45,39 @@ export default function Manifesto() {
   const t = C[lang];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f1eee7] overflow-x-hidden">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] overflow-x-hidden">
       <style>{`::selection{background:#FDDA24;color:#0a0a0a}`}</style>
-      <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#f1eee7]/10">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
+      <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <div className="flex items-center gap-6">
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/50">
-            <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#FDDA24]" : "hover:opacity-80"}>PT</button>
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/50">
+            <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#0a0a0a]" : "hover:opacity-80"}>PT</button>
             <span className="opacity-30 mx-1">/</span>
-            <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#FDDA24]" : "hover:opacity-80"}>EN</button>
+            <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#0a0a0a]" : "hover:opacity-80"}>EN</button>
           </div>
-          <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55 hover:text-[#f1eee7]">{t.home}</Link>
+          <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">{t.home}</Link>
         </div>
       </header>
 
       <main className="max-w-[1000px] mx-auto px-6 md:px-12 pt-16 md:pt-28 pb-24">
         {t.blocks.map((blk, i) => (
-          <section key={i} className={i === 0 ? "" : "mt-28 md:mt-44 pt-16 md:pt-24 border-t border-[#f1eee7]/10"}>
-            <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[#FDDA24] mb-8">{String(i + 1).padStart(3, "0")}</div>
+          <section key={i} className={i === 0 ? "" : "mt-28 md:mt-44 pt-16 md:pt-24 border-t border-[#0a0a0a]/10"}>
+            <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[#6f6862] mb-8">{String(i + 1).padStart(3, "0")}</div>
             <h2 className="font-bold uppercase tracking-[-0.05em] leading-[0.88] text-[clamp(2.25rem,6.5vw,5rem)] max-w-[20ch]" style={display}>
               {"accent" in blk && blk.accent
-                ? <>{blk.h.replace(blk.accent, "")}<span className="text-[#FDDA24]">{blk.accent}</span></>
+                ? <>{blk.h.replace(blk.accent, "")}<span className="text-[#6f6862]">{blk.accent}</span></>
                 : blk.h}
             </h2>
             <div className="mt-10 flex flex-col gap-5 max-w-[58ch]">
-              {blk.p.map((para, j) => <p key={j} className="text-xl md:text-2xl leading-relaxed text-[#f1eee7]/70">{para}</p>)}
-              {"welcome" in blk && blk.welcome && <p className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-[#FDDA24] mt-4" style={display}>{blk.welcome}</p>}
+              {blk.p.map((para, j) => <p key={j} className="text-xl md:text-2xl leading-relaxed text-[#0a0a0a]/65">{para}</p>)}
+              {"welcome" in blk && blk.welcome && <p className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-[#6f6862] mt-4" style={display}>{blk.welcome}</p>}
             </div>
           </section>
         ))}
 
-        <div className="mt-28 pt-16 border-t border-[#f1eee7]/10 flex flex-wrap items-center gap-7">
+        <div className="mt-28 pt-16 border-t border-[#0a0a0a]/10 flex flex-wrap items-center gap-7">
           <Link to="/account" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.cta}</Link>
-          <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">{t.home}</Link>
+          <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#6f6862] hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">{t.home}</Link>
         </div>
         <div className="mt-16"><LiveProof dark lang={lang} /></div>
       </main>

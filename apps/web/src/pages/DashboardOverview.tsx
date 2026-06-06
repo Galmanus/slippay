@@ -43,10 +43,10 @@ export default function DashboardOverview() {
   const saved = received * 0.029; // vs cards (~2.9%) net of SlipPay's near-zero fee
   const recent = os.slice(0, 5);
 
-  const KPI = ({ label, value, accent }: { label: string; value: React.ReactNode; accent?: boolean }) => (
+  const KPI = ({ label, value }: { label: string; value: React.ReactNode; accent?: boolean }) => (
     <div className="bg-[#0a0a0a] p-6">
       <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40">{label}</div>
-      <div className={`mt-3 text-4xl md:text-5xl font-semibold tabular-nums tracking-[-0.02em] ${accent ? "text-[#FDDA24]" : "text-[#f1eee7]"}`} style={display}>{value}</div>
+      <div className={`mt-3 text-4xl md:text-5xl font-semibold tabular-nums tracking-[-0.02em] text-[#f1eee7]`} style={display}>{value}</div>
     </div>
   );
 
@@ -56,7 +56,7 @@ export default function DashboardOverview() {
         <span className="text-[#0a0a0a]/70">000</span><span className="h-px w-8 bg-current opacity-40" /><span>overview · live</span>
       </div>
       <h1 className="mt-8 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,8vw,6rem)]" style={display}>
-        Your money, <span className="text-[#A16207]">working.</span>
+        Your money, <span className="text-[#6f6862]">working.</span>
       </h1>
 
       {/* KPI grid */}
@@ -72,7 +72,7 @@ export default function DashboardOverview() {
         <div className="rounded-2xl border border-[#0a0a0a]/12 p-7">
           <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">
             <span>autopilot</span>
-            <span className="flex items-center gap-1.5 text-[#A16207]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> integrity gate</span>
+            <span className="flex items-center gap-1.5 text-[#6f6862]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> integrity gate</span>
           </div>
           <p className="mt-4 text-lg leading-snug tracking-[-0.01em]" style={display}>
             {subs ? `${subs} mandate${subs === 1 ? "" : "s"} running within your rules.` : "No autopilot mandates yet."}
@@ -87,7 +87,7 @@ export default function DashboardOverview() {
         <div className="rounded-2xl border border-[#0a0a0a]/12 p-7">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">quick actions</div>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#0a0a0a] text-[#f1eee7]">Pay</Link>
+            <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Pay</Link>
             <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Get paid</Link>
             <Link to="/withdraw-demo" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Withdraw</Link>
             <Link to="/dashboard/settings" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">API key</Link>
@@ -112,7 +112,7 @@ export default function DashboardOverview() {
               <span className="tabular-nums" style={display}>{o.usdc_amount}<span className="text-[#0a0a0a]/45 text-sm"> USDC</span></span>
               <span className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 w-20 text-right">{o.status}</span>
               <span className="font-mono text-[11px] w-20 text-right">
-                {o.tx_hash ? <a href={`${EXPLORER_BASE}/${o.tx_hash}`} target="_blank" rel="noreferrer" className="text-[#A16207] hover:underline">{o.tx_hash.slice(0, 6)}↗</a> : <span className="text-[#0a0a0a]/25">—</span>}
+                {o.tx_hash ? <a href={`${EXPLORER_BASE}/${o.tx_hash}`} target="_blank" rel="noreferrer" className="text-[#6f6862] hover:underline">{o.tx_hash.slice(0, 6)}↗</a> : <span className="text-[#0a0a0a]/25">—</span>}
               </span>
             </div>
           ))}

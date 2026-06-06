@@ -59,7 +59,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain flex flex-col">
         <header className="px-6 md:px-12 py-7">
-          <span className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</span>
+          <span className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></span>
         </header>
         <main className="flex-1 flex items-center">
           <div className="max-w-[820px] w-full mx-auto px-6 md:px-12 py-16">
@@ -67,7 +67,7 @@ export default function Dashboard() {
               <span className="text-[#0a0a0a]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>onboard</span>
             </div>
             <h1 className="mt-8 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,6rem)]" style={display}>
-              Two fields <span className="text-[#A16207]">and you're live.</span>
+              Two fields <span className="text-[#6f6862]">and you're live.</span>
             </h1>
             <p className="mt-8 text-xl text-[#0a0a0a]/70 max-w-[46ch]">
               Your business name and the Stellar address where your dollars land.
@@ -108,7 +108,7 @@ export default function Dashboard() {
               />
               <button disabled={creating || addrFormatInvalid}
                 title={addrFormatInvalid ? "Fix the Stellar address before continuing" : undefined}
-                className="lift w-full rounded-full bg-[#0a0a0a] text-[#f1eee7] py-4 text-[11px] uppercase tracking-[0.22em] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="lift w-full rounded-full bg-[#FDDA24] text-[#0a0a0a] py-4 text-[11px] uppercase tracking-[0.22em] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed">
                 {creating ? "…" : "Create account"}
               </button>
             </form>
@@ -121,7 +121,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen flex bg-[#f1eee7] text-[#0a0a0a]">
       <aside className="w-64 shrink-0 bg-[#0a0a0a] text-[#f1eee7] p-7 flex flex-col">
-        <span className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</span>
+        <span className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></span>
         {merchant && (
           <div className="mt-8 mb-10">
             <div className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#f1eee7]/45">account</div>

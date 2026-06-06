@@ -146,7 +146,7 @@ export default function PayDemo() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
       </header>
 
@@ -171,7 +171,7 @@ export default function PayDemo() {
 
         <div className="mt-12 flex flex-col gap-3 max-w-[400px]">
           <button onClick={onCreateAccount} disabled={busy}
-            className="lift px-7 py-4 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
+            className="lift px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
             {accountReady ? "Wallet ready ✓" : "1 · Create my wallet"}
           </button>
           <button onClick={() => setScanning(true)} disabled={busy || !accountReady}
@@ -193,7 +193,7 @@ export default function PayDemo() {
               </button>
             ) : (
               <button onClick={onCreateAccount}
-                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] font-medium">
+                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium">
                 Create wallet to pay (a touch)
               </button>
             )}
@@ -214,7 +214,7 @@ export default function PayDemo() {
               boxShadow: "0 30px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06)",
               border: "1px solid rgba(255,255,255,.08)",
             }}>
-            <div className="h-[3px] w-full bg-gradient-to-r from-[#FDDA24] via-[#FDDA24]/40 to-transparent" />
+            <div className="h-[3px] w-full bg-gradient-to-r from-[#cabfb0] via-[#cabfb0]/40 to-transparent" />
             <div className="px-7 py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">
@@ -233,14 +233,14 @@ export default function PayDemo() {
               {payHash && (
                 <div className="mt-6 text-center">
                   <div className="mx-auto"><FaceScan state="done" /></div>
-                  <div className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-[#FDDA24]" style={display}>Paid.</div>
+                  <div className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-[#cabfb0]" style={display}>Paid.</div>
                   {paidLabel && <div className="mt-1 text-lg tabular-nums text-[#f1eee7]/85">{paidLabel}</div>}
                   <div className="mt-1 font-mono text-[11px] text-[#f1eee7]/45">moved on-chain · only your touch authorized it</div>
                   {/* inline receipt — generated right here, on the same screen */}
                   <div className="mt-6 mx-auto max-w-[360px] rounded-2xl bg-[#f1eee7]/[0.04] border border-[#f1eee7]/12 p-5 text-left">
                     <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">
                       <span>receipt</span>
-                      <span style={{ color: verified === "fail" ? "#f87171" : "#FDDA24" }}>
+                      <span style={{ color: verified === "fail" ? "#f87171" : "#cabfb0" }}>
                         {verified === "ok" ? "✓ verified on-chain" : verified === "checking" ? "verifying…" : "unconfirmed"}
                       </span>
                     </div>
@@ -260,7 +260,7 @@ export default function PayDemo() {
                       <div className="flex items-baseline justify-between gap-4 py-2">
                         <span className="text-[#f1eee7]/45">Tx</span>
                         <a href={`https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`} target="_blank" rel="noopener noreferrer"
-                          className="font-mono text-[12px] text-[#FDDA24] hover:underline underline-offset-4 break-all text-right">
+                          className="font-mono text-[12px] text-[#cabfb0] hover:underline underline-offset-4 break-all text-right">
                           {short(payHash, 8, 6)} ↗
                         </a>
                       </div>
@@ -269,13 +269,13 @@ export default function PayDemo() {
                       Public &amp; permanent · anyone can verify this payment on the blockchain.
                     </div>
                     <button onClick={shareReceipt}
-                      className="lift mt-4 w-full inline-flex items-center justify-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">
+                      className="lift mt-4 w-full inline-flex items-center justify-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#cabfb0] text-[#0a0a0a] font-medium">
                       {shared ? "Link copied ✓" : "Share receipt"}
                     </button>
                   </div>
                   {/* k-factor: turn the payer into a receiver — they make their own link and share it */}
                   <Link to="/cobrar"
-                    className="mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[#f1eee7]/70 hover:text-[#FDDA24] border-b border-[#f1eee7]/25 pb-1">
+                    className="mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[#f1eee7]/70 hover:text-[#cabfb0] border-b border-[#f1eee7]/25 pb-1">
                     Now get paid too — create your link →
                   </Link>
                 </div>
@@ -287,7 +287,7 @@ export default function PayDemo() {
                   <div className="text-lg font-medium tracking-[-0.01em]">{error}</div>
                   <button
                     onClick={() => (flow === "pay" && handle && wallet ? setScanning(true) : onCreateAccount())}
-                    className="lift mt-4 inline-flex items-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">
+                    className="lift mt-4 inline-flex items-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#cabfb0] text-[#0a0a0a]">
                     Try again
                   </button>
                 </div>
@@ -304,7 +304,7 @@ export default function PayDemo() {
                         style={{ opacity: i <= step ? 1 : 0.35 }}>
                         <span className="grid place-items-center w-6 h-6 rounded-full text-[11px] shrink-0"
                           style={{
-                            background: done ? "#FDDA24" : "transparent",
+                            background: done ? "#cabfb0" : "transparent",
                             color: done ? "#0a0a0a" : "#f1eee7",
                             border: done ? "none" : "1px solid rgba(241,238,231,.25)",
                           }}>
