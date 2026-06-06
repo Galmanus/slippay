@@ -3,7 +3,7 @@
 // smart wallet -> that wallet IS your account, stored locally so you return to
 // it. No email, no password, no seed phrase. Editorial register, Stellar yellow.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPasskey } from "../lib/passkey";
 import { loadAccount, saveAccount, clearAccount, type Account as Acct } from "../lib/account";
@@ -19,7 +19,8 @@ const buzz = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch {
 
 function friendly(e: unknown): string {
   const m = (e as Error)?.message ?? String(e);
-  if (/NotAllowed|timed out|not allowed|abort|cancel/i.test(m)) return "We couldn't read your biometrics. Tap to try again.";
+  if (/NotAllowed|timed out|not allowed|abort|cancel|no available authenticator|not supported/i.test(m))
+    return "This device couldn't create your key. SlipPay needs biometrics — Face ID, Touch ID or a fingerprint. On a computer without it, open app.slippay.cc on your phone.";
   if (/relayer|sponsor|unavailable/i.test(m)) return "Our network sponsor is waking up. Try again in a moment.";
   if (/deploy/i.test(m)) return "Your wallet didn't finish setting up. Tap to try again.";
   return "Something interrupted setup. Tap to try again.";
@@ -30,6 +31,17 @@ export default function Account() {
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Proactively detect whether this device can do biometrics, so we warn BEFORE
+  // the user taps (a computer with no Face ID / fingerprint can't create a passkey).
+  const [bioOk, setBioOk] = useState<boolean | null>(null);
+  useEffect(() => {
+    let on = true;
+    const w = window as unknown as { PublicKeyCredential?: { isUserVerifyingPlatformAuthenticatorAvailable?: () => Promise<boolean> } };
+    const fn = w.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable;
+    if (!fn) { setBioOk(false); return; }
+    fn().then((ok) => { if (on) setBioOk(ok); }).catch(() => { if (on) setBioOk(false); });
+    return () => { on = false; };
+  }, []);
 
   async function createAccount() {
     setBusy(true); setError(null);
@@ -76,9 +88,19 @@ export default function Account() {
               and that becomes your account — the same system that authorizes your payments.
             </p>
 
-            <button onClick={createAccount} disabled={busy}
-              className="lift mt-12 w-full max-w-[400px] px-7 py-5 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[12px] uppercase tracking-[0.22em] disabled:opacity-40">
-              {busy ? (step || "…") : "Create my account (one touch)"}
+            {bioOk === false && (
+              <div className="mt-10 max-w-[440px] rounded-2xl border border-[#A16207]/40 bg-[#A16207]/[0.06] p-5">
+                <div className="text-[15px] font-medium tracking-[-0.01em]" style={display}>This device has no biometrics.</div>
+                <p className="mt-1.5 text-sm text-[#0a0a0a]/65 leading-relaxed">
+                  SlipPay creates your account with Face ID, Touch ID or a fingerprint — a computer without it can't.
+                  Open <span className="font-mono text-[#A16207]">app.slippay.cc/account</span> on your phone to create it in one touch.
+                </p>
+              </div>
+            )}
+
+            <button onClick={createAccount} disabled={busy || bioOk === false}
+              className="lift mt-8 w-full max-w-[400px] px-7 py-5 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[12px] uppercase tracking-[0.22em] disabled:opacity-40">
+              {busy ? (step || "…") : bioOk === false ? "Open on your phone to create" : "Create my account (one touch)"}
             </button>
 
             {error && (
