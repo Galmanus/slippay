@@ -49,13 +49,13 @@ export function LiveProof({ dark = false, prominent = false, lang = "en" }: { da
 
   if (prominent) {
     return (
-      <div className="mx-auto max-w-[760px] rounded-full border border-[#0a0a0a]/12 bg-white/40 px-6 md:px-8 py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] md:text-[13px] tracking-[-0.01em] text-[#0a0a0a]/70">
-        <span className="flex items-center gap-2.5 font-medium text-[#0a0a0a]">
+      <div className="mx-auto max-w-[760px] rounded-full border border-[#f1eee7]/12 bg-[#f1eee7]/[0.04] px-6 md:px-8 py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] md:text-[13px] tracking-[-0.01em] text-[#f1eee7]/70">
+        <span className="flex items-center gap-2.5 font-medium text-[#f1eee7]">
           <span className="w-2 h-2 rounded-full bg-[#FDDA24] animate-pulse" /> {t.liveBig}
         </span>
-        {last && <span className="text-[#0a0a0a]/55">{t.last} <span className="tabular-nums text-[#0a0a0a]/80">{rel(last, lang)}</span></span>}
-        <span className="text-[#0a0a0a]/55">{t.cheapBig}</span>
-        <Link to="/cockpit" className="font-medium hover:opacity-70 transition-opacity" style={{ color: "#A16207" }}>{t.seeBig}</Link>
+        {last && <span className="text-[#f1eee7]/55">{t.last} <span className="tabular-nums text-[#f1eee7]/80">{rel(last, lang)}</span></span>}
+        <span className="text-[#f1eee7]/55">{t.cheapBig}</span>
+        <Link to="/cockpit" className="font-medium hover:opacity-70 transition-opacity" style={{ color: "#FDDA24" }}>{t.seeBig}</Link>
       </div>
     );
   }
