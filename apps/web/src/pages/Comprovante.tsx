@@ -243,7 +243,7 @@ export default function Comprovante() {
     r.level === "amber"
       ? (!r.transfer ? t.aContractSub : (isObl && r.obligationError) ? t.aOblFailSub : t.aUnboundSub)
       : "";
-  const bg = r.level === "green" ? "#b5e853" : r.level === "red" ? "#b91c1c" : "#0a0a0a";
+  const bg = r.level === "green" ? "#FDDA24" : r.level === "red" ? "#b91c1c" : "#0a0a0a";
   const fg = r.level === "green" ? "#0a0a0a" : "#f1eee7";
 
   // which transfer fields are in conflict (red), per path
@@ -272,7 +272,7 @@ export default function Comprovante() {
       <main className="flex-1 w-full max-w-[560px] mx-auto px-5 py-9 md:py-14">
         {r.level === "loading" && (
           <div className="text-center py-24 font-mono text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-            <span className="inline-block w-1.5 h-1.5 bg-[#b5e853] animate-pulse mr-2" />{t.verifying}
+            <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24] animate-pulse mr-2" />{t.verifying}
           </div>
         )}
         {r.level === "notfound" && (
@@ -290,7 +290,7 @@ export default function Comprovante() {
               <div className="font-mono text-[10px] uppercase tracking-[0.24em] opacity-70">{t.receipt} · slippay · {t.net(net)}</div>
               <div className="mx-auto mt-5 w-[56px] h-[56px] flex items-center justify-center" style={{ background: fg === "#0a0a0a" ? "#0a0a0a" : "transparent", border: r.level === "green" ? "none" : `2px solid ${fg}`, borderRadius: r.level === "green" ? 0 : 999 }}>
                 {r.level === "green"
-                  ? <svg width="30" height="30" viewBox="0 0 44 44" fill="none"><path d="M11 23l8 8 14-16" stroke="#b5e853" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  ? <svg width="30" height="30" viewBox="0 0 44 44" fill="none"><path d="M11 23l8 8 14-16" stroke="#FDDA24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   : r.level === "red"
                     ? <svg width="26" height="26" viewBox="0 0 44 44" fill="none"><path d="M14 14l16 16M30 14L14 30" stroke={fg} strokeWidth="4" strokeLinecap="round" /></svg>
                     : <svg width="26" height="26" viewBox="0 0 44 44" fill="none"><path d="M22 12v16M22 32v.5" stroke={fg} strokeWidth="4" strokeLinecap="round" /></svg>}
@@ -299,7 +299,7 @@ export default function Comprovante() {
               <p className="mt-3 text-sm leading-relaxed opacity-85 max-w-[42ch] mx-auto">{sub}</p>
               {/* trust badge — strong vs weak, stated explicitly */}
               <div className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] px-2.5 py-1 border" style={{ borderColor: fg === "#0a0a0a" ? "rgba(10,10,10,0.25)" : "rgba(241,238,231,0.3)" }}>
-                <span className="inline-block w-1.5 h-1.5" style={{ background: isObl ? "#b5e853" : fg }} />
+                <span className="inline-block w-1.5 h-1.5" style={{ background: isObl ? "#FDDA24" : fg }} />
                 {isObl ? t.badgeObl : t.badgeClaim}
               </div>
               {label && <div className="mt-3 text-xs opacity-70">{label}</div>}
@@ -331,7 +331,7 @@ export default function Comprovante() {
                 <>
                   <div className="flex items-center gap-2 mt-6 mb-3">
                     <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.oblSays}</span>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#0a0a0a] bg-[#b5e853] px-1.5 py-0.5">{t.badgeObl}</span>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#0a0a0a] bg-[#FDDA24] px-1.5 py-0.5">{t.badgeObl}</span>
                   </div>
                   <dl className="space-y-3 text-sm">
                     <Row label={t.amount} value={fmt(stroopsToUnits(r.obligation.amountStroops), assetCodeOf(r))} mono mismatch={isMismatch && !!v && !v.amountOk} />
@@ -362,8 +362,8 @@ export default function Comprovante() {
 
             {/* RITUAL — verify yourself, don't trust a screenshot */}
             <div className="px-7 md:px-9 py-7 bg-[#0a0a0a] text-[#f1eee7]">
-              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#b5e853] mb-3">
-                <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" />{t.ritualTitle}
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#FDDA24] mb-3">
+                <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" />{t.ritualTitle}
               </div>
               <div className="flex gap-5 items-center">
                 {qr && <img src={qr} alt="" className="w-[88px] h-[88px] shrink-0 bg-[#f1eee7] p-1.5" />}

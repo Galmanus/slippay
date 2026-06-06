@@ -73,7 +73,7 @@ export default function X402Demo() {
         <Logo />
         <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/65">
           <Link to="/" className="hover:opacity-60">Home</Link>
-          <Link to="/" className="bg-[#b5e853] text-[#0a0a0a] px-4 py-2 font-semibold hover:opacity-80 transition-opacity">The proof</Link>
+          <Link to="/" className="bg-[#FDDA24] text-[#0a0a0a] px-4 py-2 font-semibold hover:opacity-80 transition-opacity">The proof</Link>
         </nav>
       </header>
 
@@ -93,7 +93,7 @@ export default function X402Demo() {
       {/* controls */}
       <section className="max-w-[1400px] mx-auto px-5 md:px-12 pb-6 flex flex-wrap items-center gap-4">
         <button onClick={() => setRunning((r) => !r)}
-          className="px-6 py-3 bg-[#0a0a0a] text-[#b5e853] font-semibold text-sm uppercase tracking-[0.15em] hover:opacity-80 transition-opacity">
+          className="px-6 py-3 bg-[#0a0a0a] text-[#FDDA24] font-semibold text-sm uppercase tracking-[0.15em] hover:opacity-80 transition-opacity">
           {running ? "❚❚ Pause agent" : "▶ Release the agent"}
         </button>
         <button onClick={reset}
@@ -132,7 +132,7 @@ export default function X402Demo() {
           </div>
           <div className="mt-5 text-5xl md:text-6xl font-medium tabular-nums tracking-tight text-[#0a0a0a]">{usd(slip)}</div>
           <div className="mt-4 h-2 bg-[#0a0a0a]/10 overflow-hidden">
-            <div className="h-full bg-[#b5e853] transition-all duration-300" style={{ width: `${slipPct}%` }} />
+            <div className="h-full bg-[#FDDA24] transition-all duration-300" style={{ width: `${slipPct}%` }} />
           </div>
           <div className="mt-4 text-[13px] leading-relaxed text-[#0a0a0a]/75">
             {atBudget
@@ -172,9 +172,9 @@ export default function X402Demo() {
         {/* proof badge */}
         <div className="bg-[#0a0a0a] text-[#f1eee7] p-7 flex flex-col justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 bg-[#b5e853] text-[#0a0a0a] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold">● Proved</div>
+            <div className="inline-flex items-center gap-2 bg-[#FDDA24] text-[#0a0a0a] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold">● Proved</div>
             <div className="mt-5 font-mono text-sm leading-relaxed text-[#f1eee7]/85">
-              <div className="text-[#b5e853]">outflow ≤ 2·window_cap</div>
+              <div className="text-[#FDDA24]">outflow ≤ 2·window_cap</div>
               <div className="mt-2 text-[#f1eee7]/60 text-[12px]">epoch invariant · machine-checked by Z3 · 0.4s · over every action sequence, not a sample.</div>
             </div>
           </div>

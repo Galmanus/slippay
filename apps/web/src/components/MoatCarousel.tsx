@@ -42,7 +42,7 @@ export function MoatCarousel({ slides, interval = 6500 }: { slides: MoatSlide[];
     >
       {/* faint grid / glow for depth */}
       <div className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full"
-        style={{ background: "radial-gradient(closest-side, rgba(181,232,83,0.16), transparent)" }} />
+        style={{ background: "radial-gradient(closest-side, rgba(253,218,36,0.16), transparent)" }} />
 
       <div className="relative max-w-[1100px] mx-auto px-5 md:px-10 py-16 md:py-20">
         <div className="flex items-center justify-between mb-8">
@@ -70,7 +70,7 @@ export function MoatCarousel({ slides, interval = 6500 }: { slides: MoatSlide[];
                   transitionTimingFunction: "cubic-bezier(0.22,1,0.36,1)",
                 }}
               >
-                <div className="text-[#b5e853] font-mono text-[11px] uppercase tracking-[0.22em] mb-4">{s.tag}</div>
+                <div className="text-[#FDDA24] font-mono text-[11px] uppercase tracking-[0.22em] mb-4">{s.tag}</div>
                 <h3 className="text-3xl md:text-5xl font-medium tracking-[-0.035em] leading-[1.02] max-w-[20ch]">
                   {s.headline}
                 </h3>
@@ -80,7 +80,7 @@ export function MoatCarousel({ slides, interval = 6500 }: { slides: MoatSlide[];
                 {s.proof && (
                   s.proof.href ? (
                     <a href={s.proof.href} target="_blank" rel="noopener noreferrer"
-                      className="mt-5 inline-block text-xs font-mono uppercase tracking-[0.18em] text-[#b5e853] underline underline-offset-4 hover:opacity-80">
+                      className="mt-5 inline-block text-xs font-mono uppercase tracking-[0.18em] text-[#FDDA24] underline underline-offset-4 hover:opacity-80">
                       {s.proof.label} ↗
                     </a>
                   ) : (
@@ -105,7 +105,7 @@ export function MoatCarousel({ slides, interval = 6500 }: { slides: MoatSlide[];
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: idx === i ? 28 : 8,
-                  background: idx === i ? "#b5e853" : "rgba(241,238,231,0.25)",
+                  background: idx === i ? "#FDDA24" : "rgba(241,238,231,0.25)",
                 }}
               />
             ))}
@@ -113,7 +113,7 @@ export function MoatCarousel({ slides, interval = 6500 }: { slides: MoatSlide[];
           <div className="flex-1 h-px bg-[#f1eee7]/10 relative overflow-hidden">
             <div
               key={`${i}-${paused}`}
-              className="absolute inset-y-0 left-0 bg-[#b5e853]/60"
+              className="absolute inset-y-0 left-0 bg-[#FDDA24]/60"
               style={{
                 width: "100%",
                 transform: "translateX(-100%)",

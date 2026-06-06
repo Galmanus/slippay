@@ -227,7 +227,7 @@ export default function PolicySubscribe() {
         ) : (
           <div className="border border-[#0a0a0a]/15 p-8">
             <div className="flex items-center gap-3 mb-5">
-              <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+              <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
               <span className="text-[10px] uppercase tracking-[0.22em]">
                 assinatura ativa
               </span>
@@ -310,7 +310,7 @@ export default function PolicySubscribe() {
                     <div className="flex items-center gap-2 mb-1">
                       <span
                         className={`inline-block w-2 h-2 ${
-                          entry.status === "ok" ? "bg-[#b5e853]" : "bg-red-500"
+                          entry.status === "ok" ? "bg-[#FDDA24]" : "bg-red-500"
                         }`}
                       />
                       <span className="text-[10px] uppercase tracking-[0.22em]">

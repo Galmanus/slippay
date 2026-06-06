@@ -45,7 +45,7 @@ const QUICK_PROMPTS: Array<{ tag: string; prompt: string }> = [
 // bluewave design tokens (matching bluewaveai.online)
 const BONE = "#EFE9DD";
 const INK  = "#1A1A17";
-const KLEIN = "#b5e853";
+const KLEIN = "#FDDA24";
 
 export function AskSlippay() {
   const [open, setOpen] = useState(false);
@@ -441,9 +441,9 @@ function ThinkingIndicator() {
   return (
     <div className="flex items-center gap-3 py-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       <div className="flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853]" style={{ animation: "ask-pulse 1.2s ease-in-out infinite" }} />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853] opacity-60" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853] opacity-30" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" style={{ animation: "ask-pulse 1.2s ease-in-out infinite" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] opacity-60" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] opacity-30" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
       </div>
       <span className="text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
         thinking · {phrases[idx]}

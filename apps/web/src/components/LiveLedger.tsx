@@ -45,12 +45,12 @@ export function LiveLedger() {
   return (
     <div className="w-full max-w-[480px] mx-auto md:ml-auto md:mr-0 rounded-[1.5rem] bg-[#0a0a0a] text-[#f1eee7] overflow-hidden ring-1 ring-[#f1eee7]/10 shadow-[0_36px_90px_-28px_rgba(10,10,10,0.6)]">
       {/* top accent line */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-[#b5e853] via-[#b5e853]/40 to-transparent" />
+      <div className="h-[3px] w-full bg-gradient-to-r from-[#FDDA24] via-[#FDDA24]/40 to-transparent" />
 
       {/* header */}
       <div className="flex items-center justify-between px-5 md:px-6 py-4 border-b border-[#f1eee7]/10">
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/60">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#b5e853] animate-pulse" />
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" />
           slippay · ao vivo
         </div>
         <div className="font-mono text-[10px] tabular-nums tracking-[0.18em] text-[#f1eee7]/40">{now}</div>
@@ -62,7 +62,7 @@ export function LiveLedger() {
           const op = 1 - r.pos * 0.17;
           const inner = (
             <div className="flex items-baseline gap-3 py-[9px]" style={{ opacity: op }}>
-              <span className="w-3 shrink-0 text-xs leading-none text-[#b5e853]">✓</span>
+              <span className="w-3 shrink-0 text-xs leading-none text-[#FDDA24]">✓</span>
               <span className="w-[88px] shrink-0 text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/45">{r.tag}</span>
               <span className="flex-1 min-w-0 truncate text-[11px] md:text-xs tracking-tight text-[#f1eee7]/90">{r.detail}</span>
               {r.href && <span className="shrink-0 text-[10px] text-[#f1eee7]/30">↗</span>}
@@ -83,7 +83,7 @@ export function LiveLedger() {
       {/* footer */}
       <div className="px-5 md:px-6 py-3.5 border-t border-[#f1eee7]/10 font-mono text-[9px] uppercase tracking-[0.18em] text-[#f1eee7]/45 flex items-center justify-between">
         <span>tudo é público · confira você mesmo</span>
-        <span className="flex items-center gap-1.5"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#b5e853] animate-pulse" /> ao vivo</span>
+        <span className="flex items-center gap-1.5"><span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> ao vivo</span>
       </div>
     </div>
   );

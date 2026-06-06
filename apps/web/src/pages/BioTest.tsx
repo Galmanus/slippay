@@ -83,7 +83,7 @@ export default function BioTest() {
           ┃ teste de biometria · no seu aparelho
         </div>
         <h1 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98]">
-          Paga com o rosto.<span className="inline-block w-2.5 h-2.5 bg-[#b5e853] ml-2 align-baseline" />
+          Paga com o rosto.<span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] ml-2 align-baseline" />
         </h1>
         <p className="mt-6 text-base text-[#0a0a0a]/75 leading-relaxed max-w-[52ch]">
           Toca pra criar uma passkey com Face ID / digital, depois assina. A
@@ -97,7 +97,7 @@ export default function BioTest() {
             1 · Criar passkey (Face ID)
           </button>
           <button onClick={onSign} disabled={busy || !handle}
-            className="lift px-6 py-4 bg-[#b5e853] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
+            className="lift px-6 py-4 bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
             2 · Assinar com biometria
           </button>
         </div>
@@ -117,7 +117,7 @@ export default function BioTest() {
 
         <div className="mt-8">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3">┃ log</div>
-          <div className="bg-[#0a0a0a] text-[#b5e853] font-mono text-xs p-4 min-h-[160px] whitespace-pre-wrap break-all">
+          <div className="bg-[#0a0a0a] text-[#FDDA24] font-mono text-xs p-4 min-h-[160px] whitespace-pre-wrap break-all">
             {log.length === 0 ? "// toca em 1 · Criar passkey\n" : log.join("\n")}
           </div>
         </div>

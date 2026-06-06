@@ -62,7 +62,7 @@ export default function Verify() {
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-2">certificate (JSON)</div>
             <textarea value={cert} onChange={(e) => setCert(e.target.value)} spellCheck={false}
-              className="w-full h-44 bg-[#0a0a0a] text-[#b5e853] font-mono text-xs p-4 resize-y outline-none" />
+              className="w-full h-44 bg-[#0a0a0a] text-[#FDDA24] font-mono text-xs p-4 resize-y outline-none" />
           </div>
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-2">agent spec (.axl)</div>
@@ -120,9 +120,9 @@ export default function Verify() {
                     <details key={i} className="border border-[#0a0a0a]/15">
                       <summary className="cursor-pointer px-4 py-3 text-sm font-medium flex items-center justify-between">
                         <span>{o.name}</span>
-                        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#b5e853] bg-[#0a0a0a] px-2 py-1">expect {o.expect}</span>
+                        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#FDDA24] bg-[#0a0a0a] px-2 py-1">expect {o.expect}</span>
                       </summary>
-                      <pre className="bg-[#0a0a0a] text-[#b5e853] font-mono text-[11px] p-4 overflow-x-auto whitespace-pre">{o.smt}</pre>
+                      <pre className="bg-[#0a0a0a] text-[#FDDA24] font-mono text-[11px] p-4 overflow-x-auto whitespace-pre">{o.smt}</pre>
                     </details>
                   ))}
                 </div>

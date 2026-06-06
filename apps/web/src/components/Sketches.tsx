@@ -1,14 +1,14 @@
 // Hand-drawn sketches spread across the landing — charming, almost-childlike, but
 // precise. Pure inline SVG (no CDN). The hand-drawn wobble is a feTurbulence +
 // feDisplacementMap filter applied to clean stroke paths. `tone` switches stroke
-// color for light vs dark sections. Accent = KLEIN-green (#b5e853).
+// color for light vs dark sections. Accent = KLEIN-green (#FDDA24).
 
 type Name =
   | "plan" | "approve" | "recurring"
   | "nochargeback" | "fee" | "fast" | "noncustodial" | "agent" | "verify"
   | "mcp" | "shield";
 
-const ACCENT = "#b5e853";
+const ACCENT = "#FDDA24";
 
 function Wobble({ id }: { id: string }) {
   return (

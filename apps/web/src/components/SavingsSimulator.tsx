@@ -65,7 +65,7 @@ export function SavingsSimulator() {
           {/* live result */}
           <div className="bg-[#0a0a0a] text-[#f1eee7] rounded-2xl p-8 md:p-10">
             <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/45 mb-1">you collect, every month</div>
-            <div className="text-5xl md:text-6xl font-semibold tabular-nums tracking-[-0.03em] text-[#b5e853] leading-none">{fmt(keep)}</div>
+            <div className="text-5xl md:text-6xl font-semibold tabular-nums tracking-[-0.03em] text-[#FDDA24] leading-none">{fmt(keep)}</div>
             <div className="font-mono text-[11px] text-[#f1eee7]/50 mt-3">in dollars · final in ~5s · no chargebacks</div>
 
             <div className="mt-8 pt-6 border-t border-[#f1eee7]/12 flex items-baseline justify-between">

@@ -73,8 +73,8 @@ export function PayFlowDemo() {
         style={{
           width: 420, height: 420,
           background: phase === "paid"
-            ? "radial-gradient(circle, rgba(181,232,83,0.42), transparent 66%)"
-            : "radial-gradient(circle, rgba(181,232,83,0.20), transparent 66%)",
+            ? "radial-gradient(circle, rgba(253,218,36,0.42), transparent 66%)"
+            : "radial-gradient(circle, rgba(253,218,36,0.20), transparent 66%)",
           filter: "blur(18px)",
           transition: "background 700ms ease",
           animation: animate ? "pf-glow 7s ease-in-out infinite" : "none",
@@ -107,7 +107,7 @@ export function PayFlowDemo() {
                   {/* breathing corner brackets */}
                   {(["tl", "tr", "bl", "br"] as const).map((c) => (
                     <span key={c} aria-hidden
-                      className={"absolute w-7 h-7 border-[#b5e853] " +
+                      className={"absolute w-7 h-7 border-[#FDDA24] " +
                         (c === "tl" ? "left-0 top-0 border-l-2 border-t-2" :
                          c === "tr" ? "right-0 top-0 border-r-2 border-t-2" :
                          c === "bl" ? "left-0 bottom-0 border-l-2 border-b-2" :
@@ -115,8 +115,8 @@ export function PayFlowDemo() {
                       style={{ animation: phase === "scan" ? "pf-bracket 1.6s ease-in-out infinite" : "none" }} />
                   ))}
                   {phase === "scan" && (
-                    <span aria-hidden className="absolute left-1 right-1 h-[2px] bg-[#b5e853]"
-                      style={{ boxShadow: "0 0 16px 2px #b5e853", animation: "pf-sweep 1.5s ease-in-out infinite" }} />
+                    <span aria-hidden className="absolute left-1 right-1 h-[2px] bg-[#FDDA24]"
+                      style={{ boxShadow: "0 0 16px 2px #FDDA24", animation: "pf-sweep 1.5s ease-in-out infinite" }} />
                   )}
                 </div>
                 <div className="mt-9 text-[#f1eee7] text-3xl font-medium tabular-nums tracking-[-0.03em]">
@@ -132,19 +132,19 @@ export function PayFlowDemo() {
                 <div className="relative w-[140px] h-[140px] flex items-center justify-center">
                   {/* concentric pulse rings */}
                   {phase === "face" && [0, 0.5, 1].map((d) => (
-                    <span key={d} aria-hidden className="absolute w-[120px] h-[120px] rounded-full border border-[#b5e853]/60"
+                    <span key={d} aria-hidden className="absolute w-[120px] h-[120px] rounded-full border border-[#FDDA24]/60"
                       style={{ animation: `pf-ring 1.8s ease-out ${d}s infinite` }} />
                   ))}
                   {/* progress arc */}
                   <span aria-hidden className="absolute inset-0 rounded-full border-2 border-[#f1eee7]/12" />
                   {phase === "face" && (
-                    <span aria-hidden className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#b5e853] border-r-[#b5e853]"
+                    <span aria-hidden className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#FDDA24] border-r-[#FDDA24]"
                       style={{ animation: "pf-spin 0.95s linear infinite" }} />
                   )}
                   {/* faint dot mesh over the face */}
                   <div aria-hidden className="absolute inset-3 grid grid-cols-6 gap-[7px] opacity-40">
                     {Array.from({ length: 36 }).map((_, i) => (
-                      <span key={i} className="w-[3px] h-[3px] rounded-full bg-[#b5e853]/70" />
+                      <span key={i} className="w-[3px] h-[3px] rounded-full bg-[#FDDA24]/70" />
                     ))}
                   </div>
                   {/* face glyph */}
@@ -154,8 +154,8 @@ export function PayFlowDemo() {
                   </svg>
                   {/* scan bar */}
                   {phase === "face" && (
-                    <span aria-hidden className="absolute left-2 right-2 h-[2px] bg-[#b5e853]/90"
-                      style={{ boxShadow: "0 0 14px 1px #b5e853", animation: "pf-mesh 1.7s ease-in-out infinite" }} />
+                    <span aria-hidden className="absolute left-2 right-2 h-[2px] bg-[#FDDA24]/90"
+                      style={{ boxShadow: "0 0 14px 1px #FDDA24", animation: "pf-mesh 1.7s ease-in-out infinite" }} />
                   )}
                 </div>
                 <div className="mt-9 text-[#f1eee7]/85 text-sm uppercase tracking-[0.24em] font-mono">autorizando</div>
@@ -170,10 +170,10 @@ export function PayFlowDemo() {
                 <div className="relative flex items-center justify-center">
                   {/* success burst ring */}
                   {phase === "paid" && (
-                    <span aria-hidden className="absolute w-[96px] h-[96px] rounded-full border-2 border-[#b5e853]"
+                    <span aria-hidden className="absolute w-[96px] h-[96px] rounded-full border-2 border-[#FDDA24]"
                       style={{ animation: "pf-burst 0.9s var(--ease-out-expo) forwards" }} />
                   )}
-                  <div className="w-[92px] h-[92px] bg-[#b5e853] flex items-center justify-center"
+                  <div className="w-[92px] h-[92px] bg-[#FDDA24] flex items-center justify-center"
                     style={{ animation: phase === "paid" ? "pf-pop 0.5s var(--ease-out-expo) both" : "none" }}>
                     <svg width="46" height="46" viewBox="0 0 44 44" fill="none">
                       <path d="M11 23l8 8 14-16" stroke="#0a0a0a" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
@@ -186,7 +186,7 @@ export function PayFlowDemo() {
                   <span className="text-base text-[#0a0a0a]/45">US$ </span>{money(paidAmt)}
                 </div>
                 <div className="mt-5 text-[9px] uppercase tracking-[0.22em] font-mono text-[#0a0a0a]/45 flex items-center gap-1.5">
-                  <span className="inline-block w-1.5 h-1.5 bg-[#b5e853] animate-pulse" /> verificado on-chain
+                  <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24] animate-pulse" /> verificado on-chain
                 </div>
                 {/* the real mainnet biometric tx — ties the demo to the proof */}
                 <a href={`https://stellar.expert/explorer/public/tx/${BIO_TX}`} target="_blank" rel="noopener noreferrer"
@@ -203,7 +203,7 @@ export function PayFlowDemo() {
       <div className="mt-9 flex items-center gap-2">
         {ORDER.map((p, i) => (
           <span key={p} className="h-1.5 transition-all duration-500"
-            style={{ width: i === step ? 30 : 8, background: i === step ? "#b5e853" : "rgba(10,10,10,0.18)" }} />
+            style={{ width: i === step ? 30 : 8, background: i === step ? "#FDDA24" : "rgba(10,10,10,0.18)" }} />
         ))}
       </div>
       <div className="mt-3 text-[10px] uppercase tracking-[0.24em] font-mono text-[#0a0a0a]/55">
