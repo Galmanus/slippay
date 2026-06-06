@@ -384,10 +384,10 @@ export default function LandingV2() {
           </div>
           <div className="mt-16 pt-10 border-t border-[#f1eee7]/10">
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#FDDA24]">{t.cta.supportLabel}</div>
-            <p className="mt-3 text-[15px] text-[#f1eee7]/60 max-w-[42ch]">{t.cta.supportText}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <p className="mt-3 text-[15px] text-[#f1eee7]/60 max-w-[42ch] mx-auto text-center">{t.cta.supportText}</p>
+            <div className="mt-5 flex flex-col items-center gap-3">
               <Link to={`/pay?to=${TEAM_USDC}&amount=100000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">{t.cta.supportBtn}</Link>
-              <span className="font-mono text-[10px] text-[#f1eee7]/40 break-all max-w-[280px]">USDC · {TEAM_USDC}</span>
+              <span className="font-mono text-[10px] text-[#f1eee7]/40 break-all max-w-[320px] text-center">USDC · {TEAM_USDC}</span>
             </div>
           </div>
           <div className="mt-16 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">{t.cta.footer}</div>
