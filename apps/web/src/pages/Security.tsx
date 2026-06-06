@@ -1,205 +1,126 @@
-// /seguranca — the moat page. Serious-engineering tone (less manifesto). Same
-// palette as the landing: bone bg, ink text, lime accents (#A16207 on bone,
-// #FDDA24 on the dark drama section). Core thesis: decision is separated from
-// execution — the AI can be fooled; the contract won't execute outside the rules.
-// No exposure of our own open findings; no Bluewave branding.
+// /security — the user-facing safety page ("is my money safe?"). Calm, bone,
+// editorial. Distinct from /gate (the technical moat deep-dive): this answers the
+// human question — non-custodial, you hold the key, fail-safe, public, verifiable.
+// Bilingual (PT/EN, shares the landing's language choice).
 
 import { Link } from "react-router-dom";
-import { Logo } from "../components/Logo.tsx";
-import { AuditDemo } from "../components/AuditDemo.tsx";
+import { useEffect, useState } from "react";
 
-const AUDIT_CONTRACT = "CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN";
-const AUDIT_URL = `https://stellar.expert/explorer/public/contract/${AUDIT_CONTRACT}`;
-const TX_URL = "https://stellar.expert/explorer/public/tx/5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
+const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
+const CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
+const TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
+const xc = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
+type Lang = "pt" | "en";
 
-function Eyebrow({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
-  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#A16207]"} mb-6`}>{children}</div>;
-}
-
-const PROPERTIES = [
-  ["Non-custodial", "Os fundos permanecem em uma carteira controlada por você. A SlipPay não tem acesso unilateral ao seu dinheiro."],
-  ["Regras executadas em contrato", "Limites, permissões e condições de pagamento são definidos em smart contracts. As regras não dependem de política interna ou decisão manual."],
-  ["Verificável on-chain", "Cada pagamento é uma transação pública e auditável. Qualquer pessoa pode verificar o que foi executado, sem depender de relatórios internos."],
-  ["Controle de escopo (fail-safe)", "Se algo estiver fora das regras definidas, a transação não executa. Não existe “meio pagamento” ou estado intermediário não previsto."],
-  ["Sem custódia intermediária", "Não há retenção de fundos em plataformas centralizadas. O dinheiro não passa por contas operadas pela SlipPay."],
-];
-
-const LAYERS = [
-  ["01", "Execução no contrato", "As regras críticas vivem no smart contract, não no agente."],
-  ["02", "Agente como interface, não autoridade", "A IA propõe e orquestra, mas não tem permissão para alterar regras financeiras."],
-  ["03", "Limites explícitos", "Teto de gasto, listas de destinatários e condições de pagamento são impostas em código."],
-  ["04", "Transparência total", "Todas as execuções podem ser verificadas diretamente na blockchain."],
-];
+const C = {
+  en: {
+    home: "Home", stamp: "security",
+    h1a: "Is my money safe? ", h1acc: "Yes.",
+    intro: "The simplest reason: we never hold it. Your money lives in a wallet only you control, opened by your biometrics. Not even SlipPay can move it — we automate payments, never custody them.",
+    props: [
+      ["Non-custodial", "Funds stay in a wallet only you control. SlipPay has no unilateral access to your money, ever."],
+      ["Rules enforced in the contract", "Spend limits, approved recipients and conditions live in the smart contract — not in our policy or a manual decision."],
+      ["Fail-safe", "If a payment is outside your rules, it doesn't execute. There is no half-payment, no undefined in-between state."],
+      ["Signed, never replayable", "Every authorization is cryptographically bound to one contract, one charge, once. It can't be replayed across subscriptions, contracts or chains."],
+      ["Public & verifiable", "Every payment is a public, auditable transaction. Anyone can verify what happened, with no internal report to trust."],
+    ] as [string, string][],
+    gateTitle: "How it can pay on its own and still be safe.",
+    gate: "The agent never decides — it executes inside your rules, and only after an on-chain integrity check passes. If something looks off, the payment is refused.",
+    gateLink: "Read about the integrity gate →",
+    honestTitle: "What we're still hardening (honest).",
+    honest: "Today your account is bound to your device. Account recovery across devices (synced passkeys / guardians) is on the roadmap — until then, treat it like a device-held key.",
+    proofTitle: "Verify it yourself.",
+    proofTx: "A real payment →", proofContract: "The live contract →",
+    cta: "Try it",
+  },
+  pt: {
+    home: "Início", stamp: "segurança",
+    h1a: "Meu dinheiro está seguro? ", h1acc: "Sim.",
+    intro: "O motivo mais simples: a gente nunca segura. Seu dinheiro fica numa carteira que só você controla, aberta pela sua biometria. Nem o SlipPay move — a gente automatiza pagamento, nunca a custódia.",
+    props: [
+      ["Non-custodial", "Os fundos ficam numa carteira que só você controla. O SlipPay não tem acesso unilateral ao seu dinheiro, nunca."],
+      ["Regras no contrato", "Tetos de gasto, destinatários aprovados e condições vivem no smart contract — não na nossa política nem numa decisão manual."],
+      ["Fail-safe", "Se um pagamento está fora das suas regras, ele não executa. Não existe meio pagamento, nem estado intermediário indefinido."],
+      ["Assinado, sem replay", "Cada autorização é amarrada por criptografia a um contrato, uma cobrança, uma vez. Não dá pra replicar entre assinaturas, contratos ou redes."],
+      ["Público e verificável", "Cada pagamento é uma transação pública e auditável. Qualquer um confere o que aconteceu, sem depender de relatório interno."],
+    ] as [string, string][],
+    gateTitle: "Como ele paga sozinho e ainda assim é seguro.",
+    gate: "O agente nunca decide — ele executa dentro das suas regras, e só depois de passar por uma checagem de integridade on-chain. Se cheirar a problema, o pagamento é recusado.",
+    gateLink: "Leia sobre o gate de integridade →",
+    honestTitle: "O que ainda estamos endurecendo (honesto).",
+    honest: "Hoje sua conta está ligada ao seu aparelho. Recuperação entre dispositivos (passkeys sincronizadas / guardiões) está no roadmap — até lá, trate como uma chave guardada no aparelho.",
+    proofTitle: "Confere você mesmo.",
+    proofTx: "Um pagamento real →", proofContract: "O contrato no ar →",
+    cta: "Testar",
+  },
+} as const;
 
 export default function Security() {
+  const [lang, setLang] = useState<Lang>(() => {
+    try { const s = localStorage.getItem("slippay.lang"); if (s === "pt" || s === "en") return s; } catch { /* */ }
+    return (typeof navigator !== "undefined" && navigator.language?.toLowerCase().startsWith("pt")) ? "pt" : "en";
+  });
+  useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
+  const t = C[lang];
+
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] overflow-x-hidden">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
-        <Link to="/"><Logo /></Link>
-        <nav className="flex items-center gap-8 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-          <Link to="/" className="hover:text-[#0a0a0a]">Home</Link>
-          <Link to="/pay" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] hover:opacity-90">Testar grátis</Link>
-        </nav>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
+        <div className="flex items-center gap-6">
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
+            <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#A16207]" : "hover:opacity-80"}>PT</button>
+            <span className="opacity-30 mx-1">/</span>
+            <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#A16207]" : "hover:opacity-80"}>EN</button>
+          </div>
+          <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">{t.home}</Link>
+        </div>
       </header>
 
-      {/* HERO */}
-      <section className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 pt-14 md:pt-28 pb-20 md:pb-32">
-          <Eyebrow>segurança</Eyebrow>
-          <h1 className="text-[40px] leading-[0.97] md:text-[80px] md:leading-[0.92] font-semibold tracking-[-0.045em] max-w-[16ch]">
-            O dinheiro é seu. <span className="text-[#A16207]">O sistema não encosta nele.</span>
-          </h1>
-          <p className="mt-10 text-xl md:text-2xl text-[#0a0a0a]/65 leading-relaxed max-w-[54ch]">
-            A SlipPay foi desenhada para reduzir confiança ao mínimo possível. O dinheiro nunca fica sob
-            nossa custódia. Ele permanece na sua carteira, e só pode ser movimentado dentro de regras
-            executadas em contrato inteligente.
-          </p>
-          <p className="mt-9 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[20ch]">
-            A IA pode falhar. <span className="text-[#A16207]">O contrato não.</span>
-          </p>
+      <main className="max-w-[920px] mx-auto px-6 md:px-12 pt-14 md:pt-24 pb-28">
+        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
+          <span className="text-[#0a0a0a]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>{t.stamp}</span>
         </div>
-      </section>
+        <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,6.5rem)]" style={display}>
+          {t.h1a}<span className="text-[#A16207]">{t.h1acc}</span>
+        </h1>
+        <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[56ch] text-[#0a0a0a]/75">{t.intro}</p>
 
-      {/* PROPRIEDADES */}
-      <section className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28">
-          <div className="grid sm:grid-cols-2 gap-x-14 gap-y-9 max-w-[92ch]">
-            {PROPERTIES.map(([t, b]) => (
-              <div key={t} className="flex gap-4 border-t border-[#0a0a0a]/12 pt-6">
-                <span className="text-[#A16207] text-lg shrink-0 leading-none mt-1">✓</span>
-                <div>
-                  <div className="text-[19px] font-semibold tracking-[-0.01em]">{t}</div>
-                  <p className="mt-2 text-[15px] text-[#0a0a0a]/60 leading-relaxed">{b}</p>
-                </div>
+        <div className="mt-20 flex flex-col gap-9">
+          {t.props.map(([h, b], i) => (
+            <div key={i} className="flex gap-5 md:gap-7 items-baseline border-t border-[#0a0a0a]/12 pt-7">
+              <span className="font-mono text-[13px] text-[#A16207] shrink-0 w-8">{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <div className="text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{h}</div>
+                <p className="mt-2 text-[16px] md:text-[17px] text-[#0a0a0a]/60 leading-relaxed max-w-[60ch]">{b}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* RED TEAM CONTÍNUO */}
-      <section className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32 grid lg:grid-cols-[1fr_1.05fr] gap-14 lg:gap-20 items-center">
-          <div>
-            <Eyebrow>ataque ao sistema · red team contínuo</Eyebrow>
-            <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[15ch]">Testada assumindo que será atacada.</h2>
-            <p className="mt-8 text-xl text-[#0a0a0a]/65 leading-relaxed max-w-[46ch]">
-              Antes de produção, o sistema é submetido a cenários adversariais inspirados em ataques reais
-              de sistemas financeiros e agentes de IA.
-            </p>
-            <ul className="mt-8 space-y-2.5 text-[15px] text-[#0a0a0a]/70 max-w-[46ch]">
-              {[
-                "Tentativa de cobrança duplicada",
-                "Uso de autorização inválida ou expirada",
-                "Reaproveitamento de permissões entre contextos",
-                "Execução fora dos limites definidos",
-                "Tentativas de bypass de validação de política",
-              ].map((x) => (
-                <li key={x} className="flex gap-3"><span className="text-[#0a0a0a]/30">·</span><span>{x}</span></li>
-              ))}
-            </ul>
-            <p className="mt-8 text-lg font-medium">Cada cenário precisa falhar por design.</p>
-          </div>
-          <div className="rounded-2xl">
-            <AuditDemo />
-          </div>
-        </div>
-      </section>
-
-      {/* SEGURANÇA EM CAMADAS */}
-      <section className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32">
-          <Eyebrow>segurança em camadas</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[18ch]">Não depende de um único componente.</h2>
-          <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12">
-            {LAYERS.map(([n, t, b]) => (
-              <div key={n} className="bg-white p-8 md:p-9">
-                <div className="font-mono text-[12px] text-[#A16207]">{n}</div>
-                <div className="mt-4 text-xl font-semibold tracking-[-0.01em] leading-tight">{t}</div>
-                <p className="mt-3 text-[14px] text-[#0a0a0a]/60 leading-relaxed">{b}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* MODELO DE AMEAÇA */}
-      <section className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32">
-          <Eyebrow>modelo de ameaça</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[20ch]">Assumimos que qualquer camada acima pode ser comprometida.</h2>
-          <div className="mt-12 grid sm:grid-cols-2 gap-x-12 gap-y-4 max-w-[70ch] text-lg text-[#0a0a0a]/65">
-            {[
-              "Prompts podem ser injetados",
-              "Memória pode ser corrompida",
-              "Ferramentas podem ser exploradas",
-              "Agentes podem ser manipulados",
-            ].map((x) => (
-              <div key={x} className="flex gap-3 border-t border-[#0a0a0a]/12 pt-4"><span className="text-[#A16207]">·</span><span>{x}</span></div>
-            ))}
-          </div>
-          <p className="mt-10 text-xl text-[#0a0a0a]/80 max-w-[48ch] leading-relaxed">
-            Mesmo assim, <span className="font-medium">o contrato continua sendo o ponto final de verificação.</span>
-          </p>
-        </div>
-      </section>
-
-      {/* PRINCÍPIO CENTRAL — seção dark, o clímax */}
-      <section className="border-b border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-40">
-          <Eyebrow dark>o princípio central</Eyebrow>
-          <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[18ch]">
-            Se o agente falhar, <span className="text-[#FDDA24]">o dinheiro não falha com ele.</span>
-          </h2>
-          <p className="mt-12 text-xl md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[44ch]">
-            A arquitetura separa <span className="text-[#f1eee7] font-medium">decisão</span> de <span className="text-[#f1eee7] font-medium">execução</span>.
-          </p>
-          <div className="mt-10 grid sm:grid-cols-2 gap-px bg-[#f1eee7]/12 border border-[#f1eee7]/12 max-w-[760px]">
-            <div className="bg-[#0a0a0a] p-8">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">decisão · a IA</div>
-              <p className="mt-3 text-xl text-[#f1eee7]/85">Pode ser enganada.</p>
             </div>
-            <div className="bg-[#0a0a0a] p-8">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#FDDA24]">execução · o contrato</div>
-              <p className="mt-3 text-xl text-[#f1eee7]">Não executa fora das regras.</p>
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
 
-      {/* TRANSPARÊNCIA */}
-      <section className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-32">
-          <Eyebrow>transparência</Eyebrow>
-          <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[0.95] max-w-[20ch]">Você não precisa confiar na SlipPay para verificar.</h2>
-          <div className="mt-12 grid sm:grid-cols-2 gap-x-12 gap-y-4 max-w-[70ch] text-lg text-[#0a0a0a]/65">
-            {[
-              "Contratos são públicos",
-              "Transações são verificáveis",
-              "Regras são auditáveis",
-              "Execuções são reproduzíveis on-chain",
-            ].map((x) => (
-              <div key={x} className="flex gap-3 border-t border-[#0a0a0a]/12 pt-4"><span className="text-[#A16207]">✓</span><span>{x}</span></div>
-            ))}
-          </div>
-          <div className="mt-12 flex flex-wrap gap-4">
-            <a href={TX_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#FDDA24] text-[#0a0a0a]">Ver um pagamento real ↗</a>
-            <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]">Ver o contrato ↗</a>
-          </div>
+        <div className="mt-20 rounded-2xl bg-[#0a0a0a] text-[#f1eee7] p-8 md:p-12">
+          <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{t.gateTitle}</h2>
+          <p className="mt-4 text-lg leading-relaxed max-w-[56ch] text-[#f1eee7]/70">{t.gate}</p>
+          <Link to="/gate" className="mt-5 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#FDDA24] border-b border-[#FDDA24]/40 hover:border-[#FDDA24] pb-1">{t.gateLink}</Link>
         </div>
-      </section>
 
-      {/* CTA — dark */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[16ch] mx-auto">Segurança não é um recurso.</h2>
-          <p className="mt-7 text-xl text-[#f1eee7]/60 max-w-[40ch] mx-auto">É o que torna o sistema possível.</p>
-          <div className="mt-12 flex justify-center">
-            <Link to="/" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Voltar pra SlipPay</Link>
-          </div>
-          <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30">slippay · a forma segura de deixar software mover dinheiro</div>
+        <h2 className="mt-20 text-xl md:text-2xl font-semibold tracking-[-0.02em] text-[#0a0a0a]/80" style={display}>{t.honestTitle}</h2>
+        <p className="mt-4 text-[16px] md:text-[17px] leading-relaxed max-w-[58ch] text-[#0a0a0a]/55">{t.honest}</p>
+
+        <h2 className="mt-20 text-2xl md:text-4xl font-semibold tracking-[-0.03em]" style={display}>{t.proofTitle}</h2>
+        <div className="mt-6 flex flex-col gap-3">
+          {[[t.proofTx, xc("tx", TX)], [t.proofContract, xc("contract", CONTRACT)]].map(([label, href]) => (
+            <a key={href} href={href} target="_blank" rel="noreferrer" className="group flex items-baseline justify-between gap-4 border-t border-[#0a0a0a]/12 py-4 hover:bg-[#0a0a0a]/[0.02] transition-colors">
+              <span className="text-[16px] md:text-lg text-[#0a0a0a]/85">{label}</span>
+              <span className="font-mono text-[11px] text-[#A16207] group-hover:underline shrink-0">↗</span>
+            </a>
+          ))}
         </div>
-      </section>
+
+        <div className="mt-16">
+          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7]">{t.cta}</Link>
+        </div>
+      </main>
     </div>
   );
 }
