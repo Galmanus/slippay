@@ -17,6 +17,14 @@ const C = {
     home: "Home", stamp: "security",
     h1a: "Is my money safe? ", h1acc: "Yes.",
     intro: "The simplest reason: we never hold it. Your money lives in a wallet only you control, opened by your biometrics. Not even SlipPay can move it — we automate payments, never custody them.",
+    simpleTitle: "Why it's safe, in plain words.",
+    simple: [
+      ["🔑", "Only your finger opens it. The key is yours, on your device. Not even we can open it."],
+      ["🏠", "The money sits in YOUR piggy bank, not our bank. We can't freeze it, block it, or move it."],
+      ["🛑", "If a payment falls outside the rule you set, it locks instantly. There's no half-payment."],
+      ["🔎", "Everything is recorded in a public place anyone can check. You don't have to trust us, you can look."],
+    ] as [string, string][],
+    techTitle: "The technical version.",
     props: [
       ["Non-custodial", "Funds stay in a wallet only you control. SlipPay has no unilateral access to your money, ever."],
       ["Rules enforced in the contract", "Spend limits, approved recipients and conditions live in the smart contract — not in our policy or a manual decision."],
@@ -37,6 +45,14 @@ const C = {
     home: "Início", stamp: "segurança",
     h1a: "Meu dinheiro está seguro? ", h1acc: "Sim.",
     intro: "O motivo mais simples: a gente nunca segura. Seu dinheiro fica numa carteira que só você controla, aberta pela sua biometria. Nem o SlipPay move — a gente automatiza pagamento, nunca a custódia.",
+    simpleTitle: "Por que é seguro, em palavras simples.",
+    simple: [
+      ["🔑", "Só o seu dedo abre. A chave é sua, fica no seu aparelho. Nem a gente abre."],
+      ["🏠", "O dinheiro fica no SEU cofrinho, não no nosso banco. A gente não congela, não bloqueia, não move."],
+      ["🛑", "Se um pagamento sair da regra que você definiu, ele trava na hora. Não existe meio pagamento."],
+      ["🔎", "Tudo fica registrado num lugar público que qualquer um confere. Você não precisa confiar, pode olhar."],
+    ] as [string, string][],
+    techTitle: "A versão técnica.",
     props: [
       ["Non-custodial", "Os fundos ficam numa carteira que só você controla. O SlipPay não tem acesso unilateral ao seu dinheiro, nunca."],
       ["Regras no contrato", "Tetos de gasto, destinatários aprovados e condições vivem no smart contract — não na nossa política nem numa decisão manual."],
@@ -86,7 +102,20 @@ export default function Security() {
         </h1>
         <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[56ch] text-[#0a0a0a]/75">{t.intro}</p>
 
-        <div className="mt-20 flex flex-col gap-9">
+        {/* plain words first — everyone understands why it's safe */}
+        <h2 className="mt-20 font-bold tracking-[-0.03em] text-[clamp(1.75rem,5vw,3rem)]" style={display}>{t.simpleTitle}</h2>
+        <div className="mt-10 flex flex-col gap-7 max-w-[640px]">
+          {t.simple.map(([icon, text], i) => (
+            <div key={i} className="flex gap-4 items-start">
+              <span className="text-2xl shrink-0 leading-none mt-0.5">{icon}</span>
+              <p className="text-lg md:text-xl leading-relaxed text-[#0a0a0a]/75">{text}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* the technical version — depth for the skeptic / investor */}
+        <h2 className="mt-24 font-mono text-[12px] uppercase tracking-[0.24em]" style={{ color: "#6f6862" }}>{t.techTitle}</h2>
+        <div className="mt-8 flex flex-col gap-9">
           {t.props.map(([h, b], i) => (
             <div key={i} className="flex gap-5 md:gap-7 items-baseline border-t border-[#0a0a0a]/12 pt-7">
               <span className="font-mono text-[13px] text-[#6f6862] shrink-0 w-8">{String(i + 1).padStart(2, "0")}</span>
