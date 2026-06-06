@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import AgentHome from "./pages/AgentHome.tsx";
 import LandingV2 from "./pages/LandingV2.tsx";
 import Cockpit from "./pages/Cockpit.tsx";
@@ -11,6 +11,7 @@ import Sub from "./pages/Sub.tsx";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/Signup.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import DashboardOverview from "./pages/DashboardOverview.tsx";
 import DashboardOrders from "./pages/DashboardOrders.tsx";
 import DashboardSubscriptions from "./pages/DashboardSubscriptions.tsx";
 import DashboardSettings from "./pages/DashboardSettings.tsx";
@@ -65,7 +66,7 @@ export default function App() {
       <Route path="/conformidade" element={<Conformidade />} />
       <Route path="/compliance" element={<Conformidade />} />
       <Route path="/dashboard" element={<Dashboard />}>
-        <Route index element={<Navigate to="orders" replace />} />
+        <Route index element={<DashboardOverview />} />
         <Route path="orders" element={<DashboardOrders />} />
         <Route path="subscriptions" element={<DashboardSubscriptions />} />
         <Route path="settings" element={<DashboardSettings />} />
