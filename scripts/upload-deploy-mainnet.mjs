@@ -54,11 +54,17 @@ async function main() {
   // 2. create contract instance from the uploaded wasm hash, running the v0.4
   // constructor (platform fee recipient + fee_bps) atomically at deploy.
   const salt = hash(Buffer.from(`slippay-sub-${process.env.SALT_TAG || "v4"}-${kp.publicKey()}`));
+  // Domain commitment for attestation domain-separation (anti cross-contract /
+  // cross-chain replay). Bound to the network passphrase + deploy tag; the
+  // off-chain attester (scheduler / e2e) MUST sign with this exact 32 bytes.
+  const PASSPHRASE = "Public Global Stellar Network ; September 2015";
+  const DOMAIN = hash(Buffer.from(`slippay-domain-${process.env.SALT_TAG || "v4"}|${PASSPHRASE}`));
   const constructorArgs = [
     new Address(PLATFORM).toScVal(),
     xdr.ScVal.scvU32(FEE_BPS),
+    xdr.ScVal.scvBytes(DOMAIN),
   ];
-  console.log("constructor:", PLATFORM, "fee_bps", FEE_BPS);
+  console.log("constructor:", PLATFORM, "fee_bps", FEE_BPS, "domain", DOMAIN.toString("hex").slice(0, 16) + "…");
   const create = await submit(
     Operation.createCustomContract({ address: new Address(kp.publicKey()), wasmHash, salt, constructorArgs }),
     "create",
