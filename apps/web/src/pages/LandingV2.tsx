@@ -352,7 +352,7 @@ export default function LandingV2() {
             <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#FDDA24]">support the team</div>
             <p className="mt-3 text-[15px] text-[#f1eee7]/60 max-w-[42ch]">Built solo in Brazil. If this earned your respect, send us a few dollars — one touch, no app.</p>
             <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <Link to={`/pay?to=${LIVE_CONTRACT_TEAM}&amount=1000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Support with a touch ↗</Link>
+              <Link to={`/pay?to=${LIVE_CONTRACT_TEAM}&amount=100000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Support with $10 ↗</Link>
               <span className="font-mono text-[10px] text-[#f1eee7]/40 break-all max-w-[280px]">USDC · {LIVE_CONTRACT_TEAM}</span>
             </div>
           </div>
