@@ -97,7 +97,7 @@ export function LivePaymentCard() {
         .lpc-dot { animation: lpcBlink 1.4s ease-in-out infinite; }
         .lpc-spin { animation: lpcSpin .8s linear infinite; }
       `}</style>
-      <div className="absolute -inset-3 rounded-[30px] bg-[#FDDA24]/12 blur-3xl opacity-60" aria-hidden />
+      <div className="absolute -inset-3 rounded-[30px] bg-[#cabfb0]/12 blur-3xl opacity-60" aria-hidden />
 
       <div ref={tiltRef} className="relative rounded-[22px] p-7 md:p-8 overflow-hidden text-left text-[#f1eee7] will-change-transform"
         style={{
@@ -114,7 +114,7 @@ export function LivePaymentCard() {
 
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#FDDA24] shadow-[0_0_10px_#FDDA24]" />
+            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#cabfb0] shadow-[0_0_10px_#cabfb0]" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55 whitespace-nowrap">agent · active</span>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#f1eee7]/40 whitespace-nowrap">Stellar · mainnet</span>
@@ -123,7 +123,7 @@ export function LivePaymentCard() {
         <div className="relative mt-7">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40 mb-1.5">amount paid</div>
           <div className="text-5xl md:text-[56px] leading-none font-semibold tabular-nums tracking-[-0.03em]"
-            style={{ color: "#FDDA24", textShadow: "0 0 30px rgba(253,218,36,.18)" }}>{fmt(amount)}</div>
+            style={{ color: "#cabfb0", textShadow: "0 0 30px rgba(253,218,36,.18)" }}>{fmt(amount)}</div>
           <div className="font-mono text-[11px] text-[#f1eee7]/45 mt-2.5">in dollars · non-custodial · final</div>
         </div>
 
@@ -133,11 +133,11 @@ export function LivePaymentCard() {
             return (
               <div key={s.key} className="grid grid-cols-[14px_1fr_auto] items-center gap-3 transition-all duration-500"
                 style={{ opacity: on ? 1 : 0.32, transform: on ? "none" : "translateY(2px)" }}>
-                <span className={`text-[12px] leading-none ${on ? "text-[#FDDA24]" : "text-[#f1eee7]/30"}`}>{on ? "✓" : "·"}</span>
+                <span className={`text-[12px] leading-none ${on ? "text-[#cabfb0]" : "text-[#f1eee7]/30"}`}>{on ? "✓" : "·"}</span>
                 <span className="text-[13px] text-[#f1eee7]/85">{s.label}</span>
                 {isRoute && on && route < 1 ? (
                   <span className="justify-self-end w-24 h-[3px] rounded-full bg-[#f1eee7]/12 overflow-hidden">
-                    <span className="block h-full rounded-full bg-[#FDDA24] transition-[width] duration-100" style={{ width: `${Math.round(route * 100)}%` }} />
+                    <span className="block h-full rounded-full bg-[#cabfb0] transition-[width] duration-100" style={{ width: `${Math.round(route * 100)}%` }} />
                   </span>
                 ) : (
                   <span className="justify-self-end font-mono text-[10px] uppercase tracking-[0.12em] text-[#f1eee7]/40 whitespace-nowrap">{s.meta}</span>
@@ -151,14 +151,14 @@ export function LivePaymentCard() {
         <div className="relative mt-6 h-[52px]">
           <div className="absolute inset-0 flex items-center justify-center gap-2.5 rounded-xl transition-opacity duration-300"
             style={{ opacity: phase === "verify" ? 1 : 0, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)" }}>
-            <span className="lpc-spin inline-block w-3.5 h-3.5 rounded-full border-2 border-[#FDDA24]/30 border-t-[#FDDA24]" />
+            <span className="lpc-spin inline-block w-3.5 h-3.5 rounded-full border-2 border-[#cabfb0]/30 border-t-[#cabfb0]" />
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#f1eee7]/60">verifying on-chain…</span>
           </div>
           <a href={txUrl} target="_blank" rel="noreferrer"
             className="absolute inset-0 flex items-center justify-between gap-3 rounded-xl px-4 transition-all duration-500 group"
             style={{ opacity: phase === "done" ? 1 : 0, pointerEvents: phase === "done" ? "auto" : "none", background: "rgba(253,218,36,.08)", border: "1px solid rgba(253,218,36,.24)" }}>
-            <span className="font-mono text-[11px] text-[#f1eee7]/70">tx <span className="text-[#FDDA24]">{txHash.slice(0, 10)}…</span></span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#FDDA24] group-hover:underline underline-offset-4">verify on-chain ↗</span>
+            <span className="font-mono text-[11px] text-[#f1eee7]/70">tx <span className="text-[#cabfb0]">{txHash.slice(0, 10)}…</span></span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#cabfb0] group-hover:underline underline-offset-4">verify on-chain ↗</span>
           </a>
         </div>
       </div>
