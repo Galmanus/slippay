@@ -254,7 +254,7 @@ export default function AgentHome() {
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
             {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Unichain", "Linea", "+ mais"].map((c) => (
-              <span key={c} className="flex items-center gap-2"><span className="text-[#A16207]">◆</span>{c === "+ mais" ? "+ more" : c}</span>
+              <span key={c} className="flex items-center gap-2"><span className="text-[#0a0a0a]">◆</span>{c === "+ mais" ? "+ more" : c}</span>
             ))}
           </div>
         </div>
@@ -310,7 +310,7 @@ export default function AgentHome() {
               </div>
             ))}
             <div className="flex items-baseline justify-between pt-6 mt-2 border-t-2 border-[#0a0a0a]">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#A16207]">paid by the agent</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]">paid by the agent</span>
               <span className="text-3xl font-semibold tabular-nums"><CountUp to={40} format={(n) => `R$${Math.round(n)}k`} /></span>
             </div>
           </div>
@@ -369,7 +369,7 @@ export default function AgentHome() {
               <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#A16207]" : "border-t border-[#0a0a0a]/15"}`}>
                 <div className="flex items-baseline justify-between">
                   <span className="text-lg font-semibold tracking-[-0.01em]">{t.name}</span>
-                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A16207]">most chosen</span>}
+                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]">most chosen</span>}
                 </div>
                 <div className="mt-3 text-[15px] text-[#0a0a0a]/55">{t.who}</div>
               </div>
@@ -401,8 +401,8 @@ export default function AgentHome() {
                     className="w-full flex items-center justify-between gap-6 py-6 text-left group"
                     aria-expanded={open}
                   >
-                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#A16207] transition-colors">{q}</span>
-                    <span className={`shrink-0 text-2xl leading-none text-[#A16207] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
+                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#0a0a0a] transition-colors">{q}</span>
+                    <span className={`shrink-0 text-2xl leading-none text-[#0a0a0a] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
                   </button>
                   <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
                     <div className="overflow-hidden">
