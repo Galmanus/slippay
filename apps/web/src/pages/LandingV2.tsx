@@ -56,10 +56,22 @@ const COPY = {
   },
 } as const;
 
-function Index({ n, label }: { n: string; label: string }) {
+function Typewriter({ text }: { text: string }) {
+  const [n, setN] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setN(text.length); return; }
+    setN(0);
+    let i = 0;
+    const id = window.setInterval(() => { i += 1; setN(i); if (i >= text.length) window.clearInterval(id); }, 60);
+    return () => window.clearInterval(id);
+  }, [text]);
+  return <span>{text.slice(0, n)}<span className="tw-caret" style={{ color: "#FDDA24" }}>▋</span></span>;
+}
+
+function Index({ n, label, typed = false }: { n: string; label: string; typed?: boolean }) {
   return (
     <div className="flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em]" style={{ color: GRAY }}>
-      <span className="text-[#0a0a0a]/55">{n}</span><span className="h-px w-8 bg-current opacity-40" /><span>{label}</span>
+      <span className="text-[#0a0a0a]/55">{n}</span><span className="h-px w-8 bg-current opacity-40" /><span>{typed ? <Typewriter text={label} /> : label}</span>
     </div>
   );
 }
@@ -101,7 +113,7 @@ export default function LandingV2() {
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}section h2{text-wrap:balance}`}</style>
+      <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}section h2{text-wrap:balance}@keyframes twBlink{0%,49%{opacity:1}50%,100%{opacity:0}}.tw-caret{animation:twBlink 1.05s steps(1,end) infinite;margin-left:1px}`}</style>
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
@@ -126,7 +138,7 @@ export default function LandingV2() {
       {/* HERO */}
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
-          <Index n="—" label={t.hero.axis} />
+          <Index n="—" label={t.hero.axis} typed />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
             {t.hero.h1a}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
           </h1>
