@@ -19,7 +19,7 @@ const COPY = {
   en: {
     nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
     hero: {
-      axis: "the last time you approve a recurring payment",
+      axis: "payments infrastructure",
       h1a: "Your money.", h1acc: "On autopilot.",
       sub: "Hold dollars. Fund with Pix. Let approved payments run themselves.",
       b1: "Stop approving the same bills every month. Add money with Pix, keep it in dollars, and let SlipPay handle recurring payments automatically — but only within the rules you set.",
@@ -86,7 +86,7 @@ const COPY = {
   pt: {
     nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
     hero: {
-      axis: "a última vez que você aprova um pagamento recorrente",
+      axis: "infraestrutura de pagamentos",
       h1a: "Seu dinheiro.", h1acc: "No automático.",
       sub: "Tenha dólar. Carregue com Pix. Deixe os pagamentos aprovados rodarem sozinhos.",
       b1: "Pare de aprovar as mesmas contas todo mês. Coloque dinheiro com Pix, mantenha em dólar, e deixe o SlipPay cuidar dos pagamentos recorrentes automaticamente — mas só dentro das regras que você definir.",
@@ -224,7 +224,7 @@ export default function LandingV2() {
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="—" label={t.hero.axis} />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] break-words mx-auto" style={display}>
-            {t.hero.h1a}<br /><span className="text-[#A16207]">{t.hero.h1acc}</span>
+            {t.hero.h1a}<br /><span className="text-[#FDDA24]" style={{ textShadow: "0 1px 1px rgba(10,10,10,.10)" }}>{t.hero.h1acc}</span>
           </h1>
           <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch] mx-auto" style={display}>{t.hero.sub}</p>
           <p className="mt-8 text-lg md:text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/70">{t.hero.b1}</p>

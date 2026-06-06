@@ -99,7 +99,7 @@ export function LivePaymentCard() {
       `}</style>
       <div className="absolute -inset-3 rounded-[30px] bg-[#FDDA24]/12 blur-3xl opacity-60" aria-hidden />
 
-      <div ref={tiltRef} className="relative rounded-[22px] p-7 md:p-8 overflow-hidden text-[#f1eee7] will-change-transform"
+      <div ref={tiltRef} className="relative rounded-[22px] p-7 md:p-8 overflow-hidden text-left text-[#f1eee7] will-change-transform"
         style={{
           background: "linear-gradient(160deg,#15151a 0%,#0a0a0c 55%,#101013 100%)",
           boxShadow: "0 30px 80px -30px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06)",
@@ -115,9 +115,9 @@ export function LivePaymentCard() {
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#FDDA24] shadow-[0_0_10px_#FDDA24]" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">agent · running payments</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55 whitespace-nowrap">agent · active</span>
           </div>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/40">Stellar · mainnet</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#f1eee7]/40 whitespace-nowrap">Stellar · mainnet</span>
         </div>
 
         <div className="relative mt-7">
@@ -131,16 +131,16 @@ export function LivePaymentCard() {
           {STEPS.map((s, i) => {
             const on = i < shown; const isRoute = s.key === "route";
             return (
-              <div key={s.key} className="flex items-center gap-3 transition-all duration-500"
+              <div key={s.key} className="grid grid-cols-[14px_1fr_auto] items-center gap-3 transition-all duration-500"
                 style={{ opacity: on ? 1 : 0.32, transform: on ? "none" : "translateY(2px)" }}>
-                <span className={`flex-none w-4 text-center text-[12px] ${on ? "text-[#FDDA24]" : "text-[#f1eee7]/30"}`}>{on ? "✓" : "·"}</span>
-                <span className="flex-1 text-[13px] text-[#f1eee7]/85">{s.label}</span>
+                <span className={`text-[12px] leading-none ${on ? "text-[#FDDA24]" : "text-[#f1eee7]/30"}`}>{on ? "✓" : "·"}</span>
+                <span className="text-[13px] text-[#f1eee7]/85">{s.label}</span>
                 {isRoute && on && route < 1 ? (
-                  <span className="flex-none w-24 h-[3px] rounded-full bg-[#f1eee7]/12 overflow-hidden">
+                  <span className="justify-self-end w-24 h-[3px] rounded-full bg-[#f1eee7]/12 overflow-hidden">
                     <span className="block h-full rounded-full bg-[#FDDA24] transition-[width] duration-100" style={{ width: `${Math.round(route * 100)}%` }} />
                   </span>
                 ) : (
-                  <span className="flex-none font-mono text-[10px] uppercase tracking-[0.12em] text-[#f1eee7]/40">{s.meta}</span>
+                  <span className="justify-self-end font-mono text-[10px] uppercase tracking-[0.12em] text-[#f1eee7]/40 whitespace-nowrap">{s.meta}</span>
                 )}
               </div>
             );
