@@ -1,140 +1,86 @@
-// /manifesto — editorial "Yeezy monumental" register matching /v2. English,
-// calm, apolitical, honest. Oversized Space Grotesk display, numbered index
-// stamps, asymmetric, big negative space, alternating dark sections. The theme:
-// the most advanced way to move money, made simple enough that you don't have
-// to understand any of it.
+// /manifesto — bilingual (PT/EN, shares the landing language). Editorial Yeezy
+// monumental register. The thesis: don't trust the AI, trust the rules; money
+// should become software simple enough to disappear.
 
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LiveProof } from "../components/LiveProof.tsx";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
-const REAL_TX = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
+type Lang = "pt" | "en";
 
-function Index({ n, label, dark = false }: { n: string; label: string; dark?: boolean }) {
-  return (
-    <div className={`flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#0a0a0a]/45"}`}>
-      <span className={dark ? "text-[#f1eee7]/70" : "text-[#0a0a0a]/70"}>{n}</span>
-      <span className="h-px w-8 bg-current opacity-40" />
-      <span>{label}</span>
-    </div>
-  );
-}
+const C = {
+  en: {
+    home: "Home", cta: "Get started",
+    blocks: [
+      { h: "We wanted money to feel effortless again. So we built SlipPay.", p: ["Not because the world needed another bank. Not because it needed another fintech.", "Because managing money still feels harder than it should. Every year, technology gets smarter — yet somehow money stays complicated.", "More accounts. More approvals. More fees. More things standing between you and your own money.", "We thought there had to be a better way."] },
+      { h: "AI changed how we work. Soon it will change how we manage money.", p: ["That's exciting. And a little terrifying.", "You already trust AI with emails, research, code, writing, and decisions. But money is different. A typo in an email is annoying. A mistake with your money is expensive.", "That's why we never believed the future should be “Trust the AI.”", "The future is: trust the rules."], accent: "trust the rules." },
+      { h: "Intelligence should move your money. Rules should protect it.", p: ["The AI can do the work. Monitor invoices. Track subscriptions. Handle recurring payments. Execute tasks automatically.", "But every action must pass through rules you approved beforehand. Limits. Recipients. Budgets. Policies.", "The AI can make suggestions. The rules decide what actually happens."] },
+      { h: "Your money should stay yours. Always.", p: ["Not ours. Not a bank's. Not an intermediary's. Yours.", "We built SlipPay so your money stays under your control while software does the repetitive work around it.", "No asking permission. No waiting for approvals. No wondering if someone can freeze your account.", "Just money that belongs to you and works for you."] },
+      { h: "The technology is complicated. Using it shouldn't be.", p: ["You don't need to understand blockchains. You don't need to learn crypto. You don't need to memorize twelve words. You don't need to become an expert in anything.", "You open an app. You tap a button. It works.", "The most important technologies eventually disappear. Electricity did. The internet did. Smartphones did. Money should too."] },
+      { h: "We believe money will become software.", p: ["Programmable. Instant. Global. Always available.", "But most importantly: simple. Simple enough that anyone can use it. Simple enough that nobody needs to think about the technology underneath. Simple enough that it feels obvious."] },
+      { h: "That's what we're building.", p: ["Real dollars. Instant payments. Automation with limits. Control without complexity.", "Already running on the real network. Already moving real money. Not a prototype. Not a promise.", "A glimpse of what money looks like when technology finally gets out of the way."], welcome: "Welcome to SlipPay." },
+    ],
+  },
+  pt: {
+    home: "Início", cta: "Começar",
+    blocks: [
+      { h: "A gente queria que dinheiro fosse leve de novo. Por isso construímos o SlipPay.", p: ["Não porque o mundo precisava de mais um banco. Não porque precisava de mais uma fintech.", "Porque cuidar do dinheiro ainda é mais difícil do que deveria. Todo ano a tecnologia fica mais esperta — e mesmo assim o dinheiro continua complicado.", "Mais contas. Mais aprovações. Mais taxas. Mais coisas entre você e o seu próprio dinheiro.", "A gente achou que tinha um jeito melhor."] },
+      { h: "A IA mudou como a gente trabalha. Logo vai mudar como a gente cuida do dinheiro.", p: ["Isso é empolgante. E um pouco assustador.", "Você já confia IA com email, pesquisa, código, escrita e decisões. Mas dinheiro é diferente. Um erro de digitação num email é chato. Um erro com o seu dinheiro é caro.", "Por isso nunca acreditamos que o futuro fosse “Confie na IA.”", "O futuro é: confie nas regras."], accent: "confie nas regras." },
+      { h: "A inteligência deve mover seu dinheiro. As regras devem protegê-lo.", p: ["A IA pode fazer o trabalho. Monitorar faturas. Acompanhar assinaturas. Cuidar dos pagamentos recorrentes. Executar tarefas automaticamente.", "Mas cada ação passa por regras que você aprovou antes. Limites. Destinatários. Orçamentos. Políticas.", "A IA sugere. As regras decidem o que realmente acontece."] },
+      { h: "Seu dinheiro deve continuar seu. Sempre.", p: ["Não nosso. Não de um banco. Não de um intermediário. Seu.", "Construímos o SlipPay pra o seu dinheiro continuar sob o seu controle enquanto o software faz o trabalho repetitivo em volta.", "Sem pedir permissão. Sem esperar aprovação. Sem se perguntar se alguém pode congelar sua conta.", "Só dinheiro que é seu e trabalha pra você."] },
+      { h: "A tecnologia é complicada. Usar não deveria ser.", p: ["Você não precisa entender de blockchain. Não precisa aprender cripto. Não precisa decorar doze palavras. Não precisa virar especialista em nada.", "Você abre um app. Toca um botão. Funciona.", "As tecnologias mais importantes acabam desaparecendo. A eletricidade desapareceu. A internet desapareceu. O smartphone desapareceu. O dinheiro também deveria."] },
+      { h: "A gente acredita que o dinheiro vai virar software.", p: ["Programável. Instantâneo. Global. Sempre disponível.", "Mas, acima de tudo: simples. Simples o bastante pra qualquer um usar. Simples o bastante pra ninguém precisar pensar na tecnologia embaixo. Simples o bastante pra parecer óbvio."] },
+      { h: "É isso que estamos construindo.", p: ["Dólar de verdade. Pagamentos instantâneos. Automação com limites. Controle sem complexidade.", "Já rodando na rede real. Já movendo dinheiro real. Não é protótipo. Não é promessa.", "Um vislumbre de como o dinheiro fica quando a tecnologia finalmente sai do caminho."], welcome: "Bem-vindo ao SlipPay." },
+    ],
+  },
+} as const;
 
 export default function Manifesto() {
-  useEffect(() => {
-    const root = document.documentElement;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    root.classList.add("js-reveal");
-    const io = new IntersectionObserver((ents) => {
-      for (const e of ents) if (e.isIntersecting) { e.target.classList.add("reveal-in"); io.unobserve(e.target); }
-    }, { rootMargin: "-8% 0px -8% 0px", threshold: 0.06 });
-    document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
-    return () => { io.disconnect(); root.classList.remove("js-reveal"); };
-  }, []);
+  const [lang, setLang] = useState<Lang>(() => {
+    try { const s = localStorage.getItem("slippay.lang"); if (s === "pt" || s === "en") return s; } catch { /* */ }
+    return (typeof navigator !== "undefined" && navigator.language?.toLowerCase().startsWith("pt")) ? "pt" : "en";
+  });
+  useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
+  const t = C[lang];
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
-        <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
-          <Link to="/" className="hidden sm:inline hover:text-[#0a0a0a]">Home</Link>
-          <Link to="/pay" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-[#f1eee7] hover:opacity-90">Try it free</Link>
-        </nav>
+    <div className="min-h-screen bg-[#0a0a0a] text-[#f1eee7] overflow-x-hidden">
+      <style>{`::selection{background:#FDDA24;color:#0a0a0a}`}</style>
+      <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#f1eee7]/10">
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
+        <div className="flex items-center gap-6">
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/50">
+            <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#FDDA24]" : "hover:opacity-80"}>PT</button>
+            <span className="opacity-30 mx-1">/</span>
+            <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#FDDA24]" : "hover:opacity-80"}>EN</button>
+          </div>
+          <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55 hover:text-[#f1eee7]">{t.home}</Link>
+        </div>
       </header>
 
-      {/* 001 — who we are */}
-      <section className="px-6 md:px-12 pt-12 md:pt-20 pb-24 md:pb-36">
-        <div className="max-w-[1400px] mx-auto">
-          <Index n="001" label="who we are" />
-          <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] break-words max-w-[16ch]" style={display}>
-            We wanted<br />simpler money.<br /><span className="text-[#0a0a0a]">So we built it.</span>
-          </h1>
-          <p className="mt-12 text-xl md:text-2xl leading-relaxed max-w-[54ch] text-[#0a0a0a]/70">
-            We're not a bank. Not another fintech. A small team in Brazil, building the money we
-            always wanted to use: in dollars, instant, simple.
-            <span className="text-[#0a0a0a] font-medium"> The best financial technology has existed for years. We made it simple to use.</span>
-          </p>
-        </div>
-      </section>
+      <main className="max-w-[1000px] mx-auto px-6 md:px-12 pt-16 md:pt-28 pb-24">
+        {t.blocks.map((blk, i) => (
+          <section key={i} className={i === 0 ? "" : "mt-28 md:mt-44 pt-16 md:pt-24 border-t border-[#f1eee7]/10"}>
+            <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[#FDDA24] mb-8">{String(i + 1).padStart(3, "0")}</div>
+            <h2 className="font-bold uppercase tracking-[-0.05em] leading-[0.88] text-[clamp(2.25rem,6.5vw,5rem)] max-w-[20ch]" style={display}>
+              {"accent" in blk && blk.accent
+                ? <>{blk.h.replace(blk.accent, "")}<span className="text-[#FDDA24]">{blk.accent}</span></>
+                : blk.h}
+            </h2>
+            <div className="mt-10 flex flex-col gap-5 max-w-[58ch]">
+              {blk.p.map((para, j) => <p key={j} className="text-xl md:text-2xl leading-relaxed text-[#f1eee7]/70">{para}</p>)}
+              {"welcome" in blk && blk.welcome && <p className="text-2xl md:text-3xl font-semibold tracking-[-0.02em] text-[#FDDA24] mt-4" style={display}>{blk.welcome}</p>}
+            </div>
+          </section>
+        ))}
 
-      {/* 002 — the AI that errs */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-36">
-          <Index n="002" label="the honest part" />
-          <p className="mt-10 font-semibold tracking-[-0.04em] leading-[1.0] text-[clamp(2rem,7vw,5.5rem)] max-w-[20ch] break-words" style={display}>
-            You talk to an AI every day. You already trust it. <span className="text-[#0a0a0a]/35">And you know it errs.</span>
-          </p>
-          <p className="mt-10 text-xl leading-relaxed max-w-[52ch] text-[#0a0a0a]/70">
-            It has already changed how you work, and you feel it could change your life. But a mistake
-            with your money has no excuse.
-          </p>
+        <div className="mt-28 pt-16 border-t border-[#f1eee7]/10 flex flex-wrap items-center gap-7">
+          <Link to="/account" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.cta}</Link>
+          <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">{t.home}</Link>
         </div>
-      </section>
-
-      {/* 003 — dark, the turn */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7]">
-        <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-40">
-          <Index n="003" label="the idea" dark />
-          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,8.5rem)] break-words max-w-[15ch]" style={display}>
-            What if the mistake was <span className="text-[#FDDA24]">stopped before it happened?</span>
-          </h2>
-          <p className="mt-12 text-xl md:text-2xl leading-relaxed max-w-[54ch] text-[#f1eee7]/70">
-            Not another promise that this time it'll be fine. A rule written in code and recorded in
-            the open. The AI does the heavy lifting; the rule makes sure its mistake never becomes your
-            loss. <span className="text-[#f1eee7] font-medium">The agent can slip. The rule that protects your money can't.</span>
-          </p>
-        </div>
-      </section>
-
-      {/* 004 — dollars, simple */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-36">
-          <Index n="004" label="the dollars" />
-          <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,7rem)] break-words max-w-[16ch]" style={display}>
-            Real dollars, <span className="text-[#0a0a0a]/35">as simple as an app.</span>
-          </h2>
-          <p className="mt-10 text-xl leading-relaxed max-w-[52ch] text-[#0a0a0a]/70">
-            Money in dollars that works on its own and stays yours. No becoming an engineer, no
-            memorizing jargon. You use it the way you use any app.
-          </p>
-        </div>
-      </section>
-
-      {/* 005 — no jargon */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-36">
-          <Index n="005" label="why it's different" />
-          <p className="mt-10 font-semibold tracking-[-0.04em] leading-[1.0] text-[clamp(2rem,7vw,5.5rem)] max-w-[18ch] break-words" style={display}>
-            You don't need to understand any of it.
-          </p>
-          <p className="mt-10 text-xl leading-relaxed max-w-[54ch] text-[#0a0a0a]/70">
-            No blockchain to see. No twelve-word phrase. No bank manager. You tap, and it happens. The
-            heaviest engineering in the world, hidden behind the simplest thing to use.
-            <span className="text-[#0a0a0a] font-medium"> That's how the computer became the phone in your hand. It's how money becomes software in your pocket.</span>
-          </p>
-        </div>
-      </section>
-
-      {/* 006 — close, dark + CTA */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-28 md:py-48">
-          <Index n="006" label="now" dark />
-          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,9.5rem)] break-words max-w-[14ch]" style={display}>
-            The most advanced technology, <span className="text-[#FDDA24]">made simple.</span>
-          </h2>
-          <p className="mt-10 text-xl md:text-2xl text-[#f1eee7]/65 max-w-[40ch]">
-            Real dollars, on autopilot. Already live on the main network — see a
-            <a href={`https://stellar.expert/explorer/public/tx/${REAL_TX}`} target="_blank" rel="noreferrer" className="text-[#FDDA24] border-b border-[#FDDA24]/40 hover:border-[#FDDA24]"> real payment</a>.
-          </p>
-          <div className="mt-14 flex flex-wrap items-center gap-7">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
-            <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">Back home</Link>
-          </div>
-          <div className="mt-16"><LiveProof dark /></div>
-          <div className="mt-12 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
-        </div>
-      </section>
+        <div className="mt-16"><LiveProof dark lang={lang} /></div>
+      </main>
     </div>
   );
 }
