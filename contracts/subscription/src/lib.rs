@@ -75,6 +75,10 @@ pub enum DataKey {
     // v0.4: contract-global platform fee config, set once at deploy via the
     // constructor (immutable). Applied to the autonomous charge paths.
     PlatformFee,
+    // v0.5: 32-byte domain commitment (derived off-chain from network + a deploy
+    // tag), bound into every attestation message. Domain separation: a signature
+    // valid here can't be replayed on another contract or another chain.
+    Domain,
 }
 
 /// Contract-global platform fee, fixed at deploy time. `fee_bps` is the platform
@@ -115,11 +119,14 @@ impl SubscriptionContract {
     /// receives `amount - fee`. fee_bps = 0 means no fee leg (the rail runs free).
     /// Set atomically at deploy so there is no front-running window on a public
     /// network — the fee recipient and rate are bound to the contract instance.
-    pub fn __constructor(env: Env, platform: Address, fee_bps: u32) {
+    pub fn __constructor(env: Env, platform: Address, fee_bps: u32, domain: BytesN<32>) {
         if fee_bps > 1000 {
             panic_with_error!(&env, Error::InvalidConfig);
         }
         env.storage().instance().set(&DataKey::PlatformFee, &PlatformFee { platform, fee_bps });
+        // Domain commitment for attestation domain-separation (anti cross-contract
+        // / cross-chain replay). Bound at deploy, immutable.
+        env.storage().instance().set(&DataKey::Domain, &domain);
         env.storage().instance().extend_ttl(TTL_THRESHOLD_LEDGERS, TTL_TARGET_LEDGERS);
     }
 
@@ -353,7 +360,13 @@ impl SubscriptionContract {
         //    contract's existing monotonic state — no hand-rolled nonce store. (Closes the
         //    replay gap vs Soroban's native auth nonce, while keeping the attester async.)
         //  - not_after     → freshness window.
+        // Domain separation: prepend the deploy-bound 32-byte domain so this
+        // attestation cannot be replayed on another contract or another chain.
+        let domain: BytesN<32> = env.storage().instance()
+            .get(&DataKey::Domain)
+            .unwrap_or_else(|| panic_with_error!(&env, Error::InvalidConfig));
         let mut msg = Bytes::new(&env);
+        msg.append(&Bytes::from_array(&env, &domain.to_array()));
         msg.append(&Bytes::from_array(&env, &id.to_array()));
         msg.append(&Bytes::from_array(&env, &sub.charges_done.to_be_bytes()));
         msg.append(&Bytes::from_array(&env, &not_after.to_be_bytes()));

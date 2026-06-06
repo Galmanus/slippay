@@ -22,6 +22,8 @@ struct Fixture<'a> {
 
 // Default fixture: platform fee disabled (fee_bps = 0) so the existing
 // behaviour (merchant receives the full amount) is unchanged.
+const TEST_DOMAIN: [u8; 32] = [0xD0u8; 32];
+
 fn setup<'a>() -> Fixture<'a> {
     setup_with_fee(0)
 }
@@ -48,7 +50,7 @@ fn setup_with_fee<'a>(fee_bps: u32) -> Fixture<'a> {
     sac_admin.mint(&buyer, &1_000_000_000_i128); // 100 with 7 decimals
 
     // Deploy with the platform fee config bound at construction.
-    let contract_id = env.register(SubscriptionContract, (platform.clone(), fee_bps));
+    let contract_id = env.register(SubscriptionContract, (platform.clone(), fee_bps, BytesN::from_array(&env, &TEST_DOMAIN)));
     let contract = SubscriptionContractClient::new(&env, &contract_id);
 
     Fixture {
@@ -153,15 +155,16 @@ fn autocharge_needs_no_signature_at_charge_time() {
 
 // --- v0.3 attested autonomous charge (the on-chain integrity gate) ---
 
-fn sign_attestation(seed: &[u8; 32], id: &[u8; 32], charges_done: u32, not_after: u64) -> ([u8; 32], [u8; 64]) {
+fn sign_attestation(domain: &[u8; 32], seed: &[u8; 32], id: &[u8; 32], charges_done: u32, not_after: u64) -> ([u8; 32], [u8; 64]) {
     use ed25519_dalek::{Signer, SigningKey};
     let sk = SigningKey::from_bytes(seed);
     let pk = sk.verifying_key().to_bytes();
-    // message = id (32) || charges_done (4 BE) || not_after (8 BE) — matches the contract.
-    let mut msg = [0u8; 44];
-    msg[..32].copy_from_slice(id);
-    msg[32..36].copy_from_slice(&charges_done.to_be_bytes());
-    msg[36..].copy_from_slice(&not_after.to_be_bytes());
+    // message = domain (32) || id (32) || charges_done (4 BE) || not_after (8 BE) — matches the contract.
+    let mut msg = [0u8; 76];
+    msg[..32].copy_from_slice(domain);
+    msg[32..64].copy_from_slice(id);
+    msg[64..68].copy_from_slice(&charges_done.to_be_bytes());
+    msg[68..].copy_from_slice(&not_after.to_be_bytes());
     (pk, sk.sign(&msg).to_bytes())
 }
 
@@ -181,7 +184,7 @@ fn autocharge_attested_settles_with_valid_attestation() {
     let (f, id) = setup_attested(&id_arr);
 
     let not_after = 2_000_000u64; // now is 1_000_000 → fresh
-    let (pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    let (pk, sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, not_after);
     f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
 
     let before = f.sac_user.balance(&f.merchant);
@@ -194,7 +197,7 @@ fn autocharge_attested_rejects_without_attester() {
     let id_arr = [4u8; 32];
     let (f, id) = setup_attested(&id_arr);
     let not_after = 2_000_000u64;
-    let (_pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    let (_pk, sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, not_after);
     // No set_attester → AttesterNotSet.
     assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &sig)).is_err());
 }
@@ -204,7 +207,7 @@ fn autocharge_attested_rejects_expired_attestation() {
     let id_arr = [5u8; 32];
     let (f, id) = setup_attested(&id_arr);
     let not_after = 500_000u64; // BEFORE now (1_000_000) → expired
-    let (pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    let (pk, sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, not_after);
     f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
     assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &sig)).is_err());
 }
@@ -214,10 +217,10 @@ fn autocharge_attested_rejects_tampered_signature() {
     let id_arr = [6u8; 32];
     let (f, id) = setup_attested(&id_arr);
     let not_after = 2_000_000u64;
-    let (pk, _sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    let (pk, _sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, not_after);
     f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
     // A signature over a DIFFERENT not_after — valid ed25519 but wrong message.
-    let (_pk2, wrong_sig) = sign_attestation(&[1u8; 32], &id_arr, 0, 1_999_999u64);
+    let (_pk2, wrong_sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, 1_999_999u64);
     assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &wrong_sig)).is_err());
 }
 
@@ -226,7 +229,7 @@ fn autocharge_attested_attestation_is_single_use_per_charge() {
     let id_arr = [8u8; 32];
     let (f, id) = setup_attested(&id_arr);
     let na = 9_999_999u64; // far-future not_after — so freshness is NOT the limiter; single-use is.
-    let (pk, sig0) = sign_attestation(&[1u8; 32], &id_arr, 0, na); // bound to charge #0
+    let (pk, sig0) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, na); // bound to charge #0
     f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
 
     let before = f.sac_user.balance(&f.merchant);
@@ -241,7 +244,7 @@ fn autocharge_attested_attestation_is_single_use_per_charge() {
     assert!(f.contract.try_autocharge_attested(&id, &na, &BytesN::from_array(&f.env, &sig0)).is_err());
 
     // a FRESH attestation bound to charge #1 settles — proves single-use, not frozen.
-    let (_pk, sig1) = sign_attestation(&[1u8; 32], &id_arr, 1, na);
+    let (_pk, sig1) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 1, na);
     f.contract.autocharge_attested(&id, &na, &BytesN::from_array(&f.env, &sig1));
     assert_eq!(f.sac_user.balance(&f.merchant), before + 20_000_000);
 }
@@ -255,9 +258,28 @@ fn plain_autocharge_rejected_when_attester_is_set() {
     // door so the only way to settle is a fresh, valid attestation.
     let id_arr = [9u8; 32];
     let (f, id) = setup_attested(&id_arr);
-    let (pk, _sig) = sign_attestation(&[1u8; 32], &id_arr, 0, 2_000_000u64);
+    let (pk, _sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, 2_000_000u64);
     f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
     assert!(f.contract.try_autocharge(&id).is_err());
+}
+
+#[test]
+fn attestation_bound_to_domain_rejects_foreign_domain() {
+    // Domain separation / anti cross-contract & cross-chain replay: a signature
+    // made for a DIFFERENT domain must be refused here; only this contract's own
+    // domain settles. Same attester key in both — only the domain differs.
+    let id_arr = [11u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+    let not_after = 2_000_000u64;
+    let foreign: [u8; 32] = [0xEEu8; 32];
+    let (pk, bad) = sign_attestation(&foreign, &[1u8; 32], &id_arr, 0, not_after);
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+    assert!(f.contract.try_autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &bad)).is_err());
+    // same key, correct (this contract's) domain → settles
+    let (_pk, good) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, not_after);
+    let before = f.sac_user.balance(&f.merchant);
+    f.contract.autocharge_attested(&id, &not_after, &BytesN::from_array(&f.env, &good));
+    assert_eq!(f.sac_user.balance(&f.merchant), before + 10_000_000);
 }
 
 #[test]
@@ -304,7 +326,7 @@ fn autocharge_attested_splits_platform_fee() {
     f.sac_user.approve(&f.buyer, &f.contract.address, &100_000_000_i128, &exp);
 
     let not_after = 2_000_000u64;
-    let (pk, sig) = sign_attestation(&[1u8; 32], &id_arr, 0, not_after);
+    let (pk, sig) = sign_attestation(&TEST_DOMAIN, &[1u8; 32], &id_arr, 0, not_after);
     f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
 
     let merch_before = f.sac_user.balance(&f.merchant);
