@@ -36,10 +36,10 @@ const COPY = {
       ] as [string, string][],
       close: "That's SlipPay: a dollar piggy bank that opens with your finger and pays on its own, only the way you told it to." },
     why: { stamp: "why", items: [
-      ["Pix → USDC instantly", "Convert Brazilian reais into USDC, a digital dollar stablecoin."],
-      ["You stay in control", "Funds go to a wallet you control, with optional automation rules."],
-      ["Built for automation", "Set limits, recurring payments, and approved recipients. Execution only happens within your rules."],
-      ["Fast settlement", "Transfers settle on modern blockchain rails in seconds, with low fees."],
+      ["Pix → USDC in ~10s", "Send reais, get digital dollars in your wallet in seconds. No bank in between."],
+      ["Only your finger moves it", "A passkey on your device signs every payment. No password, no seed phrase, no one else."],
+      ["It pays on its own", "Set the rules once — who, how much, how often. It runs, and never outside your rules."],
+      ["Cents, not 3%", "Cards take ~3% every time. On-chain settlement costs fractions of a cent."],
     ] as [string, string][] },
     how: { stamp: "how it works", h: "From Pix to USDC.", steps: [
       ["Send Pix", "You pay in reais as usual."],
@@ -79,10 +79,10 @@ const COPY = {
       ] as [string, string][],
       close: "É isso o SlipPay: um cofrinho de dólar que abre com o seu dedo e paga sozinho, só do jeito que você mandou." },
     why: { stamp: "por quê", items: [
-      ["Pix → USDC na hora", "Converta reais em USDC, um dólar digital (stablecoin)."],
-      ["Você no controle", "Os fundos vão pra uma carteira que você controla, com regras de automação opcionais."],
-      ["Feito pra automação", "Defina limites, pagamentos recorrentes e destinatários aprovados. A execução só acontece dentro das suas regras."],
-      ["Liquidação rápida", "As transferências liquidam em rails modernos de blockchain em segundos, com taxas baixas."],
+      ["Pix → USDC em ~10s", "Manda real, recebe dólar digital na carteira em segundos. Sem banco no meio."],
+      ["Só o seu dedo move", "Uma passkey no seu aparelho assina cada pagamento. Sem senha, sem seed phrase, mais ninguém."],
+      ["Ele paga sozinho", "Defina as regras uma vez — quem, quanto, com que frequência. Roda, e nunca fora das suas regras."],
+      ["Centavos, não 3%", "Cartão leva ~3% toda vez. Liquidação on-chain custa frações de centavo."],
     ] as [string, string][] },
     how: { stamp: "como funciona", h: "Do Pix ao USDC.", steps: [
       ["Faça um Pix", "Você paga em reais, como sempre."],
@@ -125,7 +125,10 @@ export default function LandingV2() {
   });
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
-  const NAV: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.security, "/security"], [t.nav.live, "/cockpit"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"], [t.nav.login, "/account"]];
+  // consumer-first nav (who the landing speaks to). Institutional/technical links
+  // (gate, live, investors, manifesto) move to the footer so the IA picks a lane.
+  const NAV: [string, string][] = [[t.nav.security, "/security"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.login, "/account"]];
+  const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"]];
 
   useEffect(() => {
     const root = document.documentElement;
@@ -165,7 +168,7 @@ export default function LandingV2() {
         </nav>
         {menuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
-            {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
+            {[...NAV, ...NAV_MORE].map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
             <div className="py-3 border-b border-[#0a0a0a]/8"><LangToggle /></div>
             <Link to="/account" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#FDDA24] text-[#0a0a0a]">{t.nav.tryFree}</Link>
           </div>
@@ -322,7 +325,10 @@ export default function LandingV2() {
             <span className="font-mono text-[10px] text-[#0a0a0a]/40 break-all max-w-[320px] text-center">USDC · {TEAM_USDC}</span>
           </div>
         </div>
-        <div className="mt-16 font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/30">{t.cta.footer}</div>
+        <div className="mt-16 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45">
+          {NAV_MORE.map(([label, href]) => <Link key={href} to={href} className="hover:text-[#0a0a0a]">{label}</Link>)}
+        </div>
+        <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/30">{t.cta.footer}</div>
       </div></section>
     </div>
   );
