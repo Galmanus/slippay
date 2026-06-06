@@ -163,26 +163,33 @@ export default function LandingV2() {
       </header>
 
       {/* HERO */}
-      <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
-        <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
-          <img src="/cofrinho.svg" alt="slippay" className="w-16 h-16 md:w-20 md:h-20 mb-7" />
-          <h1 className="font-bold uppercase tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6.5vw,4.75rem)] max-w-[15ch] mx-auto [text-wrap:balance]" style={display}>
-            {t.hero.h1l1}
-          </h1>
-          <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[28ch] mx-auto" style={display}>
-            {t.hero.sub.split("USDC").flatMap((part, i) => i === 0 ? [part] : [<span key={i} style={mark}>USDC</span>, part])}
-          </p>
-          <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55 max-w-[48ch] mx-auto">{t.hero.reassure}</p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-            <Link to="/account" className={btn}>{t.hero.cta}</Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">{t.hero.note}</span>
+      <section className="px-6 md:px-12 pt-12 md:pt-16 pb-16 md:pb-24">
+        <div className="max-w-[1200px] mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
+          {/* left: text */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <h1 className="font-bold uppercase tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6vw,4.5rem)] max-w-[15ch] [text-wrap:balance]" style={display}>
+              {t.hero.h1l1}
+            </h1>
+            <p className="mt-8 text-2xl md:text-3xl leading-snug max-w-[26ch]" style={display}>
+              {t.hero.sub.split("USDC").flatMap((part, i) => i === 0 ? [part] : [<span key={i} style={mark}>USDC</span>, part])}
+            </p>
+            <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55 max-w-[44ch]">{t.hero.reassure}</p>
+            <div className="mt-8 flex flex-wrap items-center justify-center md:justify-start gap-6">
+              <Link to="/account" className={btn}>{t.hero.cta}</Link>
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">{t.hero.note}</span>
+            </div>
+            <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: GRAY }}>{t.hero.cred}</div>
+            <p className="mt-2 text-[13px] text-[#0a0a0a]/45 max-w-[44ch]">{t.hero.micro}</p>
           </div>
-          <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: GRAY }}>{t.hero.cred}</div>
-          <p className="mt-2 text-[13px] text-[#0a0a0a]/45 max-w-[46ch] mx-auto">{t.hero.micro}</p>
-          <div className="mt-14 w-full max-w-[420px] mx-auto">
-            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">{t.hero.liveTag}</div>
-            <LivePaymentCard />
+          {/* right: the piggy */}
+          <div className="flex justify-center md:justify-end order-first md:order-none">
+            <img src="/cofrinho.svg" alt="slippay piggy bank" className="w-52 sm:w-64 md:w-[400px] h-auto" />
           </div>
+        </div>
+        {/* live card */}
+        <div className="mt-16 md:mt-20 w-full max-w-[420px] mx-auto">
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4 text-center">{t.hero.liveTag}</div>
+          <LivePaymentCard />
         </div>
       </section>
 
