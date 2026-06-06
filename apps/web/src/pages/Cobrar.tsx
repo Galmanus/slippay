@@ -1,63 +1,56 @@
-// /cobrar — merchant side. Enter an amount, get a QR the customer scans and
-// pays with their face. Testnet: a fresh recipient is friendbot-funded so the
-// payment can land. (Production: this is the merchant's real receive address.)
+// /cobrar — merchant side. Pick an amount, show a QR; the customer scans it on
+// /pay and authorizes with a touch. Mainnet, real USDC: the recipient is a real
+// account with a USDC trustline. (In production this is the merchant's own
+// receive address.) Amounts are kept small for the live demo (the demo wallet is
+// funded with 0.2 USDC).
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Keypair } from "@stellar/stellar-sdk";
 import QRCode from "qrcode";
-import { Logo } from "../components/Logo";
 import { encodeRequest } from "../lib/slippayqr";
-import { friendbotFund } from "../lib/passkey";
 
-const PRESETS = [0.1, 0.3, 0.5, 1];
+const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
+// Real mainnet recipient (has a USDC trustline). Demo "merchant" receive address.
+const RECIPIENT = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";
+const PRESETS = [0.05, 0.1, 0.15];
 
 export default function Cobrar() {
-  const [recipient, setRecipient] = useState<Keypair | null>(null);
-  const [ready, setReady] = useState(false);
-  const [amount, setAmount] = useState(0.3);
+  const [amount, setAmount] = useState(0.1);
   const [qr, setQr] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const gen = useRef(false);
 
   useEffect(() => {
-    if (gen.current) return;
-    gen.current = true;
-    const r = Keypair.random();
-    setRecipient(r);
-    friendbotFund(r.publicKey()).then(() => setReady(true)).catch((e) => setErr((e as Error).message));
-  }, []);
-
-  useEffect(() => {
-    if (!recipient) return;
     const uri = encodeRequest({
-      to: recipient.publicKey(),
+      to: RECIPIENT,
       amount: String(Math.round(amount * 1e7)),
       asset: "USDC",
       label: "Slippay",
     });
     QRCode.toDataURL(uri, { margin: 1, width: 320, color: { dark: "#0a0a0a", light: "#f1eee7" } })
       .then(setQr).catch((e) => setErr((e as Error).message));
-  }, [recipient, amount]);
+  }, [amount]);
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <header className="px-5 md:px-10 py-5 flex items-center justify-between border-b border-[#0a0a0a]/8">
-        <Logo />
-        <Link to="/pay" className="text-[10px] uppercase tracking-[0.22em] hover:opacity-60">Pagar →</Link>
+      <header className="px-6 md:px-12 py-7 flex items-center justify-between">
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
+        <Link to="/pay" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Pay →</Link>
       </header>
-      <main className="max-w-[560px] mx-auto px-5 md:px-10 pt-10 pb-24 text-center">
-        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-4">
-          ┃ cobrar · mostre o QR pro cliente
+      <main className="max-w-[560px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-24 text-center">
+        <div className="flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
+          <span className="text-[#0a0a0a]/70">001</span>
+          <span className="h-px w-8 bg-current opacity-40" />
+          <span>charge · show the QR · mainnet</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-medium tracking-[-0.04em] leading-[0.98]">
-          Quanto cobrar?<span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] ml-2 align-baseline" />
+        <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,10vw,5.5rem)]" style={display}>
+          How much?
         </h1>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-2">
+        <div className="mt-10 flex flex-wrap justify-center gap-2">
           {PRESETS.map((p) => (
             <button key={p} onClick={() => setAmount(p)}
-              className={"lift px-5 py-3 text-sm font-mono tabular-nums border transition-colors " +
+              className={"lift px-5 py-3 text-sm font-mono tabular-nums rounded-full border transition-colors " +
                 (amount === p ? "bg-[#0a0a0a] text-[#f1eee7] border-[#0a0a0a]" : "border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60")}>
               {p} USDC
             </button>
@@ -66,20 +59,20 @@ export default function Cobrar() {
 
         <div className="mt-10 inline-flex flex-col items-center">
           {qr ? (
-            <img src={qr} alt="QR de cobrança" className="w-[280px] h-[280px] border border-[#0a0a0a]/15" />
+            <img src={qr} alt="payment QR" className="w-[280px] h-[280px] rounded-2xl border border-[#0a0a0a]/15" />
           ) : (
-            <div className="w-[280px] h-[280px] border border-[#0a0a0a]/15 flex items-center justify-center text-xs text-[#0a0a0a]/45">gerando…</div>
+            <div className="w-[280px] h-[280px] rounded-2xl border border-[#0a0a0a]/15 flex items-center justify-center text-xs text-[#0a0a0a]/45">generating…</div>
           )}
-          <div className="mt-5 text-2xl font-medium tabular-nums">{amount} USDC</div>
+          <div className="mt-5 text-3xl font-medium tabular-nums" style={display}>{amount} USDC</div>
           <div className="mt-2 text-[10px] uppercase tracking-[0.22em] font-mono"
-            style={{ color: ready ? "#3f7d20" : "rgba(10,10,10,0.45)" }}>
-            {err ? "✗ " + err : ready ? "● pronto pra receber" : "preparando…"}
+            style={{ color: err ? "#b00" : "#A16207" }}>
+            {err ? "✗ " + err : "● ready to receive · mainnet"}
           </div>
         </div>
 
-        <p className="mt-10 text-xs text-[#0a0a0a]/45 leading-relaxed max-w-[44ch] mx-auto">
-          O cliente abre <Link to="/pay" className="underline">/pay</Link>, aponta a câmera nesse QR, vê o
-          valor e toca o rosto. Testnet — dinheiro de teste, grátis.
+        <p className="mt-10 text-xs text-[#0a0a0a]/45 leading-relaxed max-w-[46ch] mx-auto">
+          The customer opens <Link to="/pay" className="underline">/pay</Link>, points the camera at this QR,
+          sees the amount, and authorizes with a touch. Real dollars (USDC), on the main network.
         </p>
       </main>
     </div>
