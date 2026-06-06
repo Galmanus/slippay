@@ -46,7 +46,7 @@ function Index({ n, label, dark = false }: { n: string; label: string; dark?: bo
 export default function LandingV2() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const NAV: [string, string][] = [["Manifesto", "/manifesto"], ["Live", "/cockpit"], ["Pay", "/pay"], ["Proof", "#proof"], ["Pricing", "#pricing"]];
+  const NAV: [string, string][] = [["Live", "/cockpit"], ["Pay", "/pay"], ["Receive", "/cobrar"], ["Proof", "#proof"], ["Pricing", "#pricing"], ["Manifesto", "/manifesto"]];
 
   useEffect(() => {
     const root = document.documentElement;
