@@ -65,7 +65,7 @@ export default function LandingV2() {
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5">
-          <Mark size={22} />
+          <Mark size={26} className="text-[#0a0a0a]" />
           <span className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</span>
         </Link>
         <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
