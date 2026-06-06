@@ -19,7 +19,7 @@ const COPY = {
   en: {
     nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", investors: "Investors", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
     hero: {
-      h1l1: "Digital dollars", h1l2: "in seconds",
+      h1l1: "Your dollar account that lives in Pix", h1l2: "in seconds",
       sub: "Pix in. USDC out. Straight to your wallet in seconds.",
       reassure: "No wires. No delays. Just instant conversion from local money to global dollars.",
       cta: "Get started", note: "2 minutes • biometrics • no card • self-custody support",
@@ -57,7 +57,7 @@ const COPY = {
   pt: {
     nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", investors: "Investidores", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
     hero: {
-      h1l1: "Dólar digital", h1l2: "em segundos",
+      h1l1: "Sua conta em dólar que mora no Pix", h1l2: "em segundos",
       sub: "Pix entra. USDC sai. Direto na sua carteira em segundos.",
       reassure: "Sem transferências internacionais. Sem atrasos. Só conversão instantânea de moeda local pra dólares globais.",
       cta: "Começar", note: "2 minutos • biometria • sem cartão • suporte a autocustódia",
@@ -165,7 +165,7 @@ export default function LandingV2() {
       {/* HERO */}
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
-          <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.88] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
+          <h1 className="font-bold uppercase tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6.5vw,4.75rem)] max-w-[15ch] mx-auto [text-wrap:balance]" style={display}>
             {t.hero.h1l1}
           </h1>
           <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[28ch] mx-auto" style={display}>
