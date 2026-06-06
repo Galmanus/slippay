@@ -20,9 +20,12 @@ const COPY = {
     nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", investors: "Investors", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
     hero: {
       h1pre: "Global ", h1mark: "money", h1post: "", h1acc: "in one tap.",
-      sub: "Pix in. USDC out. Directly to your wallet in seconds.",
-      reassure: "No waiting. No wire transfers. Just stable digital dollars moving globally.",
-      cta: "Get started", note: "2 minutes • biometrics • no card • self-custody support", liveTag: "live · mainnet",
+      sub: "Pix in. USDC out. Straight to your wallet in seconds.",
+      reassure: "No wires. No delays. Just instant conversion from local money to global dollars.",
+      cta: "Get started", note: "2 minutes • biometrics • no card • self-custody support",
+      cred: "Powered by USDC · Real-time settlement rails · Non-custodial architecture",
+      micro: "Built on stablecoin infrastructure and real payment rails in Brazil.",
+      liveTag: "live · mainnet",
     },
     why: { stamp: "why", items: [
       ["Pix → USDC instantly", "Convert Brazilian reais into USDC, a digital dollar stablecoin."],
@@ -48,8 +51,11 @@ const COPY = {
     hero: {
       h1pre: "", h1mark: "Dinheiro", h1post: " global", h1acc: "em um toque.",
       sub: "Pix entra. USDC sai. Direto na sua carteira em segundos.",
-      reassure: "Sem espera. Sem transferência internacional. Só dólar digital estável circulando pelo mundo.",
-      cta: "Começar", note: "2 minutos • biometria • sem cartão • suporte a autocustódia", liveTag: "ao vivo · mainnet",
+      reassure: "Sem transferências internacionais. Sem atrasos. Só conversão instantânea de moeda local pra dólares globais.",
+      cta: "Começar", note: "2 minutos • biometria • sem cartão • suporte a autocustódia",
+      cred: "Movido por USDC · Liquidação em tempo real · Arquitetura não-custodial",
+      micro: "Construído sobre infraestrutura de stablecoin e rails de pagamento reais no Brasil.",
+      liveTag: "ao vivo · mainnet",
     },
     why: { stamp: "por quê", items: [
       ["Pix → USDC na hora", "Converta reais em USDC, um dólar digital (stablecoin)."],
@@ -154,6 +160,8 @@ export default function LandingV2() {
             <Link to="/account" className={btn}>{t.hero.cta}</Link>
             <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">{t.hero.note}</span>
           </div>
+          <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: GRAY }}>{t.hero.cred}</div>
+          <p className="mt-2 text-[13px] text-[#0a0a0a]/45 max-w-[46ch] mx-auto">{t.hero.micro}</p>
           <div className="mt-14 w-full max-w-[420px] mx-auto">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">{t.hero.liveTag}</div>
             <LivePaymentCard />
