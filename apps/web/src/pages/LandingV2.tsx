@@ -1,6 +1,7 @@
-// Landing — pain-led conversion copy. Warm bone, ink text, GRAY accent (#6f6862),
-// yellow only as small details (#FDDA24: live dots, checkmarks, the logo dot),
-// ink CTAs. Bilingual PT/EN (toggle in header, persisted). Live artifacts = proof.
+// Landing — "global money in one touch." Brutal, minimal, manifesto-inevitable.
+// Warm bone, ink text, GRAY accent (#6f6862), yellow ONLY as small details
+// (#FDDA24: live dots, checkmarks, the logo dot), ink CTAs. Bilingual PT/EN.
+// The thesis: money becomes software without looking like software.
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -20,92 +21,49 @@ const COPY = {
   en: {
     nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
     hero: {
-      axis: "financial automation",
-      h1a: "Stop approving the same bills.", h1acc: "Every month.",
-      sub: "Add money with Pix. Hold dollars. Set the rules once. The rest happens on its own.",
-      reassure: "No bank holding your money. No card. No bureaucracy.",
-      cta: "Get started free", note: "2 minutes • no card • no seed phrase",
-      trust: ["Your money stays yours", "You set the limits", "Payments final in seconds", "Up to ~3% cheaper than cards"],
-      liveTag: "live · mainnet",
+      axis: "global money", h1a: "Global money.", h1acc: "In one touch.",
+      sub: "Pix. Dollars in your wallet. 10 seconds.",
+      reassure: "No bank. No broker. No complexity.",
+      cta: "Get started free", note: "2 minutes • biometrics • no card • no seed phrase", liveTag: "live · mainnet",
     },
-    pain: { stamp: "the problem", h: "The last time you approve a recurring payment.",
-      lines: ["Every month, the same thing.", "Renew the API. Pay the server. Renew a subscription. Pay a vendor.", "Open the bank. Approve. Wait. Approve again.", "Not because it's hard. Because no one built anything better.", "Until now."],
-      turn: "SlipPay turns recurring payments into a one-time setup. You approve once. After that, it runs on its own." },
-    control: { stamp: "control", h: "Automatic doesn't mean out of control.",
-      lines: ["It means you set the rules once.", "Who can be paid. How much. How much per month. How often.", "Before every execution, everything is checked.", "If something's outside the rule, the payment doesn't happen.", "Simple as that."] },
-    yours: { stamp: "your money stays yours", h: "Your money stays yours.",
-      lines: ["This is the most important part.", "SlipPay doesn't hold your money. Doesn't lend it. Doesn't block it. Doesn't freeze it. Doesn't control it.", "Your balance stays in your own wallet. You stay the owner. Always.", "SlipPay only executes the payments you already authorized. Nothing more."] },
-    global: { stamp: "dollars + pix", h: "Hold dollars. Move with Pix. Automate everything.",
-      lines: ["Add reais with Pix in seconds.", "Keep your balance in dollars.", "Pay and get paid instantly.", "No international banks. No business days. No artificial borders."] },
-    save: { stamp: "fewer fees", h: "Fewer fees. More of your money.",
-      lines: ["Cards became so common people forgot what they cost.", "Nearly 3% disappears on every transaction. Every time. Forever.", "On Stellar, moving money costs fractions of a cent.", "More money stays with you. Not with middlemen."] },
-    gate: { stamp: "it only pays when it's right", h: "It only pays when everything checks out.",
-      body: "Before every payment, SlipPay verifies:", checks: ["authorized recipient", "authorized amount", "monthly limit", "your policy"],
-      fail: "If any condition fails, the payment is refused automatically. No exceptions. No shortcuts. No surprises.", gateLink: "How the gate works →" },
-    proof: { stamp: "live", h: "Real money. Live.",
-      lines: ["Not a demo. Not a prototype. Not a promise.", "Real payments already happen every day. Real funds already move through the system.", "Every transaction can be verified publicly. You don't have to trust marketing, you can check it yourself."],
-      btnReal: "See a real payment ↗", btnContract: "The live contract ↗" },
-    diff: { stamp: "the difference", h: "Most systems ask for trust. SlipPay asks for rules.",
-      rows: [["Most financial apps say:", "“Trust us.”"], ["We'd rather say:", "“Set the conditions.”"], ["Most automation tools only suggest actions.", "SlipPay executes, but only within the limits you approved."]] as [string, string][],
-      tag: "That difference changes everything." },
-    cta: { stamp: "start", h: "Configure it once.", hacc: "And stop thinking about it.",
-      lines: ["Hold dollars.", "Fund with Pix.", "Automate recurring payments.", "Stay in control."],
-      sig: ["Your money.", "Your rules.", "On autopilot."], btn: "Get started free", note: "No card • takes about 2 minutes",
-      supportLabel: "support the team", supportText: "Built solo in Brazil. If this earned your respect, send us a few dollars, one touch, no app.", supportBtn: "Support with $10 ↗",
-      footer: "slippay · real dollars, on autopilot · live on mainnet" },
+    pixin: { stamp: "how", h: "Pix in. Dollars out.", lines: ["You send reais.", "You get dollars.", "Straight to your wallet. Instantly."] },
+    touch: { stamp: "one touch", h: "One touch. And it's yours.", lines: ["Biometrics. No password.", "Just you and your money."] },
+    runs: { stamp: "then it runs", h: "After that, it runs on its own.", lines: ["Set the rules once: who can be paid, how much, when.", "If it's within the rules, it happens. If not, it doesn't."] },
+    yours: { stamp: "your money", h: "Your money passes through no one.", lines: ["Not a bank. Not a middleman. Not us.", "It's yours from the first second. In your wallet. On your key."] },
+    invisible: { stamp: "invisible", h: "The rest is invisible.", lines: ["Smart contracts. Multiple blockchains. Global settlement.", "You never see any of it. Only the result.", "The best financial technology doesn't look like technology."] },
+    proof: { stamp: "live", h: "Real money. Live.", lines: ["Not a demo. Not a promise.", "Every payment is publicly verifiable. Check it yourself."], btnReal: "See a real payment ↗", btnContract: "The live contract ↗" },
+    cta: { stamp: "start", h: "Start.", lines: ["Pix → dollars → your wallet.", "In seconds."], btn: "Get started free", note: "No card • no seed phrase • takes about 2 minutes",
+      supportLabel: "support the team", supportText: "Built solo in Brazil. If this earned your respect, send us a few dollars, one touch, no app.", supportBtn: "Support with $10 ↗", footer: "slippay · global money, in one touch · live on mainnet" },
   },
   pt: {
     nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
     hero: {
-      axis: "automação financeira",
-      h1a: "Pare de aprovar as mesmas contas.", h1acc: "Todo mês.",
-      sub: "Coloque dinheiro com Pix. Guarde em dólar. Defina as regras uma vez. O resto acontece sozinho.",
-      reassure: "Sem banco segurando seu dinheiro. Sem cartão. Sem burocracia.",
-      cta: "Começar grátis", note: "2 minutos • sem cartão • sem seed phrase",
-      trust: ["Seu dinheiro continua seu", "Você define os limites", "Pagamentos finais em segundos", "Até ~3% mais barato que cartão"],
-      liveTag: "ao vivo · mainnet",
+      axis: "dinheiro global", h1a: "Dinheiro global.", h1acc: "Em um toque.",
+      sub: "Pix. Dólares na sua carteira. 10 segundos.",
+      reassure: "Sem banco. Sem corretora. Sem complexidade.",
+      cta: "Começar grátis", note: "2 minutos • biometria • sem cartão • sem seed phrase", liveTag: "ao vivo · mainnet",
     },
-    pain: { stamp: "o problema", h: "A última vez que você aprova um pagamento recorrente.",
-      lines: ["Todo mês é a mesma coisa.", "Renovar a API. Pagar o servidor. Renovar uma assinatura. Transferir para um fornecedor.", "Abrir o banco. Aprovar. Esperar. Aprovar de novo.", "Não porque seja difícil. Porque ninguém construiu algo melhor.", "Até agora."],
-      turn: "O SlipPay transforma pagamentos recorrentes em uma configuração única. Você aprova uma vez. Depois disso, ele executa sozinho." },
-    control: { stamp: "controle", h: "Automático não significa sem controle.",
-      lines: ["Significa que você define as regras uma única vez.", "Quem pode receber. Quanto pode receber. Quanto pode ser gasto por mês. Com que frequência.", "Antes de cada execução, tudo é conferido.", "Se algo estiver fora da regra, o pagamento não acontece.", "Simples assim."] },
-    yours: { stamp: "seu dinheiro continua seu", h: "Seu dinheiro continua sendo seu.",
-      lines: ["Essa é a parte mais importante.", "O SlipPay não segura seu dinheiro. Não empresta. Não bloqueia. Não congela. Não controla.", "Seu saldo permanece na sua própria carteira. Você continua dono. Sempre.", "O SlipPay apenas executa os pagamentos que você já autorizou. Nada mais."] },
-    global: { stamp: "dólar + pix", h: "Guarde em dólar. Movimente com Pix. Automatize tudo.",
-      lines: ["Coloque reais via Pix em segundos.", "Mantenha seu saldo em dólar.", "Pague e receba instantaneamente.", "Sem bancos internacionais. Sem dias úteis. Sem fronteiras artificiais."] },
-    save: { stamp: "menos taxas", h: "Menos taxas. Mais dinheiro seu.",
-      lines: ["Os cartões ficaram tão comuns que muita gente esqueceu quanto custam.", "Quase 3% desaparecem em cada transação. Toda vez. Para sempre.", "Na Stellar, movimentar dinheiro custa frações de centavo.", "Mais dinheiro ficando com você. Não com intermediários."] },
-    gate: { stamp: "só paga quando está certo", h: "Ele só paga quando está tudo certo.",
-      body: "Antes de cada pagamento, o SlipPay verifica:", checks: ["destinatário autorizado", "valor autorizado", "limite mensal", "política definida por você"],
-      fail: "Se qualquer condição falhar, o pagamento é recusado automaticamente. Sem exceções. Sem atalhos. Sem surpresas.", gateLink: "Como o gate funciona →" },
-    proof: { stamp: "ao vivo", h: "Dinheiro real. Ao vivo.",
-      lines: ["Não é uma demonstração. Não é um protótipo. Não é uma promessa.", "Pagamentos reais já acontecem todos os dias. Fundos reais já circulam pelo sistema.", "Cada transação pode ser verificada publicamente. Você não precisa confiar no marketing, pode conferir por conta própria."],
-      btnReal: "Ver um pagamento real ↗", btnContract: "O contrato no ar ↗" },
-    diff: { stamp: "a diferença", h: "A maioria pede confiança. O SlipPay pede regras.",
-      rows: [["A maioria dos apps financeiros diz:", "“Confie na gente.”"], ["Nós preferimos:", "“Defina as condições.”"], ["A maioria das ferramentas de automação só sugere ações.", "O SlipPay executa, mas só dentro dos limites que você aprovou."]] as [string, string][],
-      tag: "Essa diferença muda tudo." },
-    cta: { stamp: "comece", h: "Configure uma vez.", hacc: "E pare de pensar nisso.",
-      lines: ["Guarde em dólar.", "Carregue com Pix.", "Automatize pagamentos recorrentes.", "Continue no controle."],
-      sig: ["Seu dinheiro.", "Suas regras.", "No automático."], btn: "Começar grátis", note: "Sem cartão • leva cerca de 2 minutos",
-      supportLabel: "apoie o time", supportText: "Feito sozinho no Brasil. Se ganhou teu respeito, manda uns dólares, um toque, sem app.", supportBtn: "Apoiar com $10 ↗",
-      footer: "slippay · dólar de verdade, no automático · ao vivo na mainnet" },
+    pixin: { stamp: "como", h: "Pix in. Dollars out.", lines: ["Você envia reais.", "Você recebe dólares.", "Direto na sua carteira. Instantaneamente."] },
+    touch: { stamp: "um toque", h: "Um toque. E ele já é seu.", lines: ["Biometria. Nada de senha.", "Só você e seu dinheiro."] },
+    runs: { stamp: "depois, ele executa", h: "Depois disso, ele só executa.", lines: ["Defina as regras uma vez: quem pode receber, quanto pode gastar, quando pagar.", "Se estiver dentro, acontece. Se não estiver, não acontece."] },
+    yours: { stamp: "seu dinheiro", h: "Seu dinheiro não passa por ninguém.", lines: ["Nem banco. Nem intermediário. Nem nós.", "Ele é seu desde o primeiro segundo. Na sua carteira. Na sua chave."] },
+    invisible: { stamp: "invisível", h: "O resto é invisível.", lines: ["Smart contracts. Múltiplas blockchains. Liquidação global.", "Você nunca vê nada disso. Só o resultado.", "A melhor tecnologia financeira não parece tecnologia."] },
+    proof: { stamp: "ao vivo", h: "Dinheiro real. Ao vivo.", lines: ["Não é demo. Não é promessa.", "Cada pagamento é verificável publicamente. Confira você mesmo."], btnReal: "Ver um pagamento real ↗", btnContract: "O contrato no ar ↗" },
+    cta: { stamp: "comece", h: "Comece.", lines: ["Pix → dólar → sua carteira.", "Em segundos."], btn: "Começar grátis", note: "Sem cartão • sem seed phrase • leva ~2 minutos",
+      supportLabel: "apoie o time", supportText: "Feito sozinho no Brasil. Se ganhou teu respeito, manda uns dólares, um toque, sem app.", supportBtn: "Apoiar com $10 ↗", footer: "slippay · dinheiro global, em um toque · ao vivo na mainnet" },
   },
 } as const;
 
 function Index({ n, label }: { n: string; label: string }) {
   return (
     <div className="flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em]" style={{ color: GRAY }}>
-      <span className="text-[#0a0a0a]/55">{n}</span>
-      <span className="h-px w-8 bg-current opacity-40" />
-      <span>{label}</span>
+      <span className="text-[#0a0a0a]/55">{n}</span><span className="h-px w-8 bg-current opacity-40" /><span>{label}</span>
     </div>
   );
 }
-
 const Lines = ({ lines }: { lines: readonly string[] }) => (
-  <div className="mt-8 flex flex-col gap-4 max-w-[52ch] mx-auto">
-    {lines.map((l, i) => <p key={i} className="text-lg md:text-xl leading-relaxed text-[#0a0a0a]/65">{l}</p>)}
+  <div className="mt-8 flex flex-col gap-3.5 max-w-[46ch] mx-auto">
+    {lines.map((l, i) => <p key={i} className="text-xl md:text-2xl leading-relaxed text-[#0a0a0a]/65">{l}</p>)}
   </div>
 );
 
@@ -123,9 +81,7 @@ export default function LandingV2() {
     const root = document.documentElement;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     root.classList.add("js-reveal");
-    const io = new IntersectionObserver((ents) => {
-      for (const e of ents) if (e.isIntersecting) { e.target.classList.add("reveal-in"); io.unobserve(e.target); }
-    }, { rootMargin: "-8% 0px -8% 0px", threshold: 0.06 });
+    const io = new IntersectionObserver((ents) => { for (const e of ents) if (e.isIntersecting) { e.target.classList.add("reveal-in"); io.unobserve(e.target); } }, { rootMargin: "-8% 0px -8% 0px", threshold: 0.06 });
     document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
     return () => { io.disconnect(); root.classList.remove("js-reveal"); };
   }, []);
@@ -138,6 +94,8 @@ export default function LandingV2() {
     </div>
   );
   const btn = "lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7]";
+  const section = "border-t border-[#0a0a0a]/12";
+  const inner = "max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center";
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
@@ -164,20 +122,17 @@ export default function LandingV2() {
       </header>
 
       {/* HERO */}
-      <section className="px-6 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
+      <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="—" label={t.hero.axis} />
-          <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.88] text-[clamp(2.5rem,8.5vw,6.5rem)] max-w-[18ch] mx-auto" style={display}>
-            {t.hero.h1a} <span style={{ color: GRAY }}>{t.hero.h1acc}</span>
+          <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
+            {t.hero.h1a}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
           </h1>
-          <p className="mt-9 text-xl md:text-2xl leading-relaxed max-w-[40ch] mx-auto" style={display}>{t.hero.sub}</p>
-          <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55 max-w-[46ch] mx-auto">{t.hero.reassure}</p>
+          <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[24ch] mx-auto" style={display}>{t.hero.sub}</p>
+          <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55">{t.hero.reassure}</p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
             <Link to="/account" className={btn}>{t.hero.cta}</Link>
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.hero.note}</span>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-[#0a0a0a]/65">
-            {t.hero.trust.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{x}</span>)}
           </div>
           <div className="mt-14 w-full max-w-[420px] mx-auto">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">{t.hero.liveTag}</div>
@@ -186,61 +141,49 @@ export default function LandingV2() {
         </div>
       </section>
 
-      <section className="border-t border-[#0a0a0a]/12"><div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8"><LiveProof prominent lang={lang} /></div></section>
+      <section className={section}><div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8"><LiveProof prominent lang={lang} /></div></section>
 
-      {/* PAIN */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="001" label={t.pain.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.pain.h}</h2>
-        <Lines lines={t.pain.lines} />
-        <p className="mt-8 text-xl md:text-2xl leading-relaxed max-w-[46ch] mx-auto font-medium" style={display}>{t.pain.turn}</p>
+      {/* PIX IN */}
+      <section className={section}><div data-reveal className={inner}>
+        <Index n="001" label={t.pixin.stamp} />
+        <h2 className="mt-10 font-bold tracking-[-0.05em] leading-[0.9] text-[clamp(2.75rem,9vw,6.5rem)]" style={display}>{t.pixin.h}</h2>
+        <Lines lines={t.pixin.lines} />
       </div></section>
 
-      {/* CONTROL */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="002" label={t.control.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.control.h}</h2>
-        <Lines lines={t.control.lines} />
+      {/* ONE TOUCH */}
+      <section className={section}><div data-reveal className={inner}>
+        <Index n="002" label={t.touch.stamp} />
+        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6rem)]" style={display}>{t.touch.h}</h2>
+        <Lines lines={t.touch.lines} />
+      </div></section>
+
+      {/* RUNS (gate) */}
+      <section className={section}><div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-24 md:py-36 flex flex-col items-center text-center">
+        <Index n="003" label={t.runs.stamp} />
+        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5rem)] max-w-[20ch]" style={display}>{t.runs.h}</h2>
+        <Lines lines={t.runs.lines} />
+        <div className="mt-12 w-full max-w-[440px] mx-auto text-left"><MandateDemo /></div>
+        <Link to="/gate" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.runs.stamp === "depois, ele executa" ? "Como o gate funciona →" : "How the gate works →"}</Link>
       </div></section>
 
       {/* YOURS */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="003" label={t.yours.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,5.5rem)]" style={display}>{t.yours.h}</h2>
+      <section className={section}><div data-reveal className={inner}>
+        <Index n="004" label={t.yours.stamp} />
+        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5.5rem)] max-w-[20ch] mx-auto" style={display}>{t.yours.h}</h2>
         <Lines lines={t.yours.lines} />
       </div></section>
 
-      {/* GLOBAL */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="004" label={t.global.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.global.h}</h2>
-        <Lines lines={t.global.lines} />
-      </div></section>
-
-      {/* SAVE */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="005" label={t.save.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.save.h}</h2>
-        <Lines lines={t.save.lines} />
-      </div></section>
-
-      {/* GATE */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-24 md:py-36 flex flex-col items-center text-center">
-        <Index n="006" label={t.gate.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5rem)] max-w-[20ch]" style={display}>{t.gate.h}</h2>
-        <p className="mt-8 text-lg text-[#0a0a0a]/60">{t.gate.body}</p>
-        <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-lg">
-          {t.gate.checks.map((c) => <span key={c} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{c}</span>)}
-        </div>
-        <p className="mt-8 text-lg leading-relaxed max-w-[48ch] mx-auto text-[#0a0a0a]/55">{t.gate.fail}</p>
-        <div className="mt-12 w-full max-w-[440px] mx-auto text-left"><MandateDemo /></div>
-        <Link to="/gate" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.gate.gateLink}</Link>
+      {/* INVISIBLE */}
+      <section className={section}><div data-reveal className={inner}>
+        <Index n="005" label={t.invisible.stamp} />
+        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6rem)]" style={display}>{t.invisible.h}</h2>
+        <Lines lines={t.invisible.lines} />
       </div></section>
 
       {/* PROOF */}
-      <section id="proof" className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="007" label={t.proof.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,5.5rem)]" style={display}>{t.proof.h}</h2>
+      <section id="proof" className={section}><div data-reveal className={inner}>
+        <Index n="006" label={t.proof.stamp} />
+        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6rem)]" style={display}>{t.proof.h}</h2>
         <Lines lines={t.proof.lines} />
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
           <a href={xurl("tx", REAL_TX)} target="_blank" rel="noreferrer" className={btn}>{t.proof.btnReal}</a>
@@ -248,29 +191,11 @@ export default function LandingV2() {
         </div>
       </div></section>
 
-      {/* DIFF */}
-      <section className="border-t border-[#0a0a0a]/12"><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-        <Index n="008" label={t.diff.stamp} />
-        <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,4.5rem)] max-w-[22ch] mx-auto" style={display}>{t.diff.h}</h2>
-        <div className="mt-12 max-w-[680px] mx-auto text-left flex flex-col">
-          {t.diff.rows.map(([a, b], i) => (
-            <div key={i} className="border-t border-[#0a0a0a]/12 py-7">
-              <p className="text-lg text-[#0a0a0a]/55">{a}</p>
-              <p className="mt-1 text-xl md:text-2xl font-semibold tracking-[-0.02em]" style={display}>{b}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-10 text-2xl md:text-3xl font-medium tracking-[-0.02em]" style={{ ...display, color: GRAY }}>{t.diff.tag}</p>
-      </div></section>
-
       {/* CTA */}
-      <section className="border-t border-[#0a0a0a]/12"><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-28 md:py-44 text-center">
-        <Index n="009" label={t.cta.stamp} />
-        <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,7rem)] mx-auto break-words" style={display}>
-          {t.cta.h}<br /><span style={{ color: GRAY }}>{t.cta.hacc}</span>
-        </h2>
-        <div className="mt-10 flex flex-col gap-1 text-xl md:text-2xl text-[#0a0a0a]/65">{t.cta.lines.map((l) => <span key={l}>{l}</span>)}</div>
-        <div className="mt-8 flex flex-col gap-0.5 text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{t.cta.sig.map((l) => <span key={l}>{l}</span>)}</div>
+      <section className={section}><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-28 md:py-44 text-center">
+        <Index n="007" label={t.cta.stamp} />
+        <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(3.5rem,16vw,12rem)] mx-auto" style={display}>{t.cta.h}</h2>
+        <div className="mt-10 flex flex-col gap-1 text-2xl md:text-3xl font-medium tracking-[-0.02em]" style={display}>{t.cta.lines.map((l) => <span key={l}>{l}</span>)}</div>
         <div className="mt-12"><Link to="/account" className={btn}>{t.cta.btn}</Link></div>
         <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.cta.note}</div>
 
