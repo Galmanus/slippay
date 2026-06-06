@@ -74,9 +74,16 @@ export default function PayDemo() {
       .catch(() => setVerified("fail"));
   }, [payHash, network]);
 
+  // k-factor: share an IN-PRODUCT receipt (carries a "pay/get paid with a touch"
+  // CTA) instead of a dead-end explorer link — every shared receipt recruits.
+  function receiptUrl() {
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://app.slippay.cc";
+    const q = paidReq ? `?to=${paidReq.to}&amount=${stroopsToXlm(paidReq.amount)}&asset=${paidReq.asset}&net=${explorerNet}` : "";
+    return `${origin}/comprovante/${payHash}${q}`;
+  }
   async function shareReceipt() {
-    const url = `https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`;
-    const data = { title: "SlipPay receipt", text: `Paid ${paidLabel ?? ""} on Stellar — verify it yourself:`, url };
+    const url = receiptUrl();
+    const data = { title: "SlipPay receipt", text: `Paid ${paidLabel ?? ""} with one touch — no app, no seed phrase. Pay or get paid:`, url };
     try {
       if (navigator.share) { await navigator.share(data); return; }
       await navigator.clipboard?.writeText(url);
@@ -265,6 +272,11 @@ export default function PayDemo() {
                       {shared ? "Link copied ✓" : "Share receipt"}
                     </button>
                   </div>
+                  {/* k-factor: turn the payer into a receiver — they make their own link and share it */}
+                  <Link to="/cobrar"
+                    className="mt-4 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[#f1eee7]/70 hover:text-[#FDDA24] border-b border-[#f1eee7]/25 pb-1">
+                    Now get paid too — create your link →
+                  </Link>
                 </div>
               )}
 
