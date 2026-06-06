@@ -45,6 +45,8 @@ function Index({ n, label, dark = false }: { n: string; label: string; dark?: bo
 
 export default function LandingV2() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const NAV: [string, string][] = [["Manifesto", "/manifesto"], ["Live", "/cockpit"], ["Pay", "/pay"], ["Proof", "#proof"], ["Pricing", "#pricing"]];
 
   useEffect(() => {
     const root = document.documentElement;
@@ -59,14 +61,32 @@ export default function LandingV2() {
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <span className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</span>
+      <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
         <nav className="flex items-center gap-7 text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
-          <Link to="/manifesto" className="hidden sm:inline hover:text-[#0a0a0a]">Manifesto</Link>
-          <a href="#proof" className="hidden sm:inline hover:text-[#0a0a0a]">Proof</a>
-          <a href="#pricing" className="hidden sm:inline hover:text-[#0a0a0a]">Pricing</a>
-          <Link to="/pay" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-[#f1eee7] hover:opacity-90">Try it free</Link>
+          {NAV.map(([label, href]) => (
+            href.startsWith("#")
+              ? <a key={label} href={href} className="hidden md:inline hover:text-[#0a0a0a]">{label}</a>
+              : <Link key={label} to={href} className="hidden md:inline hover:text-[#0a0a0a]">{label}</Link>
+          ))}
+          <Link to="/pay" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-[#f1eee7] hover:opacity-90">Try it free</Link>
+          {/* hamburger — mobile only */}
+          <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="md:hidden flex flex-col gap-[5px] p-1">
+            <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-transform ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`} />
+            <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
+            <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-transform ${menuOpen ? "-translate-y-[7px] -rotate-45" : ""}`} />
+          </button>
         </nav>
+        {menuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
+            {NAV.map(([label, href]) => (
+              href.startsWith("#")
+                ? <a key={label} href={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</a>
+                : <Link key={label} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>
+            ))}
+            <Link to="/pay" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#0a0a0a] text-[#f1eee7]">Try it free</Link>
+          </div>
+        )}
       </header>
 
       {/* 001 — HERO */}
