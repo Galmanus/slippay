@@ -183,7 +183,6 @@ export default function LandingV2() {
             <p className="mt-8 text-2xl md:text-3xl leading-snug max-w-[26ch]" style={display}>
               {t.hero.sub.split("USDC").flatMap((part, i) => i === 0 ? [part] : [<span key={i} style={mark}>USDC</span>, part])}
             </p>
-            <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55 max-w-[44ch]">{t.hero.reassure}</p>
             <div className="mt-8 flex flex-wrap items-center justify-center md:justify-start gap-6">
               <Link to="/account" className={btn}>{t.hero.cta}</Link>
               <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">{t.hero.note}</span>
@@ -193,7 +192,7 @@ export default function LandingV2() {
           </div>
           {/* right: the piggy */}
           <div className="flex justify-center md:justify-end order-first md:order-none">
-            <img src="/cofrinho.svg" alt="slippay piggy bank" className="w-56 sm:w-72 md:w-[480px] lg:w-[540px] h-auto" />
+            <img src="/cofrinho.svg" alt="slippay piggy bank" className="w-80 sm:w-96 md:w-[480px] lg:w-[540px] h-auto" />
           </div>
         </div>
         {/* live card */}
