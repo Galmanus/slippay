@@ -156,8 +156,8 @@ const COPY = {
 
 function Index({ n, label, dark = false }: { n: string; label: string; dark?: boolean }) {
   return (
-    <div className={`flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#f1eee7]/45"}`}>
-      <span className={dark ? "text-[#f1eee7]/70" : "text-[#f1eee7]/70"}>{n}</span>
+    <div className={`flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#6f6862]" : "text-[#0a0a0a]/45"}`}>
+      <span className={dark ? "text-[#0a0a0a]/70" : "text-[#0a0a0a]/70"}>{n}</span>
       <span className="h-px w-8 bg-current opacity-40" />
       <span>{label}</span>
     </div>
@@ -186,26 +186,26 @@ export default function LandingV2() {
   }, []);
 
   const LangToggle = ({ dark = false }: { dark?: boolean }) => (
-    <div className={`font-mono text-[10px] uppercase tracking-[0.18em] ${dark ? "text-[#f1eee7]/50" : "text-[#f1eee7]/45"}`}>
-      <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#FDDA24]" : "hover:opacity-80"}>PT</button>
+    <div className={`font-mono text-[10px] uppercase tracking-[0.18em] ${dark ? "text-[#0a0a0a]/50" : "text-[#0a0a0a]/45"}`}>
+      <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#6f6862]" : "hover:opacity-80"}>PT</button>
       <span className="opacity-30 mx-1">/</span>
-      <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#FDDA24]" : "hover:opacity-80"}>EN</button>
+      <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#6f6862]" : "hover:opacity-80"}>EN</button>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f1eee7] grain overflow-x-hidden">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <style>{`
         html { scroll-behavior: smooth; }
-        ::selection { background: #FDDA24; color: #0a0a0a; }
+        ::selection { background: #6f6862; color: #0a0a0a; }
         section h2 { text-wrap: balance; }
       `}</style>
-      <header className="relative px-6 md:px-12 py-7 flex items-center justify-between bg-[#0a0a0a] text-[#f1eee7]">
+      <header className="relative px-6 md:px-12 py-7 flex items-center justify-between bg-[#f1eee7] text-[#0a0a0a]">
         <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
-        <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55">
-          {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#FDDA24]">{label}</Link>)}
-          <span className="hidden md:inline"><LangToggle dark /></span>
-          <Link to="/account" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#f1eee7] hover:opacity-90">{t.nav.tryFree}</Link>
+        <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
+          {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#6f6862]">{label}</Link>)}
+          <span className="hidden md:inline"><LangToggle /></span>
+          <Link to="/account" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-[#f1eee7] hover:opacity-90">{t.nav.tryFree}</Link>
           <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="md:hidden flex flex-col gap-[5px] p-1">
             <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-transform ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`} />
             <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-opacity ${menuOpen ? "opacity-0" : ""}`} />
@@ -213,50 +213,50 @@ export default function LandingV2() {
           </button>
         </nav>
         {menuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#0a0a0a] border-y border-[#f1eee7]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
-            {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#f1eee7]/8">{label}</Link>)}
-            <div className="py-3 border-b border-[#f1eee7]/8"><LangToggle /></div>
-            <Link to="/account" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#0a0a0a] text-[#f1eee7]">{t.nav.tryFree}</Link>
+          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
+            {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
+            <div className="py-3 border-b border-[#0a0a0a]/8"><LangToggle /></div>
+            <Link to="/account" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#f1eee7] text-[#0a0a0a]">{t.nav.tryFree}</Link>
           </div>
         )}
       </header>
 
       {/* HERO (dark — Stellar yellow sings) */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7] px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-28">
+      <section className="bg-[#f1eee7] text-[#0a0a0a] px-6 md:px-12 pt-10 md:pt-16 pb-20 md:pb-28">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="—" label={t.hero.axis} dark />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] break-words mx-auto" style={display}>
-            {t.hero.h1a}<br /><span className="text-[#FDDA24]">{t.hero.h1acc}</span>
+            {t.hero.h1a}<br /><span className="text-[#6f6862]">{t.hero.h1acc}</span>
           </h1>
-          <p className="mt-8 text-xl md:text-2xl leading-relaxed max-w-[42ch] mx-auto text-[#f1eee7]/85" style={display}>{t.hero.sub}</p>
-          <p className="mt-5 text-base md:text-lg leading-relaxed max-w-[48ch] mx-auto text-[#f1eee7]/55">{t.hero.control}</p>
+          <p className="mt-8 text-xl md:text-2xl leading-relaxed max-w-[42ch] mx-auto text-[#0a0a0a]/85" style={display}>{t.hero.sub}</p>
+          <p className="mt-5 text-base md:text-lg leading-relaxed max-w-[48ch] mx-auto text-[#0a0a0a]/55">{t.hero.control}</p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-            <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#f1eee7]">{t.hero.cta}</Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#f1eee7]/40">{t.hero.note}</span>
+            <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7]">{t.hero.cta}</Link>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.hero.note}</span>
           </div>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-[#f1eee7]/65">
-            {t.hero.trust.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{x}</span>)}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] text-[#0a0a0a]/65">
+            {t.hero.trust.map((x) => <span key={x} className="flex items-center gap-2"><span className="text-[#6f6862]">✓</span>{x}</span>)}
           </div>
           <div className="mt-14 w-full max-w-[420px] mx-auto">
-            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#f1eee7]/40 mb-4">{t.hero.liveTag}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/40 mb-4">{t.hero.liveTag}</div>
             <LivePaymentCard />
           </div>
         </div>
       </section>
 
       {/* LIVE PROOF BAND */}
-      <section className="border-t border-[#f1eee7]/12">
+      <section className="border-t border-[#0a0a0a]/12">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8"><LiveProof prominent lang={lang} /></div>
       </section>
 
       {/* WHY PEOPLE SWITCH */}
-      <section className="border-t border-[#f1eee7]/12">
+      <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-16 md:py-20">
           <Index n="001" label={t.why.stamp} />
           <div className="mt-10 grid sm:grid-cols-2 gap-x-10 gap-y-4 max-w-[760px] mx-auto">
             {t.why.items.map((it) => (
-              <div key={it} className="flex items-baseline gap-3 text-lg md:text-xl text-[#f1eee7]/80">
-                <span className="text-[#FDDA24] shrink-0">✓</span><span>{it}</span>
+              <div key={it} className="flex items-baseline gap-3 text-lg md:text-xl text-[#0a0a0a]/80">
+                <span className="text-[#6f6862] shrink-0">✓</span><span>{it}</span>
               </div>
             ))}
           </div>
@@ -264,31 +264,31 @@ export default function LandingV2() {
       </section>
 
       {/* PAIN — the axis */}
-      <section className="border-t border-[#f1eee7]/12">
+      <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <Index n="002" label={t.pain.stamp} />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.pain.h}</h2>
-          <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[40ch] mx-auto text-[#f1eee7]/70">{t.pain.q}</p>
-          <div className="mt-8 font-mono text-[11px] uppercase tracking-[0.22em] text-[#f1eee7]/45">{t.pain.every}</div>
-          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-lg text-[#f1eee7]/75">
+          <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[40ch] mx-auto text-[#0a0a0a]/70">{t.pain.q}</p>
+          <div className="mt-8 font-mono text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">{t.pain.every}</div>
+          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-lg text-[#0a0a0a]/75">
             {t.pain.list.map((x) => <span key={x}>{x}</span>)}
           </div>
-          <p className="mt-10 text-lg leading-relaxed max-w-[48ch] mx-auto text-[#f1eee7]/55">{t.pain.same}</p>
-          <p className="mt-6 text-xl leading-relaxed max-w-[48ch] mx-auto text-[#f1eee7]"><span className="font-medium">{t.pain.turn}</span></p>
+          <p className="mt-10 text-lg leading-relaxed max-w-[48ch] mx-auto text-[#0a0a0a]/55">{t.pain.same}</p>
+          <p className="mt-6 text-xl leading-relaxed max-w-[48ch] mx-auto text-[#0a0a0a]"><span className="font-medium">{t.pain.turn}</span></p>
         </div>
       </section>
 
       {/* SAVE */}
-      <section className="border-t border-[#f1eee7]/12">
+      <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <Index n="003" label={t.save.stamp} />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.save.h}</h2>
-          <p className="mt-8 text-xl leading-relaxed max-w-[52ch] mx-auto text-[#f1eee7]/60">{t.save.body}</p>
+          <p className="mt-8 text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/60">{t.save.body}</p>
           <div className="mt-12 max-w-[640px] mx-auto">
-            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/45 mb-4">$10,000 {t.save.amount}</div>
-            <div className="grid sm:grid-cols-2 gap-px bg-[#f1eee7]/12 border border-[#f1eee7]/12 text-left">
-              <div className="bg-[#15151a] p-7"><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">{t.save.cardL}</div><div className="mt-3 text-4xl font-semibold tabular-nums tracking-[-0.03em]" style={display}>{t.save.cardV}</div></div>
-              <div className="bg-[#0a0a0a] text-[#f1eee7] p-7"><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#FDDA24]">{t.save.slipL}</div><div className="mt-3 text-2xl font-semibold tracking-[-0.02em]" style={display}>{t.save.slipV}</div></div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/45 mb-4">$10,000 {t.save.amount}</div>
+            <div className="grid sm:grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12 text-left">
+              <div className="bg-white p-7"><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">{t.save.cardL}</div><div className="mt-3 text-4xl font-semibold tabular-nums tracking-[-0.03em]" style={display}>{t.save.cardV}</div></div>
+              <div className="bg-[#f1eee7] text-[#0a0a0a] p-7"><div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#6f6862]">{t.save.slipL}</div><div className="mt-3 text-2xl font-semibold tracking-[-0.02em]" style={display}>{t.save.slipV}</div></div>
             </div>
           </div>
           <p className="mt-8 text-xl font-medium tracking-[-0.01em]" style={display}>{t.save.note}</p>
@@ -296,24 +296,24 @@ export default function LandingV2() {
       </section>
 
       {/* YOURS */}
-      <section className="border-t border-[#f1eee7]/12">
+      <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <Index n="004" label={t.yours.stamp} />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6rem)]" style={display}>{t.yours.h}</h2>
-          <p className="mt-10 text-xl leading-relaxed max-w-[52ch] mx-auto text-[#f1eee7]/65">{t.yours.body}</p>
+          <p className="mt-10 text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/65">{t.yours.body}</p>
         </div>
       </section>
 
       {/* HOW (dark) */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7]">
+      <section className="bg-[#f1eee7] text-[#0a0a0a]">
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
           <Index n="005" label={t.how.stamp} dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.25rem,7vw,5.5rem)]" style={display}>{t.how.h}</h2>
           <div className="mt-16 max-w-[760px] mx-auto text-left flex flex-col gap-9">
             {t.how.steps.map(([h, b], i) => (
               <div key={i} className="flex gap-5 md:gap-7 items-baseline">
-                <span className="font-mono text-[13px] text-[#FDDA24] shrink-0 w-8">{String(i + 1).padStart(2, "0")}</span>
-                <div><div className="text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{h}</div><p className="mt-2 text-[16px] md:text-[17px] text-[#f1eee7]/60 leading-relaxed max-w-[54ch]">{b}</p></div>
+                <span className="font-mono text-[13px] text-[#6f6862] shrink-0 w-8">{String(i + 1).padStart(2, "0")}</span>
+                <div><div className="text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{h}</div><p className="mt-2 text-[16px] md:text-[17px] text-[#0a0a0a]/60 leading-relaxed max-w-[54ch]">{b}</p></div>
               </div>
             ))}
           </div>
@@ -321,76 +321,76 @@ export default function LandingV2() {
       </section>
 
       {/* GUARDRAILS (dark) + MandateDemo */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7] border-t border-[#f1eee7]/10">
+      <section className="bg-[#f1eee7] text-[#0a0a0a] border-t border-[#0a0a0a]/10">
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 flex flex-col items-center text-center">
           <Index n="006" label={t.guard.stamp} dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.25rem,7vw,5.5rem)]" style={display}>{t.guard.h}</h2>
-          <p className="mt-8 text-xl text-[#f1eee7]/70">{t.guard.body}</p>
+          <p className="mt-8 text-xl text-[#0a0a0a]/70">{t.guard.body}</p>
           <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2 text-lg">
-            {t.guard.checks.map((c) => <span key={c} className="flex items-center gap-2"><span className="text-[#FDDA24]">✓</span>{c}</span>)}
+            {t.guard.checks.map((c) => <span key={c} className="flex items-center gap-2"><span className="text-[#6f6862]">✓</span>{c}</span>)}
           </div>
           <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch]" style={display}>{t.guard.fail}</p>
           <div className="mt-12 w-full max-w-[440px] mx-auto text-left"><MandateDemo /></div>
-          <Link to="/gate" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#FDDA24] border-b border-[#FDDA24]/40 hover:border-[#FDDA24] pb-1">{t.guard.gateLink}</Link>
+          <Link to="/gate" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#6f6862] border-b border-[#6f6862]/40 hover:border-[#6f6862] pb-1">{t.guard.gateLink}</Link>
         </div>
       </section>
 
       {/* PROOF (dark) */}
-      <section id="proof" className="bg-[#0a0a0a] text-[#f1eee7] border-t border-[#f1eee7]/10">
+      <section id="proof" className="bg-[#f1eee7] text-[#0a0a0a] border-t border-[#0a0a0a]/10">
         <div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-24 md:py-40 flex flex-col items-center text-center">
           <Index n="007" label={t.proof.stamp} dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.25rem,7vw,5.5rem)] max-w-[18ch]" style={display}>{t.proof.h}</h2>
-          <p className="mt-8 text-xl leading-relaxed max-w-[50ch] mx-auto text-[#f1eee7]/65">{t.proof.body}</p>
+          <p className="mt-8 text-xl leading-relaxed max-w-[50ch] mx-auto text-[#0a0a0a]/65">{t.proof.body}</p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-            <a href={xurl("tx", REAL_TX)} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#f1eee7]">{t.proof.btnReal}</a>
-            <a href={xurl("contract", LIVE_CONTRACT)} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/60 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">{t.proof.btnContract}</a>
+            <a href={xurl("tx", REAL_TX)} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#0a0a0a] text-[#f1eee7]">{t.proof.btnReal}</a>
+            <a href={xurl("contract", LIVE_CONTRACT)} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/60 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/25 pb-1">{t.proof.btnContract}</a>
           </div>
         </div>
       </section>
 
       {/* DIFF */}
-      <section className="border-t border-[#f1eee7]/12">
+      <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <Index n="008" label={t.diff.stamp} />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5rem)]" style={display}>{t.diff.h}</h2>
           <div className="mt-12 max-w-[760px] mx-auto text-left flex flex-col">
             {t.diff.rows.map(([a, b], i) => (
-              <div key={i} className="border-t border-[#f1eee7]/12 py-7">
-                <p className="text-lg md:text-xl text-[#f1eee7]/55">{a}</p>
+              <div key={i} className="border-t border-[#0a0a0a]/12 py-7">
+                <p className="text-lg md:text-xl text-[#0a0a0a]/55">{a}</p>
                 <p className="mt-1 text-xl md:text-2xl font-semibold tracking-[-0.02em]" style={display}>{b}</p>
               </div>
             ))}
           </div>
-          <p className="mt-10 text-2xl md:text-3xl font-medium tracking-[-0.02em] text-[#FDDA24]" style={display}>{t.diff.tag}</p>
+          <p className="mt-10 text-2xl md:text-3xl font-medium tracking-[-0.02em] text-[#6f6862]" style={display}>{t.diff.tag}</p>
         </div>
       </section>
 
       {/* CTA (dark) */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7]">
+      <section className="bg-[#f1eee7] text-[#0a0a0a]">
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-28 md:py-48 text-center">
           <Index n="009" label={t.cta.stamp} dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,7.5rem)] mx-auto break-words" style={display}>
-            {t.cta.h}<br /><span className="text-[#FDDA24]">{t.cta.hacc}</span>
+            {t.cta.h}<br /><span className="text-[#6f6862]">{t.cta.hacc}</span>
           </h2>
-          <div className="mt-10 flex flex-col gap-1 text-xl md:text-2xl text-[#f1eee7]/70">
+          <div className="mt-10 flex flex-col gap-1 text-xl md:text-2xl text-[#0a0a0a]/70">
             {t.cta.lines.map((l) => <span key={l}>{l}</span>)}
           </div>
           <div className="mt-8 flex flex-col gap-0.5 text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>
             {t.cta.sig.map((l) => <span key={l}>{l}</span>)}
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-7">
-            <Link to="/account" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#f1eee7]">{t.cta.btn}</Link>
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#f1eee7]/40">{t.cta.note}</span>
+            <Link to="/account" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7]">{t.cta.btn}</Link>
+            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.cta.note}</span>
           </div>
-          <div className="mt-16 pt-10 border-t border-[#f1eee7]/10">
-            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#FDDA24]">{t.cta.supportLabel}</div>
-            <p className="mt-3 text-[15px] text-[#f1eee7]/60 max-w-[42ch] mx-auto text-center">{t.cta.supportText}</p>
+          <div className="mt-16 pt-10 border-t border-[#0a0a0a]/10">
+            <div className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#6f6862]">{t.cta.supportLabel}</div>
+            <p className="mt-3 text-[15px] text-[#0a0a0a]/60 max-w-[42ch] mx-auto text-center">{t.cta.supportText}</p>
             <div className="mt-5 flex flex-col items-center gap-3">
-              <Link to={`/pay?to=${TEAM_USDC}&amount=100000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#f1eee7] font-medium">{t.cta.supportBtn}</Link>
-              <span className="font-mono text-[10px] text-[#f1eee7]/40 break-all max-w-[320px] text-center">USDC · {TEAM_USDC}</span>
+              <Link to={`/pay?to=${TEAM_USDC}&amount=100000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#0a0a0a] text-[#f1eee7] font-medium">{t.cta.supportBtn}</Link>
+              <span className="font-mono text-[10px] text-[#0a0a0a]/40 break-all max-w-[320px] text-center">USDC · {TEAM_USDC}</span>
             </div>
           </div>
-          <div className="mt-16 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">{t.cta.footer}</div>
+          <div className="mt-16 font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/30">{t.cta.footer}</div>
         </div>
       </section>
     </div>
