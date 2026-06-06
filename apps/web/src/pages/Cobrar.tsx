@@ -10,7 +10,7 @@ import QRCode from "qrcode";
 import { encodeRequest } from "../lib/slippayqr";
 import { LiveProof } from "../components/LiveProof";
 
-const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
+const display = { fontFamily: "'Nunito', sans-serif" } as const;
 // Real mainnet recipient (has a USDC trustline). Demo "merchant" receive address.
 const RECIPIENT = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";
 const PRESETS = [0.05, 0.1, 0.15];

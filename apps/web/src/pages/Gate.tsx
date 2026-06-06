@@ -5,7 +5,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
+const display = { fontFamily: "'Nunito', sans-serif" } as const;
 const CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
 const TX_ATTESTED = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
 const TX_AUTONOMOUS = "b030230e81b0fa40eb899b03840884222e0ce7e4fba43f5976afe9f5e939597d";

@@ -6,7 +6,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
+const display = { fontFamily: "'Nunito', sans-serif" } as const;
 const CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
 const TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
 const xc = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;

@@ -9,7 +9,7 @@ import { createPasskey } from "../lib/passkey";
 import { loadAccount, saveAccount, clearAccount, type Account as Acct } from "../lib/account";
 import { LiveProof } from "../components/LiveProof";
 
-const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
+const display = { fontFamily: "'Nunito', sans-serif" } as const;
 const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
   ?? "https://api.slippay.cc/api/v1/relayer";
 const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
