@@ -68,7 +68,7 @@ export function LivePaymentCard() {
 
   useEffect(() => {
     setShown(0); setRoute(0); setAmount(0); setPhase("run");
-    const target = EXAMPLES[cycle % EXAMPLES.length];
+    const target = EXAMPLES[cycle % EXAMPLES.length] ?? 1240;
     const timers: number[] = [];
     STEPS.forEach((s, i) => timers.push(window.setTimeout(() => setShown(i + 1), s.at)));
     const cycleStart = performance.now();
