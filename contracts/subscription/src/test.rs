@@ -249,6 +249,18 @@ fn autocharge_attested_attestation_is_single_use_per_charge() {
 // --- v0.4 platform fee on the autonomous rail ---
 
 #[test]
+fn plain_autocharge_rejected_when_attester_is_set() {
+    // The integrity gate must be INESCAPABLE: once a subscription has an attester
+    // bound, the plain (ungated) autocharge path must refuse — closing the back
+    // door so the only way to settle is a fresh, valid attestation.
+    let id_arr = [9u8; 32];
+    let (f, id) = setup_attested(&id_arr);
+    let (pk, _sig) = sign_attestation(&[1u8; 32], &id_arr, 0, 2_000_000u64);
+    f.contract.set_attester(&id, &BytesN::from_array(&f.env, &pk));
+    assert!(f.contract.try_autocharge(&id).is_err());
+}
+
+#[test]
 fn autocharge_splits_platform_fee() {
     // The autonomous rail captures the platform fee out of each charge: the
     // merchant receives amount - fee, the platform receives fee, the buyer's
