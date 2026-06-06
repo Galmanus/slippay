@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "../lib/apiAuth.ts";
 
-const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
+const display = { fontFamily: "'Nunito', sans-serif" } as const;
 const EXPLORER_BASE =
   (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() === "PUBLIC"
     ? "https://stellar.expert/explorer/public/tx"

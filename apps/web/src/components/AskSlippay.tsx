@@ -224,7 +224,7 @@ export function AskSlippay() {
               <span className="opacity-40">·</span>
               <span>resposta na hora</span>
             </div>
-            <h2 className="mt-3 text-[28px] md:text-[34px] leading-none tracking-[-0.02em] font-medium" style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+            <h2 className="mt-3 text-[28px] md:text-[34px] leading-none tracking-[-0.02em] font-medium" style={{ fontFamily: "'Nunito', 'Inter', sans-serif" }}>
               Fala com o SlipPay
             </h2>
             <div className="mt-2 text-[11px] tracking-tight opacity-55 max-w-[42ch]" style={{ fontFamily: "'Inter', sans-serif" }}>
