@@ -12,6 +12,7 @@ import { QrScanner } from "../components/QrScanner";
 import { decodeRequest, stroopsToXlm, type PayRequest } from "../lib/slippayqr";
 import { createPasskey, payViaRelayer, type PasskeyHandle } from "../lib/passkey";
 import { FaceScan } from "../components/FaceScan";
+import { LiveProof } from "../components/LiveProof";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
 const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
@@ -325,6 +326,7 @@ export default function PayDemo() {
             : "Testnet (free play money) — to prove the flow on your device."}
           {" "}Works on any device with biometrics + a modern browser.
         </p>
+        <div className="mt-12"><LiveProof /></div>
       </main>
     </div>
   );
