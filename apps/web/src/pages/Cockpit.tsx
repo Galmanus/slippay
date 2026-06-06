@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-const display = { fontFamily: "'Nunito', sans-serif" } as const;
+const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 const HORIZON = "https://horizon.stellar.org";
 const SPONSOR = "GBI4NVNPTTXAQ7BTR6PSZYFRYFDFBGYR7DNGIQJF3SSSVEF7PRXMIEBU";
 const RECIPIENT = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";

@@ -4,7 +4,7 @@ import { authFetch } from "../lib/apiAuth.ts";
 import { CountUp } from "../components/CountUp.tsx";
 import { LiveProof } from "../components/LiveProof.tsx";
 
-const display = { fontFamily: "'Nunito', sans-serif" } as const;
+const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 const EXPLORER_BASE =
   (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() === "PUBLIC"
     ? "https://stellar.expert/explorer/public/tx"

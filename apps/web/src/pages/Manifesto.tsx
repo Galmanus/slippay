@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LiveProof } from "../components/LiveProof.tsx";
 
-const display = { fontFamily: "'Nunito', sans-serif" } as const;
+const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 type Lang = "pt" | "en";
 
 const C = {

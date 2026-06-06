@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
 
-const display = { fontFamily: "'Nunito', sans-serif" } as const;
+const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 const GRAY = "#6f6862";
 const LIVE_CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
 const REAL_TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
@@ -152,7 +152,7 @@ export default function LandingV2() {
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}section h2{text-wrap:balance}`}</style>
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-2xl md:text-3xl tracking-[-0.02em] lowercase" style={{ fontFamily: "'Rounded', 'Nunito', sans-serif" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-2xl md:text-3xl tracking-[-0.02em] lowercase" style={{ fontFamily: "'Rounded', 'DM Sans', sans-serif" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#0a0a0a]">{label}</Link>)}
           <span className="hidden md:inline"><LangToggle /></span>
