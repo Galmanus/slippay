@@ -42,6 +42,7 @@ export default function PayDemo() {
   const [busy, setBusy] = useState(false);
   const [payHash, setPayHash] = useState<string | null>(null);
   const [paidLabel, setPaidLabel] = useState<string | null>(null);
+  const [paidReq, setPaidReq] = useState<{ to: string; amount: string; asset: string } | null>(null);
   // premium status model (replaces the dev log)
   const [flow, setFlow] = useState<null | "create" | "pay">(null);
   const [step, setStep] = useState(0);
@@ -91,7 +92,9 @@ export default function PayDemo() {
         walletId: wallet, recipient: req.to, amount: req.amount,
         asset: req.asset ?? "USDC", credId: handle.credId,
       });
-      setStep(2); setPayHash(hash); setPaidLabel(label); setReq(null);
+      setStep(2); setPayHash(hash); setPaidLabel(label);
+      setPaidReq({ to: req.to, amount: req.amount, asset: req.asset ?? "USDC" });
+      setReq(null);
     } catch (e) { setError(friendly(e)); } finally { setBusy(false); }
   }
 
@@ -183,10 +186,17 @@ export default function PayDemo() {
                   <div className="mt-2 text-3xl font-semibold tracking-[-0.02em] text-[#FDDA24]" style={display}>Paid.</div>
                   {paidLabel && <div className="mt-1 text-lg tabular-nums text-[#f1eee7]/85">{paidLabel}</div>}
                   <div className="mt-1 font-mono text-[11px] text-[#f1eee7]/45">moved on-chain · only your touch authorized it</div>
-                  <a href={`https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`} target="_blank" rel="noopener noreferrer"
-                    className="mt-5 inline-flex items-center gap-2 rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">
-                    See it on the blockchain ↗
-                  </a>
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <Link
+                      to={`/comprovante/${payHash}?to=${paidReq?.to ?? ""}&amount=${paidReq ? stroopsToXlm(paidReq.amount) : ""}&asset=${paidReq?.asset ?? "USDC"}&net=${explorerNet}`}
+                      className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">
+                      Get receipt ↗
+                    </Link>
+                    <a href={`https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">
+                      On the blockchain ↗
+                    </a>
+                  </div>
                 </div>
               )}
 
