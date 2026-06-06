@@ -21,8 +21,8 @@ const COPY = {
     hero: {
       axis: "financial automation",
       h1a: "Your money.", h1acc: "On autopilot.",
-      sub: "Add reais with Pix. Hold dollars. Approve once — the rest happens on its own.",
-      control: "You set the limits, the recipients and the budget. If it falls outside the rule, it doesn't pay.",
+      sub: "Add reais with Pix. Hold dollars. Approve once. The rest happens on its own.",
+      control: "Set limits, recipients and a budget. If it falls outside the rule, it doesn't pay.",
       cta: "Get started free", note: "2 minutes • no card • no seed phrases",
       trust: ["Your money stays yours", "No bank holding your balance", "Payments final in seconds", "Up to ~3% cheaper than cards"],
       liveTag: "live · mainnet",
@@ -89,8 +89,8 @@ const COPY = {
     hero: {
       axis: "automação financeira",
       h1a: "Seu dinheiro.", h1acc: "No automático.",
-      sub: "Coloque reais com Pix. Guarde em dólar. Aprove uma vez — o resto acontece sozinho.",
-      control: "Você define os limites, os destinatários e o orçamento. Se sair da regra, não paga.",
+      sub: "Coloque reais com Pix. Guarde em dólar. Aprove uma vez. O resto acontece sozinho.",
+      control: "Defina limites, destinatários e orçamento. Se sair da regra, não paga.",
       cta: "Começar grátis", note: "2 minutos • sem cartão • sem seed phrase",
       trust: ["Seu dinheiro continua seu", "Sem banco segurando saldo", "Pagamentos finais em segundos", "Até ~3% mais barato que cartão"],
       liveTag: "ao vivo · mainnet",
