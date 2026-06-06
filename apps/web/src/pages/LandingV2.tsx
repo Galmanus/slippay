@@ -8,7 +8,6 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
-import { RuleSandbox } from "../components/RuleSandbox.tsx";
 import { CountUp } from "../components/CountUp.tsx";
 
 const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
@@ -122,21 +121,10 @@ export default function LandingV2() {
         </div>
       </section>
 
-      {/* 002 — WHAT THE AGENT HANDLES */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <Index n="002" label="what it handles" />
-          <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.92] text-[clamp(2.25rem,7vw,5.5rem)] max-w-[22ch] mx-auto break-words" style={display}>
-            The payments that follow <span className="text-[#0a0a0a]/35">predictable rules.</span>
-          </h2>
-          <p className="mt-8 text-xl leading-relaxed max-w-[46ch] mx-auto text-[#0a0a0a]/60">Subscriptions, APIs, suppliers, contractors, and other recurring charges.</p>
-        </div>
-      </section>
-
       {/* 003 — CHEAPER THAN STRIPE */}
       <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <Index n="003" label="cheaper & safer than stripe" />
+          <Index n="002" label="cheaper & safer than stripe" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6.5rem)] max-w-[15ch] mx-auto break-words" style={display}>
             Save ~3% on <span className="text-[#0a0a0a]">every transaction.</span>
           </h2>
@@ -167,7 +155,7 @@ export default function LandingV2() {
       {/* 004 — HOW TO START (dark) */}
       <section className="bg-[#0a0a0a] text-[#f1eee7]">
         <div data-reveal className="max-w-[1200px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
-          <Index n="004" label="how to start" dark />
+          <Index n="003" label="how to start" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,8vw,7rem)] max-w-[16ch] mx-auto break-words" style={display}>
             Start with what <span className="text-[#FDDA24]">you already have.</span>
           </h2>
@@ -187,75 +175,10 @@ export default function LandingV2() {
         </div>
       </section>
 
-      {/* 005 — BRING DOLLARS FROM ANYWHERE */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <Index n="005" label="bring your dollars from anywhere" />
-          <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5.5rem)] max-w-[18ch] mx-auto break-words" style={display}>
-            Already have digital dollars somewhere else?
-          </h2>
-          <p className="mt-8 text-xl leading-relaxed max-w-[50ch] mx-auto text-[#0a0a0a]/60">
-            If your dollars are on another network, bring them in. They arrive in your wallet as
-            <span className="text-[#0a0a0a] font-medium"> real dollars, straight from Circle</span> — the company behind USDC.
-          </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
-            {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "+ more"].map((c) => (
-              <span key={c} className="flex items-center gap-2"><span className="text-[#0a0a0a]">◆</span>{c}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 006 — FULL CONTROL + sandbox (dark) */}
-      <section className="bg-[#0a0a0a] text-[#f1eee7]">
-        <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
-          <Index n="006" label="full control" dark />
-          <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] max-w-[12ch] mx-auto break-words" style={display}>
-            The agent doesn't decide. <span className="text-[#FDDA24]">It executes.</span>
-          </h2>
-          <p className="mt-10 text-xl leading-relaxed max-w-[46ch] mx-auto text-[#f1eee7]/70">
-            <span className="text-[#f1eee7] font-medium">Your money never leaves your control.</span> You set the rules, and
-            before every payment the agent checks who gets paid, how much, whether it's within policy, and whether the limit still holds.
-          </p>
-          <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch] mx-auto text-[#f1eee7]/90" style={display}>
-            The agent can slip. The rule that protects your money can't.
-          </p>
-          <div className="mt-12 max-w-[560px] mx-auto text-left">
-            <RuleSandbox />
-          </div>
-        </div>
-      </section>
-
-      {/* 007 — EXAMPLE */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 flex flex-col items-center text-center">
-          <Index n="007" label="an example" />
-          <h2 className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,11vw,8.5rem)] mx-auto" style={display}>
-            R$<CountUp to={40} format={(n) => `${Math.round(n)}k`} /><span className="text-[#0a0a0a]">/mo</span>
-          </h2>
-          <p className="mt-8 text-xl leading-relaxed max-w-[44ch] mx-auto text-[#0a0a0a]/65">
-            The agent runs the recurring payments within the approved rules, and only asks for help when something falls outside the norm.
-          </p>
-          <div className="mt-14 w-full max-w-[420px] mx-auto text-left">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/40 pb-6">one company · every month</div>
-            {[["APIs", "R$20,000"], ["Suppliers", "R$13,000"], ["Subscriptions", "R$7,000"]].map(([l, v]) => (
-              <div key={l} className="flex items-baseline justify-between py-4 border-t border-[#0a0a0a]/10">
-                <span className="text-lg text-[#0a0a0a]/70">{l}</span>
-                <span className="text-xl font-semibold tabular-nums">{v}</span>
-              </div>
-            ))}
-            <div className="flex items-baseline justify-between pt-6 mt-2 border-t-2 border-[#0a0a0a]">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]">paid by the agent</span>
-              <span className="text-3xl font-semibold tabular-nums" style={display}>R$40k</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* 008 — LIVE ON MAINNET / PROOF (dark) */}
       <section id="proof" className="bg-[#0a0a0a] text-[#f1eee7]">
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 flex flex-col items-center text-center">
-          <Index n="008" label="live on the main network" dark />
+          <Index n="004" label="live on the main network" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] max-w-[14ch] mx-auto break-words" style={display}>
             This isn't a demo. <span className="text-[#FDDA24]">It's running.</span>
           </h2>
@@ -272,24 +195,10 @@ export default function LandingV2() {
         </div>
       </section>
 
-      {/* 009 — VISION */}
-      <section className="border-t border-[#0a0a0a]/12">
-        <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
-          <Index n="009" label="our vision" />
-          <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.88] text-[clamp(2.5rem,9vw,8rem)] max-w-[16ch] mx-auto break-words" style={display}>
-            Real dollars, <span className="text-[#0a0a0a]">as simple as an app.</span>
-          </h2>
-          <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[54ch] mx-auto text-[#0a0a0a]/70">
-            Dollars that work on their own and stay yours. No becoming an engineer, no memorizing jargon. The AI does the heavy lifting, and the rule that protects your money never depends on it.
-          </p>
-          <Link to="/manifesto" className="mt-10 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/70 border-b border-[#0a0a0a]/25 hover:border-[#0a0a0a] pb-1">Read the manifesto ↗</Link>
-        </div>
-      </section>
-
       {/* 010 — PRICING */}
       <section id="pricing" className="border-t border-[#0a0a0a]/12">
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <Index n="010" label="pricing" />
+          <Index n="005" label="pricing" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5.5rem)] max-w-[18ch] mx-auto break-words" style={display}>
             Start free. <span className="text-[#0a0a0a]/35">Pay when it's worth it.</span>
           </h2>
@@ -315,7 +224,7 @@ export default function LandingV2() {
       {/* 011 — FAQ */}
       <section className="border-t border-[#0a0a0a]/12">
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
-          <Index n="011" label="frequently asked" />
+          <Index n="006" label="frequently asked" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.25rem,7vw,5.5rem)] max-w-[14ch] mx-auto break-words" style={display}>Still have questions?</h2>
           <div className="mt-12 max-w-[900px] mx-auto text-left">
             {FAQ.map(([q, a], i) => {
@@ -339,7 +248,7 @@ export default function LandingV2() {
       {/* 012 — CTA (dark) */}
       <section className="bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-28 md:py-48 text-center">
-          <Index n="012" label="start" dark />
+          <Index n="007" label="start" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,12vw,11rem)] mx-auto break-words" style={display}>
             Set it once.<br /><span className="text-[#FDDA24]">Done.</span>
           </h2>
