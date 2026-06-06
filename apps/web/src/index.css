@@ -188,3 +188,6 @@ html { scroll-behavior: smooth; }
     scroll-behavior: auto !important;
   }
 }
+
+/* "Rounded" by Igor Stepanchenko — display only (no accents/$); used on the wordmark. */
+@font-face { font-family: 'Rounded'; src: url('/fonts/Rounded.woff') format('woff'), url('/fonts/Rounded.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }

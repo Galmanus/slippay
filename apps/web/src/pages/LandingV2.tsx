@@ -152,7 +152,7 @@ export default function LandingV2() {
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}section h2{text-wrap:balance}`}</style>
       <header className="relative px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-xl md:text-2xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-2xl md:text-3xl tracking-[-0.02em] lowercase" style={{ fontFamily: "'Rounded', 'Nunito', sans-serif" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline hover:text-[#0a0a0a]">{label}</Link>)}
           <span className="hidden md:inline"><LangToggle /></span>
