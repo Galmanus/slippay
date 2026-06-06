@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import AgentHome from "./pages/AgentHome.tsx";
 import LandingV2 from "./pages/LandingV2.tsx";
+import Cockpit from "./pages/Cockpit.tsx";
 import Verify from "./pages/Verify.tsx";
 import Home from "./pages/Home.tsx";
 import Agents from "./pages/Agents.tsx";
@@ -35,6 +36,7 @@ export default function App() {
       <Route path="/" element={<LandingV2 />} />
       <Route path="/v1" element={<AgentHome />} />
       <Route path="/v2" element={<LandingV2 />} />
+      <Route path="/cockpit" element={<Cockpit />} />
       <Route path="/human" element={<Home />} />
       <Route path="/verify" element={<Verify />} />
       <Route path="/agents" element={<Agents />} />
