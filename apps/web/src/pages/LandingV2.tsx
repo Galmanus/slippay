@@ -183,7 +183,7 @@ export default function LandingV2() {
           </div>
           {/* right: the piggy */}
           <div className="flex justify-center md:justify-end order-first md:order-none">
-            <img src="/cofrinho.svg" alt="slippay piggy bank" className="w-52 sm:w-64 md:w-[400px] h-auto" />
+            <img src="/cofrinho.svg" alt="slippay piggy bank" className="w-56 sm:w-72 md:w-[480px] lg:w-[540px] h-auto" />
           </div>
         </div>
         {/* live card */}
