@@ -17,10 +17,11 @@ interface MerchantSummary {
   active: boolean;
 }
 
-const NAV: [string, string][] = [
-  ["Activity", "/dashboard/orders"],
-  ["Autopilot", "/dashboard/subscriptions"],
-  ["Settings", "/dashboard/settings"],
+const NAV: [string, string, boolean][] = [
+  ["Overview", "/dashboard", true],
+  ["Activity", "/dashboard/orders", false],
+  ["Autopilot", "/dashboard/subscriptions", false],
+  ["Settings", "/dashboard/settings", false],
 ];
 
 export default function Dashboard() {
@@ -132,8 +133,8 @@ export default function Dashboard() {
           </div>
         )}
         <nav className="flex flex-col gap-1 mt-2">
-          {NAV.map(([label, to]) => (
-            <NavLink key={to} to={to}
+          {NAV.map(([label, to, end]) => (
+            <NavLink key={to} to={to} end={end}
               className={({ isActive }) => `relative px-3 py-2.5 text-[10px] uppercase tracking-[0.2em] transition-colors ${isActive ? "text-[#FDDA24]" : "text-[#f1eee7]/55 hover:text-[#f1eee7]"}`}>
               {({ isActive }) => (<>{isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[2px] bg-[#FDDA24]" />}{label}</>)}
             </NavLink>
