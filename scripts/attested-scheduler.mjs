@@ -36,12 +36,16 @@ const die = (m) => { console.error("FATAL:", m); process.exit(1); };
 async function subIds() {
   if (process.env.SUB_IDS) return process.env.SUB_IDS.split(",").map((s) => s.trim()).filter(Boolean);
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) die("SUB_IDS or SUPABASE_URL+SUPABASE_SERVICE_ROLE_KEY required.");
+  if (!url || !key) { log("no SUB_IDS and no Supabase creds — nothing to do."); return []; }
   const net = IS_MAINNET ? "mainnet" : "testnet";
-  const q = `${url}/rest/v1/subscriptions?status=eq.active&network=eq.${net}&gated=eq.true&next_charge_at=lte.${new Date().toISOString()}&select=soroban_subscription_id`;
-  const r = await fetch(q, { headers: { apikey: key, authorization: `Bearer ${key}` } });
-  if (!r.ok) die(`supabase ${r.status}: ${await r.text()}`);
-  return (await r.json()).map((s) => s.soroban_subscription_id).filter(Boolean);
+  // Active, due subs on this network. Non-gated ones fail at SIMULATION
+  // (AttesterNotSet) and never submit, so no gas is wasted — safe to scan all.
+  const q = `${url}/rest/v1/subscriptions?status=eq.active&network=eq.${net}&next_charge_at=lte.${new Date().toISOString()}&select=soroban_subscription_id`;
+  try {
+    const r = await fetch(q, { headers: { apikey: key, authorization: `Bearer ${key}` } });
+    if (!r.ok) { log(`supabase ${r.status} — skipping this run`); return []; }
+    return (await r.json()).map((s) => s.soroban_subscription_id).filter(Boolean);
+  } catch (e) { log("supabase error — skipping this run:", e.message); return []; }
 }
 
 // read the sub's current charges_done on-chain (the value the contract will
