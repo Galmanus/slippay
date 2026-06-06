@@ -19,7 +19,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", manifesto: "Manifesto", login: "Login", tryFree: "Get started" },
-    hero: { axis: "global money", h1a: "Global money.", h1acc: "In one touch.", sub: "Pix → Dollars → Your wallet. In 10 seconds.", reassure: "No bank. No broker. No hassle.", bold: "Just you and your money.", cta: "Get started free", note: "2 minutes • biometrics • no card • no seed phrase", liveTag: "live · mainnet",
+    hero: { axis: "global money", h1pre: "Global ", h1mark: "money", h1post: ".", h1acc: "In one touch.", sub: "Pix → Dollars → Your wallet. In 10 seconds.", reassure: "No bank. No broker. No hassle.", bold: "Just you and your money.", cta: "Get started free", note: "2 minutes • biometrics • no card • no seed phrase", liveTag: "live · mainnet",
       micro: ["USDC in your wallet in seconds", "Zero custody", "You keep full control", "Works across multiple chains"] },
     second: { stamp: "how", h: "Pix in. Dollars out.", lines: ["You send reais.", "You get dollars.", "Straight to your wallet.", "No middlemen in between."] },
     magic: { stamp: "one touch", h: "One touch.", lines: ["Open the app.", "Biometrics.", "Done.", "Your global money appears."] },
@@ -37,7 +37,7 @@ const COPY = {
   },
   pt: {
     nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", manifesto: "Manifesto", login: "Entrar", tryFree: "Começar" },
-    hero: { axis: "dinheiro global", h1a: "Dinheiro global.", h1acc: "Em um toque.", sub: "Pix → Dólares → Sua carteira. Em 10 segundos.", reassure: "Sem banco. Sem corretora. Sem complicação.", bold: "Só você e seu dinheiro.", cta: "Começar grátis", note: "2 minutos • biometria • sem cartão • sem seed phrase", liveTag: "ao vivo · mainnet",
+    hero: { axis: "dinheiro global", h1pre: "", h1mark: "Dinheiro", h1post: " global.", h1acc: "Em um toque.", sub: "Pix → Dólares → Sua carteira. Em 10 segundos.", reassure: "Sem banco. Sem corretora. Sem complicação.", bold: "Só você e seu dinheiro.", cta: "Começar grátis", note: "2 minutos • biometria • sem cartão • sem seed phrase", liveTag: "ao vivo · mainnet",
       micro: ["USDC na sua carteira em segundos", "Custódia zero", "Você mantém controle total", "Funciona em múltiplas chains"] },
     second: { stamp: "como", h: "Pix in. Dollars out.", lines: ["Você envia reais.", "Você recebe dólares.", "Direto na sua carteira.", "Sem intermediários no meio."] },
     magic: { stamp: "um toque", h: "Um toque.", lines: ["Abra o app.", "Biometria.", "Pronto.", "Seu dinheiro global aparece."] },
@@ -140,7 +140,7 @@ export default function LandingV2() {
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
-            {t.hero.h1a}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
+            {t.hero.h1pre}<span style={{ background: "#FDDA24", color: "#0a0a0a", boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone", padding: "0 0.06em" }}>{t.hero.h1mark}</span>{t.hero.h1post}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
           </h1>
           <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[24ch] mx-auto" style={display}>{t.hero.sub}</p>
           <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55">{t.hero.reassure}</p>
