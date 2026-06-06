@@ -14,7 +14,7 @@ import { createPasskey, payViaRelayer, type PasskeyHandle } from "../lib/passkey
 import { FaceScan } from "../components/FaceScan";
 import { LiveProof } from "../components/LiveProof";
 
-const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
+const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
 const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
   ?? "https://api.slippay.cc/api/v1/relayer";
 
