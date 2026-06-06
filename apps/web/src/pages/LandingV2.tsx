@@ -165,6 +165,7 @@ export default function LandingV2() {
       {/* HERO */}
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
+          <img src="/cofrinho.svg" alt="slippay" className="w-16 h-16 md:w-20 md:h-20 mb-7" />
           <h1 className="font-bold uppercase tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6.5vw,4.75rem)] max-w-[15ch] mx-auto [text-wrap:balance]" style={display}>
             {t.hero.h1l1}
           </h1>
