@@ -1,8 +1,8 @@
 // /pay — REAL biometric payment on Stellar, fully on your phone. Editorial
 // monumental register (matches the landing): Space Grotesk display, index stamp,
-// Stellar yellow. Same logic as before — a device passkey (Face ID) is minted,
+// Stellar yellow. Same logic as before — a device passkey (biometrics) is minted,
 // the gas-sponsor relayer deploys a smart-wallet bound to it and fronts a small
-// float, and "pay" moves funds authorized ONLY by a live Face ID tap, verified
+// float, and "pay" moves funds authorized ONLY by a live biometrics tap, verified
 // on-chain by the wallet's __check_auth. The relayer pays network fees only.
 
 import { useState } from "react";
@@ -45,7 +45,7 @@ export default function PayDemo() {
       setNetwork(info.network === "PUBLIC" ? "PUBLIC" : "TESTNET");
       add(`✅ relayer ${info.network}`);
 
-      add("tap Face ID to create your passkey…");
+      add("use your biometrics to create your passkey…");
       const h = await createPasskey("slippay");
       setHandle(h);
       add("✅ passkey created (your key, no one else has it)");
@@ -79,7 +79,7 @@ export default function PayDemo() {
     if (!handle || !wallet || !sponsor || !req) return;
     setBusy(true); setPayHash(null);
     try {
-      add(`tap Face ID to pay ${stroopsToXlm(req.amount)} ${req.asset ?? "USDC"}…`);
+      add(`use your biometrics to pay ${stroopsToXlm(req.amount)} ${req.asset ?? "USDC"}…`);
       const hash = await payViaRelayer({
         network, relayerBase: RELAYER_BASE, sponsor,
         walletId: wallet, recipient: req.to, amount: req.amount,
@@ -109,8 +109,8 @@ export default function PayDemo() {
           Pay with <span className="text-[#0a0a0a]">a touch.</span>
         </h1>
         <p className="mt-8 text-xl leading-relaxed max-w-[48ch] text-[#0a0a0a]/75">
-          This is the rail your agent uses to pay. Create a wallet with Face ID and send a real
-          payment — authorized only by your face, verified on-chain.
+          This is the rail your agent uses to pay. Create a wallet with biometrics and send a real
+          payment — authorized only by your biometrics, verified on-chain.
           <span className="text-[#0a0a0a] font-medium"> Free, on your phone. No app, no seed phrase.</span>
         </p>
         <a href="/anchor-demo" className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-0.5">
@@ -120,7 +120,7 @@ export default function PayDemo() {
         <div className="mt-12 flex flex-col gap-3 max-w-[380px]">
           <button onClick={onCreateAccount} disabled={busy}
             className="lift px-7 py-4 rounded-full bg-[#0a0a0a] text-[#f1eee7] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
-            1 · Create my wallet (Face ID)
+            1 · Create my wallet (biometrics)
           </button>
           <button onClick={() => setScanning(true)} disabled={busy || !wallet}
             className="lift px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
@@ -133,12 +133,12 @@ export default function PayDemo() {
           <div className="mt-8 max-w-[380px] rounded-2xl border border-[#0a0a0a]/10 bg-white/40 py-4">
             <FaceScan state={payHash && !busy ? "done" : "scanning"} />
             <div className="text-center font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 pb-1">
-              {payHash && !busy ? "authorized by your face" : "waiting for your face…"}
+              {payHash && !busy ? "authorized by your biometrics" : "waiting for your biometrics…"}
             </div>
           </div>
         )}
 
-        {/* confirm — see WHO and HOW MUCH before your face authorizes */}
+        {/* confirm — see WHO and HOW MUCH before your biometrics authorizes */}
         {req && (
           <div className="mt-8 p-6 rounded-2xl border-2 border-[#0a0a0a] max-w-[380px]">
             <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-3">Confirm the payment</div>
@@ -146,7 +146,7 @@ export default function PayDemo() {
             <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">to {short(req.to, 8, 8)}</div>
             <button onClick={onPayReq} disabled={busy}
               className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
-              {busy ? "…" : "Authorize with your face"}
+              {busy ? "…" : "Authorize with your biometrics"}
             </button>
             <button onClick={() => setReq(null)} disabled={busy}
               className="mt-2 w-full px-6 py-3 text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
@@ -165,7 +165,7 @@ export default function PayDemo() {
               view on the blockchain ↗
             </a>
             <p className="text-sm text-[#0a0a0a]/70 mt-2">
-              No password. Only your face authorized it — and the contract verified it on-chain.
+              No password. Only your biometrics authorized it — and the contract verified it on-chain.
             </p>
           </div>
         )}
@@ -179,9 +179,9 @@ export default function PayDemo() {
 
         <p className="mt-6 text-xs text-[#0a0a0a]/45 leading-relaxed">
           {network === "PUBLIC"
-            ? "Mainnet — real money. The relayer sponsors only the network fee; your money stays in the wallet that only your face can move."
+            ? "Mainnet — real money. The relayer sponsors only the network fee; your money stays in the wallet that only your biometrics can move."
             : "Testnet (free play money) — to prove the flow on your device."}
-          {" "}Needs Face ID / Touch ID / fingerprint + a modern browser.
+          {" "}Needs a device with biometrics (Touch ID, fingerprint, etc.) + a modern browser.
         </p>
       </main>
     </div>
