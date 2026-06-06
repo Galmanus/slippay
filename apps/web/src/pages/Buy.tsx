@@ -8,7 +8,7 @@ import { quoteBRLtoUSDC, recordConversionIntent, SPREAD_PCT, type Quote } from "
 import { loadAccount } from "../lib/account";
 import { buildOnrampUrl, transakConfigured } from "../lib/onramp";
 
-const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
+const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
 const GRAY = "#6f6862";
 type Lang = "pt" | "en";
 

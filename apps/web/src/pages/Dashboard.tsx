@@ -6,7 +6,7 @@ import { StellarAddressInput } from "../components/StellarAddressInput.tsx";
 import { LiveProof } from "../components/LiveProof.tsx";
 import { isValidStellarAddress } from "../lib/stellar.ts";
 
-const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
+const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
 
 interface MerchantSummary {
   id: string;

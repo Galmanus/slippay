@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
 
-const display = { fontFamily: "'Space Grotesk', sans-serif" } as const;
+const display = { fontFamily: "'Plus Jakarta Sans', sans-serif" } as const;
 const GRAY = "#6f6862";
 const LIVE_CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
 const REAL_TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
