@@ -18,7 +18,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   en: {
-    nav: { gate: "The gate", live: "Live", pay: "Pay", receive: "Receive", pricing: "Pricing", manifesto: "Manifesto", login: "Login", tryFree: "Try it free" },
+    nav: { gate: "The gate", security: "Security", live: "Live", pay: "Pay", receive: "Receive", pricing: "Pricing", manifesto: "Manifesto", login: "Login", tryFree: "Try it free" },
     hero: {
       stamp: "payments, on autopilot",
       h1a: "Your money,", h1dim: "on", h1accent: "autopilot.",
@@ -81,7 +81,7 @@ const COPY = {
     },
   },
   pt: {
-    nav: { gate: "O gate", live: "Ao vivo", pay: "Pagar", receive: "Receber", pricing: "Preços", manifesto: "Manifesto", login: "Entrar", tryFree: "Testar grátis" },
+    nav: { gate: "O gate", security: "Segurança", live: "Ao vivo", pay: "Pagar", receive: "Receber", pricing: "Preços", manifesto: "Manifesto", login: "Entrar", tryFree: "Testar grátis" },
     hero: {
       stamp: "pagamentos, no automático",
       h1a: "Seu dinheiro,", h1dim: "no", h1accent: "automático.",
@@ -167,7 +167,7 @@ export default function LandingV2() {
   });
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* ignore */ } }, [lang]);
   const t = COPY[lang];
-  const NAV: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.pricing, "#pricing"], [t.nav.manifesto, "/manifesto"], [t.nav.login, "/account"]];
+  const NAV: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.security, "/security"], [t.nav.live, "/cockpit"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.pricing, "#pricing"], [t.nav.manifesto, "/manifesto"], [t.nav.login, "/account"]];
 
   useEffect(() => {
     const root = document.documentElement;
