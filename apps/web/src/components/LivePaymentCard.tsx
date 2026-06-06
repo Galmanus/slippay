@@ -5,14 +5,16 @@
 import { useEffect, useRef, useState } from "react";
 
 const FALLBACK_TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
-const FALLBACK_AMOUNT = 1240;
+// Illustrative recurring-payment amounts (the animation is a scenario; the tx
+// link below is the real on-chain proof). Rotates per cycle, up to $2M.
+const EXAMPLES = [1240, 12500, 96000, 480000, 2000000];
 const LIVE_ACCOUNT = "GCYEAQWXDR3MXHU364KIFOLSL2FIZL5RYXEKO3QVQ3WTQCWY64BXBRNR";
 const HORIZON = "https://horizon.stellar.org";
 
 const STEPS = [
   { at: 200, key: "init", label: "recurring payment", meta: "API bill" },
   { at: 700, key: "limit", label: "policy check", meta: "approved vendor" },
-  { at: 1300, key: "route", label: "within monthly cap", meta: "$5,000/mo" },
+  { at: 1300, key: "route", label: "within monthly cap", meta: "within limit" },
   { at: 2000, key: "settle", label: "executed · settled", meta: "final · 4.9s" },
 ];
 const ROUTE_START = 1300, SETTLE_AT = 2000, VERIFY_AT = 2500, TX_AT = 3400, RESET_AT = 8500;
@@ -25,7 +27,6 @@ export function LivePaymentCard() {
   const [phase, setPhase] = useState<"run" | "verify" | "done">("run");
   const [cycle, setCycle] = useState(0);
   const [txHash, setTxHash] = useState(FALLBACK_TX);
-  const [payAmount, setPayAmount] = useState(FALLBACK_AMOUNT);
   const txUrl = `https://stellar.expert/explorer/public/tx/${txHash}`;
   const raf = useRef<number | null>(null);
   const tiltRef = useRef<HTMLDivElement | null>(null);
@@ -60,8 +61,6 @@ export function LivePaymentCard() {
         const p = recs.find((x) => typeof x.amount === "string" && typeof x.transaction_hash === "string");
         if (!p || cancelled) return;
         setTxHash(p.transaction_hash as string);
-        const amt = Math.round(parseFloat(p.amount as string));
-        if (amt > 0) setPayAmount(amt);
       } catch { /* keep fallback */ }
     })();
     return () => { cancelled = true; ctrl.abort(); window.clearTimeout(timer); };
@@ -69,6 +68,7 @@ export function LivePaymentCard() {
 
   useEffect(() => {
     setShown(0); setRoute(0); setAmount(0); setPhase("run");
+    const target = EXAMPLES[cycle % EXAMPLES.length];
     const timers: number[] = [];
     STEPS.forEach((s, i) => timers.push(window.setTimeout(() => setShown(i + 1), s.at)));
     const cycleStart = performance.now();
@@ -80,14 +80,14 @@ export function LivePaymentCard() {
     timers.push(window.setTimeout(() => { raf.current = requestAnimationFrame(() => tickRoute(performance.now() - cycleStart)); }, ROUTE_START));
     timers.push(window.setTimeout(() => {
       const dur = 750, start = performance.now();
-      const up = () => { const p = Math.min(1, (performance.now() - start) / dur); setAmount(payAmount * (1 - Math.pow(1 - p, 3))); if (p < 1) raf.current = requestAnimationFrame(up); else setAmount(payAmount); };
+      const up = () => { const p = Math.min(1, (performance.now() - start) / dur); setAmount(target * (1 - Math.pow(1 - p, 3))); if (p < 1) raf.current = requestAnimationFrame(up); else setAmount(target); };
       raf.current = requestAnimationFrame(up);
     }, SETTLE_AT));
     timers.push(window.setTimeout(() => setPhase("verify"), VERIFY_AT));
     timers.push(window.setTimeout(() => setPhase("done"), TX_AT));
     timers.push(window.setTimeout(() => setCycle((c) => c + 1), RESET_AT));
     return () => { timers.forEach(clearTimeout); if (raf.current) cancelAnimationFrame(raf.current); };
-  }, [cycle, payAmount]);
+  }, [cycle]);
 
   return (
     <div className="lpc relative" style={{ transformStyle: "preserve-3d" }} onMouseMove={onMove} onMouseLeave={onLeave}>
