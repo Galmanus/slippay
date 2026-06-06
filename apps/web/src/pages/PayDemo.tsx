@@ -6,7 +6,7 @@
 // The relayer pays network fees only. Progress shows as elegant live steps;
 // errors are friendly, never raw.
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { QrScanner } from "../components/QrScanner";
 import { decodeRequest, stroopsToXlm, type PayRequest } from "../lib/slippayqr";
@@ -47,8 +47,32 @@ export default function PayDemo() {
   const [flow, setFlow] = useState<null | "create" | "pay">(null);
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [verified, setVerified] = useState<"checking" | "ok" | "fail">("checking");
+  const [shared, setShared] = useState(false);
 
   const explorerNet = network === "PUBLIC" ? "public" : "testnet";
+  const buzz = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* unsupported */ } };
+
+  // living receipt: actually re-check the tx on the network when it lands.
+  useEffect(() => {
+    if (!payHash) return;
+    setVerified("checking");
+    const base = network === "PUBLIC" ? "https://horizon.stellar.org" : "https://horizon-testnet.stellar.org";
+    fetch(`${base}/transactions/${payHash}`)
+      .then((r) => r.json())
+      .then((j) => { setVerified(j?.successful ? "ok" : "fail"); if (j?.successful) buzz([15, 30, 15, 30, 50]); })
+      .catch(() => setVerified("fail"));
+  }, [payHash, network]);
+
+  async function shareReceipt() {
+    const url = `https://stellar.expert/explorer/${explorerNet}/tx/${payHash}`;
+    const data = { title: "SlipPay receipt", text: `Paid ${paidLabel ?? ""} on Stellar — verify it yourself:`, url };
+    try {
+      if (navigator.share) { await navigator.share(data); return; }
+      await navigator.clipboard?.writeText(url);
+      setShared(true); setTimeout(() => setShared(false), 2000);
+    } catch { /* user dismissed */ }
+  }
   const steps = flow === "pay" ? PAY_STEPS : CREATE_STEPS;
   const biometricStep = flow === "create" ? 1 : 0;
   const showScan = busy && !error && flow !== null && step === biometricStep;
@@ -86,6 +110,7 @@ export default function PayDemo() {
     if (!handle || !wallet || !sponsor || !req) return;
     const label = `${stroopsToXlm(req.amount)} ${req.asset ?? "USDC"}`;
     setBusy(true); setError(null); setPayHash(null); setFlow("pay"); setStep(0);
+    buzz(20); // tactile cue at the authorization moment
     try {
       const hash = await payViaRelayer({
         network, relayerBase: RELAYER_BASE, sponsor,
@@ -190,7 +215,9 @@ export default function PayDemo() {
                   <div className="mt-6 mx-auto max-w-[360px] rounded-2xl bg-[#f1eee7]/[0.04] border border-[#f1eee7]/12 p-5 text-left">
                     <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">
                       <span>receipt</span>
-                      <span className="text-[#FDDA24]">✓ verified on-chain</span>
+                      <span style={{ color: verified === "fail" ? "#f87171" : "#FDDA24" }}>
+                        {verified === "ok" ? "✓ verified on-chain" : verified === "checking" ? "verifying…" : "unconfirmed"}
+                      </span>
                     </div>
                     <div className="mt-4 divide-y divide-[#f1eee7]/8 text-[13px]">
                       {[
@@ -216,6 +243,10 @@ export default function PayDemo() {
                     <div className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#f1eee7]/35 leading-relaxed">
                       Public &amp; permanent · anyone can verify this payment on the blockchain.
                     </div>
+                    <button onClick={shareReceipt}
+                      className="lift mt-4 w-full inline-flex items-center justify-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">
+                      {shared ? "Link copied ✓" : "Share receipt"}
+                    </button>
                   </div>
                 </div>
               )}
