@@ -329,7 +329,7 @@ export default function AgentHome() {
               simulation. Not a prototype.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-              <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#0a0a0a] text-[#f1eee7]">Verify on-chain<span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" /></a>
+              <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#FDDA24] text-[#0a0a0a]">Verify on-chain<span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" /></a>
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/35">powered by Stellar + USDC</span>
             </div>
           </div>

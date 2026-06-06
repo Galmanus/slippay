@@ -136,7 +136,7 @@ export default function Investidores() {
         </ul>
         <p className="text-[15px] text-[#0a0a0a]/45">Sem clientes pagantes ainda. A próxima etapa é fechar os primeiros casos reais.</p>
         <div className="pt-2">
-          <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-[11px] uppercase tracking-[0.18em] bg-[#0a0a0a] text-[#f1eee7]">Ver o contrato on-chain ↗</a>
+          <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-[11px] uppercase tracking-[0.18em] bg-[#FDDA24] text-[#0a0a0a]">Ver o contrato on-chain ↗</a>
         </div>
       </Block>
 

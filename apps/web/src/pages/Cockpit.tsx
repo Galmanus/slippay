@@ -95,32 +95,32 @@ export default function Cockpit() {
   const fmtAcct = (a: string) => (a === RECIPIENT ? "merchant" : a === SPONSOR ? "relayer" : short(a, 4, 4));
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#f1eee7] overflow-x-hidden">
-      <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#f1eee7]/10">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] overflow-x-hidden">
+      <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
         <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> live · mainnet · {now}
         </div>
       </header>
 
       <main className="max-w-[1300px] mx-auto px-6 md:px-12 py-10 md:py-14">
-        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#FDDA24]">
-          <span className="text-[#f1eee7]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>money in motion</span>
+        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#6f6862]">
+          <span className="text-[#0a0a0a]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>money in motion</span>
         </div>
         <h1 className="mt-8 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,7rem)]" style={display}>
-          The machine, <span className="text-[#FDDA24]">live.</span>
+          The machine, <span className="text-[#6f6862]">live.</span>
         </h1>
 
         {/* balances */}
-        <div className="mt-12 grid sm:grid-cols-3 gap-px bg-[#f1eee7]/10 border border-[#f1eee7]/10 rounded-2xl overflow-hidden">
+        <div className="mt-12 grid sm:grid-cols-3 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-2xl overflow-hidden">
           {[
             ["agent float (USDC)", rBalUsdcOr(sBal), "USDC"],
             ["gas reserve (XLM)", sBal?.xlm, "XLM"],
             ["merchant received", rBal?.usdc, "USDC"],
           ].map(([label, val]) => (
-            <div key={label as string} className="bg-[#0a0a0a] p-6">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40">{label}</div>
-              <div className="mt-3 text-4xl font-semibold tabular-nums tracking-[-0.02em] text-[#FDDA24]" style={display}>
+            <div key={label as string} className="bg-[#f1eee7] p-6">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">{label}</div>
+              <div className="mt-3 text-4xl font-semibold tabular-nums tracking-[-0.02em] text-[#0a0a0a]" style={display}>
                 {val == null ? "…" : Number(val).toLocaleString("en-US", { maximumFractionDigits: 4 })}
               </div>
             </div>
@@ -129,40 +129,40 @@ export default function Cockpit() {
 
         <div className="mt-10 grid lg:grid-cols-[1.1fr_0.9fr] gap-8">
           {/* live payment stream */}
-          <div className="rounded-2xl border border-[#f1eee7]/12 p-6">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">
+          <div className="rounded-2xl border border-[#0a0a0a]/12 p-6">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               <span>live payments · on-chain</span>
               <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> streaming</span>
             </div>
-            <div className="mt-5 divide-y divide-[#f1eee7]/8">
-              {pays.length === 0 && <div className="py-6 text-[13px] text-[#f1eee7]/40 font-mono">listening to the network…</div>}
+            <div className="mt-5 divide-y divide-[#0a0a0a]/10">
+              {pays.length === 0 && <div className="py-6 text-[13px] text-[#0a0a0a]/45 font-mono">listening to the network…</div>}
               {pays.slice(0, 8).map((p, i) => (
                 <a key={p.id} href={xtx(p.tx)} target="_blank" rel="noreferrer"
-                  className={`flex items-center gap-3 py-3 hover:bg-[#f1eee7]/[0.03] -mx-2 px-2 rounded-lg transition-colors ${i === 0 ? "animate-[ledger-in_500ms_ease]" : ""}`}>
+                  className={`flex items-center gap-3 py-3 hover:bg-[#0a0a0a]/[0.03] -mx-2 px-2 rounded-lg transition-colors ${i === 0 ? "animate-[ledger-in_500ms_ease]" : ""}`}>
                   <span className="text-[#FDDA24] text-xs">✓</span>
-                  <span className="font-mono text-[13px] tabular-nums text-[#f1eee7]/90 w-[120px]">{Number(p.amount).toLocaleString("en-US", { maximumFractionDigits: 4 })} {p.asset}</span>
-                  <span className="flex-1 font-mono text-[11px] text-[#f1eee7]/50 truncate">{fmtAcct(p.from)} → {fmtAcct(p.to)}</span>
-                  <span className="font-mono text-[10px] text-[#f1eee7]/35">{p.at.slice(11, 19)}</span>
-                  <span className="text-[10px] text-[#f1eee7]/30">↗</span>
+                  <span className="font-mono text-[13px] tabular-nums text-[#0a0a0a]/90 w-[120px]">{Number(p.amount).toLocaleString("en-US", { maximumFractionDigits: 4 })} {p.asset}</span>
+                  <span className="flex-1 font-mono text-[11px] text-[#0a0a0a]/55 truncate">{fmtAcct(p.from)} → {fmtAcct(p.to)}</span>
+                  <span className="font-mono text-[10px] text-[#0a0a0a]/45">{p.at.slice(11, 19)}</span>
+                  <span className="text-[10px] text-[#0a0a0a]/45">↗</span>
                 </a>
               ))}
             </div>
           </div>
 
           {/* agent console + guardrail */}
-          <div className="rounded-2xl border border-[#f1eee7]/12 p-6 flex flex-col">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">
+          <div className="rounded-2xl border border-[#0a0a0a]/12 p-6 flex flex-col">
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
               <span>agent console</span>
-              <span style={{ color: paused ? "#f87171" : "#FDDA24" }}>{paused ? "paused" : "active"}</span>
+              <span style={{ color: paused ? "#f87171" : "#6f6862" }}>{paused ? "paused" : "active"}</span>
             </div>
 
             {/* guardrail */}
             <div className="mt-5">
-              <div className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/50">
+              <div className="flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
                 <span>spent this period</span><span>{spent.toFixed(2)} / {cap.toFixed(2)} USDC</span>
               </div>
-              <div className="mt-2 h-1.5 w-full rounded-full bg-[#f1eee7]/10 overflow-hidden">
-                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: "#FDDA24" }} />
+              <div className="mt-2 h-1.5 w-full rounded-full bg-[#0a0a0a]/10 overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: "#6f6862" }} />
               </div>
             </div>
 
@@ -170,7 +170,7 @@ export default function Cockpit() {
             <div ref={logRef} className="mt-5 flex-1 min-h-[200px] max-h-[260px] overflow-y-auto space-y-2.5 pr-1">
               {msgs.map((m, i) => (
                 <div key={i} className={m.who === "you" ? "text-right" : ""}>
-                  <span className={`inline-block max-w-[85%] text-left rounded-2xl px-3.5 py-2 text-[13px] leading-snug ${m.who === "you" ? "bg-[#FDDA24] text-[#0a0a0a]" : "bg-[#f1eee7]/[0.06] text-[#f1eee7]/90"}`}>
+                  <span className={`inline-block max-w-[85%] text-left rounded-2xl px-3.5 py-2 text-[13px] leading-snug ${m.who === "you" ? "bg-[#0a0a0a] text-[#f1eee7]" : "bg-[#0a0a0a]/[0.05] text-[#0a0a0a]/90"}`}>
                     {m.text}
                   </span>
                 </div>
@@ -180,18 +180,18 @@ export default function Cockpit() {
             <div className="mt-4 flex gap-2">
               <input value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
                 placeholder="pay 0.05 to API vendor"
-                className="flex-1 bg-[#f1eee7]/[0.05] border border-[#f1eee7]/15 rounded-full px-4 py-2.5 text-[13px] text-[#f1eee7] placeholder-[#f1eee7]/30 outline-none focus:border-[#FDDA24]/60" />
+                className="flex-1 bg-white border border-[#0a0a0a]/15 rounded-full px-4 py-2.5 text-[13px] text-[#0a0a0a] placeholder-[#0a0a0a]/35 outline-none focus:border-[#6f6862]/60" />
               <button onClick={submit} className="rounded-full px-5 py-2.5 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Send</button>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {["pay 0.05 to vendor", "set cap to 1", "pay 2 to stranger", paused ? "resume" : "pause"].map((q) => (
-                <button key={q} onClick={() => { setInput(q); }} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#f1eee7]/45 hover:text-[#FDDA24] border-b border-[#f1eee7]/15 pb-0.5">{q}</button>
+                <button key={q} onClick={() => { setInput(q); }} className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/55 hover:text-[#6f6862] border-b border-[#0a0a0a]/15 pb-0.5">{q}</button>
               ))}
             </div>
           </div>
         </div>
 
-        <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/30">
+        <p className="mt-8 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
           payments + balances are live from the Stellar network · the console is a policy preview
         </p>
       </main>

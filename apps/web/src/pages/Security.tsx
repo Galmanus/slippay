@@ -66,12 +66,12 @@ export default function Security() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay</Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <div className="flex items-center gap-6">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
-            <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#A16207]" : "hover:opacity-80"}>PT</button>
+            <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#0a0a0a]" : "hover:opacity-80"}>PT</button>
             <span className="opacity-30 mx-1">/</span>
-            <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#A16207]" : "hover:opacity-80"}>EN</button>
+            <button onClick={() => setLang("en")} className={lang === "en" ? "text-[#0a0a0a]" : "hover:opacity-80"}>EN</button>
           </div>
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">{t.home}</Link>
         </div>
@@ -82,14 +82,14 @@ export default function Security() {
           <span className="text-[#0a0a0a]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>{t.stamp}</span>
         </div>
         <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,6.5rem)]" style={display}>
-          {t.h1a}<span className="text-[#A16207]">{t.h1acc}</span>
+          {t.h1a}<span className="text-[#6f6862]">{t.h1acc}</span>
         </h1>
         <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[56ch] text-[#0a0a0a]/75">{t.intro}</p>
 
         <div className="mt-20 flex flex-col gap-9">
           {t.props.map(([h, b], i) => (
             <div key={i} className="flex gap-5 md:gap-7 items-baseline border-t border-[#0a0a0a]/12 pt-7">
-              <span className="font-mono text-[13px] text-[#A16207] shrink-0 w-8">{String(i + 1).padStart(2, "0")}</span>
+              <span className="font-mono text-[13px] text-[#6f6862] shrink-0 w-8">{String(i + 1).padStart(2, "0")}</span>
               <div>
                 <div className="text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{h}</div>
                 <p className="mt-2 text-[16px] md:text-[17px] text-[#0a0a0a]/60 leading-relaxed max-w-[60ch]">{b}</p>
@@ -101,7 +101,7 @@ export default function Security() {
         <div className="mt-20 rounded-2xl bg-[#0a0a0a] text-[#f1eee7] p-8 md:p-12">
           <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.02em]" style={display}>{t.gateTitle}</h2>
           <p className="mt-4 text-lg leading-relaxed max-w-[56ch] text-[#f1eee7]/70">{t.gate}</p>
-          <Link to="/gate" className="mt-5 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#FDDA24] border-b border-[#FDDA24]/40 hover:border-[#FDDA24] pb-1">{t.gateLink}</Link>
+          <Link to="/gate" className="mt-5 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/80 border-b border-[#f1eee7]/30 hover:border-[#f1eee7] pb-1">{t.gateLink}</Link>
         </div>
 
         <h2 className="mt-20 text-xl md:text-2xl font-semibold tracking-[-0.02em] text-[#0a0a0a]/80" style={display}>{t.honestTitle}</h2>
@@ -112,13 +112,13 @@ export default function Security() {
           {[[t.proofTx, xc("tx", TX)], [t.proofContract, xc("contract", CONTRACT)]].map(([label, href]) => (
             <a key={href} href={href} target="_blank" rel="noreferrer" className="group flex items-baseline justify-between gap-4 border-t border-[#0a0a0a]/12 py-4 hover:bg-[#0a0a0a]/[0.02] transition-colors">
               <span className="text-[16px] md:text-lg text-[#0a0a0a]/85">{label}</span>
-              <span className="font-mono text-[11px] text-[#A16207] group-hover:underline shrink-0">↗</span>
+              <span className="font-mono text-[11px] text-[#6f6862] group-hover:underline shrink-0">↗</span>
             </a>
           ))}
         </div>
 
         <div className="mt-16">
-          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7]">{t.cta}</Link>
+          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.cta}</Link>
         </div>
       </main>
     </div>

@@ -63,7 +63,7 @@ export default function DashboardOrders() {
       </h1>
       {orders.length > 0 && (
         <div className="mt-4 font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/50">
-          <span className="text-[#A16207]">{paid} settled</span> · updates live
+          <span className="text-[#6f6862]">{paid} settled</span> · updates live
         </div>
       )}
 
@@ -90,7 +90,7 @@ export default function DashboardOrders() {
               <span className="font-mono text-[11px] text-[#0a0a0a]/45 tabular-nums">{new Date(o.created_at).toLocaleDateString()}</span>
               <span className="font-mono text-[11px] text-right md:text-left">
                 {o.tx_hash
-                  ? <a href={`${EXPLORER_BASE}/${o.tx_hash}`} target="_blank" rel="noreferrer" className="text-[#A16207] hover:underline underline-offset-4">{o.tx_hash.slice(0, 8)} ↗</a>
+                  ? <a href={`${EXPLORER_BASE}/${o.tx_hash}`} target="_blank" rel="noreferrer" className="text-[#6f6862] hover:underline underline-offset-4">{o.tx_hash.slice(0, 8)} ↗</a>
                   : <span className="text-[#0a0a0a]/25">—</span>}
               </span>
             </div>

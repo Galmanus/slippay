@@ -45,7 +45,7 @@ export default function Cobrar() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay</Link>
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <Link to="/pay" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Pay →</Link>
       </header>
       <main className="max-w-[560px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-24 text-center">
@@ -76,11 +76,11 @@ export default function Cobrar() {
           )}
           <div className="mt-5 text-3xl font-medium tabular-nums" style={display}>{amount} USDC</div>
           <div className="mt-2 text-[10px] uppercase tracking-[0.22em] font-mono"
-            style={{ color: err ? "#b00" : "#A16207" }}>
+            style={{ color: err ? "#b00" : "#6f6862" }}>
             {err ? "✗ " + err : "● ready to receive · mainnet"}
           </div>
           <button onClick={sharePay}
-            className="lift mt-6 inline-flex items-center justify-center rounded-full px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-[#f1eee7] font-medium">
+            className="lift mt-6 inline-flex items-center justify-center rounded-full px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-medium">
             {copied ? "Pay link copied ✓" : "Share pay link"}
           </button>
           <div className="mt-3 font-mono text-[10px] text-[#0a0a0a]/40 max-w-[300px] mx-auto break-all">{payLink}</div>
