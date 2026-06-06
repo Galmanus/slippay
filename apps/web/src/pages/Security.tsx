@@ -105,9 +105,9 @@ export default function Security() {
         {/* plain words first — everyone understands why it's safe */}
         <h2 className="mt-20 font-bold tracking-[-0.03em] text-[clamp(1.75rem,5vw,3rem)]" style={display}>{t.simpleTitle}</h2>
         <div className="mt-10 flex flex-col gap-7 max-w-[640px]">
-          {t.simple.map(([icon, text], i) => (
+          {t.simple.map(([, text], i) => (
             <div key={i} className="flex gap-4 items-start">
-              <span className="text-2xl shrink-0 leading-none mt-0.5">{icon}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] shrink-0 mt-2.5" />
               <p className="text-lg md:text-xl leading-relaxed text-[#0a0a0a]/75">{text}</p>
             </div>
           ))}
