@@ -146,7 +146,9 @@ export default function LandingV2() {
           <h1 className="font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
             {t.hero.h1pre}<span style={mark}>{t.hero.h1mark}</span>{t.hero.h1post}
           </h1>
-          <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[28ch] mx-auto" style={display}>{t.hero.sub}</p>
+          <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[28ch] mx-auto" style={display}>
+            {t.hero.sub.split("USDC").flatMap((part, i) => i === 0 ? [part] : [<span key={i} style={mark}>USDC</span>, part])}
+          </p>
           <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55 max-w-[48ch] mx-auto">{t.hero.reassure}</p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
             <Link to="/account" className={btn}>{t.hero.cta}</Link>
