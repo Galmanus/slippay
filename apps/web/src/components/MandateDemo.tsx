@@ -17,7 +17,7 @@ const STEPS = [
 const CAP = 0.2;
 const CHARGE = 0.05;
 const TX = "https://stellar.expert/explorer/public/tx/5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
-const GOLD = "#65a30d";
+const GOLD = "#A16207";
 
 const reduceMotion = () =>
   typeof window !== "undefined" &&

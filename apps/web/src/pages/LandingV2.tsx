@@ -35,7 +35,7 @@ const FAQ: [string, string][] = [
 
 function Index({ n, label, dark = false }: { n: string; label: string; dark?: boolean }) {
   return (
-    <div className={`flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#b5e853]" : "text-[#0a0a0a]/45"}`}>
+    <div className={`flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#0a0a0a]/45"}`}>
       <span className={dark ? "text-[#f1eee7]/70" : "text-[#0a0a0a]/70"}>{n}</span>
       <span className="h-px w-8 bg-current opacity-40" />
       <span>{label}</span>
@@ -74,14 +74,14 @@ export default function LandingV2() {
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="001" label="payments, on autopilot" />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8.5rem)] break-words mx-auto" style={display}>
-            Your money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#65a30d]">pilot.</span>
+            Your money,<br /><span className="text-[#0a0a0a]/30">on</span> auto<span className="text-[#A16207]">pilot.</span>
           </h1>
           <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[46ch] mx-auto text-[#0a0a0a]/75">
             Keep your money in dollars and let it pay your bills by itself, the moment they're due.
             <span className="text-[#0a0a0a] font-medium"> It stays yours, and only does what you allow.</span>
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">free · no card · no seed phrase</span>
           </div>
           <p className="mt-6 text-[15px] text-[#0a0a0a]/50 max-w-[44ch] mx-auto">For anyone who pays or gets paid in dollars — from a freelancer to a company.</p>
@@ -117,7 +117,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 text-center">
           <Index n="003" label="cheaper & safer than stripe" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.9] text-[clamp(2.5rem,8vw,6.5rem)] max-w-[15ch] mx-auto break-words" style={display}>
-            Save ~3% on <span className="text-[#65a30d]">every transaction.</span>
+            Save ~3% on <span className="text-[#A16207]">every transaction.</span>
           </h2>
           <p className="mt-8 text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/60">
             Cards and Stripe take close to 3% of every sale. On Stellar, moving money costs fractions
@@ -131,7 +131,7 @@ export default function LandingV2() {
               <div className="mt-2 text-[14px] text-[#0a0a0a]/55 leading-snug">per transaction, and still subject to chargebacks</div>
             </div>
             <div className="bg-[#0a0a0a] text-[#f1eee7] p-7 md:p-8">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#b5e853]">slippay · on stellar</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#FDDA24]">slippay · on stellar</div>
               <div className="mt-4 text-4xl font-semibold tracking-[-0.03em]" style={display}>a fraction</div>
               <div className="mt-2 text-[14px] text-[#f1eee7]/60 leading-snug">near-zero network fee · final in seconds · no chargebacks</div>
             </div>
@@ -148,7 +148,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1200px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
           <Index n="004" label="how to start" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,8vw,7rem)] max-w-[16ch] mx-auto break-words" style={display}>
-            Start with what <span className="text-[#b5e853]">you already have.</span>
+            Start with what <span className="text-[#FDDA24]">you already have.</span>
           </h2>
           <div className="mt-16 grid md:grid-cols-3 gap-12 md:gap-10">
             {[
@@ -157,7 +157,7 @@ export default function LandingV2() {
               ["03", "The agent takes over", "You set how much it can spend and to whom. Then it pays your bills in dollars, on its own, always within your rules."],
             ].map(([n, h, b]) => (
               <div key={n}>
-                <div className="font-mono text-[12px] text-[#b5e853] mb-4">{n}</div>
+                <div className="font-mono text-[12px] text-[#FDDA24] mb-4">{n}</div>
                 <div className="text-2xl font-semibold tracking-[-0.02em]" style={display}>{h}</div>
                 <p className="mt-3 text-[15px] text-[#f1eee7]/60 leading-relaxed max-w-[34ch] mx-auto">{b}</p>
               </div>
@@ -179,7 +179,7 @@ export default function LandingV2() {
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
             {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "+ more"].map((c) => (
-              <span key={c} className="flex items-center gap-2"><span className="text-[#65a30d]">◆</span>{c}</span>
+              <span key={c} className="flex items-center gap-2"><span className="text-[#A16207]">◆</span>{c}</span>
             ))}
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
           <Index n="006" label="full control" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] max-w-[12ch] mx-auto break-words" style={display}>
-            The agent doesn't decide. <span className="text-[#b5e853]">It executes.</span>
+            The agent doesn't decide. <span className="text-[#FDDA24]">It executes.</span>
           </h2>
           <p className="mt-10 text-xl leading-relaxed max-w-[46ch] mx-auto text-[#f1eee7]/70">
             <span className="text-[#f1eee7] font-medium">Your money never leaves your control.</span> You set the rules, and
@@ -210,7 +210,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 flex flex-col items-center text-center">
           <Index n="007" label="an example" />
           <h2 className="mt-10 font-bold tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,11vw,8.5rem)] mx-auto" style={display}>
-            R$<CountUp to={40} format={(n) => `${Math.round(n)}k`} /><span className="text-[#65a30d]">/mo</span>
+            R$<CountUp to={40} format={(n) => `${Math.round(n)}k`} /><span className="text-[#A16207]">/mo</span>
           </h2>
           <p className="mt-8 text-xl leading-relaxed max-w-[44ch] mx-auto text-[#0a0a0a]/65">
             The agent runs the recurring payments within the approved rules, and only asks for help when something falls outside the norm.
@@ -224,7 +224,7 @@ export default function LandingV2() {
               </div>
             ))}
             <div className="flex items-baseline justify-between pt-6 mt-2 border-t-2 border-[#0a0a0a]">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#65a30d]">paid by the agent</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#A16207]">paid by the agent</span>
               <span className="text-3xl font-semibold tabular-nums" style={display}>R$40k</span>
             </div>
           </div>
@@ -236,13 +236,13 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 flex flex-col items-center text-center">
           <Index n="008" label="live on the main network" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] max-w-[14ch] mx-auto break-words" style={display}>
-            This isn't a demo. <span className="text-[#b5e853]">It's running.</span>
+            This isn't a demo. <span className="text-[#FDDA24]">It's running.</span>
           </h2>
           <p className="mt-8 text-xl leading-relaxed max-w-[46ch] mx-auto text-[#f1eee7]/65">
             Real money already moves through SlipPay on the live network. You don't have to trust us — open any payment and check it yourself.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-            <a href={xurl("tx", REAL_TX)} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">See a real payment ↗</a>
+            <a href={xurl("tx", REAL_TX)} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">See a real payment ↗</a>
             <a href={xurl("contract", LIVE_CONTRACT)} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/60 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">The live contract ↗</a>
           </div>
           <div className="mt-12 w-full max-w-[440px] mx-auto text-left">
@@ -256,7 +256,7 @@ export default function LandingV2() {
         <div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
           <Index n="009" label="our vision" />
           <h2 className="mt-10 font-bold tracking-[-0.04em] leading-[0.88] text-[clamp(2.5rem,9vw,8rem)] max-w-[16ch] mx-auto break-words" style={display}>
-            Real dollars, <span className="text-[#65a30d]">as simple as an app.</span>
+            Real dollars, <span className="text-[#A16207]">as simple as an app.</span>
           </h2>
           <p className="mt-10 text-xl md:text-2xl leading-relaxed max-w-[54ch] mx-auto text-[#0a0a0a]/70">
             Dollars that work on their own and stay yours. No becoming an engineer, no memorizing jargon. The AI does the heavy lifting, and the rule that protects your money never depends on it.
@@ -275,17 +275,17 @@ export default function LandingV2() {
           <p className="mt-8 text-xl leading-relaxed max-w-[50ch] mx-auto text-[#0a0a0a]/60">14 days free, no card. Then a plan tailored to the size of your operation.</p>
           <div className="mt-14 grid md:grid-cols-3 gap-8 text-left">
             {TIERS.map((t) => (
-              <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#65a30d]" : "border-t border-[#0a0a0a]/15"}`}>
+              <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#A16207]" : "border-t border-[#0a0a0a]/15"}`}>
                 <div className="flex items-baseline justify-between">
                   <span className="text-lg font-semibold tracking-[-0.01em]" style={display}>{t.name}</span>
-                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#65a30d]">most chosen</span>}
+                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A16207]">most chosen</span>}
                 </div>
                 <div className="mt-3 text-[15px] text-[#0a0a0a]/55">{t.who}</div>
               </div>
             ))}
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <a href="/signup" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Talk to us</a>
           </div>
         </div>
@@ -302,8 +302,8 @@ export default function LandingV2() {
               return (
                 <div key={q} className="border-t border-[#0a0a0a]/12 last:border-b">
                   <button onClick={() => setOpenFaq(open ? null : i)} className="w-full flex items-center justify-between gap-6 py-6 text-left group" aria-expanded={open}>
-                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#65a30d] transition-colors" style={display}>{q}</span>
-                    <span className={`shrink-0 text-2xl leading-none text-[#65a30d] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
+                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#A16207] transition-colors" style={display}>{q}</span>
+                    <span className={`shrink-0 text-2xl leading-none text-[#A16207] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
                   </button>
                   <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
                     <div className="overflow-hidden"><p className="pb-7 text-lg text-[#0a0a0a]/65 leading-relaxed">{a}</p></div>
@@ -320,11 +320,11 @@ export default function LandingV2() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-28 md:py-48 text-center">
           <Index n="012" label="start" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(3rem,12vw,11rem)] mx-auto break-words" style={display}>
-            Set it once.<br /><span className="text-[#b5e853]">Done.</span>
+            Set it once.<br /><span className="text-[#FDDA24]">Done.</span>
           </h2>
           <p className="mt-10 text-xl md:text-2xl text-[#f1eee7]/60 max-w-[42ch] mx-auto">Stop approving the same payments forever. Free to try, no card. The simple way to let your money work on its own.</p>
           <div className="mt-14 flex flex-wrap items-center justify-center gap-7">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <a href="#proof" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">See it running</a>
           </div>
           <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>

@@ -109,7 +109,7 @@ export function LivePaymentCard() {
       `}</style>
 
       {/* glow base */}
-      <div className="absolute -inset-2 rounded-[28px] bg-[#b5e853]/10 blur-2xl opacity-60" aria-hidden />
+      <div className="absolute -inset-2 rounded-[28px] bg-[#FDDA24]/10 blur-2xl opacity-60" aria-hidden />
 
       <div className="relative rounded-[22px] p-7 md:p-8 overflow-hidden text-[#f1eee7]"
         style={{
@@ -126,7 +126,7 @@ export function LivePaymentCard() {
         {/* header */}
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#b5e853] shadow-[0_0_10px_#b5e853]" />
+            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#FDDA24] shadow-[0_0_10px_#FDDA24]" />
             <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">agent · running payments</span>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/40">Stellar · mainnet</span>
@@ -136,7 +136,7 @@ export function LivePaymentCard() {
         <div className="relative mt-7">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40 mb-1.5">amount paid</div>
           <div className="text-5xl md:text-[56px] leading-none font-semibold tabular-nums tracking-[-0.03em]"
-            style={{ color: "#b5e853", textShadow: "0 0 30px rgba(74,222,128,.18)" }}>
+            style={{ color: "#FDDA24", textShadow: "0 0 30px rgba(253,218,36,.18)" }}>
             {fmt(amount)}
           </div>
           <div className="font-mono text-[11px] text-[#f1eee7]/45 mt-2.5">in dollars · non-custodial · final</div>
@@ -151,13 +151,13 @@ export function LivePaymentCard() {
               <div key={s.key}
                 className="flex items-center gap-3 transition-all duration-500"
                 style={{ opacity: on ? 1 : 0.18, transform: on ? "none" : "translateY(3px)" }}>
-                <span className={`flex-none w-4 text-center text-[12px] ${on ? "text-[#b5e853]" : "text-[#f1eee7]/25"}`}>
+                <span className={`flex-none w-4 text-center text-[12px] ${on ? "text-[#FDDA24]" : "text-[#f1eee7]/25"}`}>
                   {on ? "✓" : "·"}
                 </span>
                 <span className="flex-1 text-[13px] text-[#f1eee7]/85">{s.label}</span>
                 {isRoute && on && route < 1 ? (
                   <span className="flex-none w-24 h-[3px] rounded-full bg-[#f1eee7]/12 overflow-hidden">
-                    <span className="block h-full rounded-full bg-[#b5e853] transition-[width] duration-100"
+                    <span className="block h-full rounded-full bg-[#FDDA24] transition-[width] duration-100"
                       style={{ width: `${Math.round(route * 100)}%` }} />
                   </span>
                 ) : (
@@ -174,13 +174,13 @@ export function LivePaymentCard() {
           style={{
             opacity: showTx ? 1 : 0,
             transform: showTx ? "none" : "translateY(6px)",
-            background: "rgba(74,222,128,.07)",
-            border: "1px solid rgba(74,222,128,.22)",
+            background: "rgba(253,218,36,.07)",
+            border: "1px solid rgba(253,218,36,.22)",
           }}>
           <span className="font-mono text-[11px] text-[#f1eee7]/70">
-            tx <span className="text-[#b5e853]">{txHash.slice(0, 10)}…</span>
+            tx <span className="text-[#FDDA24]">{txHash.slice(0, 10)}…</span>
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#b5e853] group-hover:underline underline-offset-4">
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#FDDA24] group-hover:underline underline-offset-4">
             verify on-chain ↗
           </span>
         </a>
