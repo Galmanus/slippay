@@ -27,6 +27,14 @@ const COPY = {
       micro: "Built on stablecoin infrastructure and real payment rails in Brazil.",
       liveTag: "live · mainnet",
     },
+    simple: { stamp: "in plain words", h: "Explained like you're five.",
+      beats: [
+        ["🐷", "You put money in with one touch of your finger, like unlocking your phone. Only your finger opens it. No one else."],
+        ["💵", "You put in reais and, like magic, it becomes dollars. The dollars stay inside your piggy bank, not in a bank. It's yours, in your hand."],
+        ["🤖", "The piggy bank is smart: you teach it the rules once. “You can pay Maria, max 10 a month.” Then it pays on its own. But if someone tries to take more, or pay someone you didn't allow, it locks instantly. It never breaks your rule."],
+        ["✨", "And the best part: all of it in seconds. No asking the bank. No waiting. No paperwork."],
+      ] as [string, string][],
+      close: "That's SlipPay: a dollar piggy bank that opens with your finger and pays on its own, only the way you told it to." },
     why: { stamp: "why", items: [
       ["Pix → USDC instantly", "Convert Brazilian reais into USDC, a digital dollar stablecoin."],
       ["You stay in control", "Funds go to a wallet you control, with optional automation rules."],
@@ -57,6 +65,14 @@ const COPY = {
       micro: "Construído sobre infraestrutura de stablecoin e rails de pagamento reais no Brasil.",
       liveTag: "ao vivo · mainnet",
     },
+    simple: { stamp: "em palavras simples", h: "Explicando como pra uma criança.",
+      beats: [
+        ["🐷", "Você bota dinheiro com um toque do dedo, igual quando aperta o dedão pra abrir o celular. Só o seu dedo abre. Mais ninguém."],
+        ["💵", "Você coloca real e, num passe de mágica, vira dólar. O dólar fica guardado dentro do seu cofrinho, não no banco. É seu, na sua mão."],
+        ["🤖", "O cofrinho é espertinho: você ensina as regras uma vez. “Pode pagar a Maria, no máximo 10 por mês.” Aí ele paga sozinho. Mas se alguém tentar tirar mais, ou pagar pra quem você não disse, ele trava na hora. Nunca quebra a sua regra."],
+        ["✨", "E o melhor: tudo isso em segundos. Sem pedir pro banco. Sem esperar. Sem papelada."],
+      ] as [string, string][],
+      close: "É isso o SlipPay: um cofrinho de dólar que abre com o seu dedo e paga sozinho, só do jeito que você mandou." },
     why: { stamp: "por quê", items: [
       ["Pix → USDC na hora", "Converta reais em USDC, um dólar digital (stablecoin)."],
       ["Você no controle", "Os fundos vão pra uma carteira que você controla, com regras de automação opcionais."],
@@ -168,6 +184,21 @@ export default function LandingV2() {
           </div>
         </div>
       </section>
+
+      {/* IN PLAIN WORDS — the soul */}
+      <section className={sec}><div data-reveal className="max-w-[860px] mx-auto px-6 md:px-12 py-24 md:py-36">
+        <div className="text-center"><Index n="·" label={t.simple.stamp} /></div>
+        <h2 className="mt-10 text-center font-bold tracking-[-0.04em] leading-[0.95] text-[clamp(2rem,6vw,3.75rem)] max-w-[20ch] mx-auto" style={display}>{t.simple.h}</h2>
+        <div className="mt-12 flex flex-col gap-7 max-w-[640px] mx-auto">
+          {t.simple.beats.map(([icon, text], i) => (
+            <div key={i} className="flex gap-4 items-start">
+              <span className="text-2xl shrink-0 leading-none mt-1">{icon}</span>
+              <p className="text-lg md:text-xl leading-relaxed text-[#0a0a0a]/75">{text}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-12 text-center text-xl md:text-2xl font-medium tracking-[-0.02em] max-w-[42ch] mx-auto" style={display}>{t.simple.close}</p>
+      </div></section>
 
       {/* WHY (4 with descriptions) */}
       <section className={sec}><div data-reveal className="max-w-[1000px] mx-auto px-6 md:px-12 py-20 md:py-28">
