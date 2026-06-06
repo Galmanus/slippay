@@ -224,7 +224,7 @@ export default function LandingV2() {
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <Index n="—" label={t.hero.axis} />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] break-words mx-auto" style={display}>
-            {t.hero.h1a}<br /><span className="text-[#FDDA24]" style={{ textShadow: "0 1px 1px rgba(10,10,10,.10)" }}>{t.hero.h1acc}</span>
+            {t.hero.h1a}<br /><span style={{ color: "#FDDA24", WebkitTextStrokeWidth: "2px", WebkitTextStrokeColor: "#0a0a0a", paintOrder: "stroke fill" }}>{t.hero.h1acc}</span>
           </h1>
           <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[26ch] mx-auto" style={display}>{t.hero.sub}</p>
           <p className="mt-8 text-lg md:text-xl leading-relaxed max-w-[52ch] mx-auto text-[#0a0a0a]/70">{t.hero.b1}</p>
