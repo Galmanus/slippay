@@ -4,7 +4,7 @@
 // check and pulses. Honors prefers-reduced-motion via CSS (animations are short
 // and non-essential).
 export function FaceScan({ state }: { state: "scanning" | "done" }) {
-  const accent = state === "done" ? "#65a30d" : "#0a0a0a";
+  const accent = state === "done" ? "#A16207" : "#0a0a0a";
   return (
     <div className="grid place-items-center py-2">
       <div className="relative w-[120px] h-[120px]">
@@ -27,12 +27,12 @@ export function FaceScan({ state }: { state: "scanning" | "done" }) {
         {/* scanning line */}
         {state === "scanning" && (
           <div className="absolute left-[12px] right-[12px] h-[2px] rounded-full fs-scan"
-            style={{ background: "linear-gradient(90deg,transparent,#65a30d,transparent)", boxShadow: "0 0 12px #65a30d" }} />
+            style={{ background: "linear-gradient(90deg,transparent,#A16207,transparent)", boxShadow: "0 0 12px #A16207" }} />
         )}
 
         {/* success check */}
         {state === "done" && (
-          <svg viewBox="0 0 120 120" className="absolute inset-0 w-full h-full fs-pop" fill="none" stroke="#65a30d" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 120 120" className="absolute inset-0 w-full h-full fs-pop" fill="none" stroke="#A16207" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M38 62 L54 78 L84 44" />
           </svg>
         )}

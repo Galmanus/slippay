@@ -1,5 +1,5 @@
 // SlipPay landing — PT-BR, minimalista/editorial. Fundo bone, tipografia grande,
-// muito ar, verde money (#65a30d) como acento único (#b5e853 sobre preto). Card +
+// muito ar, verde money (#A16207) como acento único (#FDDA24 sobre preto). Card +
 // MandateDemo são as âncoras visuais. Funil: o que é → por que (controle) →
 // prova → quanto custa → testar grátis. Comércio exterior NÃO aparece (deck).
 
@@ -46,7 +46,7 @@ const FAQ = [
 ];
 
 function Eyebrow({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
-  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#b5e853]" : "text-[#0a0a0a]/40"} mb-6`}>{children}</div>;
+  return <div className={`font-mono text-[10px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#0a0a0a]/40"} mb-6`}>{children}</div>;
 }
 
 export default function AgentHome() {
@@ -87,7 +87,7 @@ export default function AgentHome() {
           <a href="#precos" className="navlink hover:text-[#0a0a0a] hidden sm:inline">Pricing</a>
           <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="navlink hover:text-[#0a0a0a] hidden sm:inline">Docs</a>
           <ConnectWallet className="hidden sm:inline-flex items-center rounded-full px-5 py-2.5 border border-[#0a0a0a]/25 hover:border-[#0a0a0a] text-[10px] uppercase tracking-[0.22em] disabled:opacity-50" />
-          <Link to="/pay" className="hidden sm:inline-flex items-center rounded-full px-5 py-2.5 bg-[#b5e853] text-[#0a0a0a] hover:opacity-90">Try it free</Link>
+          <Link to="/pay" className="hidden sm:inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] hover:opacity-90">Try it free</Link>
           {/* hamburger — mobile only */}
           <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="sm:hidden flex flex-col gap-[5px] p-1">
             <span className={`block w-6 h-[2px] bg-[#0a0a0a] transition-transform ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`} />
@@ -103,7 +103,7 @@ export default function AgentHome() {
             <a href="#precos" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Pricing</a>
             <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Docs</a>
             <ConnectWallet className="mt-3 inline-flex items-center justify-center rounded-full px-5 py-3 border border-[#0a0a0a]/25 text-[12px] uppercase tracking-[0.18em]" />
-            <Link to="/pay" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
           </div>
         )}
       </header>
@@ -122,7 +122,7 @@ export default function AgentHome() {
               <span className="text-[#0a0a0a] font-medium"> The money stays yours, and it only does what you allow.</span>
             </p>
             <div className="mt-11 flex flex-wrap items-center justify-center gap-7">
-              <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+              <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
               <a href="#precos" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">How much?</a>
             </div>
             <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#0a0a0a]/40">free to try · no card</p>
@@ -153,7 +153,7 @@ export default function AgentHome() {
         <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-20 md:py-28 text-center">
           <Eyebrow dark>live on the main network today</Eyebrow>
           <h2 className="text-4xl md:text-6xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[16ch] mx-auto">
-            This isn't a demo. <span className="text-[#b5e853]">It's running.</span>
+            This isn't a demo. <span className="text-[#FDDA24]">It's running.</span>
           </h2>
           <p className="mt-8 text-xl text-[#f1eee7]/65 leading-relaxed max-w-[46ch] mx-auto">
             Real money already moves through SlipPay on the live network. You don't have to
@@ -166,13 +166,13 @@ export default function AgentHome() {
               ["Public & checkable", "Every payment is recorded in the open. Anyone can verify it, anytime."],
             ].map(([h, b]) => (
               <div key={h}>
-                <div className="text-lg font-semibold tracking-[-0.01em] text-[#b5e853]">{h}</div>
+                <div className="text-lg font-semibold tracking-[-0.01em] text-[#FDDA24]">{h}</div>
                 <p className="mt-2 text-[15px] text-[#f1eee7]/60 leading-relaxed">{b}</p>
               </div>
             ))}
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-            <a href={REAL_TX_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#b5e853] text-[#0a0a0a]">See a real payment ↗</a>
+            <a href={REAL_TX_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#FDDA24] text-[#0a0a0a]">See a real payment ↗</a>
             <a href={LIVE_CONTRACT_URL} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/60 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">The live contract ↗</a>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function AgentHome() {
               <div className="mt-2 text-[14px] text-[#0a0a0a]/55 leading-snug">per transaction, and still subject to chargebacks</div>
             </div>
             <div className="bg-[#0a0a0a] text-[#f1eee7] p-7 md:p-8">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#b5e853]">slippay · on stellar</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#FDDA24]">slippay · on stellar</div>
               <div className="mt-4 text-4xl font-semibold tracking-[-0.03em]">a fraction</div>
               <div className="mt-2 text-[14px] text-[#f1eee7]/60 leading-snug">near-zero network fee · final in seconds · no chargebacks</div>
             </div>
@@ -230,7 +230,7 @@ export default function AgentHome() {
               ["03", "The agent takes over", "You set how much it can spend and to whom. Then the agent pays your bills in dollars, on its own, always within your rules."],
             ].map(([n, h, b]) => (
               <div key={n}>
-                <div className="font-mono text-[12px] text-[#b5e853] mb-4">{n}</div>
+                <div className="font-mono text-[12px] text-[#FDDA24] mb-4">{n}</div>
                 <div className="text-2xl font-semibold tracking-[-0.02em]">{h}</div>
                 <p className="mt-3 text-[15px] text-[#f1eee7]/60 leading-relaxed max-w-[34ch] mx-auto">{b}</p>
               </div>
@@ -238,7 +238,7 @@ export default function AgentHome() {
           </div>
           <p className="mt-14 text-lg text-[#f1eee7]/55 leading-relaxed max-w-[54ch] mx-auto">
             Direct local-to-dollar, with no exchange in between, is coming. And if you want, we'll
-            set up your first dollars with you, hands-on. <a href="/signup" className="text-[#b5e853] hover:underline underline-offset-4">Talk to us.</a>
+            set up your first dollars with you, hands-on. <a href="/signup" className="text-[#FDDA24] hover:underline underline-offset-4">Talk to us.</a>
           </p>
         </div>
       </section>
@@ -254,7 +254,7 @@ export default function AgentHome() {
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3 font-mono text-[12px] uppercase tracking-[0.16em] text-[#0a0a0a]/55">
             {["Ethereum", "Base", "Solana", "Arbitrum", "Optimism", "Polygon", "Avalanche", "Unichain", "Linea", "+ mais"].map((c) => (
-              <span key={c} className="flex items-center gap-2"><span className="text-[#65a30d]">◆</span>{c === "+ mais" ? "+ more" : c}</span>
+              <span key={c} className="flex items-center gap-2"><span className="text-[#A16207]">◆</span>{c === "+ mais" ? "+ more" : c}</span>
             ))}
           </div>
         </div>
@@ -265,7 +265,7 @@ export default function AgentHome() {
         <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-28 md:py-40 text-center">
           <Eyebrow dark>full control</Eyebrow>
           <h2 className="text-5xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[12ch] mx-auto">
-            The agent doesn't decide. <span className="text-[#b5e853]">It executes.</span>
+            The agent doesn't decide. <span className="text-[#FDDA24]">It executes.</span>
           </h2>
           <p className="mt-9 text-xl text-[#f1eee7]/65 leading-relaxed max-w-[48ch] mx-auto">
             <span className="text-[#f1eee7] font-medium">Your money never leaves your control.</span> You
@@ -274,7 +274,7 @@ export default function AgentHome() {
           </p>
           <div className="mt-12 flex flex-wrap justify-center gap-x-10 gap-y-4 font-mono text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55">
             {["who gets paid", "how much", "policy", "limit"].map((c) => (
-              <span key={c} className="flex items-center gap-2.5"><span className="text-[#b5e853]">✓</span>{c}</span>
+              <span key={c} className="flex items-center gap-2.5"><span className="text-[#FDDA24]">✓</span>{c}</span>
             ))}
           </div>
           <p className="mt-14 text-2xl md:text-3xl font-medium tracking-[-0.02em] text-[#f1eee7]/90 max-w-[26ch] mx-auto">
@@ -310,7 +310,7 @@ export default function AgentHome() {
               </div>
             ))}
             <div className="flex items-baseline justify-between pt-6 mt-2 border-t-2 border-[#0a0a0a]">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#65a30d]">paid by the agent</span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#A16207]">paid by the agent</span>
               <span className="text-3xl font-semibold tabular-nums"><CountUp to={40} format={(n) => `R$${Math.round(n)}k`} /></span>
             </div>
           </div>
@@ -329,7 +329,7 @@ export default function AgentHome() {
               simulation. Not a prototype.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-7">
-              <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#0a0a0a] text-[#f1eee7]">Verify on-chain<span className="w-1.5 h-1.5 rounded-full bg-[#b5e853]" /></a>
+              <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="lift inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.18em] bg-[#0a0a0a] text-[#f1eee7]">Verify on-chain<span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" /></a>
               <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/35">powered by Stellar + USDC</span>
             </div>
           </div>
@@ -342,9 +342,9 @@ export default function AgentHome() {
       {/* VISÃO — a alma do manifesto, dark */}
       <section className="border-t border-[#0a0a0a]/10 bg-[#0a0a0a] text-[#f1eee7]">
         <div data-reveal className="max-w-[1240px] mx-auto px-6 md:px-12 py-24 md:py-40 text-center">
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#b5e853] mb-6">our vision</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#FDDA24] mb-6">our vision</div>
           <h2 className="text-4xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.96] max-w-[18ch] mx-auto">
-            Real dollars, <span className="text-[#b5e853]">as simple as an app.</span>
+            Real dollars, <span className="text-[#FDDA24]">as simple as an app.</span>
           </h2>
           <p className="mt-12 text-xl md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[54ch] mx-auto">
             Dollars that work on their own and stay yours. No becoming an engineer, no memorizing
@@ -353,7 +353,7 @@ export default function AgentHome() {
           <p className="mt-8 text-2xl md:text-3xl font-medium tracking-[-0.02em] max-w-[24ch] mx-auto">
             The most advanced technology, simple to use.
           </p>
-          <a href="/manifesto" className="mt-10 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#b5e853] border-b border-[#b5e853]/40 hover:border-[#b5e853] pb-1">Read the manifesto</a>
+          <a href="/manifesto" className="mt-10 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#FDDA24] border-b border-[#FDDA24]/40 hover:border-[#FDDA24] pb-1">Read the manifesto</a>
         </div>
       </section>
 
@@ -366,10 +366,10 @@ export default function AgentHome() {
 
           <div className="mt-16 grid md:grid-cols-3 gap-8 text-left">
             {TIERS.map((t) => (
-              <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#65a30d]" : "border-t border-[#0a0a0a]/15"}`}>
+              <div key={t.name} className={`py-8 ${t.featured ? "border-t-2 border-[#A16207]" : "border-t border-[#0a0a0a]/15"}`}>
                 <div className="flex items-baseline justify-between">
                   <span className="text-lg font-semibold tracking-[-0.01em]">{t.name}</span>
-                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#65a30d]">most chosen</span>}
+                  {t.featured && <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#A16207]">most chosen</span>}
                 </div>
                 <div className="mt-3 text-[15px] text-[#0a0a0a]/55">{t.who}</div>
               </div>
@@ -377,7 +377,7 @@ export default function AgentHome() {
           </div>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <a href="/signup" className="text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Talk to us</a>
           </div>
           <p className="mt-10 text-[14px] text-[#0a0a0a]/45 max-w-[60ch] leading-relaxed mx-auto">
@@ -401,8 +401,8 @@ export default function AgentHome() {
                     className="w-full flex items-center justify-between gap-6 py-6 text-left group"
                     aria-expanded={open}
                   >
-                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#65a30d] transition-colors">{q}</span>
-                    <span className={`shrink-0 text-2xl leading-none text-[#65a30d] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
+                    <span className="text-lg md:text-2xl font-semibold tracking-[-0.02em] group-hover:text-[#A16207] transition-colors">{q}</span>
+                    <span className={`shrink-0 text-2xl leading-none text-[#A16207] transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
                   </button>
                   <div className="grid transition-all duration-300 ease-out" style={{ gridTemplateRows: open ? "1fr" : "0fr" }}>
                     <div className="overflow-hidden">
@@ -422,12 +422,12 @@ export default function AgentHome() {
           <h2 className="text-5xl md:text-7xl font-semibold tracking-[-0.045em] leading-[0.95] max-w-[18ch] mx-auto">Set the rules once.</h2>
           <p className="mt-8 text-xl text-[#f1eee7]/60 leading-relaxed max-w-[44ch] mx-auto">Stop approving the same payments forever. Try it free, no card. The simple way to let your money work on its own.</p>
           <div className="mt-12 flex justify-center">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
           </div>
           <div className="mt-16 flex flex-wrap justify-center gap-7 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/45">
-            <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hover:text-[#b5e853]">Docs ↗</a>
-            <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="hover:text-[#b5e853]">On-chain ↗</a>
-            <a href="#precos" className="hover:text-[#b5e853]">Pricing</a>
+            <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hover:text-[#FDDA24]">Docs ↗</a>
+            <a href={AUDIT_URL} target="_blank" rel="noreferrer" className="hover:text-[#FDDA24]">On-chain ↗</a>
+            <a href="#precos" className="hover:text-[#FDDA24]">Pricing</a>
           </div>
           <div className="mt-8 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30">slippay · the safe way to let software move money</div>
         </div>

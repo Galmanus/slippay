@@ -12,7 +12,7 @@ const REAL_TX = "5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf
 
 function Index({ n, label, dark = false }: { n: string; label: string; dark?: boolean }) {
   return (
-    <div className={`flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#b5e853]" : "text-[#0a0a0a]/45"}`}>
+    <div className={`flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] ${dark ? "text-[#FDDA24]" : "text-[#0a0a0a]/45"}`}>
       <span className={dark ? "text-[#f1eee7]/70" : "text-[#0a0a0a]/70"}>{n}</span>
       <span className="h-px w-8 bg-current opacity-40" />
       <span>{label}</span>
@@ -47,7 +47,7 @@ export default function Manifesto() {
         <div className="max-w-[1400px] mx-auto">
           <Index n="001" label="who we are" />
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,8.5rem)] break-words max-w-[16ch]" style={display}>
-            We wanted<br />simpler money.<br /><span className="text-[#65a30d]">So we built it.</span>
+            We wanted<br />simpler money.<br /><span className="text-[#A16207]">So we built it.</span>
           </h1>
           <p className="mt-12 text-xl md:text-2xl leading-relaxed max-w-[54ch] text-[#0a0a0a]/70">
             We're not a bank. Not another fintech. A small team in Brazil, building the money we
@@ -76,7 +76,7 @@ export default function Manifesto() {
         <div data-reveal className="max-w-[1400px] mx-auto px-6 md:px-12 py-24 md:py-40">
           <Index n="003" label="the idea" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,8.5rem)] break-words max-w-[15ch]" style={display}>
-            What if the mistake was <span className="text-[#b5e853]">stopped before it happened?</span>
+            What if the mistake was <span className="text-[#FDDA24]">stopped before it happened?</span>
           </h2>
           <p className="mt-12 text-xl md:text-2xl leading-relaxed max-w-[54ch] text-[#f1eee7]/70">
             Not another promise that this time it'll be fine. A rule written in code and recorded in
@@ -120,14 +120,14 @@ export default function Manifesto() {
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-28 md:py-48">
           <Index n="006" label="now" dark />
           <h2 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,10vw,9.5rem)] break-words max-w-[14ch]" style={display}>
-            The most advanced technology, <span className="text-[#b5e853]">made simple.</span>
+            The most advanced technology, <span className="text-[#FDDA24]">made simple.</span>
           </h2>
           <p className="mt-10 text-xl md:text-2xl text-[#f1eee7]/65 max-w-[40ch]">
             Real dollars, on autopilot. Already live on the main network — see a
-            <a href={`https://stellar.expert/explorer/public/tx/${REAL_TX}`} target="_blank" rel="noreferrer" className="text-[#b5e853] border-b border-[#b5e853]/40 hover:border-[#b5e853]"> real payment</a>.
+            <a href={`https://stellar.expert/explorer/public/tx/${REAL_TX}`} target="_blank" rel="noreferrer" className="text-[#FDDA24] border-b border-[#FDDA24]/40 hover:border-[#FDDA24]"> real payment</a>.
           </p>
           <div className="mt-14 flex flex-wrap items-center gap-7">
-            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#b5e853] text-[#0a0a0a]">Try it free</Link>
+            <Link to="/pay" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Try it free</Link>
             <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#f1eee7]/55 hover:text-[#f1eee7] border-b border-[#f1eee7]/25 pb-1">Back home</Link>
           </div>
           <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.28em] text-[#f1eee7]/30">slippay · real dollars, on autopilot · live on mainnet</div>
