@@ -140,7 +140,7 @@ export default function LandingV2() {
       <section className="px-6 md:px-12 pt-12 md:pt-20 pb-16 md:pb-24">
         <div className="max-w-[1100px] mx-auto flex flex-col items-center text-center">
           <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8rem)] mx-auto" style={display}>
-            {t.hero.h1pre}<span style={{ color: "#0a0a0a", backgroundImage: "linear-gradient(#FDDA24,#FDDA24)", backgroundRepeat: "no-repeat", backgroundSize: "100% 0.82em", backgroundPosition: "0 0.12em", padding: "0 0.06em", boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}>{t.hero.h1mark}</span>{t.hero.h1post}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
+            {t.hero.h1pre}<span style={{ background: "#FDDA24", color: "#0a0a0a", padding: "0 0.06em", boxDecorationBreak: "clone", WebkitBoxDecorationBreak: "clone" }}>{t.hero.h1mark}</span>{t.hero.h1post}<br /><span style={{ color: GRAY }}>{t.hero.h1acc}</span>
           </h1>
           <p className="mt-9 text-2xl md:text-3xl leading-snug max-w-[24ch] mx-auto" style={display}>{t.hero.sub}</p>
           <p className="mt-5 text-base md:text-lg text-[#0a0a0a]/55">{t.hero.reassure}</p>
