@@ -2,7 +2,8 @@
 // quotes the mid-market rate x (1 + spread) and keeps the difference. The spread
 // fires on EVERY conversion (including users who only hold dollars), which is why
 // it scales ~10x vs a per-transfer rail fee. Configurable via VITE_FX_SPREAD_BPS
-// (default 100 = 1.00%).
+// (default 190 = 1.90% — the price decided + shown on the landing; still ~3x
+// cheaper than a bank's ~5% IOF+spread, while capturing healthy margin).
 //
 // HONEST STATE: this computes and records the SlipPay-quoted rate + captured
 // margin. The margin is actually pocketed when BRL settles through a SlipPay-owned
@@ -10,7 +11,7 @@
 // this is the pricing + measurement layer that makes the spread live the moment
 // the anchor is connected.
 
-const SPREAD_BPS = Number(import.meta.env.VITE_FX_SPREAD_BPS ?? 100);
+const SPREAD_BPS = Number(import.meta.env.VITE_FX_SPREAD_BPS ?? 190);
 const RATE_URL = "https://open.er-api.com/v6/latest/USD";
 const FALLBACK_BRL_PER_USD = 5.4;
 

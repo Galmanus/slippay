@@ -154,7 +154,7 @@ const pt: HomeStrings = {
   hero: {
     badge: "Acesso antecipado — entre na lista",
     eyebrow: "PARA QUEM RECEBE EM DÓLAR E JÁ VIU A CONTA CONGELAR",
-    h1: <>Sua conta em dólar<br/><em className="not-italic">que mora no Pix.{dot}</em></>,
+    h1: <>Seu dólar <em className="not-italic">no Pix.{dot}</em></>,
     sub: <>Hoje você perde de 5% a 12% só pra receber: a plataforma segura dez dias, o intermediário fica com a parte dele, e ainda vem o IOF e o spread do banco. No Slippay <em className="font-light">o dólar chega e continua dólar</em> — seu, ninguém congela — e vira real no Pix quando você quiser. Sem senha de doze palavras.</>,
     cta: "Entrar na lista",
     status: <>Acesso antecipado. O dólar que chega e fica dólar — a chave é sua, ninguém congela — é o que estamos construindo; o Pix entra via um parceiro licenciado, em definição. A gente conta o estágio em voz alta. Pesquisa de mercado de 01/06/2026.</>,
