@@ -147,15 +147,15 @@ export default function PayDemo() {
   const accountReady = !!wallet;
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
-        <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
+        <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#F1EEE7]/55 hover:text-[#F1EEE7]">Home</Link>
       </header>
 
       <main className="max-w-[720px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-28">
-        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
-          <span className="text-[#0a0a0a]/70">001</span>
+        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#F1EEE7]/45">
+          <span className="text-[#F1EEE7]/70">001</span>
           <span className="h-px w-8 bg-current opacity-40" />
           <span>pay with a touch · {network === "PUBLIC" ? "mainnet" : "testnet"}</span>
         </div>
@@ -163,13 +163,13 @@ export default function PayDemo() {
         <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,6.5rem)] break-words" style={display}>
           Pay with a touch.
         </h1>
-        <p className="mt-8 text-xl leading-relaxed max-w-[48ch] text-[#0a0a0a]/75">
+        <p className="mt-8 text-xl leading-relaxed max-w-[48ch] text-[#F1EEE7]/75">
           This is the rail your agent uses to pay. Create a wallet with your biometrics and send a real
           payment — authorized only by you, verified on-chain.
-          <span className="text-[#0a0a0a] font-medium"> Free, on your phone. No app, no seed phrase.</span>
+          <span className="text-[#F1EEE7] font-medium"> Free, on your phone. No app, no seed phrase.</span>
         </p>
-        <a href="/anchor-demo" className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-0.5">
-          No dollars yet? Add funds<span className="text-[#0a0a0a]/40">→</span>
+        <a href="/anchor-demo" className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#F1EEE7]/55 hover:text-[#F1EEE7] border-b border-[#F1EEE7]/20 pb-0.5">
+          No dollars yet? Add funds<span className="text-[#F1EEE7]/40">→</span>
         </a>
 
         <div className="mt-12 flex flex-col gap-3 max-w-[400px]">
@@ -185,10 +185,10 @@ export default function PayDemo() {
 
         {/* confirm — see WHO and HOW MUCH before you authorize */}
         {req && !busy && (
-          <div className="mt-8 p-6 rounded-2xl border-2 border-[#0a0a0a] max-w-[400px]">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-3">Confirm the payment</div>
-            <div className="text-4xl font-medium tabular-nums tracking-[-0.03em]" style={display}>{stroopsToXlm(req.amount)} <span className="text-base text-[#0a0a0a]/55">{req.asset ?? "USDC"}</span></div>
-            <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">to {short(req.to, 8, 8)}</div>
+          <div className="mt-8 p-6 rounded-2xl border-2 border-[#F1EEE7]/12 bg-[#16140F] max-w-[400px]">
+            <div className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 font-mono mb-3">Confirm the payment</div>
+            <div className="text-4xl font-medium tabular-nums tracking-[-0.03em]" style={display}>{stroopsToXlm(req.amount)} <span className="text-base text-[#F1EEE7]/55">{req.asset ?? "USDC"}</span></div>
+            <div className="text-xs font-mono text-[#F1EEE7]/55 mt-2 break-all">to {short(req.to, 8, 8)}</div>
             {wallet ? (
               <button onClick={onPayReq}
                 className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium">
@@ -201,7 +201,7 @@ export default function PayDemo() {
               </button>
             )}
             <button onClick={() => setReq(null)}
-              className="mt-2 w-full px-6 py-3 text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">
+              className="mt-2 w-full px-6 py-3 text-[11px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 hover:text-[#F1EEE7]">
               Cancel
             </button>
           </div>
@@ -288,7 +288,7 @@ export default function PayDemo() {
               {error && (
                 <div className="mt-6">
                   <div className="text-lg font-medium tracking-[-0.01em]">{error}</div>
-                  {rawErr && <div className="mt-2 font-mono text-[10px] text-[#0a0a0a]/40 break-all max-w-[420px]">{rawErr.slice(0, 240)}</div>}
+                  {rawErr && <div className="mt-2 font-mono text-[10px] text-[#F1EEE7]/40 break-all max-w-[420px]">{rawErr.slice(0, 240)}</div>}
                   <button
                     onClick={() => (flow === "pay" && handle && wallet ? setScanning(true) : onCreateAccount())}
                     className="lift mt-4 inline-flex items-center rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#cabfb0] text-[#0a0a0a]">
@@ -324,7 +324,7 @@ export default function PayDemo() {
           </div>
         )}
 
-        <p className="mt-8 text-xs text-[#0a0a0a]/45 leading-relaxed max-w-[52ch]">
+        <p className="mt-8 text-xs text-[#F1EEE7]/45 leading-relaxed max-w-[52ch]">
           {network === "PUBLIC"
             ? "Mainnet — real money. The relayer sponsors only the network fee; your money stays in a wallet that only your touch can move."
             : "Testnet (free play money) — to prove the flow on your device."}
