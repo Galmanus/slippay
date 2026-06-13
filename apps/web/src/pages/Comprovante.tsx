@@ -262,30 +262,30 @@ export default function Comprovante() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain flex flex-col">
-      <header className="border-b border-[#0a0a0a]/10">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] grain flex flex-col">
+      <header className="border-b border-[#F1EEE7]/10">
         <div className="max-w-[560px] mx-auto w-full px-5 py-4 flex items-center justify-between">
-          <Link to="/" aria-label="Slippay"><Logo variant="ink" /></Link>
+          <Link to="/" aria-label="Slippay"><Logo variant="bone" /></Link>
           <button onClick={() => setLang(lang === "pt" ? "en" : "pt")} className="text-[10px] uppercase tracking-[0.22em] opacity-60 hover:opacity-100">{lang === "pt" ? "EN" : "PT"}</button>
         </div>
       </header>
 
       <main className="flex-1 w-full max-w-[560px] mx-auto px-5 py-9 md:py-14">
         {r.level === "loading" && (
-          <div className="text-center py-24 font-mono text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
+          <div className="text-center py-24 font-mono text-[11px] uppercase tracking-[0.22em] text-[#F1EEE7]/55">
             <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24] animate-pulse mr-2" />{t.verifying}
           </div>
         )}
         {r.level === "notfound" && (
           <div className="text-center py-24">
             <div className="text-2xl font-medium tracking-tight">{t.notFound}</div>
-            <p className="mt-3 text-sm text-[#0a0a0a]/60">{t.notFoundHint}</p>
-            <div className="mt-6 font-mono text-[11px] text-[#0a0a0a]/40 break-all">{short(txhash, 12, 12)}</div>
+            <p className="mt-3 text-sm text-[#F1EEE7]/60">{t.notFoundHint}</p>
+            <div className="mt-6 font-mono text-[11px] text-[#F1EEE7]/40 break-all">{short(txhash, 12, 12)}</div>
           </div>
         )}
 
         {(r.level === "green" || r.level === "red" || r.level === "amber") && (
-          <div className="border border-[#0a0a0a]/15 bg-white/55">
+          <div className="border border-[#F1EEE7]/12 bg-[#16140F]">
             {/* VERDICT banner — the chain's decision, in plain language */}
             <div className="px-7 md:px-9 py-8 text-center" style={{ background: bg, color: fg }}>
               <div className="font-mono text-[10px] uppercase tracking-[0.24em] opacity-70">{t.receipt} · slippay · {t.net(net)}</div>
@@ -308,7 +308,7 @@ export default function Comprovante() {
 
             {/* CHAIN — what the blockchain actually recorded (read from effects) */}
             <div className="px-7 md:px-9 py-7">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono mb-3">{t.chainSays}</div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45 font-mono mb-3">{t.chainSays}</div>
               <dl className="space-y-3 text-sm">
                 {r.transfer ? (
                   <>
@@ -320,7 +320,7 @@ export default function Comprovante() {
                     <Row label={t.asset} value={r.transfer.assetCode === "USDC" ? "USDC · dólar" : r.transfer.assetCode} mismatch={assetMismatch} />
                   </>
                 ) : (
-                  <div className="text-sm text-[#0a0a0a]/55">{lang === "pt" ? "transferência não legível por esta página" : "transfer not readable by this page"}</div>
+                  <div className="text-sm text-[#F1EEE7]/55">{lang === "pt" ? "transferência não legível por esta página" : "transfer not readable by this page"}</div>
                 )}
                 <Row label={t.when} value={when} />
                 <Row label={t.ledger} value={r.ledger ? String(r.ledger) : "—"} mono />
@@ -331,7 +331,7 @@ export default function Comprovante() {
               {isObl && r.obligation && (
                 <>
                   <div className="flex items-center gap-2 mt-6 mb-3">
-                    <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.oblSays}</span>
+                    <span className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45 font-mono">{t.oblSays}</span>
                     <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#f1eee7] bg-[#6f6862] px-1.5 py-0.5">{t.badgeObl}</span>
                   </div>
                   <dl className="space-y-3 text-sm">
@@ -349,8 +349,8 @@ export default function Comprovante() {
               {!isObl && hasClaim && (
                 <>
                   <div className="flex items-center gap-2 mt-6 mb-3">
-                    <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.claimSays}</span>
-                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#0a0a0a]/70 border border-[#0a0a0a]/30 px-1.5 py-0.5">{t.badgeClaim}</span>
+                    <span className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45 font-mono">{t.claimSays}</span>
+                    <span className="font-mono text-[8px] uppercase tracking-[0.16em] text-[#F1EEE7]/70 border border-[#F1EEE7]/30 px-1.5 py-0.5">{t.badgeClaim}</span>
                   </div>
                   <dl className="space-y-3 text-sm">
                     {expAmount && <Row label={t.amount} value={fmt(expAmount)} mono />}
@@ -380,24 +380,24 @@ export default function Comprovante() {
             </div>
 
             {/* actions */}
-            <div className="px-7 md:px-9 py-5 flex items-center justify-between gap-3 border-t border-dashed border-[#0a0a0a]/20">
-              <button onClick={onShare} className="inline-flex items-center gap-2 bg-[#0a0a0a] text-[#f1eee7] px-5 py-3 text-[10px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
+            <div className="px-7 md:px-9 py-5 flex items-center justify-between gap-3 border-t border-dashed border-[#F1EEE7]/20">
+              <button onClick={onShare} className="inline-flex items-center gap-2 bg-[#FDDA24] text-[#0a0a0a] px-5 py-3 text-[10px] uppercase tracking-[0.22em] hover:bg-[#e6c520]">
                 {copied ? t.copied : ((navigator as { share?: unknown })?.share ? t.share : t.copy)} <span>→</span>
               </button>
-              <Link to="/" className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/50 hover:text-[#0a0a0a]">slippay</Link>
+              <Link to="/" className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/50 hover:text-[#F1EEE7]">slippay</Link>
             </div>
           </div>
         )}
 
-        <p className="mt-6 text-[11px] leading-relaxed text-[#0a0a0a]/45 text-center max-w-[46ch] mx-auto">{isObl ? t.footerObl : t.footerClaim}</p>
+        <p className="mt-6 text-[11px] leading-relaxed text-[#F1EEE7]/45 text-center max-w-[46ch] mx-auto">{isObl ? t.footerObl : t.footerClaim}</p>
 
         {/* k-factor: a shared receipt is a landing page — recruit the viewer */}
-        <div className="mt-10 max-w-[460px] mx-auto text-center border-t border-[#0a0a0a]/10 pt-8">
+        <div className="mt-10 max-w-[460px] mx-auto text-center border-t border-[#F1EEE7]/10 pt-8">
           <div className="text-lg font-medium tracking-[-0.01em]">Pay or get paid with one touch.</div>
-          <p className="mt-2 text-sm text-[#0a0a0a]/55">No app, no seed phrase. Real dollars — and you verify everything yourself.</p>
+          <p className="mt-2 text-sm text-[#F1EEE7]/55">No app, no seed phrase. Real dollars — and you verify everything yourself.</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <Link to="/pay" className="rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Pay with a touch →</Link>
-            <Link to="/cobrar" className="text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Get paid →</Link>
+            <Link to="/cobrar" className="text-[11px] uppercase tracking-[0.2em] text-[#F1EEE7]/55 hover:text-[#F1EEE7] border-b border-[#F1EEE7]/20 pb-1">Get paid →</Link>
           </div>
           <div className="mt-8"><LiveProof /></div>
         </div>
@@ -420,7 +420,7 @@ function safeStroops(units: string): bigint {
 function Row({ label, value, mono, mismatch }: { label: string; value: string; mono?: boolean; mismatch?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 font-mono shrink-0">{label}</dt>
+      <dt className="text-[10px] uppercase tracking-[0.2em] text-[#F1EEE7]/45 font-mono shrink-0">{label}</dt>
       <dd className={"text-right " + (mono ? "font-mono text-xs break-all " : "") + (mismatch ? "text-[#b91c1c] font-semibold" : "")}>
         {mismatch && <span className="mr-1">≠</span>}{value}
       </dd>
