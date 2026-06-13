@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from "react";
 
 const FALLBACK_TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
 // Illustrative recurring-payment amounts (the animation is a scenario; the tx
-// link below is the real on-chain proof). Rotates per cycle, up to $2M.
-const EXAMPLES = [1240, 12500, 96000, 480000, 2000000];
+// link below is the real on-chain proof). Rotates per cycle, capped at $20k.
+const EXAMPLES = [1240, 4990, 8500, 12500, 19800];
 const LIVE_ACCOUNT = "GCYEAQWXDR3MXHU364KIFOLSL2FIZL5RYXEKO3QVQ3WTQCWY64BXBRNR";
 const HORIZON = "https://horizon.stellar.org";
 

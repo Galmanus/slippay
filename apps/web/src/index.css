@@ -191,3 +191,56 @@ html { scroll-behavior: smooth; }
 
 /* "Rounded" by Igor Stepanchenko — display only (no accents/$); used on the wordmark. */
 @font-face { font-family: 'Rounded'; src: url('/fonts/Rounded.woff') format('woff'), url('/fonts/Rounded.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+
+/* ─────────────────────────────────────────────────────────────
+   Hero cofrinho — coins dropping in, piggy breathing, ambient
+   yellow glow, living grain. All auto-killed by the reduced-motion
+   catch-all above (it uses *!important).
+   ───────────────────────────────────────────────────────────── */
+/* Coins fall from above into the slot, then vanish (swallowed). Drawn at
+   cy 30/20; slot sits at y60–72, so +36 user-units lands them in it. */
+/* Coins are drawn at the slot's mouth (cy 30); they start high, fall with
+   gravity (ease-in), reach the slot (+32 → y62) and fade — swallowed in. */
+@keyframes coin-drop {
+  0%        { transform: translateY(-52px); opacity: 0; }
+  16%       { opacity: 1; }
+  64%       { transform: translateY(32px); opacity: 1; }
+  78%, 100% { transform: translateY(34px); opacity: 0; }
+}
+.coin { transform-box: fill-box; transform-origin: center; }
+.coin-1 { animation: coin-drop 4s ease-in infinite 0s; }
+.coin-2 { animation: coin-drop 4s ease-in infinite 0.7s; }
+.coin-3 { animation: coin-drop 4s ease-in infinite 1.4s; }
+.coin-4 { animation: coin-drop 4s ease-in infinite 2.0s; }
+.coin-5 { animation: coin-drop 4s ease-in infinite 2.7s; }
+.coin-6 { animation: coin-drop 4s ease-in infinite 3.3s; }
+/* Piggy breathes — subtle scale from its centre of mass. */
+@keyframes pig-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.022); } }
+.pig-breathe { transform-box: fill-box; transform-origin: 50% 60%; animation: pig-breathe 4.6s ease-in-out infinite; will-change: transform; }
+/* Piggy rocks on its feet — playful bob + tilt. */
+/* Butt wag — pivot at the FRONT (head/front legs) so the rear sweeps a big arc.
+   Pure symmetric pendulum + ease-in-out = buttery smooth, no jitter. */
+@keyframes pig-wiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+.pig-wiggle { transform-box: fill-box; transform-origin: 24% 78%; animation: pig-wiggle 4.2s cubic-bezier(0.45, 0, 0.55, 1) infinite; will-change: transform; }
+/* Pure-gold specular sweep — a light streak travels across the body, pauses,
+   repeats (like light catching polished metal). */
+@keyframes gold-shine {
+  0%        { transform: translateX(-70px) skewX(-16deg); }
+  45%, 100% { transform: translateX(290px) skewX(-16deg); }
+}
+.gold-shine { animation: gold-shine 4.2s ease-in-out infinite; will-change: transform; }
+/* Soft gold glint on a coin/edge — twinkle. */
+@keyframes gold-twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 0.9; } }
+.gold-twinkle { animation: gold-twinkle 2.6s ease-in-out infinite; }
+/* Comparison carousel — competitor column swaps in with a quick fade+slide. */
+@keyframes cmp-swap { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.cmp-swap { animation: cmp-swap 380ms var(--ease-out-expo) both; }
+/* Ambient yellow glow behind the piggy, slow pulse. */
+@keyframes glow-pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.14); opacity: 0.8; } }
+.hero-glow { animation: glow-pulse 6s ease-in-out infinite; will-change: transform, opacity; }
+/* Living grain — barely-there shimmer over the dot texture. */
+@keyframes grain-drift { 0%, 100% { background-position: 0 0; } 50% { background-position: 1.5px 1.5px; } }
+.grain { animation: grain-drift 8s ease-in-out infinite; }

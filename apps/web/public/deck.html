@@ -1,259 +1,256 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SlipPay · Deck · Stellar 37 Graus</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Slippay · pitch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root{ --bone:#f1eee7; --ink:#0a0a0a; --klein:#b5e853; --mut:rgba(241,238,231,.55); }
-  *{ margin:0; padding:0; box-sizing:border-box; }
-  html,body{ height:100%; background:var(--ink); color:var(--bone);
-    font-family:'Inter Tight',system-ui,sans-serif; overflow:hidden; }
-  #deck{ display:flex; height:100vh; width:100vw;
-    transition:transform 720ms cubic-bezier(.22,1,.36,1); }
-  .slide{ min-width:100vw; height:100vh; padding:8vh 9vw; position:relative;
-    display:flex; flex-direction:column; justify-content:center;
-    background-image:radial-gradient(rgba(241,238,231,.03) 1px,transparent 1px); background-size:3px 3px; }
-  .slide > *{ opacity:0; transform:translateY(22px);
-    transition:opacity 700ms cubic-bezier(.22,1,.36,1),transform 700ms cubic-bezier(.22,1,.36,1); }
-  .slide.live > *{ opacity:1; transform:none; }
-  .slide.live > *:nth-child(2){ transition-delay:90ms; }
-  .slide.live > *:nth-child(3){ transition-delay:180ms; }
-  .slide.live > *:nth-child(4){ transition-delay:280ms; }
-  .slide.live > *:nth-child(5){ transition-delay:380ms; }
-  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.28em;
-    text-transform:uppercase; color:var(--mut); display:flex; align-items:center; gap:12px; margin-bottom:30px; }
-  .eyebrow .dot{ width:7px; height:7px; background:var(--klein); display:inline-block; }
-  h1{ font-family:'Space Grotesk',sans-serif; font-weight:600; letter-spacing:-.03em; line-height:1.02;
-    font-size:clamp(36px,5.8vw,98px);
-    background:linear-gradient(180deg,#fff 24%,#8f8b80 100%);
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent; }
-  h1 .k{ -webkit-text-fill-color:var(--klein); color:var(--klein); }
-  .lead{ margin-top:34px; font-size:clamp(17px,1.9vw,27px); line-height:1.45; color:rgba(241,238,231,.82); max-width:34ch; }
-  .row{ display:flex; gap:5vw; flex-wrap:wrap; margin-top:44px; }
-  .stat .n{ font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(40px,5.2vw,84px); letter-spacing:-.03em; color:var(--bone); line-height:1; }
-  .stat .l{ margin-top:14px; font-size:14px; color:var(--mut); max-width:20ch; line-height:1.45; }
-  ul.clean{ list-style:none; margin-top:34px; display:flex; flex-direction:column; gap:18px; max-width:62ch; }
-  ul.clean li{ font-size:clamp(16px,1.55vw,22px); line-height:1.42; padding-left:28px; position:relative; color:rgba(241,238,231,.88); }
-  ul.clean li::before{ content:""; position:absolute; left:0; top:.5em; width:10px; height:10px; background:var(--klein); }
-  ul.clean li b{ color:var(--bone); font-weight:600; }
-  .force{ display:flex; gap:3vw; flex-wrap:wrap; margin-top:40px; }
-  .force div{ flex:1; min-width:220px; border-top:2px solid var(--klein); padding-top:18px; }
-  .force h3{ font-family:'Space Grotesk',sans-serif; font-size:clamp(18px,1.8vw,24px); font-weight:600; }
-  .force p{ margin-top:10px; font-size:15px; color:var(--mut); line-height:1.5; }
-  .seal{ display:inline-flex; align-items:center; gap:10px; margin-top:34px;
-    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--klein); }
-  .seal .dot{ width:9px; height:9px; background:var(--klein); }
-  .live-tag{ display:inline-flex; align-items:center; gap:9px; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.24em; text-transform:uppercase; color:var(--klein); margin-top:30px; }
-  .live-tag .pulse{ width:9px; height:9px; background:var(--klein); border-radius:50%; animation:pulse 1.6s infinite; }
-  @keyframes pulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(181,232,83,.5);} 50%{ opacity:.5; box-shadow:0 0 0 8px rgba(181,232,83,0);} }
-  .note{ margin-top:30px; font-size:13px; color:var(--mut); font-family:'JetBrains Mono',monospace; letter-spacing:.04em; line-height:1.6; }
-  .kicker{ font-family:'Space Grotesk',sans-serif; font-size:clamp(20px,2.4vw,34px); font-weight:500; color:var(--klein); margin-top:30px; letter-spacing:-.02em; max-width:30ch; line-height:1.2; }
-  .brand{ position:fixed; top:5vh; left:9vw; font-family:'Space Grotesk',sans-serif; font-weight:700; letter-spacing:-.02em; font-size:20px; z-index:10; }
-  .brand .k{ color:var(--klein); }
-  .counter{ position:fixed; bottom:5vh; right:9vw; font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; color:var(--mut); z-index:10; }
-  .hint{ position:fixed; bottom:5vh; left:9vw; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.22em; color:rgba(241,238,231,.3); z-index:10; }
-  .progress{ position:fixed; top:0; left:0; height:2px; background:var(--klein); width:0; transition:width 500ms cubic-bezier(.22,1,.36,1); z-index:20; }
-  em{ font-style:italic; color:var(--klein); -webkit-text-fill-color:var(--klein); }
-  .matrix{ margin-top:36px; display:grid; grid-template-columns: 1.1fr 1fr 1fr; gap:0; border-top:1px solid rgba(241,238,231,.15); max-width:1100px; }
-  .matrix > *{ padding:18px 22px 18px 0; border-bottom:1px solid rgba(241,238,231,.1); font-size:clamp(13px,1.15vw,16px); line-height:1.45; }
-  .matrix > .h{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--mut); padding-bottom:14px; padding-top:14px; }
-  .matrix > .s{ color:rgba(241,238,231,.55); }
-  .matrix > .sp{ color:var(--bone); font-weight:500; }
-  .matrix > .sp b{ color:var(--klein); font-weight:600; }
-  .codeblock{ margin-top:30px; font-family:'JetBrains Mono',monospace; font-size:clamp(11px,1vw,14px); line-height:1.55; color:rgba(241,238,231,.78); background:rgba(241,238,231,.04); border-left:2px solid var(--klein); padding:18px 22px; max-width:740px; white-space:pre; overflow-x:auto; }
-  .codeblock .k{ color:var(--klein); }
-  .codeblock .m{ color:var(--mut); }
-  a.proof{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--klein); text-decoration:underline; text-underline-offset:4px; margin-right:18px; }
+  :root { --bone:#f1eee7; --ink:#0a0a0a; --gold:#FDDA24; --gray:#6f6862; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-snap-type: y mandatory; scroll-behavior:smooth; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bone); color:var(--ink); -webkit-font-smoothing:antialiased; }
+  .mono { font-family:'JetBrains Mono',monospace; }
+  section { min-height:100svh; scroll-snap-align:start; display:flex; flex-direction:column; justify-content:center;
+    padding:7vh 8vw; position:relative; border-top:1px solid rgba(10,10,10,.08); }
+  .eyebrow { font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.28em; text-transform:uppercase; color:var(--gray); display:flex; align-items:center; gap:14px; }
+  .eyebrow::before { content:''; width:34px; height:1px; background:currentColor; opacity:.45; }
+  h1 { font-weight:800; letter-spacing:-.04em; line-height:.92; font-size:clamp(2.6rem,8vw,6.5rem); }
+  h2 { font-weight:800; letter-spacing:-.04em; line-height:.95; font-size:clamp(2rem,6vw,4.5rem); }
+  p.big { font-size:clamp(1.25rem,2.6vw,2rem); line-height:1.3; max-width:26ch; margin-top:2rem; }
+  p.lead { font-size:clamp(1.05rem,1.7vw,1.4rem); line-height:1.5; max-width:50ch; margin-top:1.5rem; color:rgba(10,10,10,.7); }
+  .gold { color:var(--gold); }
+  .hl { background:var(--gold); color:var(--ink); padding:0 .1em; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+  .stack { display:flex; flex-direction:column; gap:1.1rem; margin-top:2.5rem; }
+  .row { display:flex; gap:1rem; align-items:flex-start; }
+  .row .k { color:var(--gold); font-weight:800; font-size:1.4rem; line-height:1; }
+  .pagenum { position:absolute; bottom:4vh; right:8vw; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.2em; color:rgba(10,10,10,.35); }
+  .brand { position:absolute; top:4vh; left:8vw; font-weight:800; font-size:1.4rem; letter-spacing:-.02em; }
+  .brand .dot { color:var(--gold); }
+  table { border-collapse:collapse; margin-top:2.5rem; width:100%; max-width:780px; font-size:clamp(.85rem,1.4vw,1.05rem); }
+  td,th { padding:.7rem .6rem; text-align:center; border-bottom:1px solid rgba(10,10,10,.1); }
+  th:first-child,td:first-child { text-align:left; }
+  .col-us { background:rgba(253,218,36,.16); font-weight:700; }
+  th.col-us { background:var(--gold); }
+  .x { color:rgba(10,10,10,.25); }
+  .v { font-weight:800; }
+  .pills { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:2rem; }
+  .pill { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:.5rem .8rem; border-radius:999px; border:1px solid rgba(10,10,10,.18); }
+  .pill.live { background:var(--ink); color:var(--gold); border-color:var(--ink); }
+  .stats { display:grid; grid-template-columns:repeat(2,1fr); gap:clamp(1.4rem,3vw,2.6rem); margin-top:3rem; max-width:880px; }
+  .stat .n { font-weight:800; letter-spacing:-.03em; font-size:clamp(2rem,5vw,3.6rem); line-height:1; }
+  .stat .n .gold { color:var(--gold); }
+  .stat .l { margin-top:.5rem; font-size:clamp(.85rem,1.3vw,1rem); color:rgba(10,10,10,.6); line-height:1.35; max-width:30ch; }
+  .src { position:absolute; bottom:4vh; left:8vw; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:.1em; color:rgba(10,10,10,.3); max-width:60vw; }
+  .src.dark { color:rgba(241,238,231,.3); }
+  .moneylist { display:flex; flex-direction:column; gap:1.3rem; margin-top:2.5rem; max-width:62ch; }
+  .money .h { font-weight:800; font-size:clamp(1.1rem,1.8vw,1.4rem); }
+  .money .m { color:rgba(10,10,10,.62); font-size:clamp(.95rem,1.4vw,1.15rem); margin-top:.2rem; }
+  a { color:inherit; }
+  .hint { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:rgba(10,10,10,.3); z-index:10; }
+  @media (max-width:760px){ .stats{grid-template-columns:1fr} .brand,.pagenum{left:6vw;right:6vw} section{padding:9vh 6vw} .src{max-width:80vw} }
 </style>
 </head>
 <body>
-<div class="progress" id="prog"></div>
-<div class="brand">slippay<span class="k">.</span></div>
-<div class="counter" id="counter"></div>
-<div class="hint">← → · F tela cheia</div>
 
-<div id="deck">
+<!-- 1 cover -->
+<section>
+  <div class="brand">slippay<span class="dot">.</span></div>
+  <div class="eyebrow">live on mainnet · stellar</div>
+  <h1 style="margin-top:2rem">YOUR DOLLARS,<br><span class="gold">IN PIX.</span></h1>
+  <p class="big">The dollar piggy bank that pays your bills on its own — and nobody can freeze it.</p>
+  <div class="pagenum">01</div>
+</section>
 
-  <!-- 1 · COVER -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> stellar 37 graus · rio 2026</div>
-    <h1>O cofre que a<br/>Stripe não pode<br/><em>replicar</em><span class="k">.</span></h1>
-    <p class="lead">Subscription billing onde o limite de gasto mora no smart wallet do cliente — não no banco de dados de uma plataforma. Pix-grade UX, enforcement em bytecode.</p>
-  </section>
+<!-- 2 pain -->
+<section>
+  <div class="eyebrow">the real pain</div>
+  <h2 style="margin-top:2rem">Holding dollars hurts today.</h2>
+  <div class="stack" style="max-width:46ch">
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0">You lose <b>~5%</b> just to get in. 3.5% IOF + the bank's spread, every single time.</p></div>
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0">And the money <b>isn't yours</b>. A custodial account freezes, blocks, holds it — from banks to Stripe.</p></div>
+  </div>
+  <div class="pagenum">02</div>
+</section>
 
-  <!-- 2 · THE TRUTH ABOUT STRIPE -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 01 · a verdade dura</div>
-    <h1>A Stripe escreve<br/>"limite de gasto".<br/>Mas o limite mora<br/>na <em>base de dados</em> dela.</h1>
-    <ul class="clean">
-      <li><b>Settlement em 2-7 dias</b> — mandato regulatório de chargeback (Reg E nos EUA, PSD2 na UE). Stripe não pode encurtar sem virar money transmitter sem licença.</li>
-      <li><b>Piso de ~2.9% + $0.30</b> — interchange Visa é ~1.5% sozinho. Stripe é majoritariamente pass-through, não tem como descer.</li>
-      <li><b>Intermediário obrigatório</b> — o merchant nunca recebe direto. Stripe pode congelar. Casos documentados de $130k congelados sem explicação.</li>
-    </ul>
-    <p class="kicker">Esses limites não são feature. São constitutivos do que faz a Stripe valer $70bi.</p>
-  </section>
+<!-- 3 the shift -->
+<section style="background:#101010;color:var(--bone)">
+  <div class="eyebrow" style="color:#8a857d">the shift</div>
+  <h1 style="margin-top:2rem;color:var(--bone)">A bank is<br>a promise.</h1>
+  <h1 style="color:var(--gold)">Slippay is a proof.</h1>
+  <p class="lead" style="color:rgba(241,238,231,.65);max-width:44ch">We stopped asking you to trust us. The money obeys rules anyone can verify on a public ledger — not our word.</p>
+  <div class="pagenum" style="color:rgba(241,238,231,.3)">03</div>
+</section>
 
-  <!-- 3 · THE PRIMITIVE -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 02 · o primitivo</div>
-    <h1>O cliente assina<br/>uma <em>policy</em>.<br/>O bytecode aplica.</h1>
-    <p class="lead">Quando o usuário toca o Face ID, uma struct Policy é gravada no smart wallet dele — no contrato Soroban, não num servidor.</p>
-    <div class="codeblock"><span class="m">// Soroban contract storage · per merchant</span>
-struct Policy {
-  merchant:           <span class="k">Address</span>,    <span class="m">// quem pode cobrar (exato)</span>
-  max_per_charge:     <span class="k">i128</span>,        <span class="m">// teto on-chain por ciclo</span>
-  interval_seconds:   <span class="k">u64</span>,         <span class="m">// gap mínimo entre cobranças</span>
-  expires_at:         <span class="k">u64</span>,         <span class="m">// auto-revoga após</span>
-  revoked:            <span class="k">bool</span>,        <span class="m">// kill switch · só usuário</span>
-}</div>
-    <p class="kicker">A Slippay não pode mudar. O merchant não pode mudar. O validador não pode mudar. Só o usuário.</p>
-  </section>
+<!-- 4 what it is -->
+<section>
+  <div class="eyebrow">what it is</div>
+  <h2 style="margin-top:2rem">A dollar account<br>that's <span class="hl">only yours</span>.</h2>
+  <div class="stack" style="max-width:48ch">
+    <div class="row"><span class="k">1</span><p class="lead" style="margin:0"><b>Self-custody.</b> The dollar stays in your hands (biometrics). Slippay never touches it. Nobody freezes it.</p></div>
+    <div class="row"><span class="k">2</span><p class="lead" style="margin:0"><b>Pays on its own, by your rules.</b> Teach it once; it executes. Outside the rule, it locks.</p></div>
+    <div class="row"><span class="k">3</span><p class="lead" style="margin:0"><b>Real dollars, in Pix.</b> ~1.9%, no IOF.</p></div>
+  </div>
+  <div class="pagenum">04</div>
+</section>
 
-  <!-- 4 · LIVE PROOF -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 03 · não é deck · é hash</div>
-    <h1>Funciona hoje.<br/>Em mainnet<span class="k">.</span></h1>
-    <ul class="clean">
-      <li><b>Subscription contract · mainnet Stellar</b> · <a class="proof" href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN" target="_blank">CBJMQ6ZY…EVQN ↗</a> · vivo desde 16/05/2026</li>
-      <li><b>Smart wallet · testnet</b> · <a class="proof" href="https://stellar.expert/explorer/testnet/contract/CDDPGRFOLUP7B7XAA4UQRWSY7FKAHSIKJR7N6NJA2V6YCUK5FGBCCK2U" target="_blank">CDDPGRFO…CCK2U ↗</a> · 16/16 unit tests · auditado em dois passes</li>
-      <li><b>Demo end-to-end:</b> 1 URL → 1 toque biométrico → cofre próprio em ~25s. Merchant cobra dentro do teto: <em>passa</em>. Merchant tenta acima: <em>rejeitado pelo bytecode</em>, <code style="font-family:'JetBrains Mono',monospace; color:var(--klein)">Error(Contract,#6)</code>.</li>
-    </ul>
-    <div class="live-tag"><span class="pulse"></span> mainnet stellar · auditado por bluewave ai security · 0,98% de fee</div>
-  </section>
+<!-- 5 MARKET -->
+<section>
+  <div class="eyebrow">the market is already here</div>
+  <h2 style="margin-top:1.5rem">And it's already in <span class="hl">stablecoins</span>.</h2>
+  <div class="stats">
+    <div class="stat"><div class="n">R$ <span class="gold">361 bn</span></div><div class="l">stablecoin volume in Brazil / year — up 480× in 6 years.</div></div>
+    <div class="stat"><div class="n"><span class="gold">98%</span></div><div class="l">of what Brazilians buy abroad is already stablecoin (US$6.8bn of US$6.9bn, Q1'26).</div></div>
+    <div class="stat"><div class="n"><span class="gold">174 M</span></div><div class="l">Pix users · 6.5 bn transactions/month. The central bank is piloting USDC in Pix.</div></div>
+    <div class="stat"><div class="n">US$ <span class="gold">8 bn</span></div><div class="l">Brazil's annual remittance corridor. + 6.5 M crypto investors.</div></div>
+  </div>
+  <div class="src">sources: Portal do Bitcoin (R$361bn/480×); Receita Federal Q1 2026 (98%); BCB (Pix 174M / USDC-Pix pilot); BR remittance estimates.</div>
+  <div class="pagenum">05</div>
+</section>
 
-  <!-- 5 · THE UX (Pix-grade) -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 04 · ux do pix · enforcement do bytecode</div>
-    <h1>Uma URL.<br/>Um toque.<br/><em>Cinco segundos</em>.</h1>
-    <ul class="clean">
-      <li><b>Zero campos digitados.</b> Sem email, senha, seed phrase, seleção de chain, modal de gas, checkbox de termos.</li>
-      <li><b>Passkey + Soroban smart wallet</b> nativos do Stellar Protocol 21 (secp256r1 on-chain). Sem MetaMask, sem extensão. iCloud Keychain / Google Password Manager sincroniza entre devices.</li>
-      <li><b>Recurring sem novo toque.</b> O merchant puxa via SAC.transfer; o smart wallet do cliente autoriza via policy match. <em>Stripe-grade UX. Bytecode-grade enforcement.</em></li>
-    </ul>
-    <p class="note">benchmark: pix automático é 3 taps + biometria. nosso fluxo cobre o mesmo — cross-border, composable, fora do perímetro de PSP regulado.</p>
-  </section>
+<!-- 6 5x0 -->
+<section>
+  <div class="eyebrow">head to head</div>
+  <h2 style="margin-top:2rem">Best at the <span class="gold">5</span> that matter.</h2>
+  <table>
+    <thead><tr><th></th><th class="col-us">Slippay</th><th>Bank</th><th>Stripe</th><th>Nomad</th></tr></thead>
+    <tbody>
+      <tr><td>Yours, never frozen</td><td class="col-us">✓</td><td class="x">✗</td><td class="x">✗</td><td class="x">✗</td></tr>
+      <tr><td>No cap to hold</td><td class="col-us">✓</td><td class="x">✗</td><td class="x">✗</td><td class="x">✗</td></tr>
+      <tr><td>Pays your bills on its own</td><td class="col-us">✓</td><td class="x">✗</td><td class="x">✗</td><td class="x">✗</td></tr>
+      <tr><td>Real dollars in your hand</td><td class="col-us">✓</td><td class="x">✗</td><td class="x">✗</td><td class="x">✗</td></tr>
+      <tr><td>Total cost (with IOF)</td><td class="col-us v">~1.9%</td><td>~5%</td><td>~4%</td><td>~5.5%</td></tr>
+    </tbody>
+  </table>
+  <div class="pagenum">06</div>
+</section>
 
-  <!-- 6 · INEVITABILITY (three forces) -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 05 · por que agora</div>
-    <h1>Três forças<br/>convergindo<span class="k">.</span></h1>
-    <div class="force">
-      <div><h3>Macro</h3><p>98% da cripto cross-border BR no Q1/2026 foi stablecoin. US$ 6,8bi num trimestre. +100% YoY. O brasileiro já se dolarizou — falta o trilho doméstico.</p></div>
-      <div><h3>Regulação</h3><p>Res. 561 do BCB ilegaliza gateway cross-border de stablecoin em out/2026. Mata os competidores que dependem de pernas exteriores. SlipPay é doméstico por design.</p></div>
-      <div><h3>Tecnologia</h3><p>Protocol 21 (jun/2024) adicionou secp256r1 nativo no Stellar. Passkey signa contrato direto. Fee ~$0.00001. Finalidade em 3-5s. O stack que destrava o produto agora existe.</p></div>
-    </div>
-  </section>
+<!-- 7 proof -->
+<section style="background:#101010;color:var(--bone)">
+  <div class="eyebrow" style="color:#8a857d">verify, don't trust</div>
+  <h2 style="margin-top:2rem;color:var(--bone)">Not a demo.<br><span class="gold">It's on the ledger.</span></h2>
+  <p class="lead" style="color:rgba(241,238,231,.65);max-width:44ch">Real contracts, a real payment settled on mainnet. Click and check — every claim resolves to a contract id or a tx hash.</p>
+  <div class="pills">
+    <span class="pill live">recurring rail · mainnet</span>
+    <span class="pill live">real payment · settled</span>
+    <span class="pill live">attester · fail-closed</span>
+    <span class="pill" style="border-color:rgba(241,238,231,.25);color:rgba(241,238,231,.7)">pre-auth v0.2 · testnet</span>
+  </div>
+  <div class="pagenum" style="color:rgba(241,238,231,.3)">07</div>
+</section>
 
-  <!-- 7 · ONE TRAIL, TWO MARKETS -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 06 · um trilho, dois mercados</div>
-    <h1>Hoje os humanos.<br/>Amanhã os <em>agentes</em>.</h1>
-    <ul class="clean">
-      <li><b>Hoje:</b> SMBs e creators que a Stripe exclui ou onera (BR, LATAM, África). Recebem em dólar, em segundos, sem custódia. Zero chargeback overhang.</li>
-      <li><b>Amanhã:</b> agentes de IA assinando API, dados, computação. <em>Recurring</em> de agente é território vazio — x402 resolveu one-shot, não assinatura. SlipPay já tem o contrato vivo.</li>
-      <li><b>Mesmo trilho.</b> A mesma policy primitive que protege a humana protege a wallet do agente.</li>
-    </ul>
-  </section>
+<!-- 8 moat / agent + market -->
+<section>
+  <div class="eyebrow">the moat · and the US$15 trillion market</div>
+  <h2 style="margin-top:1.5rem">Assume the agent<br>is already <span class="hl">owned</span>.</h2>
+  <p class="lead" style="max-width:54ch">An agent with a wallet can be injected, redirected, compromised. With Slippay the money <b>survives</b> — the limit is <b>proven on-chain</b> and held by an independent signer the agent's runtime can't control. <b class="gold">Nobody else ships this on mainnet.</b></p>
+  <div class="stats" style="grid-template-columns:repeat(3,1fr);margin-top:2.2rem">
+    <div class="stat"><div class="n">US$ <span class="gold">15 T</span></div><div class="l">in AI-agent-mediated purchases by 2028 (Gartner).</div></div>
+    <div class="stat"><div class="n">US$ <span class="gold">3–5 T</span></div><div class="l">in retail agentic commerce by 2030 (McKinsey).</div></div>
+    <div class="stat"><div class="n gold">USDC</div><div class="l">the dominant rail for agent payments. Visa, Stripe, Google entering.</div></div>
+  </div>
+  <div class="src">sources: Gartner (US$15T/2028); McKinsey (US$3–5T/2030); Keyrock/CoinDesk (x402 · stablecoins).</div>
+  <div class="pagenum">08</div>
+</section>
 
-  <!-- 8 · THE MATRIX -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 07 · stripe não pode</div>
-    <h1>Cinco dimensões<br/>estruturais<span class="k">.</span></h1>
-    <div class="matrix">
-      <div class="h">dimensão</div><div class="h">stripe</div><div class="h">slippay</div>
+<!-- 9 why stellar / FOMO -->
+<section>
+  <div class="eyebrow">why stellar, why now</div>
+  <h2 style="margin-top:2rem">Your #1 market.<br>The agent app you're missing.</h2>
+  <div class="stack" style="max-width:54ch">
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0">SDF 2026 goals: <b>+US$1 bn network value</b>, LatAm as a core market, <b>agent payments (x402)</b>. Slippay produces exactly these metrics.</p></div>
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0">The SCF has already distributed <b>US$42 M</b> to 650+ projects. We're the consumer product missing in your #1 market — and already a live x402 app.</p></div>
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0">Every month without backing it, this volume goes to Base or Solana. <b>The cost is ceding Brazil.</b></p></div>
+  </div>
+  <div class="src">sources: SDF 2026 strategy (+US$1bn network value · x402); Stellar Community Fund (US$42M / 650+ projects).</div>
+  <div class="pagenum">09</div>
+</section>
 
-      <div class="s">limite de gasto</div>
-      <div class="sp">na base de dados <b>deles</b>, mutável por eles</div>
-      <div class="sp">no <b>bytecode do wallet</b>, só usuário muda</div>
+<!-- 10 monetization + math -->
+<section>
+  <div class="eyebrow">the revenue machine</div>
+  <h2 style="margin-top:1.5rem">Profits without becoming a bank.</h2>
+  <div class="moneylist">
+    <div class="money"><div class="h">1 · Conversion spread <span class="gold">~1.9%</span> <span style="font-weight:500;color:#A16207">· already live</span></div><div class="m">On the US$8 bn/yr corridor: capturing 1% = US$80 M flow → <b>~US$1.5 M/yr</b>. Each 1% of the R$361 bn stablecoin market at 1.9% = <b>R$68 M</b>.</div></div>
+    <div class="money"><div class="h">2 · Yield-distribution <span class="gold">(Selic ~13%)</span></div><div class="m">Idle balance earns; we keep ~1.5% spread on the yield, with no custody, via a licensed partner. 100k users × R$2k = R$200 M idle → <b>~R$3 M/yr</b> recurring.</div></div>
+    <div class="money"><div class="h">3 · Interchange <span class="gold">~1.5%</span> + per-agent-tx fee</div><div class="m">Every card spend earns interchange. Every agent payment a provable-bound fee (1–2%, where Stripe's 2.9%+$0.30 can't go).</div></div>
+    <div class="money"><div class="h">4 · License the agent + security layer to enterprises <span class="gold">US$50k–1.2M/yr</span></div><div class="m">Companies running AI agents that spend money need <b>provable spend controls</b>. We sell the attester + on-chain bound as the governance/compliance layer — the exact market that pays <b>US$50k–1.2M ACV</b> (up to US$5M at the top). The biggest check per client.</div></div>
+  </div>
+  <p class="mono" style="margin-top:1.6rem;font-size:12px;color:rgba(10,10,10,.45)">two engines: consumer (spread/yield/interchange, scales with volume) + B2B security/attestation (high-margin enterprise ACV). non-custodial, never a VASP. illustrative figures. sources: Dirr AI Pricing Index 2026; AI Security Pricing Benchmark 2026.</p>
+  <div class="pagenum">10</div>
+</section>
 
-      <div class="s">settlement</div>
-      <div class="sp">2-7 dias · janela de chargeback</div>
-      <div class="sp"><b>3-5s</b> · final no bloco</div>
+<!-- 11 state -->
+<section>
+  <div class="eyebrow">what's already running</div>
+  <h2 style="margin-top:2rem">No vaporware.</h2>
+  <div class="pills">
+    <span class="pill live">recurring rail · mainnet</span>
+    <span class="pill live">attester · live</span>
+    <span class="pill live">non-custodial wallet · mainnet</span>
+    <span class="pill">pre-auth autocharge · testnet</span>
+    <span class="pill">usdc↔pix ramp · integrated</span>
+  </div>
+  <p class="lead" style="max-width:48ch;margin-top:2.5rem">The tech is already in hand. Built solo, in Brazil. What's missing is fuel to put it in the country's hands.</p>
+  <div class="pagenum">11</div>
+</section>
 
-      <div class="s">piso de fee</div>
-      <div class="sp">~1,5% interchange · floor da Visa</div>
-      <div class="sp"><b>$0,00001</b> · só gas</div>
+<!-- 12 objections -->
+<section>
+  <div class="eyebrow">the hard questions</div>
+  <h2 style="margin-top:1.5rem">Already answered.</h2>
+  <div class="stack" style="max-width:60ch;gap:1rem">
+    <div class="row"><span class="k">?</span><p class="lead" style="margin:0"><b>“What about regulation?”</b> BCB Res 561 only bans stablecoins on the cross-border eFX rail. Domestic holding + self-custody is allowed. And we're not a VASP — the licensed partner carries that.</p></div>
+    <div class="row"><span class="k">?</span><p class="lead" style="margin:0"><b>“What if they tax stablecoins?”</b> The IOF proposal didn't pass and would only hit &gt;R$10k/mo. Even with it, the moat isn't just price — it's <b>non-custodial + automation</b>, which no one has.</p></div>
+    <div class="row"><span class="k">?</span><p class="lead" style="margin:0"><b>“Any traction?”</b> We're <b>pre-distribution, not pre-product</b>. The rail is live on mainnet; the market already exists (R$361 bn, 98% stablecoin). What's missing is fuel, not validation.</p></div>
+    <div class="row"><span class="k">?</span><p class="lead" style="margin:0"><b>“Solo founder?”</b> Built solo to mainnet, in weeks. The ask is exactly the fuel to become a team.</p></div>
+  </div>
+  <div class="pagenum">12</div>
+</section>
 
-      <div class="s">custódia</div>
-      <div class="sp">intermediário obrigatório · pode congelar</div>
-      <div class="sp"><b>não-custodial</b> · merchant recebe direto</div>
+<!-- 13 defensibility -->
+<section style="background:#101010;color:var(--bone)">
+  <div class="eyebrow" style="color:#8a857d">defensibility</div>
+  <h2 style="margin-top:1.5rem;color:var(--bone)">Why they<br>can't <span class="gold">copy it</span>.</h2>
+  <div class="stack" style="max-width:58ch;gap:1rem">
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0;color:rgba(241,238,231,.72)"><b style="color:#fff">Their model forbids it.</b> A custodial incumbent lives on <b>holding</b> your money — Circle earns <b>94% of revenue</b> from interest on reserves. Going non-custodial kills their own business.</p></div>
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0;color:rgba(241,238,231,.72)"><b style="color:#fff">The proof is the wedge; the moat is distribution.</b> Being first in Stellar's #1 market (Brazil) + making the proof inescapable (bound-to-deploy). Copying the code is easy; copying the position isn't.</p></div>
+    <div class="row"><span class="k">→</span><p class="lead" style="margin:0;color:rgba(241,238,231,.72)"><b style="color:#fff">Not a VASP = light and fast</b> where they're heavy and slow.</p></div>
+  </div>
+  <div class="src dark">Circle Q1 2026: 94% of revenue = reserve income.</div>
+  <div class="pagenum" style="color:rgba(241,238,231,.3)">13</div>
+</section>
 
-      <div class="s">geografia</div>
-      <div class="sp">~46 países · SWIFT pra resto · ~6% médio</div>
-      <div class="sp"><b>global no dia 1</b> · mesma UX em qualquer país</div>
-    </div>
-    <p class="kicker">Stripe não pode entregar nenhum desses sem deixar de ser Stripe.</p>
-  </section>
+<!-- 14 ask -->
+<section style="background:var(--gold);color:var(--ink)">
+  <div class="eyebrow" style="color:rgba(10,10,10,.55)">the ask</div>
+  <h1 style="margin-top:2rem">Fuel to put it<br>in Brazil's<br>hands.</h1>
+  <p class="lead" style="color:rgba(10,10,10,.72);max-width:48ch">We're not asking to build an idea — it already works on mainnet. We're asking to scale distribution in Stellar's #1 market, in a R$361 bn market that's already 98% stablecoin.</p>
+  <div class="pagenum">14</div>
+</section>
 
-  <!-- 9 · THE MONEY -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 08 · por que vale um bilhão</div>
-    <h1>0,98% sobre<br/>um rio de dólares<span class="k">.</span></h1>
-    <div class="row">
-      <div class="stat"><div class="n" data-count="6" data-suffix="-8 bi" data-prefix="US$ ">US$ 0</div><div class="l">fluxo cripto/mês só no Brasil · ~90% stablecoin (BCB Q1/2026)</div></div>
-      <div class="stat"><div class="n">0,98%</div><div class="l">de take em cada dólar que cruza o trilho</div></div>
-      <div class="stat"><div class="n" data-count="0">0</div><div class="l">custo marginal de processamento — gas em centavos de centavo</div></div>
-    </div>
-    <p class="kicker">Não precisamos de muito desse fluxo. E isso é antes da LATAM, antes dos agentes.</p>
-  </section>
+<!-- 15 close -->
+<section style="background:#101010;color:var(--bone)">
+  <div class="brand" style="color:var(--bone)">slippay<span class="dot">.</span></div>
+  <h1 style="color:var(--bone)">Money was<br>a promise.</h1>
+  <h1 style="color:var(--gold)">We made it a proof.</h1>
+  <p class="lead mono" style="color:rgba(241,238,231,.6);margin-top:3rem;letter-spacing:.04em">app.slippay.cc &nbsp;·&nbsp; app.slippay.cc/builders &nbsp;·&nbsp; live on mainnet</p>
+  <div class="pagenum" style="color:rgba(241,238,231,.3)">15</div>
+</section>
 
-  <!-- 10 · INTELLIGENCE -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 09 · pra onde vai</div>
-    <h1>Não é billing.<br/>É <em>inteligência</em><br/>de assinatura.</h1>
-    <ul class="clean">
-      <li>Stripe vê o pedido. <b>SlipPay vê a wallet</b> — saldo, gas, on-chain history. Prevê a falha <b>antes</b> dela acontecer.</li>
-      <li>SaaS perde <b>20-40% pra churn involuntário</b> (Recurly · ProfitWell). Em cripto é pior. SlipPay avisa <b>3 dias antes</b>, com a razão exata.</li>
-      <li>O agente propõe (pausa · downgrade · troca de ativo · top-up de gas) e o usuário aprova respeitando a policy. Proativo, não débito autônomo.</li>
-      <li><b>Cada merchant ganha um CFO de assinatura embutido</b> — em mainnet, custo marginal perto de zero.</li>
-    </ul>
-  </section>
-
-  <!-- 11 · ASK -->
-  <section class="slide">
-    <div class="eyebrow"><span class="dot"></span> 10 · o pedido</div>
-    <h1>Vamos construir a<br/>camada de dólar<br/>de um continente<span class="k">.</span></h1>
-    <ul class="clean">
-      <li><b>Uma introdução a uma Instituição de Pagamento BR</b> — o anchor de câmbio que destrava o Pix → USDC doméstico.</li>
-      <li><b>Os primeiros merchants reais</b> processando em dólar antes do fim do programa.</li>
-      <li><b>Pareceiro técnico</b> pra fechar v0.2 (passkey real on-chain) e auditoria externa (OpenZeppelin / Trail of Bits) antes de cliente pagante.</li>
-    </ul>
-    <p class="note">slippay.cc · github.com/Galmanus/slippay · Manuel Galmanus · Mario F. Neto · 2026</p>
-  </section>
-
-</div>
-
+<div class="hint">↓ / space · navigate</div>
 <script>
-  const deck=document.getElementById('deck'),slides=[...document.querySelectorAll('.slide')];
-  const counter=document.getElementById('counter'),prog=document.getElementById('prog');
-  let i=0; const pad=n=>String(n).padStart(2,'0');
-  function countUp(el){
-    const to=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec||'0');
-    const pre=el.dataset.prefix||'',suf=el.dataset.suffix||'',start=performance.now(),dur=1300;
-    function tick(now){ const t=Math.min(1,(now-start)/dur),e=1-Math.pow(1-t,3),v=to*e;
-      el.textContent=pre+v.toFixed(dec).replace('.',',')+suf; if(t<1)requestAnimationFrame(tick); }
-    requestAnimationFrame(tick);
-  }
-  function go(n){
-    i=Math.max(0,Math.min(slides.length-1,n));
-    deck.style.transform=`translateX(-${i*100}vw)`;
-    counter.textContent=`${pad(i+1)} / ${pad(slides.length)}`;
-    prog.style.width=`${((i+1)/slides.length)*100}%`;
-    slides.forEach((s,k)=>s.classList.toggle('live',k===i));
-    slides[i].querySelectorAll('[data-count]').forEach(el=>{ el.textContent=(el.dataset.prefix||'')+'0'+(el.dataset.suffix||''); countUp(el); });
-  }
-  document.addEventListener('keydown',e=>{
-    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(i+1);}
-    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
-    else if(e.key==='Home')go(0); else if(e.key==='End')go(slides.length-1);
-    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen(); }
+  const secs=[...document.querySelectorAll('section')];
+  let i=0;
+  function go(d){ i=Math.max(0,Math.min(secs.length-1,i+d)); secs[i].scrollIntoView({behavior:'smooth'}); }
+  addEventListener('keydown',e=>{
+    if(['ArrowDown','ArrowRight',' ','PageDown'].includes(e.key)){e.preventDefault();go(1);}
+    if(['ArrowUp','ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(-1);}
   });
-  document.addEventListener('click',e=>go(i+(e.clientX<innerWidth*0.35?-1:1)));
-  go(0);
+  const io=new IntersectionObserver(es=>es.forEach(en=>{ if(en.isIntersecting) i=secs.indexOf(en.target); }),{threshold:.5});
+  secs.forEach(s=>io.observe(s));
 </script>
 </body>
 </html>
