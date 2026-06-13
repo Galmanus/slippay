@@ -92,7 +92,7 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { .hero-in { animation: none; } }
 
 /* Scroll progress bar (top). */
-.scroll-progress { position: fixed; top: 0; left: 0; height: 2px; background: #A16207; width: 0; z-index: 60; will-change: width; }
+.scroll-progress { position: fixed; top: 0; left: 0; height: 2px; background: #FDDA24; width: 0; z-index: 60; will-change: width; }
 
 /* Headline mask-rise — lines wipe up into view (editorial reveal). */
 @keyframes maskUp { from { transform: translateY(115%); } to { transform: translateY(0); } }
@@ -149,17 +149,17 @@ html { scroll-behavior: smooth; }
 @keyframes pf-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Editorial range slider — square thumb, ink on a thin track. No rounding. */
-.slip-range { -webkit-appearance: none; appearance: none; height: 2px; background: rgba(10,10,10,0.18); cursor: pointer; }
+.slip-range { -webkit-appearance: none; appearance: none; height: 2px; background: rgba(241,238,231,0.18); cursor: pointer; }
 .slip-range:focus { outline: none; }
 .slip-range::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
-  width: 16px; height: 16px; background: #0a0a0a; border: 0; border-radius: 0;
+  width: 16px; height: 16px; background: #F1EEE7; border: 0; border-radius: 0;
   transition: transform 140ms var(--ease-out-expo);
 }
 .slip-range:hover::-webkit-slider-thumb,
 .slip-range:active::-webkit-slider-thumb { transform: scale(1.25); }
-.slip-range::-moz-range-thumb { width: 16px; height: 16px; background: #0a0a0a; border: 0; border-radius: 0; }
-.slip-range::-moz-range-track { height: 2px; background: rgba(10,10,10,0.18); }
+.slip-range::-moz-range-thumb { width: 16px; height: 16px; background: #F1EEE7; border: 0; border-radius: 0; }
+.slip-range::-moz-range-track { height: 2px; background: rgba(241,238,231,0.18); }
 
 /* Mobile menu entrance — slide+fade from the right, smooth. */
 @keyframes menu-in {
