@@ -36,7 +36,7 @@ function MagneticCTA({ to, children }: { to: string; children: React.ReactNode }
     <Link to={to} ref={ref as any}
       onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ transition: "transform 200ms cubic-bezier(0.22,1,0.36,1)" }}
-      className="inline-flex items-center gap-3 bg-[#0a0a0a] text-[#f1eee7] px-8 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
+      className="inline-flex items-center gap-3 bg-[#FDDA24] text-[#0a0a0a] px-8 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#ffe24d]">
       {children}
     </Link>
   );
@@ -94,13 +94,13 @@ function LossCalculator({ t }: { t: { label: string; title: string; lossLabel: s
   const mLow = shown * LOW, mHigh = shown * HIGH;
 
   return (
-    <div className="max-w-[700px] mx-auto mt-16 border border-[#0a0a0a]/15 bg-white/50 p-7 md:p-12 lift">
-      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6">{t.label}</div>
+    <div className="max-w-[700px] mx-auto mt-16 border border-[#F1EEE7]/12 bg-[#16140F] p-7 md:p-12 lift">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 mb-6">{t.label}</div>
       <div className="text-xl md:text-2xl tracking-[-0.01em] mb-9 max-w-[28ch] leading-snug">{t.title}</div>
 
       {/* amount — slider + live value, plus quick presets */}
       <div className="flex items-end justify-between mb-3">
-        <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.youReceive}</span>
+        <span className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45 font-mono">{t.youReceive}</span>
         <span className="text-2xl md:text-4xl font-medium tabular-nums tracking-[-0.03em]">{usd(amount)}</span>
       </div>
       <input
@@ -114,32 +114,32 @@ function LossCalculator({ t }: { t: { label: string; title: string; lossLabel: s
           <button
             key={p} type="button" onClick={() => setAmount(p)}
             className={"px-4 py-2 text-sm font-mono tabular-nums border transition-colors " +
-              (amount === p ? "bg-[#0a0a0a] text-[#f1eee7] border-[#0a0a0a]" : "border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60")}
+              (amount === p ? "bg-[#FDDA24] text-[#0a0a0a] border-[#FDDA24]" : "border-[#F1EEE7]/25 hover:border-[#F1EEE7]/60")}
           >{usd(p)}</button>
         ))}
       </div>
 
       {/* the loss — big, animated, accumulating */}
-      <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono mb-3">{t.lossLabel}</div>
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45 font-mono mb-3">{t.lossLabel}</div>
       <div className="flex items-end gap-3 flex-wrap">
-        <span className="text-5xl md:text-7xl font-medium tracking-[-0.045em] tabular-nums leading-[0.9]" style={{ color: "#b91c1c" }}>
-          {usd(mLow)}<span className="text-[#0a0a0a]/25 mx-1">–</span>{usd(mHigh)}
+        <span className="text-5xl md:text-7xl font-medium tracking-[-0.045em] tabular-nums leading-[0.9]" style={{ color: "#f87171" }}>
+          {usd(mLow)}<span className="text-[#F1EEE7]/25 mx-1">–</span>{usd(mHigh)}
         </span>
-        <span className="text-xs uppercase tracking-[0.2em] text-[#0a0a0a]/45 mb-1">{t.perMonth}</span>
+        <span className="text-xs uppercase tracking-[0.2em] text-[#F1EEE7]/45 mb-1">{t.perMonth}</span>
       </div>
 
-      <div className="mt-9 grid grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12">
-        <div className="bg-[#f1eee7] p-5">
-          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 12)}<span className="text-[#0a0a0a]/25 mx-0.5">–</span>{usd(mHigh * 12)}</div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 mt-2">{t.perYear}</div>
+      <div className="mt-9 grid grid-cols-2 gap-px bg-[#F1EEE7]/12 border border-[#F1EEE7]/12">
+        <div className="bg-[#16140F] p-5">
+          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 12)}<span className="text-[#F1EEE7]/25 mx-0.5">–</span>{usd(mHigh * 12)}</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#F1EEE7]/45 mt-2">{t.perYear}</div>
         </div>
-        <div className="bg-[#f1eee7] p-5">
-          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 36)}<span className="text-[#0a0a0a]/25 mx-0.5">–</span>{usd(mHigh * 36)}</div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 mt-2">{t.over3y}</div>
+        <div className="bg-[#16140F] p-5">
+          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 36)}<span className="text-[#F1EEE7]/25 mx-0.5">–</span>{usd(mHigh * 36)}</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#F1EEE7]/45 mt-2">{t.over3y}</div>
         </div>
       </div>
 
-      <p className="mt-7 text-xs leading-relaxed text-[#0a0a0a]/55 max-w-[62ch]">{t.foot}</p>
+      <p className="mt-7 text-xs leading-relaxed text-[#F1EEE7]/55 max-w-[62ch]">{t.foot}</p>
     </div>
   );
 }
@@ -167,19 +167,19 @@ export default function Home() {
     return () => { document.body.style.overflow = ""; };
   }, [mobileMenu]);
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] grain overflow-x-hidden">
       <header
         className={
           "fixed top-0 left-0 right-0 z-30 transition-colors duration-300 " +
-          (scrolled ? "bg-[#f1eee7]/80 backdrop-blur-md border-b border-[#0a0a0a]/8" : "bg-transparent")
+          (scrolled ? "bg-[#0E0D0B]/80 backdrop-blur-md border-b border-[#F1EEE7]/10" : "bg-transparent")
         }
       >
         <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-4 md:py-6 flex items-center justify-between">
-        <Logo variant={scrolled ? "ink" : "bone"} />
+        <Logo variant="bone" />
         {/* Desktop nav */}
         <nav
           className={"hidden md:flex items-center gap-7 text-[10px] uppercase tracking-[0.22em] transition-colors duration-300 " +
-            (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
+            (scrolled ? "text-[#F1EEE7]" : "text-[#f1eee7]")}
           style={scrolled ? undefined : { textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
         >
           <Link to="/agents" className="hover:opacity-60 transition-opacity">{t.nav.agents}</Link>
@@ -198,7 +198,7 @@ export default function Home() {
         <button
           aria-label="Open menu"
           onClick={() => setMobileMenu(v => !v)}
-          className={"md:hidden flex flex-col gap-1.5 p-2.5 transition-colors " + (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7] bg-[#0a0a0a]/35 backdrop-blur-sm")}
+          className={"md:hidden flex flex-col gap-1.5 p-2.5 transition-colors " + (scrolled ? "text-[#F1EEE7]" : "text-[#f1eee7] bg-[#0a0a0a]/35 backdrop-blur-sm")}
         >
           <span className="block w-6 h-[2px] bg-current" />
           <span className="block w-6 h-[2px] bg-current" />
@@ -287,7 +287,7 @@ export default function Home() {
           }}
           aria-label="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
         />
-        <div className="absolute bottom-0 left-0 right-0 h-16 md:h-12 bg-gradient-to-b from-transparent via-[#f1eee7]/40 to-[#f1eee7] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 md:h-12 bg-gradient-to-b from-transparent via-[#0E0D0B]/40 to-[#0E0D0B] pointer-events-none" />
       </div>
 
       {/* HERO TEXT — centered, monumental, single CTA */}
@@ -295,7 +295,7 @@ export default function Home() {
         {/* ambient lime aurora — slow drift behind the hero, editorial not gaudy */}
         <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(253,218,36,0.22), transparent 70%)", filter: "blur(6px)" }} />
         <div className="relative flex flex-col items-center text-center">
-          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-6">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 font-mono mb-6">
             <span className="flex items-center gap-2 normal-case tracking-tight">
               <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
               {t.hero.badge}
@@ -304,7 +304,7 @@ export default function Home() {
           <h1 className="title-grad text-[9vw] sm:text-[7vw] md:text-[4.4vw] font-medium leading-[1.04] tracking-[-0.035em] max-w-[20ch] mx-auto break-words">
             {t.hero.h1}
           </h1>
-          <p className="mt-7 md:mt-9 text-[16px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[48ch] mx-auto">
+          <p className="mt-7 md:mt-9 text-[16px] md:text-xl leading-[1.5] text-[#F1EEE7]/80 max-w-[48ch] mx-auto">
             {t.hero.sub}
           </p>
           <div className="mt-9 md:mt-11 flex justify-center">
@@ -316,17 +316,17 @@ export default function Home() {
       </Reveal>
 
       {/* ───────── 1.5 · PAYMENT FLOW, animated ───────── */}
-      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" className="border-t border-[#F1EEE7]/12">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">{t.payflow.label}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 mb-5">{t.payflow.label}</div>
             <h2 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98] max-w-[14ch]">
               {t.payflow.h2}<span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] ml-2 align-baseline" />
             </h2>
-            <p className="mt-6 text-base md:text-lg text-[#0a0a0a]/75 leading-relaxed max-w-[44ch]">
+            <p className="mt-6 text-base md:text-lg text-[#F1EEE7]/75 leading-relaxed max-w-[44ch]">
               {t.payflow.body}
             </p>
-            <Link to="/pay" className="lift inline-flex items-center gap-3 mt-8 bg-[#0a0a0a] text-[#f1eee7] px-7 py-4 text-[11px] uppercase tracking-[0.22em]">
+            <Link to="/pay" className="lift inline-flex items-center gap-3 mt-8 border border-[#F1EEE7]/30 text-[#F1EEE7] hover:bg-[#F1EEE7] hover:text-[#0a0a0a] px-7 py-4 text-[11px] uppercase tracking-[0.22em]">
               {t.payflow.cta} <span>→</span>
             </Link>
           </div>
@@ -338,23 +338,23 @@ export default function Home() {
 
       {/* ───────── 2 · THE PROBLEM ─────────
           The gap, condensed and visceral. One idea per line, centered. */}
-      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" className="border-t border-[#F1EEE7]/12">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center mb-10">
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 font-mono text-center mb-10">
             {t.gap.label}
           </div>
           {/* b1 opens as the gut-punch ("já chega menor"); b2 and b3 carry their
               own eyebrows so the pain scans. b3 (inverse-flow) anchors — it is
               the one line that says why no incumbent serves this person. */}
           <div className="max-w-[36ch] mx-auto text-center space-y-12">
-            <p className="text-2xl md:text-4xl leading-[1.18] tracking-[-0.02em] text-[#0a0a0a]/90">
+            <p className="text-2xl md:text-4xl leading-[1.18] tracking-[-0.02em] text-[#F1EEE7]/90">
               {t.gap.b1}
             </p>
             <div className="space-y-3">
-              <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45 font-mono">
                 {t.gap.b2Label}
               </div>
-              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/75">
+              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#F1EEE7]/75">
                 {t.gap.b2}
               </p>
             </div>
@@ -362,7 +362,7 @@ export default function Home() {
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#FDDA24] font-mono">
                 {t.gap.b3Label}
               </div>
-              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/90">
+              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#F1EEE7]/90">
                 {t.gap.b3}
               </p>
             </div>
@@ -374,9 +374,9 @@ export default function Home() {
 
       {/* ───────── 2.5 · HOW YOU USE IT ─────────
           Plain 3-step consumer flow — answers "how does a person use this?". */}
-      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" className="border-t border-[#F1EEE7]/12">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 text-center mb-6">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/55 text-center mb-6">
             {t.howto.label}
           </div>
           <h2 className="title-grad text-3xl md:text-6xl font-medium tracking-[-0.035em] leading-[1.02] max-w-[16ch] mx-auto text-center">
@@ -384,24 +384,24 @@ export default function Home() {
           </h2>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-[1100px] mx-auto">
             {t.howto.steps.map((s, i) => (
-              <Reveal key={s.n} delay={i * 100} className="lift border border-[#0a0a0a]/15 bg-white/40 p-7 md:p-9">
+              <Reveal key={s.n} delay={i * 100} className="lift border border-[#F1EEE7]/12 bg-[#16140F] p-7 md:p-9">
                 <div className="flex items-center gap-3">
-                  <span className="text-5xl md:text-6xl font-medium tracking-[-0.05em] tabular-nums text-[#0a0a0a]/12 leading-none">{s.n}</span>
+                  <span className="text-5xl md:text-6xl font-medium tracking-[-0.05em] tabular-nums text-[#F1EEE7]/12 leading-none">{s.n}</span>
                   <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
                 </div>
                 <div className="text-xl md:text-2xl font-medium tracking-tight mt-5">{s.t}</div>
-                <p className="mt-3 text-sm md:text-base text-[#0a0a0a]/70 leading-relaxed">{s.b}</p>
+                <p className="mt-3 text-sm md:text-base text-[#F1EEE7]/70 leading-relaxed">{s.b}</p>
               </Reveal>
             ))}
           </div>
-          <p className="mt-10 text-xs text-[#0a0a0a]/55 text-center max-w-[64ch] mx-auto leading-relaxed">{t.howto.foot}</p>
+          <p className="mt-10 text-xs text-[#F1EEE7]/55 text-center max-w-[64ch] mx-auto leading-relaxed">{t.howto.foot}</p>
         </div>
       </Reveal>
 
       {/* ───────── 3 · THE PROOF, as a feeling ─────────
           "it simply can't." Condensed proof facts, then a prominent link to the
           product on stage (/x402-demo). The terminal stays as an opt-in aside. */}
-      <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+      <Reveal as="section" id="proof" className="border-t border-[#F1EEE7]/12 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
             {t.proof.kicker}
@@ -442,13 +442,13 @@ export default function Home() {
           surface (B). One line + one quiet button. The home stays zero-tech;
           x402 backing, the axlc certificate and the mainnet artifacts live on
           /agents for the people who came for that. */}
-      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+      <Reveal as="section" className="border-t border-[#F1EEE7]/12">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 text-center">
           <p className="text-2xl md:text-4xl font-medium tracking-[-0.025em] leading-[1.15] max-w-[20ch] mx-auto">
             {t.bridge.line}
           </p>
           <Link to="/agents"
-            className="lift inline-flex items-center gap-3 mt-9 border border-[#0a0a0a]/30 px-7 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] transition-colors">
+            className="lift inline-flex items-center gap-3 mt-9 border border-[#F1EEE7]/30 px-7 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#F1EEE7] hover:text-[#0a0a0a] transition-colors">
             {t.bridge.button} <span>→</span>
           </Link>
         </div>
@@ -457,7 +457,7 @@ export default function Home() {
       {/* ───────── 5 · HONEST STATUS + final CTA ─────────
           The truth out loud (test network · checked by us · outside audit +
           real money to come), then one monumental ask. */}
-      <Reveal as="section" id="status" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+      <Reveal as="section" id="status" className="border-t border-[#F1EEE7]/12 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
             {t.status.label}
@@ -517,7 +517,7 @@ export default function Home() {
       </Reveal>
 
       {/* FOOTER */}
-      <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+      <footer className="border-t border-[#F1EEE7]/12 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 pt-20 pb-8">
           <div className="grid grid-cols-12 gap-6 pb-16 border-b border-[#f1eee7]/15">
             <div className="col-span-12 md:col-span-4">
