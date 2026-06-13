@@ -67,22 +67,22 @@ export default function Account() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
-        <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
+        <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#F1EEE7]/55 hover:text-[#F1EEE7]">Home</Link>
       </header>
 
       <main className="max-w-[760px] mx-auto px-6 md:px-12 pt-12 md:pt-20 pb-28">
         {!acct ? (
           <>
-            <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
-              <span className="text-[#0a0a0a]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>create your account</span>
+            <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#F1EEE7]/45">
+              <span className="text-[#F1EEE7]/70">001</span><span className="h-px w-8 bg-current opacity-40" /><span>create your account</span>
             </div>
             <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,6.5rem)]" style={display}>
               One touch.<br />That's your account.
             </h1>
-            <p className="mt-8 text-xl leading-relaxed max-w-[46ch] text-[#0a0a0a]/75">
+            <p className="mt-8 text-xl leading-relaxed max-w-[46ch] text-[#F1EEE7]/75">
               No email, no password, no seed phrase. Your biometrics create a key only you hold,
               and that becomes your account — the same system that authorizes your payments.
             </p>
@@ -90,7 +90,7 @@ export default function Account() {
             {bioOk === false && (
               <div className="mt-10 max-w-[440px] rounded-2xl border border-[#6f6862]/40 bg-[#6f6862]/[0.06] p-5">
                 <div className="text-[15px] font-medium tracking-[-0.01em]" style={display}>This device has no biometrics.</div>
-                <p className="mt-1.5 text-sm text-[#0a0a0a]/65 leading-relaxed">
+                <p className="mt-1.5 text-sm text-[#F1EEE7]/65 leading-relaxed">
                   SlipPay creates your account with Face ID, Touch ID or a fingerprint — a computer without it can't.
                   Open <span className="font-mono text-[#6f6862]">app.slippay.cc/account</span> on your phone to create it in one touch.
                 </p>
@@ -104,12 +104,12 @@ export default function Account() {
 
             {error && (
               <div className="mt-6 max-w-[400px]">
-                <div className="text-[#0a0a0a]">{error}</div>
+                <div className="text-[#F1EEE7]">{error}</div>
                 <button onClick={createAccount} className="lift mt-3 inline-flex rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Try again</button>
               </div>
             )}
 
-            <p className="mt-10 text-xs text-[#0a0a0a]/45 max-w-[48ch] leading-relaxed">
+            <p className="mt-10 text-xs text-[#F1EEE7]/45 max-w-[48ch] leading-relaxed">
               Works on any device with biometrics + a modern browser. Already a merchant with an API key?
               <Link to="/login" className="underline ml-1">Sign in with email</Link>.
             </p>
@@ -117,24 +117,24 @@ export default function Account() {
           </>
         ) : (
           <>
-            <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
-              <span className="text-[#0a0a0a]/70">✓</span><span className="h-px w-8 bg-current opacity-40" /><span>you're in · {acct.network === "PUBLIC" ? "mainnet" : "testnet"}</span>
+            <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#F1EEE7]/45">
+              <span className="text-[#F1EEE7]/70">✓</span><span className="h-px w-8 bg-current opacity-40" /><span>you're in · {acct.network === "PUBLIC" ? "mainnet" : "testnet"}</span>
             </div>
             <h1 className="mt-10 font-bold uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.5rem,9vw,6rem)]" style={display}>
               Welcome <span className="text-[#6f6862]">back.</span>
             </h1>
 
-            <div className="mt-12 rounded-2xl border border-[#0a0a0a]/12 p-7 max-w-[520px]">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">your account</div>
-              <div className="mt-3 font-mono text-sm break-all text-[#0a0a0a]/80">{short(acct.walletId, 10, 8)}</div>
+            <div className="mt-12 rounded-2xl border border-[#F1EEE7]/12 bg-[#16140F] p-7 max-w-[520px]">
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#F1EEE7]/45">your account</div>
+              <div className="mt-3 font-mono text-sm break-all text-[#F1EEE7]/80">{short(acct.walletId, 10, 8)}</div>
               <div className="mt-4 flex items-baseline gap-6">
                 <div>
-                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">opening balance</div>
-                  <div className="text-2xl tabular-nums" style={display}>{(Number(acct.funded) / 1e7).toFixed(2)} <span className="text-sm text-[#0a0a0a]/50">USDC</span></div>
+                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#F1EEE7]/40">opening balance</div>
+                  <div className="text-2xl tabular-nums" style={display}>{(Number(acct.funded) / 1e7).toFixed(2)} <span className="text-sm text-[#F1EEE7]/50">USDC</span></div>
                 </div>
                 <div>
-                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">since</div>
-                  <div className="text-sm tabular-nums text-[#0a0a0a]/70">{new Date(acct.createdAt).toLocaleDateString()}</div>
+                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#F1EEE7]/40">since</div>
+                  <div className="text-sm tabular-nums text-[#F1EEE7]/70">{new Date(acct.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
             </div>
@@ -148,12 +148,12 @@ export default function Account() {
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[520px]">
               <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Pay</Link>
               <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Get paid</Link>
-              <Link to="/withdraw-demo" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Withdraw</Link>
-              <Link to="/cockpit" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Live</Link>
+              <Link to="/withdraw-demo" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#F1EEE7]/25 hover:border-[#F1EEE7]/60">Withdraw</Link>
+              <Link to="/cockpit" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#F1EEE7]/25 hover:border-[#F1EEE7]/60">Live</Link>
             </div>
 
             <button onClick={() => { clearAccount(); setAcct(null); }}
-              className="mt-10 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 hover:text-[#0a0a0a]">Sign out of this device</button>
+              className="mt-10 text-[10px] uppercase tracking-[0.2em] text-[#F1EEE7]/45 hover:text-[#F1EEE7]">Sign out of this device</button>
             <div className="mt-12"><LiveProof /></div>
           </>
         )}
