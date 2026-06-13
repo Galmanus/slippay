@@ -43,14 +43,14 @@ export default function Cobrar() {
   }, [amount]);
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
         <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
-        <Link to="/pay" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Pay →</Link>
+        <Link to="/pay" className="text-[10px] uppercase tracking-[0.24em] text-[#F1EEE7]/55 hover:text-[#F1EEE7]">Pay →</Link>
       </header>
       <main className="max-w-[560px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-24 text-center">
-        <div className="flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">
-          <span className="text-[#0a0a0a]/70">001</span>
+        <div className="flex items-baseline justify-center gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#F1EEE7]/45">
+          <span className="text-[#F1EEE7]/70">001</span>
           <span className="h-px w-8 bg-current opacity-40" />
           <span>charge · show the QR · mainnet</span>
         </div>
@@ -62,7 +62,7 @@ export default function Cobrar() {
           {PRESETS.map((p) => (
             <button key={p} onClick={() => setAmount(p)}
               className={"lift px-5 py-3 text-sm font-mono tabular-nums rounded-full border transition-colors " +
-                (amount === p ? "bg-[#0a0a0a] text-[#f1eee7] border-[#0a0a0a]" : "border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60")}>
+                (amount === p ? "bg-[#FDDA24] text-[#0a0a0a] border-[#FDDA24]" : "border-[#F1EEE7]/25 hover:border-[#F1EEE7]/60")}>
               {p} USDC
             </button>
           ))}
@@ -70,23 +70,23 @@ export default function Cobrar() {
 
         <div className="mt-10 inline-flex flex-col items-center">
           {qr ? (
-            <img src={qr} alt="payment QR" className="w-[280px] h-[280px] rounded-2xl border border-[#0a0a0a]/15" />
+            <img src={qr} alt="payment QR" className="w-[280px] h-[280px] rounded-2xl border border-[#F1EEE7]/15" />
           ) : (
-            <div className="w-[280px] h-[280px] rounded-2xl border border-[#0a0a0a]/15 flex items-center justify-center text-xs text-[#0a0a0a]/45">generating…</div>
+            <div className="w-[280px] h-[280px] rounded-2xl border border-[#F1EEE7]/15 flex items-center justify-center text-xs text-[#F1EEE7]/45">generating…</div>
           )}
           <div className="mt-5 text-3xl font-medium tabular-nums" style={display}>{amount} USDC</div>
-          <div className="mt-2 text-[10px] uppercase tracking-[0.22em] font-mono"
-            style={{ color: err ? "#b00" : "#6f6862" }}>
+          <div className={"mt-2 text-[10px] uppercase tracking-[0.22em] font-mono " + (err ? "" : "text-[#F1EEE7]/40")}
+            style={err ? { color: "#b00" } : undefined}>
             {err ? "✗ " + err : "● ready to receive · mainnet"}
           </div>
           <button onClick={sharePay}
             className="lift mt-6 inline-flex items-center justify-center rounded-full px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-medium">
             {copied ? "Pay link copied ✓" : "Share pay link"}
           </button>
-          <div className="mt-3 font-mono text-[10px] text-[#0a0a0a]/40 max-w-[300px] mx-auto break-all">{payLink}</div>
+          <div className="mt-3 font-mono text-[10px] text-[#F1EEE7]/40 max-w-[300px] mx-auto break-all">{payLink}</div>
         </div>
 
-        <p className="mt-10 text-xs text-[#0a0a0a]/45 leading-relaxed max-w-[46ch] mx-auto">
+        <p className="mt-10 text-xs text-[#F1EEE7]/45 leading-relaxed max-w-[46ch] mx-auto">
           The customer opens <Link to="/pay" className="underline">/pay</Link>, points the camera at this QR,
           sees the amount, and authorizes with a touch. Real dollars (USDC), on the main network.
         </p>
