@@ -73,7 +73,7 @@ export default function Checkout() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex items-center">
+      <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] flex items-center">
         <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-16">
           <div className="text-xs uppercase tracking-[0.18em] text-red-700 mb-3">Error</div>
           <div className="text-3xl tracking-tight">{error}</div>
@@ -83,8 +83,8 @@ export default function Checkout() {
   }
   if (!order) {
     return (
-      <div className="min-h-screen bg-[#f1eee7] flex items-center justify-center">
-        <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">Loading...</div>
+      <div className="min-h-screen bg-[#0E0D0B] flex items-center justify-center">
+        <div className="text-xs uppercase tracking-[0.18em] text-[#F1EEE7]/55">Loading...</div>
       </div>
     );
   }
@@ -98,11 +98,11 @@ export default function Checkout() {
     "Paid";
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
+    <div className="min-h-screen bg-[#0E0D0B] text-[#F1EEE7] flex flex-col">
       {!embedded && (
         <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
-          <Logo />
-          <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+          <Logo variant="bone" />
+          <div className="text-[10px] uppercase tracking-[0.18em] text-[#F1EEE7]/55">
             Checkout · {order.id.slice(0, 8)}
           </div>
         </header>
@@ -110,20 +110,20 @@ export default function Checkout() {
 
       <main className="flex-1 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
-          <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+          <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#F1EEE7]/55">
             <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
             001. Pay with crypto
           </div>
 
           <div className="md:col-span-9">
-            <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-4">Amount due</div>
+            <div className="text-xs uppercase tracking-[0.18em] text-[#F1EEE7]/55 mb-4">Amount due</div>
             <div className="text-7xl md:text-9xl font-medium tabular-nums tracking-[-0.04em] leading-[0.9]">
               R$ {Number(order.brl_amount).toFixed(2)}
             </div>
             <div className="mt-6 flex items-baseline gap-6">
-              <div className="text-2xl tabular-nums text-[#0a0a0a]/70">{order.usdc_amount} USDC</div>
-              <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-                Expires in <span className="text-[#0a0a0a] tabular-nums"><Countdown expiresAt={order.expires_at} /></span>
+              <div className="text-2xl tabular-nums text-[#F1EEE7]/70">{order.usdc_amount} USDC</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#F1EEE7]/55">
+                Expires in <span className="text-[#F1EEE7] tabular-nums"><Countdown expiresAt={order.expires_at} /></span>
               </div>
             </div>
 
@@ -132,7 +132,7 @@ export default function Checkout() {
                 ? <PayButton onConnected={setWalletAddress} />
                 : (
                   <div>
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-[#F1EEE7]/55 mb-3">
                       Connected · <span className="font-mono normal-case tracking-normal">{walletAddress.slice(0,8)}...{walletAddress.slice(-4)}</span>
                     </div>
                     <button
@@ -168,13 +168,13 @@ export default function Checkout() {
                           setError(e instanceof Error ? e.message : "unknown error");
                         }
                       }}
-                      className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50"
+                      className="w-full bg-[#FDDA24] text-[#0a0a0a] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e6c520] disabled:opacity-50"
                     >
                       {buttonLabel}
                     </button>
                     {submitState === "submitted" && txHash && (
                       <div className="mt-6 border-l-2 border-amber-500 pl-4">
-                        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/70">Tx submitted · awaiting confirmation</div>
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-[#F1EEE7]/70">Tx submitted · awaiting confirmation</div>
                         <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
                            href={`${EXPLORER_BASE}/${txHash}`} target="_blank" rel="noreferrer">
                           {txHash}
@@ -183,7 +183,7 @@ export default function Checkout() {
                     )}
                     {submitState === "paid" && (
                       <div className="mt-6 border-l-2 border-[#FDDA24] pl-4">
-                        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a] flex items-center gap-2">
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-[#F1EEE7] flex items-center gap-2">
                           <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" />
                           Payment confirmed
                         </div>
@@ -203,8 +203,8 @@ export default function Checkout() {
       </main>
 
       {!embedded && (
-        <footer className="border-t border-[#0a0a0a]/10">
-          <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+        <footer className="border-t border-[#F1EEE7]/10">
+          <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#F1EEE7]/55">
             Non-custodial · Powered by Stellar · USDC by Circle
           </div>
         </footer>
