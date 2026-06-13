@@ -57,6 +57,9 @@ r.post("/", requireApiKey, async (c) => {
 
   const { data, error } = await sb.from("orders").insert({
     merchant_id: merchant.id,
+    // Pin the consented payout address at creation — a later merchant address
+    // rotation must not redirect this order's funds (recipient-drift defense).
+    merchant_stellar_address: merchant.stellar_address ?? null,
     external_ref: input.external_ref ?? null,
     brl_amount,
     usd_amount,
@@ -122,14 +125,13 @@ r.get("/:id", async (c) => {
     .select(`
       id, brl_amount, usd_amount, usdc_amount, memo, status,
       expires_at, paid_at, created_at,
-      merchants ( stellar_address )
+      merchant_stellar_address
     `)
     .eq("id", id).maybeSingle();
   if (error || !data) return c.json({ error: "not_found" }, 404);
-  const merchantSubrow = (data as unknown as { merchants?: { stellar_address: string | null } | null }).merchants;
-  const merchant_stellar_address = merchantSubrow?.stellar_address ?? null;
-  const { merchants: _ignored, ...rest } = data as unknown as Record<string, unknown> & { merchants?: unknown };
-  return c.json({ order: { ...rest, merchant_stellar_address } });
+  // Serve the PINNED recipient (snapshotted at creation), not a live merchant
+  // lookup — so the address the buyer pays cannot drift after consent.
+  return c.json({ order: data });
 });
 
 r.post("/:id/cancel", requireApiKey, async (c) => {

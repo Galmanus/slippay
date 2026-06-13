@@ -115,21 +115,41 @@ export interface AskRequest {
   history?: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
+// Audit-005 · M2 — hard caps on what we forward to the subprocess. The route
+// already validates `question` ≤ 4000 chars, but `lib/ask.ts` is the last line
+// of defense and is also reachable from other callers, so re-validate here and
+// bound the total forwarded prompt (question + history) explicitly. Oversized
+// input is rejected before spawning, never silently truncated into the CLI.
+const MAX_QUESTION_CHARS = 4000;
+const MAX_HISTORY_TURN_CHARS = 4000;
+const MAX_USER_INPUT_CHARS = 24_000; // question + up to 10 history turns
+
 export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<Uint8Array>> {
   const token = Deno.env.get("CLAUDE_CODE_OAUTH_TOKEN");
   if (!token) throw new Error("CLAUDE_CODE_OAUTH_TOKEN not set");
+
+  // Validate/cap the forwarded input BEFORE doing any work or spawning.
+  const question = (req.question ?? "").toString();
+  if (!question.trim() || question.length > MAX_QUESTION_CHARS) {
+    throw new Error(`invalid question length: expected 1-${MAX_QUESTION_CHARS} chars`);
+  }
 
   const t0 = Date.now();
   const systemPrompt = await loadSystemPrompt();
   const docsPath = await ensureDocsBundle();
 
-  // Build the user prompt. Include history as context.
-  let userInput = req.question;
+  // Build the user prompt. Include history as context. Each history turn is
+  // bounded and the assembled total is hard-capped so a caller can't blow up
+  // the spawned argv / prompt with a huge crafted history.
+  let userInput = question;
   if (req.history && req.history.length > 0) {
     const hist = req.history
-      .map(h => `### ${h.role === "user" ? "User" : "You answered"}\n${h.content}`)
+      .map(h => `### ${h.role === "user" ? "User" : "You answered"}\n${(h.content ?? "").slice(0, MAX_HISTORY_TURN_CHARS)}`)
       .join("\n\n");
-    userInput = `## Prior conversation\n\n${hist}\n\n---\n\n## Current question\n\n${req.question}`;
+    userInput = `## Prior conversation\n\n${hist}\n\n---\n\n## Current question\n\n${question}`;
+  }
+  if (userInput.length > MAX_USER_INPUT_CHARS) {
+    throw new Error(`forwarded input too large: ${userInput.length} > ${MAX_USER_INPUT_CHARS} chars`);
   }
 
   const encoder = new TextEncoder();
@@ -142,11 +162,21 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
       // Claude CLI v2.x rejects both --append-system-prompt and
       // --append-system-prompt-file in the same invocation. Write a single
       // merged prompt file per-call (small; ~50KB) and reference it.
-      const mergedPromptPath = `${docsPath}.merged-${Date.now()}.md`;
+      //
+      // Audit-005 · M2 — this per-call file MUST always be removed, otherwise
+      // every request leaks a ~50KB /tmp file (the previous code only deleted
+      // it on the happy path implicitly, i.e. never). `unlinkMerged` is
+      // idempotent and is invoked from every exit path (merge failure, spawn
+      // failure, stream completion, and the catch/finally below).
+      const mergedPromptPath = `${docsPath}.merged-${Date.now()}-${crypto.randomUUID()}.md`;
+      const unlinkMerged = async () => {
+        try { await Deno.remove(mergedPromptPath); } catch { /* already gone */ }
+      };
       try {
         const docsBundle = await Deno.readTextFile(docsPath);
         await Deno.writeTextFile(mergedPromptPath, `${systemPrompt}\n\n${docsBundle}`);
       } catch (e) {
+        await unlinkMerged();
         send({ type: "error", error: `prompt merge failed: ${(e as Error).message ?? e}` });
         controller.close();
         return;
@@ -181,6 +211,7 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
       try {
         child = cmd.spawn();
       } catch (e: unknown) {
+        await unlinkMerged();
         send({ type: "error", error: `spawn failed: ${(e as Error).message ?? e}` });
         controller.close();
         return;
@@ -269,6 +300,7 @@ export async function askSlippayStream(req: AskRequest): Promise<ReadableStream<
           latency_ms: Date.now() - t0,
         });
       } finally {
+        await unlinkMerged();
         controller.close();
       }
     },

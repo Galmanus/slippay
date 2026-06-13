@@ -14,7 +14,7 @@
 
 ## current state (testnet)
 
-- `~/.config/stellar/identity/slippay-deployer.toml` on operator's laptop — seed phrase plaintext (`wreck gas proof stable stock object alone reject fabric unusual tide item`). disk theft = contract takeover.
+- `~/.config/stellar/identity/slippay-deployer.toml` on operator's laptop — seed phrase plaintext (REDACTED — was committed in plaintext until 2026-06-01; this is the **testnet** `slippay-deployer` key, never reused on mainnet; treat as compromised and rotate via friendbot). disk theft = contract takeover.
 - platform-fee key not yet generated; docs at `docs/deploy-secrets.md:101-112` say "save in 1Password/Bitwarden" — plaintext-at-rest password manager, still software-only.
 - both treated as compromised for mainnet purposes — generate fresh.
 

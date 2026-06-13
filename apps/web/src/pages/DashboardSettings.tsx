@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { authFetch } from "../lib/apiAuth.ts";
+import { checkReceiveAddress, isValidStellarAddress, type AddressCheck } from "../lib/stellar.ts";
 
 interface MerchantFull {
   id: string;
@@ -21,6 +22,33 @@ export default function DashboardSettings() {
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [addrCheck, setAddrCheck] = useState<AddressCheck | null>(null);
+  const [addrChecking, setAddrChecking] = useState(false);
+
+  const network = (merchant?.network === "PUBLIC" ? "PUBLIC" : "TESTNET") as "TESTNET" | "PUBLIC";
+  const addrFormatInvalid = stellarAddress.trim() !== "" && !isValidStellarAddress(stellarAddress);
+
+  // Live-verify the receive address against Horizon (debounced). Guards the #1
+  // onboarding silent-failure: a bad/trustline-less address saves clean, then
+  // every payment fails at settlement.
+  useEffect(() => {
+    const a = stellarAddress.trim();
+    if (a === "") { setAddrCheck(null); setAddrChecking(false); return; }
+    if (!isValidStellarAddress(a)) {
+      setAddrCheck({ validFormat: false, accountExists: null, hasUsdcTrustline: null });
+      setAddrChecking(false);
+      return;
+    }
+    setAddrChecking(true);
+    let cancelled = false;
+    const t = setTimeout(() => {
+      checkReceiveAddress(network, a)
+        .then(c => { if (!cancelled) setAddrCheck(c); })
+        .catch(() => { if (!cancelled) setAddrCheck({ validFormat: true, accountExists: null, hasUsdcTrustline: null }); })
+        .finally(() => { if (!cancelled) setAddrChecking(false); });
+    }, 500);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [stellarAddress, network]);
 
   useEffect(() => {
     const k = sessionStorage.getItem("slippay.fresh_api_key");
@@ -52,9 +80,9 @@ export default function DashboardSettings() {
       </h1>
 
       {revealedKey && (
-        <div className="mb-12 border-2 border-[#b5e853] bg-[#b5e853]/10 p-6">
+        <div className="mb-12 border-2 border-[#6f6862] bg-[#6f6862]/10 p-6">
           <div className="flex items-center gap-3">
-            <span className="inline-block w-3 h-3 bg-[#b5e853]" />
+            <span className="inline-block w-3 h-3 bg-[#6f6862]" />
             <div className="text-xs uppercase tracking-[0.18em]">Your API key</div>
           </div>
           <p className="text-sm text-[#0a0a0a]/70 mt-2">
@@ -101,6 +129,12 @@ export default function DashboardSettings() {
           <Editable label="Stellar receive address" value={stellarAddress} onChange={setStellarAddress}
             placeholder="GABC..." mono
             hint="USDC payments land here. Must have USDC trustline." />
+          <AddressStatus
+            address={stellarAddress}
+            network={network}
+            checking={addrChecking}
+            check={addrCheck}
+          />
         </Section>
 
         <Section title="Webhook" eyebrow="004">
@@ -136,15 +170,54 @@ export default function DashboardSettings() {
         </Section>
 
         <div className="pt-8 flex items-center gap-6">
-          <button className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-4 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a]">
+          <button
+            disabled={addrFormatInvalid}
+            title={addrFormatInvalid ? "Fix the Stellar address before saving" : undefined}
+            className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-4 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-40 disabled:cursor-not-allowed">
             Save changes
           </button>
           {saved && <span className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/70 flex items-center gap-2">
-            <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" /> Saved
+            <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Saved
           </span>}
           {err && <span className="text-xs uppercase tracking-[0.18em] text-red-700">{err}</span>}
         </div>
       </form>
+    </div>
+  );
+}
+
+function AddressStatus({ address, network, checking, check }: {
+  address: string; network: "TESTNET" | "PUBLIC"; checking: boolean; check: AddressCheck | null;
+}) {
+  if (address.trim() === "") return null;
+
+  const GREEN = "#3f7d20"; // readable on bone, not the chartreuse accent
+  const RED = "#b91c1c";
+  const AMBER = "#b45309";
+  const MUTED = "rgba(10,10,10,0.55)";
+
+  let dot = MUTED, text = "", color = MUTED;
+
+  if (checking) {
+    dot = MUTED; color = MUTED; text = `Checking on ${network.toLowerCase()}…`;
+  } else if (check && !check.validFormat) {
+    dot = RED; color = RED; text = "Not a valid Stellar address — must start with G and be 56 characters.";
+  } else if (check && check.accountExists === false) {
+    dot = AMBER; color = AMBER; text = `Account not found on ${network.toLowerCase()}. Fund it before it can receive payments.`;
+  } else if (check && check.accountExists === null) {
+    dot = MUTED; color = MUTED; text = "Format valid · couldn't reach Horizon to verify the account.";
+  } else if (check && check.accountExists && check.hasUsdcTrustline === false) {
+    dot = AMBER; color = AMBER; text = "No USDC trustline — USDC payments will fail until you add one to this account.";
+  } else if (check && check.accountExists && check.hasUsdcTrustline) {
+    dot = GREEN; color = GREEN; text = "Valid · funded · USDC trustline present — ready to receive.";
+  } else {
+    return null;
+  }
+
+  return (
+    <div className="flex items-start gap-2 mt-1" aria-live="polite">
+      <span className="inline-block w-1.5 h-1.5 mt-1.5 shrink-0" style={{ background: dot }} />
+      <span className="text-xs leading-relaxed" style={{ color }}>{text}</span>
     </div>
   );
 }

@@ -50,19 +50,21 @@ export async function watchAccount({ db, network, accountId }: AccountWatcherDep
             return;
           }
           const { data: order } = await db.from("orders")
-            .select("id, merchant_id, memo, usdc_amount, merchants ( stellar_address, platform_fee_bp )")
+            .select("id, merchant_id, memo, usdc_amount, merchant_stellar_address, merchants ( platform_fee_bp )")
             .eq("memo", memoHex)
             .eq("status", "pending")
             .maybeSingle();
 
           if (order) {
-            const merchant = (order as any).merchants as { stellar_address: string; platform_fee_bp: number };
+            const merchant = (order as any).merchants as { platform_fee_bp: number };
             const orderForMatch = {
               id: order.id as string,
               merchant_id: order.merchant_id as string,
               memo: order.memo as string,
               usdc_amount: order.usdc_amount as string,
-              merchant_stellar_address: merchant.stellar_address,
+              // PINNED at order creation — the matcher rejects any payment whose
+              // destination drifted from the consented recipient.
+              merchant_stellar_address: order.merchant_stellar_address as string,
               platform_fee_bp: merchant.platform_fee_bp,
             };
             const outcome = matchPaymentToOrder(ev, orderForMatch, network);

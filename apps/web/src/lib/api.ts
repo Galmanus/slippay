@@ -16,6 +16,23 @@ export interface PublicOrder {
   merchant_stellar_address: string | null;
 }
 
+// DEMO ONLY. The storefront creates a real order by calling the merchant
+// API with a demo merchant key. A production storefront would NEVER ship a
+// secret key in the browser bundle — order creation belongs on the
+// merchant's server. This key is a local-testnet demo merchant, scoped to
+// the local stack, and is acceptable only for the screen-share demo.
+export async function createDemoOrder(brlAmount: string): Promise<{ checkout_url: string; order: { id: string; usdc_amount: string; memo: string } }> {
+  const key = import.meta.env.VITE_DEMO_MERCHANT_KEY as string | undefined;
+  if (!key) throw new Error("VITE_DEMO_MERCHANT_KEY not set");
+  const r = await fetch(`${API_BASE}/v1/orders`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+    body: JSON.stringify({ brl_amount: brlAmount }),
+  });
+  if (!r.ok) throw new Error(`create_order_${r.status}`);
+  return r.json();
+}
+
 export async function fetchOrder(id: string, token?: string): Promise<PublicOrder> {
   // Resolve the checkout token from caller, then URL search params (for the
   // typical case where the customer landed via `/checkout/:id?t=...`).

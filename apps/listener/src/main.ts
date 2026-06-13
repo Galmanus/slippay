@@ -7,7 +7,7 @@ import { log } from "./log.js";
 async function main() {
   log("info", "listener_starting", { network: config.network });
   const stop = startManager(db);
-  const stopWebhook = startWebhookWorker(db, config.network.toLowerCase() as "testnet"|"mainnet");
+  const stopWebhook = startWebhookWorker(db, config.allowLocalWebhooks);
   process.on("SIGTERM", () => { log("info", "listener_stop"); stopWebhook(); stop(); process.exit(0); });
   await new Promise(() => {});
 }

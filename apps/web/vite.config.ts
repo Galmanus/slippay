@@ -8,6 +8,9 @@ const DOCS_ROOT = resolve(__dirname, "../../docs");
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __BUILD_TAG__: JSON.stringify(new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14)),
+  },
   server: {
     port: 5173,
     fs: { allow: ["..", "../..", DOCS_ROOT] },
