@@ -136,7 +136,7 @@ const { order } = await r.json();
                 {sdkReady ? "Open checkout" : "Loading SDK..."}
               </button>
               <div className="mt-3 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
-                SDK status: {sdkReady ? <span className="text-[#0a0a0a]"><span className="inline-block w-1.5 h-1.5 bg-[#b5e853] mr-1.5 align-middle" />Loaded</span> : "Loading..."}
+                SDK status: {sdkReady ? <span className="text-[#0a0a0a]"><span className="inline-block w-1.5 h-1.5 bg-[#FDDA24] mr-1.5 align-middle" />Loaded</span> : "Loading..."}
               </div>
             </div>
 
@@ -150,7 +150,7 @@ const { order } = await r.json();
                   : logs.map((l, i) => (
                     <div key={i} className="border-b border-[#f1eee7]/10 pb-2 mb-2">
                       <span className="text-[#f1eee7]/55">{l.ts}</span>
-                      <span className={`ml-3 ${l.type.includes("paid") ? "text-[#b5e853]" : l.type.includes("error") ? "text-red-400" : "text-[#f1eee7]"}`}>{l.type}</span>
+                      <span className={`ml-3 ${l.type.includes("paid") ? "text-[#FDDA24]" : l.type.includes("error") ? "text-red-400" : "text-[#f1eee7]"}`}>{l.type}</span>
                       {l.payload != null && <pre className="mt-1 text-[#f1eee7]/70 text-[11px]">{JSON.stringify(l.payload, null, 2)}</pre>}
                     </div>
                   ))}

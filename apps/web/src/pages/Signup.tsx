@@ -22,7 +22,7 @@ export default function Signup() {
       <main className="flex-1 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-16 py-16">
           <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-            <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+            <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
             001. Criar conta
           </div>
           <div className="md:col-span-6">

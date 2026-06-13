@@ -9,6 +9,13 @@ import { signTx } from "../lib/wallet.ts";
 
 type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "paid" | "error";
 
+// Network-aware explorer base. On mainnet a hardcoded /testnet/ link points at the
+// wrong network (broken link + wrong UX). Derive it from the configured network.
+const EXPLORER_BASE =
+  (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() === "PUBLIC"
+    ? "https://stellar.expert/explorer/public/tx"
+    : "https://stellar.expert/explorer/testnet/tx";
+
 function isEmbedded(): boolean {
   if (typeof window === "undefined") return false;
   const params = new URLSearchParams(window.location.search);
@@ -104,7 +111,7 @@ export default function Checkout() {
       <main className="flex-1 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
           <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-            <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+            <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
             001. Pay with crypto
           </div>
 
@@ -145,7 +152,7 @@ export default function Checkout() {
                             merchantAddress: order.merchant_stellar_address,
                             platformAddress,
                             usdcAmount: order.usdc_amount,
-                            platformFeeBp: 100,
+                            platformFeeBp: 297, // 2.97% canonical (ideally read order.platform_fee_bp)
                             memo: order.memo,
                             network,
                             maxTime: Math.floor(new Date(order.expires_at).getTime() / 1000),
@@ -169,20 +176,20 @@ export default function Checkout() {
                       <div className="mt-6 border-l-2 border-amber-500 pl-4">
                         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/70">Tx submitted · awaiting confirmation</div>
                         <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
-                           href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                           href={`${EXPLORER_BASE}/${txHash}`} target="_blank" rel="noreferrer">
                           {txHash}
                         </a>
                       </div>
                     )}
                     {submitState === "paid" && (
-                      <div className="mt-6 border-l-2 border-[#b5e853] pl-4">
+                      <div className="mt-6 border-l-2 border-[#FDDA24] pl-4">
                         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a] flex items-center gap-2">
-                          <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" />
+                          <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" />
                           Payment confirmed
                         </div>
                         {txHash && (
                           <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
-                             href={`https://stellar.expert/explorer/testnet/tx/${txHash}`} target="_blank" rel="noreferrer">
+                             href={`${EXPLORER_BASE}/${txHash}`} target="_blank" rel="noreferrer">
                             {txHash}
                           </a>
                         )}

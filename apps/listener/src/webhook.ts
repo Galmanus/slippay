@@ -19,7 +19,9 @@ export interface DeliverArgs {
   secret: string;
   deliveryId: string;
   payload: unknown;
-  network?: "testnet" | "mainnet";
+  // Dev-only escape hatch (config.allowLocalWebhooks). Defaults false so the
+  // SSRF guard is fail-closed on EVERY network. Audit-003 L1.
+  allowLocal?: boolean;
 }
 
 export interface DeliverResult {
@@ -29,19 +31,17 @@ export interface DeliverResult {
 }
 
 export async function deliverOnce(args: DeliverArgs): Promise<DeliverResult> {
-  const network = args.network ?? "testnet";
+  const allowLocal = args.allowLocal ?? false;
 
-  // On mainnet, resolve + validate + pin to defeat DNS rebinding (audit-003 L1).
-  // On testnet we keep the historical lightweight path so local dev / tests
-  // against mock servers (example.com, localhost) work without DNS round-trips.
-  let dispatcher: import("undici").Dispatcher | undefined;
-  if (network === "mainnet") {
-    const validation = await validateWebhookUrl(args.url, network);
-    if (!validation.safe) {
-      return { status: "failed", body: `unsafe_url:${validation.reason}` };
-    }
-    dispatcher = pinnedDispatcher(validation.target);
+  // Always resolve + validate + pin to defeat DNS rebinding (audit-003 L1).
+  // When allowLocal is set (dev-only flag) the lightweight path inside
+  // validateWebhookUrl skips the blocklist/https/port/local checks so local
+  // mock servers (example.com, localhost) work without DNS round-trips.
+  const validation = await validateWebhookUrl(args.url, allowLocal);
+  if (!validation.safe) {
+    return { status: "failed", body: `unsafe_url:${validation.reason}` };
   }
+  const dispatcher = pinnedDispatcher(validation.target);
 
   const body = JSON.stringify(args.payload);
   const t = Math.floor(Date.now() / 1000);
@@ -113,7 +113,7 @@ function concat(chunks: Uint8Array[]): Uint8Array {
   return out;
 }
 
-export function startWebhookWorker(db: SupabaseClient, network: "testnet"|"mainnet") {
+export function startWebhookWorker(db: SupabaseClient, allowLocal: boolean) {
   let stopped = false;
 
   async function tick() {
@@ -137,7 +137,7 @@ export function startWebhookWorker(db: SupabaseClient, network: "testnet"|"mainn
           continue;
         }
         // Sync pre-flight: cheap URL-shape rejection before DNS cost.
-        if (!isSafeWebhookUrl(merchant.webhook_url, network)) {
+        if (!isSafeWebhookUrl(merchant.webhook_url, allowLocal)) {
           await db.from("webhook_deliveries").update({ status: "dead", response_body: "unsafe_url" }).eq("id", row.id);
           continue;
         }
@@ -147,7 +147,7 @@ export function startWebhookWorker(db: SupabaseClient, network: "testnet"|"mainn
           secret: merchant.webhook_secret!,
           deliveryId: row.id as string,
           payload: row.payload,
-          network,
+          allowLocal,
         });
 
         const newAttempt = (row.attempt_n as number) + 1;

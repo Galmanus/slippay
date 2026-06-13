@@ -131,7 +131,7 @@ incoming payments to the address can be matched to orders.
 
 ## The "non-custodial where it matters" caveat
 
-The platform fee leg (1% by default) is currently received at the same
+The platform fee leg (2.97% by default) is currently received at the same
 address as the merchant payment, then off-cycle the platform sweeps its
 share. In v0.2 this becomes a single atomic transaction with two
 operations (merchant share + platform share), so the platform never

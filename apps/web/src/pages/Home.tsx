@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
-import { AskSlippay } from "../components/AskSlippay.tsx";
-import { Reveal, CountUp } from "../components/Reveal.tsx";
+import { Reveal } from "../components/Reveal.tsx";
+import { PayFlowDemo } from "../components/PayFlowDemo.tsx";
+import { useLang, type Lang } from "../lib/lang.ts";
+import { homeCopy } from "../copy/home.tsx";
 
 function useScrolled(threshold = 80) {
   const [scrolled, setScrolled] = useState(false);
@@ -40,16 +42,132 @@ function MagneticCTA({ to, children }: { to: string; children: React.ReactNode }
   );
 }
 
+// PT|EN toggle. Inherits text color from the nav (light over hero, ink when
+// scrolled), so it reads on both backgrounds.
+function LangToggle({ lang, setLang, className = "" }: { lang: Lang; setLang: (l: Lang) => void; className?: string }) {
+  return (
+    <div className={"flex items-center gap-1.5 tabular-nums " + className}>
+      <button onClick={() => setLang("pt")} className={lang === "pt" ? "font-semibold" : "opacity-50 hover:opacity-100 transition-opacity"}>PT</button>
+      <span className="opacity-30">/</span>
+      <button onClick={() => setLang("en")} className={lang === "en" ? "font-semibold" : "opacity-50 hover:opacity-100 transition-opacity"}>EN</button>
+    </div>
+  );
+}
+
+// One proof fact — number + one line. Used in the condensed proof grid.
+// Centered, monumental-adjacent: the feeling leads, the mechanics stay brief.
+// Tween a number toward `target` (ease-out cubic) — `from` is always the
+// currently-displayed value, so rapid slider drags chase smoothly without jumps.
+function useTween(target: number, ms = 420): number {
+  const [v, setV] = useState(target);
+  const vRef = useRef(target);
+  vRef.current = v;
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setV(target); return; }
+    const from = vRef.current;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / ms);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setV(from + (target - from) * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, ms]);
+  return v;
+}
+
+// Loss calculator — turns the abstract "5–12%" into a felt, accumulating number.
+// STATUS-QUO LOSS ONLY: shows what the earner loses TODAY on the way in. It
+// deliberately does NOT compute a "Slippay saves you $X" figure, because the
+// full receive→hold→Pix loop is early-access (see honest status section). The
+// ~1–2% target is stated as context in the footnote, never as a delivered saving.
+function LossCalculator({ t }: { t: { label: string; title: string; lossLabel: string; youReceive: string; perMonth: string; perYear: string; over3y: string; foot: string } }) {
+  const presets = [1000, 3000, 5000, 10000];
+  const [amount, setAmount] = useState(3000);
+  const LOW = 0.05, HIGH = 0.12;
+  const usd = (n: number) => "$" + Math.round(n).toLocaleString("en-US");
+  const shown = useTween(amount);
+  const mLow = shown * LOW, mHigh = shown * HIGH;
+
+  return (
+    <div className="max-w-[700px] mx-auto mt-16 border border-[#0a0a0a]/15 bg-white/50 p-7 md:p-12 lift">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6">{t.label}</div>
+      <div className="text-xl md:text-2xl tracking-[-0.01em] mb-9 max-w-[28ch] leading-snug">{t.title}</div>
+
+      {/* amount — slider + live value, plus quick presets */}
+      <div className="flex items-end justify-between mb-3">
+        <span className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">{t.youReceive}</span>
+        <span className="text-2xl md:text-4xl font-medium tabular-nums tracking-[-0.03em]">{usd(amount)}</span>
+      </div>
+      <input
+        type="range" min={500} max={20000} step={500} value={amount}
+        onChange={e => setAmount(Number(e.target.value))}
+        aria-label={t.youReceive}
+        className="slip-range w-full"
+      />
+      <div className="flex flex-wrap gap-2 mt-5 mb-11">
+        {presets.map(p => (
+          <button
+            key={p} type="button" onClick={() => setAmount(p)}
+            className={"px-4 py-2 text-sm font-mono tabular-nums border transition-colors " +
+              (amount === p ? "bg-[#0a0a0a] text-[#f1eee7] border-[#0a0a0a]" : "border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60")}
+          >{usd(p)}</button>
+        ))}
+      </div>
+
+      {/* the loss — big, animated, accumulating */}
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono mb-3">{t.lossLabel}</div>
+      <div className="flex items-end gap-3 flex-wrap">
+        <span className="text-5xl md:text-7xl font-medium tracking-[-0.045em] tabular-nums leading-[0.9]" style={{ color: "#b91c1c" }}>
+          {usd(mLow)}<span className="text-[#0a0a0a]/25 mx-1">–</span>{usd(mHigh)}
+        </span>
+        <span className="text-xs uppercase tracking-[0.2em] text-[#0a0a0a]/45 mb-1">{t.perMonth}</span>
+      </div>
+
+      <div className="mt-9 grid grid-cols-2 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12">
+        <div className="bg-[#f1eee7] p-5">
+          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 12)}<span className="text-[#0a0a0a]/25 mx-0.5">–</span>{usd(mHigh * 12)}</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 mt-2">{t.perYear}</div>
+        </div>
+        <div className="bg-[#f1eee7] p-5">
+          <div className="text-xl md:text-3xl font-medium tabular-nums tracking-[-0.03em]">{usd(mLow * 36)}<span className="text-[#0a0a0a]/25 mx-0.5">–</span>{usd(mHigh * 36)}</div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45 mt-2">{t.over3y}</div>
+        </div>
+      </div>
+
+      <p className="mt-7 text-xs leading-relaxed text-[#0a0a0a]/55 max-w-[62ch]">{t.foot}</p>
+    </div>
+  );
+}
+
+function ProofFact({ n, title, body }: { n: string; title: string; body: string }) {
+  return (
+    <div className="group lift">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/30 mb-3 transition-colors duration-300 group-hover:text-[#FDDA24]">
+        {n}
+      </div>
+      <div className="text-lg md:text-xl tracking-tight font-medium leading-[1.25]">{title}</div>
+      <p className="mt-3 text-sm leading-[1.6] text-[#f1eee7]/65">{body}</p>
+    </div>
+  );
+}
+
 export default function Home() {
   const scrolled = useScrolled(80);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [lang, setLang] = useLang();
+  const t = homeCopy[lang];
   // Lock body scroll while mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileMenu ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileMenu]);
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header
         className={
           "fixed top-0 left-0 right-0 z-30 transition-colors duration-300 " +
@@ -64,23 +182,23 @@ export default function Home() {
             (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
           style={scrolled ? undefined : { textShadow: "0 1px 3px rgba(0,0,0,0.6)" }}
         >
-          <Link to="/x402-demo" className="hover:opacity-60 transition-opacity">x402 demo</Link>
-          <Link to="/docs" className="hover:opacity-60 transition-opacity">Docs</Link>
-          <a href="#how" className="hover:opacity-60 transition-opacity">Como funciona</a>
-          <Link to="/login" className="hover:opacity-60 transition-opacity">Entrar</Link>
+          <Link to="/agents" className="hover:opacity-60 transition-opacity">{t.nav.agents}</Link>
+          <a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60 transition-opacity">{t.nav.docs}</a>
+          <a href="#proof" className="hover:opacity-60 transition-opacity">{t.nav.how}</a>
+          <Link to="/login" className="hover:opacity-60 transition-opacity">{t.nav.login}</Link>
+          <LangToggle lang={lang} setLang={setLang} />
           <Link to="/signup"
             style={{ textShadow: "none" }}
-            className="bg-[#b5e853] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] transition-colors text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
+            className="lift bg-[#FDDA24] text-[#0a0a0a] px-4 py-2 hover:bg-[#a8d949] text-[10px] uppercase tracking-[0.22em] flex items-center gap-2 font-medium">
             <span className="inline-block w-1 h-1 bg-[#0a0a0a]" />
-            Criar conta
+            {t.nav.signup}
           </Link>
         </nav>
         {/* Mobile hamburger */}
         <button
           aria-label="Open menu"
           onClick={() => setMobileMenu(v => !v)}
-          className={"md:hidden flex flex-col gap-1.5 p-2 -mr-2 transition-colors " + (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7]")}
-          style={scrolled ? undefined : { filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))" }}
+          className={"md:hidden flex flex-col gap-1.5 p-2.5 transition-colors " + (scrolled ? "text-[#0a0a0a]" : "text-[#f1eee7] bg-[#0a0a0a]/35 backdrop-blur-sm")}
         >
           <span className="block w-6 h-[2px] bg-current" />
           <span className="block w-6 h-[2px] bg-current" />
@@ -92,7 +210,7 @@ export default function Home() {
       {/* Mobile menu overlay */}
       {mobileMenu && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-[#0a0a0a] text-[#f1eee7] flex flex-col"
+          className="menu-in md:hidden fixed inset-0 z-40 bg-[#0a0a0a] text-[#f1eee7] flex flex-col"
           role="dialog"
           aria-modal="true"
         >
@@ -104,46 +222,52 @@ export default function Home() {
               className="text-3xl leading-none px-2 py-1 -mr-2"
             >×</button>
           </div>
-          <nav className="flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
+          <nav className="menu-stagger flex-1 flex flex-col px-5 pt-8 gap-1 text-[#f1eee7]">
             {[
-              { to: "/", label: "Início" },
-              { to: "/x402-demo", label: "x402 demo" },
-              { to: "/docs", label: "Docs" },
-              { to: "/login", label: "Entrar" },
+              { to: "/", label: t.nav.home },
+              { to: "/agents", label: t.nav.agents },
+              { to: "https://slippay.gitbook.io/slippay-docs", label: t.nav.docs },
+              { to: "/login", label: t.nav.login },
             ].map(l => (
-              <Link
-                key={l.to} to={l.to}
-                onClick={() => setMobileMenu(false)}
-                className="py-4 text-3xl font-medium tracking-tight border-b border-[#f1eee7]/15"
-              >
-                {l.label}
-              </Link>
+              l.to.startsWith("http") ? (
+                <a
+                  key={l.to} href={l.to}
+                  className="py-4 text-3xl font-medium tracking-tight border-b border-[#f1eee7]/15"
+                >
+                  {l.label}
+                </a>
+              ) : (
+                <Link
+                  key={l.to} to={l.to}
+                  onClick={() => setMobileMenu(false)}
+                  className="py-4 text-3xl font-medium tracking-tight border-b border-[#f1eee7]/15"
+                >
+                  {l.label}
+                </Link>
+              )
             ))}
             <Link
               to="/signup"
               onClick={() => setMobileMenu(false)}
-              className="mt-8 bg-[#b5e853] text-[#0a0a0a] py-4 text-center text-sm uppercase tracking-[0.22em] font-medium flex items-center justify-center gap-3"
+              className="mt-8 bg-[#FDDA24] text-[#0a0a0a] py-4 text-center text-sm uppercase tracking-[0.22em] font-medium flex items-center justify-center gap-3"
             >
               <span className="inline-block w-1.5 h-1.5 bg-[#0a0a0a]" />
-              Criar conta
+              {t.nav.signup}
             </Link>
+            <LangToggle lang={lang} setLang={setLang} className="mt-8 text-sm uppercase tracking-[0.22em]" />
           </nav>
           <div className="px-5 py-6 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-            Vivo na mainnet Stellar · contrato CBJMQ6ZY…
+            {t.mobileFooter}
           </div>
         </div>
       )}
       {/* Spacer to offset the now-fixed header from the hero photo. */}
       <div className="h-0" />
 
-      {/* HERO IMAGE — full-bleed. Mobile uses ~72vh so the headline below
-          peeks above the fold (signaling "more here"). Desktop keeps full
-          monumental presence. Position Y differs: 30% on mobile favors
-          face/blindfold; 40% on desktop reveals full jaw. */}
-      {/* Hero · img on desktop (shows the full 16:9 monumental frame),
-          bg-cover on mobile (uses the band as focal anchor so the wordmark
-          stays visible at portrait aspect). */}
-      <div className="relative w-full bg-[#0a0a0a]">
+      {/* ───────── 1 · HERO ─────────
+          Full-bleed image, then centered monumental type. One promise, one CTA.
+          No spec card, no fashion SKU tag. The feeling leads. */}
+      <div className="relative w-full bg-[#0a0a0a] overflow-hidden">
         <picture className="hidden md:block">
           <source srcSet="/hero.webp?v=opt1" type="image/webp" />
           <img
@@ -164,414 +288,284 @@ export default function Home() {
           aria-label="slippay · the statue of liberty blindfolded in a KLEIN green band reading slippay in gold leaf"
         />
         <div className="absolute bottom-0 left-0 right-0 h-16 md:h-12 bg-gradient-to-b from-transparent via-[#f1eee7]/40 to-[#f1eee7] pointer-events-none" />
-        {/* Editorial pre-suasion stamp — bottom-left, doesn't fight with AskSlippay launcher.
-            Shorter on mobile (no "etiqueta do produto" mid-segment) to avoid wrapping. */}
-        <div className="absolute bottom-4 left-4 md:bottom-6 md:left-10 z-10 inline-flex items-center gap-2 md:gap-3 bg-[#b5e853] text-[#0a0a0a] px-3 md:px-4 py-1.5 md:py-2 text-[9px] md:text-[10px] uppercase tracking-[0.22em] font-mono">
-          <span>slippay</span>
-          <span className="text-[#0a0a0a]/55 hidden md:inline">·</span>
-          <span className="hidden md:inline">product label</span>
-          <span className="text-[#0a0a0a]/55">·</span>
-          <span className="text-[#0a0a0a]/55">sp-ss26-fl001</span>
-        </div>
       </div>
 
-      {/* HERO TEXT */}
-      <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-6 md:pt-24 pb-16 md:pb-32 relative">
-        <div className="grid grid-cols-12 gap-6 md:gap-6 items-end">
-          <div className="col-span-12 mb-4 md:mb-0">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">
-              <span className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                Mainnet · Stellar
-              </span>
-              <span className="opacity-50 hidden md:inline">·</span>
-              <span className="tabular-nums">Live · v0.2</span>
-            </div>
+      {/* HERO TEXT — centered, monumental, single CTA */}
+      <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-10 md:pt-24 pb-20 md:pb-32 relative">
+        {/* ambient lime aurora — slow drift behind the hero, editorial not gaudy */}
+        <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(253,218,36,0.22), transparent 70%)", filter: "blur(6px)" }} />
+        <div className="relative flex flex-col items-center text-center">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-6">
+            <span className="flex items-center gap-2 normal-case tracking-tight">
+              <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
+              {t.hero.badge}
+            </span>
           </div>
-          <Reveal className="col-span-12 text-center">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-3 md:mb-4 font-mono">
-              ╱╱  Issue 001 · pra quem vende no Brasil
-            </div>
-            <h1 className="title-grad text-[9vw] sm:text-[7.5vw] md:text-[4.2vw] font-medium leading-[1.04] tracking-[-0.03em] max-w-[18ch] mx-auto break-words">
-              O commerce stack do Brasil<br/>
-              <em className="not-italic">em stablecoin.</em>
-              <span className="inline-block align-middle ml-2 md:ml-3 w-2 md:w-2.5 h-2 md:h-2.5 bg-[#b5e853] -translate-y-[0.45em]" />
-            </h1>
-            <p className="mt-5 md:mt-8 text-[15px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[56ch] mx-auto">
-              Checkout, yield e cash-out no mesmo trilho Stellar. Toda venda vira
-              dólar na sua carteira em 6 segundos, com taxa de 0,98% — a mais barata
-              do mercado. Não-custodial, sem chargeback. Hoje em USDC, vivo na mainnet.
-            </p>
-            <div className="mt-8 md:mt-10 flex justify-center">
-              <MagneticCTA to="/signup">
-                Criar conta <span>→</span>
-              </MagneticCTA>
-            </div>
-          </Reveal>
+          <h1 className="title-grad text-[9vw] sm:text-[7vw] md:text-[4.4vw] font-medium leading-[1.04] tracking-[-0.035em] max-w-[20ch] mx-auto break-words">
+            {t.hero.h1}
+          </h1>
+          <p className="mt-7 md:mt-9 text-[16px] md:text-xl leading-[1.5] text-[#0a0a0a]/80 max-w-[48ch] mx-auto">
+            {t.hero.sub}
+          </p>
+          <div className="mt-9 md:mt-11 flex justify-center">
+            <MagneticCTA to="/signup">
+              {t.hero.cta} <span>→</span>
+            </MagneticCTA>
+          </div>
         </div>
+      </Reveal>
 
-        <div className="grid grid-cols-12 gap-6 mt-20 md:mt-28 border-t border-[#0a0a0a]/15 pt-12">
-          <div className="col-span-12">
-            <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center">
-              ┃ A tese
+      {/* ───────── 1.5 · PAYMENT FLOW, animated ───────── */}
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-5">{t.payflow.label}</div>
+            <h2 className="text-4xl md:text-6xl font-medium tracking-[-0.04em] leading-[0.98] max-w-[14ch]">
+              {t.payflow.h2}<span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] ml-2 align-baseline" />
+            </h2>
+            <p className="mt-6 text-base md:text-lg text-[#0a0a0a]/75 leading-relaxed max-w-[44ch]">
+              {t.payflow.body}
+            </p>
+            <Link to="/pay" className="lift inline-flex items-center gap-3 mt-8 bg-[#0a0a0a] text-[#f1eee7] px-7 py-4 text-[11px] uppercase tracking-[0.22em]">
+              {t.payflow.cta} <span>→</span>
+            </Link>
+          </div>
+          <div className="flex justify-center md:pr-6">
+            <PayFlowDemo />
+          </div>
+        </div>
+      </Reveal>
+
+      {/* ───────── 2 · THE PROBLEM ─────────
+          The gap, condensed and visceral. One idea per line, centered. */}
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono text-center mb-10">
+            {t.gap.label}
+          </div>
+          {/* b1 opens as the gut-punch ("já chega menor"); b2 and b3 carry their
+              own eyebrows so the pain scans. b3 (inverse-flow) anchors — it is
+              the one line that says why no incumbent serves this person. */}
+          <div className="max-w-[36ch] mx-auto text-center space-y-12">
+            <p className="text-2xl md:text-4xl leading-[1.18] tracking-[-0.02em] text-[#0a0a0a]/90">
+              {t.gap.b1}
+            </p>
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45 font-mono">
+                {t.gap.b2Label}
+              </div>
+              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/75">
+                {t.gap.b2}
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#FDDA24] font-mono">
+                {t.gap.b3Label}
+              </div>
+              <p className="text-xl md:text-2xl leading-[1.3] tracking-[-0.01em] text-[#0a0a0a]/90">
+                {t.gap.b3}
+              </p>
             </div>
           </div>
-          <div className="col-span-12">
-            <p className="text-lg md:text-xl leading-[1.55] tracking-tight max-w-[54ch] mx-auto text-center">
-              O brasileiro já se dolariza em massa: <em className="font-light">98%</em> das
-              compras de cripto no país no 1º trimestre de 2026 foram stablecoin —
-              US$ 6,8 bi de US$ 6,9 bi, hedge contra o real. Mas esse dólar mora numa
-              exchange, longe do caixa do negócio. O Slippay coloca o dólar
-              <em className="font-light"> no recebimento</em>: você recebe e fica em
-              dólar na própria carteira, em 6 segundos, sem custódia e sem chargeback.
-              Não é poupança em dólar — é caixa em dólar.
-            </p>
+          {/* make the 5–12% concrete — status-quo loss only, no Slippay-saving claim */}
+          <LossCalculator t={t.calc} />
+        </div>
+      </Reveal>
+
+      {/* ───────── 2.5 · HOW YOU USE IT ─────────
+          Plain 3-step consumer flow — answers "how does a person use this?". */}
+      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 text-center mb-6">
+            {t.howto.label}
           </div>
-          <div className="col-span-12 flex md:justify-end items-end">
-            <Link to="/signup"
-              className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#0a0a0a] pb-1 hover:opacity-60">
-              Criar conta <span className="group-hover:translate-x-1 transition-transform">→</span>
+          <h2 className="title-grad text-3xl md:text-6xl font-medium tracking-[-0.035em] leading-[1.02] max-w-[16ch] mx-auto text-center">
+            {t.howto.h2}
+          </h2>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-[1100px] mx-auto">
+            {t.howto.steps.map((s, i) => (
+              <Reveal key={s.n} delay={i * 100} className="lift border border-[#0a0a0a]/15 bg-white/40 p-7 md:p-9">
+                <div className="flex items-center gap-3">
+                  <span className="text-5xl md:text-6xl font-medium tracking-[-0.05em] tabular-nums text-[#0a0a0a]/12 leading-none">{s.n}</span>
+                  <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
+                </div>
+                <div className="text-xl md:text-2xl font-medium tracking-tight mt-5">{s.t}</div>
+                <p className="mt-3 text-sm md:text-base text-[#0a0a0a]/70 leading-relaxed">{s.b}</p>
+              </Reveal>
+            ))}
+          </div>
+          <p className="mt-10 text-xs text-[#0a0a0a]/55 text-center max-w-[64ch] mx-auto leading-relaxed">{t.howto.foot}</p>
+        </div>
+      </Reveal>
+
+      {/* ───────── 3 · THE PROOF, as a feeling ─────────
+          "it simply can't." Condensed proof facts, then a prominent link to the
+          product on stage (/x402-demo). The terminal stays as an opt-in aside. */}
+      <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
+            {t.proof.kicker}
+          </div>
+          <h2 className="title-grad-dark text-3xl md:text-6xl font-medium tracking-[-0.035em] leading-[1.02] max-w-[18ch] mx-auto text-center">
+            {t.proof.h2}
+          </h2>
+          <p className="mt-8 text-base md:text-lg leading-[1.65] text-[#f1eee7]/75 max-w-[60ch] mx-auto text-center">
+            {t.proof.body}
+          </p>
+
+          {/* the proof, in four plain facts — condensed */}
+          <div className="mt-14 grid grid-cols-1 md:grid-cols-4 gap-x-10 gap-y-10 max-w-[1000px] mx-auto">
+            {/* benefit-first order: "nobody can freeze it" leads (the most
+                visceral, most-understood differentiator), then cost, then Pix,
+                then the seed-phrase/tech reassurance last. */}
+            <ProofFact n="01" title={t.proof.certLabel} body={t.proof.certBody} />
+            <ProofFact n="02" title={t.proof.proveLabel} body={t.proof.proveBody} />
+            <ProofFact n="03" title={t.proof.refuseLabel} body={t.proof.refuseBody} />
+            <ProofFact n="04" title={t.proof.invariantLabel} body={t.proof.invariantBody} />
+          </div>
+
+          {/* quiet handoff to the builder/agent surface — the proof artifacts,
+              the axlc spend-limit certificate and the x402 backing now live on
+              /agents so this page stays zero-tech. Low visual weight: the only
+              high-contrast ask here remains "Entrar na lista". */}
+          <div className="mt-16 flex justify-center">
+            <Link to="/agents"
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#FDDA24] transition-colors border-b border-[#f1eee7]/20 pb-1">
+              {t.proof.seeItWork} <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
         </div>
       </Reveal>
 
-      {/* COMMERCE STACK · 3 modules — dark section (hybrid). Honest status
-          badges: only Checkout is live on mainnet; Yield + Cross-border are
-          roadmap / ecosystem rails, labeled as such so the page never claims
-          shipped what isn't. */}
-      <Reveal as="section" id="stack-modules" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
-              ┃ A solução
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums text-center">
-                001b · Não é checkout. É commerce stack
-              </div>
-              <h2 className="title-grad-dark text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch] mx-auto text-center">
-                Três módulos.<br/>Uma única <em className="font-light">wallet</em>.
-              </h2>
-              <p className="mt-8 text-base md:text-lg leading-[1.6] text-[#f1eee7]/70 max-w-[60ch] mx-auto text-center">
-                Mesma stack Soroban. Cada lojista que aceita SlipPay ganha checkout
-                hoje — e o trilho de yield e cash-out global na sequência.
-              </p>
-              <div className="mt-14 grid md:grid-cols-3 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15">
-                <Module
-                  tag="01 · Checkout"
-                  status="live"
-                  statusLabel="Live · mainnet"
-                  title="USDC no carrinho"
-                  body="Comprador paga em stablecoin com qualquer wallet Stellar (Freighter, Lobstr). Lojista recebe USDC direto na carteira. Liquidação atômica < 6s, fee 0,98%. PYUSD em breve."
-                />
-                <Module
-                  tag="02 · Yield"
-                  status="soon"
-                  statusLabel="Parceria em definição"
-                  title="Tesouros pro float do lojista"
-                  body="Saldo parado em USDC vira alocação em Tesouros tokenizados (CETES, US Treasuries) via Etherfuse — custódia regulada, não-custodial. Integração em definição."
-                />
-                <Module
-                  tag="03 · Cross-border"
-                  status="ecosystem"
-                  statusLabel="Rede Stellar · SDF"
-                  title="Cash-out em 180+ países"
-                  body="Comprador internacional saca em dinheiro em agência física via MoneyGram na rede Stellar. Saque físico, não liquidação stablecoin cross-border. Sem banco, sem cartão."
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* NUMBERS */}
+      {/* ───────── 4 · BRIDGE → /agents ─────────
+          The single handoff from the human story (A) to the builder/agent
+          surface (B). One line + one quiet button. The home stays zero-tech;
+          x402 backing, the axlc certificate and the mainnet artifacts live on
+          /agents for the people who came for that. */}
       <Reveal as="section" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6 mb-16">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 text-center">
-              ┃ Números
-            </div>
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums text-center">
-              002 · A economia
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15 text-center">
-            <Stat n="98%" label="das compras cripto no BR são stablecoin"
-              count={{ to: 98, decimals: 0, suffix: "%" }}
-              body="No 1º trimestre de 2026, US$ 6,8 bi de US$ 6,9 bi em compras de cripto no Brasil foram stablecoin (MEXC · Chainalysis). Dolarização não é tese — é o fluxo dominante." />
-            <Stat n="$6-8bi" label="volume cripto/mês no Brasil"
-              body="~90% em stablecoin, +100% ano a ano. Brasil é o 5º maior mercado de adoção do mundo (era 10º). O motivo declarado: hedge contra o real." />
-            <Stat n="6s" label="finalidade na Stellar"
-              count={{ to: 6, decimals: 0, suffix: "s" }}
-              body="Settlement determinístico on-chain. Sem T+1, sem janela de lote, sem chargeback. Taxa de rede 0,00001 XLM (~US$0,000001), auditável por qualquer um." />
-          </div>
-        </div>
-      </Reveal>
-
-      {/* PROOF · verifiable on-chain */}
-      <Reveal as="section" id="proof" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center">
-              ┃ Prova
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-6 tabular-nums">
-                002b · Verificável on-chain
-              </div>
-              <h2 className="title-grad-dark text-2xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.1] max-w-[26ch] mx-auto text-center">
-                Não é promessa. Não é protótipo.<br/><em className="font-light">Vivo na mainnet da Stellar.</em>
-              </h2>
-              <p className="mt-6 text-sm md:text-base leading-[1.65] text-[#f1eee7]/75 max-w-[60ch] mx-auto text-center">
-                Primitiva de assinatura v0.2 implantada na mainnet da Stellar em
-                16/05/2026. USDC real movido on-chain pelo fluxo de demo x402.
-                As duas transações abaixo são auditáveis publicamente no stellar.expert.
-                A auditoria, feita pela Bluewave AI Security, fechou 8 críticas
-                e 14 altas.
-              </p>
-              <div className="mt-10 border border-[#f1eee7]/15">
-                <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#f1eee7]/15">
-                  <div className="p-6 md:p-8">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Contrato · MAINNET v0.2</div>
-                    <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN"
-                       target="_blank" rel="noopener noreferrer"
-                       className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                      CBJMQ6ZY...DJKSEVQN
-                    </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">Soroban SDK 26 · F5 fechado pré-deploy</div>
-                  </div>
-                  <div className="p-6 md:p-8">
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-[#b5e853] font-mono">Pagamento x402 · MAINNET</div>
-                    <a href="https://stellar.expert/explorer/public/tx/aa3304c93beffde1809ced4989b898cf419b8121e8ca9b50d01d407ccbf8326b"
-                       target="_blank" rel="noopener noreferrer"
-                       className="mt-3 block font-mono text-xs md:text-sm break-all hover:text-[#b5e853]">
-                      aa3304c9...0d407ccb
-                    </a>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">0,05 USDC · comprador → vendedor · 6s de finalidade</div>
-                  </div>
-                </div>
-                <div className="border-t border-[#f1eee7]/15 px-6 md:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                    <div className="flex items-center gap-3">
-                      <span className="inline-block w-2 h-2 bg-[#b5e853] animate-pulse" />
-                      Vivo na mainnet Stellar
-                    </div>
-                    <span className="opacity-40 hidden md:inline">·</span>
-                    <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
-                       className="hover:text-[#b5e853]">
-                      Agent · SSL v7 ↗
-                    </a>
-                  </div>
-                  <span className="flex items-center gap-2 text-[#b5e853]">
-                    <span className="inline-block w-2 h-2 bg-[#b5e853]" />
-                    Auditado por Bluewave AI Security
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* HOW IT WORKS */}
-      <Reveal as="section" id="how" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              ┃ Mecânica
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
-                003 · Como funciona
-              </div>
-              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[24ch] mx-auto text-center">
-                Quatro partes.<br/>Uma transação <em className="font-light">atômica</em>.
-              </h2>
-              <div className="mt-16 grid md:grid-cols-2 gap-x-16 gap-y-14">
-                <Step n="01" title="Crie a cobrança"
-                  body="POST /v1/orders com o valor em dólar. USDC denominado 1:1 contra o USD; sem ida e volta de FX embutida na cobrança." />
-                <Step n="02" title="O cliente paga"
-                  body="Hoje, o cliente paga em USDC direto da carteira Stellar. Em breve, paga em Pix (BRL) via parceiro de câmbio licenciado, que entrega o USDC no seu endereço." />
-                <Step n="03" title="O listener confirma on-chain"
-                  body="O stream da Horizon observa o seu endereço, casa o pagamento pelo memo, valida valor e emissor do ativo, e marca status=pago em 6s de finalidade determinística." />
-                <Step n="04" title="O webhook dispara, assinado com HMAC"
-                  body="Seu endpoint recebe order.paid (ou subscription.charged). Retry exponencial: 1m, 5m, 30m, 2h, 12h, 24h, dead. O USDC fica na sua carteira até você decidir converter." />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* REGULATORY / STACK */}
-      <Reveal as="section" id="stack" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-              ┃ Posição
-            </div>
-            <div className="col-span-12">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-6 tabular-nums">
-                004 · Regulatório
-              </div>
-              <h2 className="title-grad text-3xl md:text-5xl font-medium tracking-[-0.03em] leading-[1.05] max-w-[26ch] mx-auto text-center">
-                Feito para a janela<br/>que <em className="font-light">acabou de abrir</em>.
-              </h2>
-              <p className="mt-10 text-base md:text-lg leading-[1.65] text-[#0a0a0a]/75 max-w-[66ch] mx-auto text-center">
-                O Slippay é provedor de tecnologia de pagamento — não detém custódia,
-                não opera câmbio e não é instituição financeira. A conversão BRL→USDC
-                será executada por instituição autorizada pelo BCB (câmbio + PSAV),
-                parceiro de câmbio em definição. A liquidação do checkout
-                é <em className="font-light">doméstica</em>: não há eFX cross-border em
-                stablecoin, e a Res. BCB 561/2026 não se aplica a ela por design. O
-                cash-out internacional é <em className="font-light">saque físico</em> em
-                agência via MoneyGram na rede Stellar — não liquidação stablecoin
-                cross-border. Risco residual de reinterpretação regulatória existe e é
-                monitorado ativamente.
-              </p>
-
-              <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#0a0a0a]/15 border border-[#0a0a0a]/15">
-                <Cell label="Rede" value="Stellar" />
-                <Cell label="Ativos" value="USDC · PYUSD em breve" />
-                <Cell label="Entrada" value="Pix · BRL" />
-                <Cell label="Custódia" value="Sua · não-custodial" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* CTA */}
-      <Reveal as="section" className="border-t border-[#0a0a0a]/15">
-        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-32 md:py-40 relative text-center flex flex-col items-center">
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 mb-8 tabular-nums">
-            005 · Comece <span className="inline-block w-2 h-2 bg-[#b5e853] ml-2 align-middle" />
-          </div>
-          <h2 className="title-grad text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
-            Pronto quando<br/><em className="font-light">seu caixa estiver</em>.
-          </h2>
-          <p className="mt-10 text-base md:text-lg text-[#0a0a0a]/75 max-w-[50ch] mx-auto text-center">
-            Cadastre-se. Informe seu endereço Stellar de recebimento. Copie sua
-            API key. Comece a receber em USDC on-chain hoje (PYUSD em breve);
-            a entrada via Pix entra com o parceiro de câmbio.
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-28 text-center">
+          <p className="text-2xl md:text-4xl font-medium tracking-[-0.025em] leading-[1.15] max-w-[20ch] mx-auto">
+            {t.bridge.line}
           </p>
-          <Link to="/signup"
-            className="inline-flex items-center gap-3 mt-12 bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-[11px] uppercase tracking-[0.22em] hover:bg-[#1a1a1a]">
-            Criar conta <span>→</span>
+          <Link to="/agents"
+            className="lift inline-flex items-center gap-3 mt-9 border border-[#0a0a0a]/30 px-7 py-4 text-[11px] uppercase tracking-[0.22em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] transition-colors">
+            {t.bridge.button} <span>→</span>
           </Link>
         </div>
       </Reveal>
 
-      {/* FOOTER — oversized wordmark, editorial */}
+      {/* ───────── 5 · HONEST STATUS + final CTA ─────────
+          The truth out loud (test network · checked by us · outside audit +
+          real money to come), then one monumental ask. */}
+      <Reveal as="section" id="status" className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-12 py-20 md:py-32">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 text-center mb-6">
+            {t.status.label}
+          </div>
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-px bg-[#f1eee7]/15 border border-[#f1eee7]/15 overflow-hidden max-w-[1000px] mx-auto">
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cNetwork}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cNetworkV}</div>
+            </div>
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cAudit}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cAuditV}</div>
+            </div>
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cBound}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cBoundV}</div>
+            </div>
+            <div className="group bg-[#0a0a0a] p-6 md:p-8 transition-colors duration-300 hover:bg-[#151515]">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono transition-colors duration-300 group-hover:text-[#FDDA24]">{t.status.cChain}</div>
+              <div className="mt-3 text-sm md:text-base font-medium tracking-tight text-[#f1eee7]">{t.status.cChainV}</div>
+            </div>
+          </div>
+
+          {/* the live-on-mainnet artifacts moved to /agents (proof-first there).
+              A quiet pointer keeps the trust signal reachable without putting
+              explorer hashes on the zero-tech human page. */}
+          <div className="mt-10 text-center">
+            <Link to="/agents"
+              className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 hover:text-[#FDDA24] transition-colors border-b border-[#f1eee7]/20 pb-1">
+              {t.status.mainnetLabel} <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          </div>
+
+          {/* one final ask — monumental */}
+          <div className="mt-24 md:mt-32 text-center flex flex-col items-center">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 mb-8 tabular-nums">
+              {t.cta.kicker} <span className="inline-block w-2 h-2 bg-[#FDDA24] ml-2 align-middle" />
+            </div>
+            <h2 className="title-grad-dark text-[12vw] md:text-[5.2vw] font-medium tracking-[-0.04em] leading-[0.95] max-w-[14ch] mx-auto text-center">
+              {t.cta.h2}
+            </h2>
+            <p className="mt-10 text-base md:text-lg text-[#f1eee7]/75 max-w-[50ch] mx-auto text-center">
+              {t.cta.body}
+            </p>
+            <div className="mt-12 flex flex-col sm:flex-row items-center gap-5">
+              <Link to="/signup"
+                className="lift inline-flex items-center gap-3 bg-[#FDDA24] text-[#0a0a0a] px-8 py-4 text-[11px] uppercase tracking-[0.22em] font-medium hover:bg-[#c3f06a]">
+                {t.cta.button} <span>→</span>
+              </Link>
+              <a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] border-b border-[#f1eee7] pb-1 hover:opacity-60">
+                {t.cta.spec} <span className="group-hover:translate-x-1 transition-transform">↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* FOOTER */}
       <footer className="border-t border-[#0a0a0a]/15 bg-[#0a0a0a] text-[#f1eee7]">
         <div className="max-w-[1400px] mx-auto px-5 md:px-12 pt-20 pb-8">
           <div className="grid grid-cols-12 gap-6 pb-16 border-b border-[#f1eee7]/15">
             <div className="col-span-12 md:col-span-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
-                ┃ Produto
+                {t.footer.product}
               </div>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/signup" className="hover:opacity-60">Criar conta</Link></li>
-                <li><Link to="/login" className="hover:opacity-60">Entrar</Link></li>
-                <li><a href="#how" className="hover:opacity-60">Como funciona</a></li>
+                <li><Link to="/signup" className="hover:opacity-60">{t.footer.fSignup}</Link></li>
+                <li><Link to="/login" className="hover:opacity-60">{t.footer.fLogin}</Link></li>
+                <li><a href="#proof" className="hover:opacity-60">{t.footer.fHow}</a></li>
               </ul>
             </div>
             <div className="col-span-12 md:col-span-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
-                ┃ Recursos
+                {t.footer.resources}
               </div>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/docs/api-reference/orders" className="hover:opacity-60">API docs</Link></li>
-                <li><Link to="/docs/api-reference/webhooks" className="hover:opacity-60">Guia de webhook</Link></li>
-                <li><Link to="/docs/security/audit-001" className="hover:opacity-60">Auditorias de segurança</Link></li>
-                <li><Link to="/docs/integrations/x402" className="hover:opacity-60">x402 protocol</Link></li>
-                <li><a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="hover:opacity-60">SSL spec ↗</a></li>
+                <li><a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60">{t.footer.fApi}</a></li>
+                <li><a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60">{t.footer.fGuides}</a></li>
+                <li><a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60">{t.footer.fAudits}</a></li>
+                <li><a href="https://slippay.gitbook.io/slippay-docs" className="hover:opacity-60">{t.footer.fX402}</a></li>
+                <li><a href="https://galmanus.github.io/ssl-spec/" target="_blank" rel="noopener noreferrer" className="hover:opacity-60">{t.footer.fSsl}</a></li>
               </ul>
             </div>
             <div className="col-span-12 md:col-span-4">
               <div className="text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono mb-4">
-                ┃ Legal
+                {t.footer.legal}
               </div>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:opacity-60">Termos</a></li>
-                <li><a href="#" className="hover:opacity-60">Privacidade</a></li>
+                <li><a href="#" className="hover:opacity-60">{t.footer.fTerms}</a></li>
+                <li><a href="#" className="hover:opacity-60">{t.footer.fPrivacy}</a></li>
               </ul>
             </div>
           </div>
 
           <div className="pt-16 pb-8 leading-none">
             <span className="block text-[#f1eee7] text-[20vw] md:text-[14vw] font-medium tracking-[-0.05em] -mb-4">
-              slippay<span className="text-[#b5e853]">.</span>
+              slippay<span className="text-[#FDDA24]">.</span>
             </span>
           </div>
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/55 font-mono">
-            <div>© 2026 · SlipPay</div>
-            <div>Blumenau · BR · America/Sao_Paulo</div>
+            <div>© 2026 · SlipPay · v0.2</div>
+            <a href="https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN" target="_blank" rel="noopener noreferrer" className="hover:text-[#FDDA24] transition-colors">stellar · subscription contract · CBJMQ6ZY…SEVQN ↗</a>
+            <div>Blumenau · BR</div>
           </div>
         </div>
       </footer>
-
-      <AskSlippay />
-    </div>
-  );
-}
-
-function Stat({ n, label, body, count }: { n: string; label: string; body: string; count?: { to: number; decimals?: number; suffix?: string; prefix?: string } }) {
-  return (
-    <div className="bg-[#f1eee7] p-8 md:p-10">
-      <div className="text-5xl md:text-6xl font-medium tabular-nums tracking-[-0.04em] leading-none">
-        {count ? (
-          <CountUp to={count.to} decimals={count.decimals ?? 0} suffix={count.suffix ?? ""} prefix={count.prefix ?? ""} durationMs={1600} />
-        ) : n}
-      </div>
-      <div className="mt-6 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
-      <p className="mt-4 text-sm leading-[1.6] text-[#0a0a0a]/75 max-w-[28ch] mx-auto">{body}</p>
-    </div>
-  );
-}
-
-function Step({ n, title, body }: { n: string; title: string; body: string }) {
-  return (
-    <div className="flex gap-5 md:gap-7">
-      <div className="shrink-0 w-10 md:w-14 text-3xl md:text-4xl font-medium tabular-nums tracking-tight text-[#0a0a0a]/30 leading-none font-mono">
-        {n}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-xl md:text-2xl tracking-tight font-medium leading-[1.2]">{title}</div>
-        <p className="mt-3 text-sm md:text-base leading-[1.65] text-[#0a0a0a]/75 max-w-[48ch]">{body}</p>
-      </div>
-    </div>
-  );
-}
-
-function Module({ tag, status, statusLabel, title, body }: {
-  tag: string; status: "live" | "soon" | "ecosystem"; statusLabel: string; title: string; body: string;
-}) {
-  // Live = solid green dot; everything else = hollow, so the eye reads
-  // shipped-vs-roadmap instantly without reading the label.
-  const dot = status === "live"
-    ? "bg-[#b5e853]"
-    : "border border-[#f1eee7]/40";
-  const labelColor = status === "live" ? "text-[#b5e853]" : "text-[#f1eee7]/50";
-  return (
-    <div className="bg-[#0a0a0a] p-8 md:p-10">
-      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#b5e853]">{tag}</div>
-      <div className={"mt-3 flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.22em] " + labelColor}>
-        <span className={"inline-block w-2 h-2 " + dot + (status === "live" ? " animate-pulse" : "")} />
-        {statusLabel}
-      </div>
-      <div className="mt-6 text-xl md:text-2xl font-medium tracking-tight leading-[1.15]">{title}</div>
-      <p className="mt-4 text-sm leading-[1.6] text-[#f1eee7]/70">{body}</p>
-    </div>
-  );
-}
-
-function Cell({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-[#f1eee7] p-6 md:p-8">
-      <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono">{label}</div>
-      <div className="mt-3 text-base md:text-lg font-medium tracking-tight">{value}</div>
     </div>
   );
 }

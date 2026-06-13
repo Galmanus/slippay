@@ -1,3 +1,8 @@
+> **Historical / inaccurate.** Superseded by `docs/ops/deploy.md`. The Vercel +
+> GitHub Actions flow described below was never the real deploy mechanism. The
+> system runs on a single VPS under PM2 + nginx, with the web app built locally
+> and rsynced to the server. Do not follow this document for deploys.
+
 # Deploy secrets · operator setup
 
 This document is the **one-time setup checklist** to take SlipPay from local

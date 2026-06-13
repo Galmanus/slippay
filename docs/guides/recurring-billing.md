@@ -1,21 +1,29 @@
 # Recurring billing
 
-Subscriptions in SlipPay are **off-chain orchestrated relationships** that
-materialize into on-chain orders each cycle. This guide walks through the
-end-to-end flow.
+SlipPay supports two recurring-billing models:
+
+- **Off-chain orchestrated** (v0.1): the merchant or a scheduler calls `/charge`
+  each cycle, which materializes an order the buyer signs and pays. This is the
+  flow this guide walks through end to end.
+- **On-chain autocharge** (v0.2, LIVE on mainnet): the buyer grants a standing
+  SEP-41 allowance once, and the subscription contract debits the buyer wallet
+  each cycle with no per-cycle buyer signature. See
+  [On-chain autocharge (v0.2)](#on-chain-autocharge-v02) below and
+  [contracts/subscription](../contracts/subscription.md).
 
 ## Mental model
 
-A subscription is a **template** for orders, plus bookkeeping on cycles
-done. It does not auto-charge by itself. A scheduler (yours or a
-SlipPay-side scheduler in v0.2) calls `POST /:id/charge` each period,
+In the v0.1 off-chain model a subscription is a **template** for orders, plus
+bookkeeping on cycles done. It does not auto-charge by itself. A scheduler
+(yours or a SlipPay-side scheduler) calls `POST /:id/charge` each period,
 which creates an order; the buyer pays the order; the listener confirms
 and bumps `charges_done`.
 
-> **Why off-chain orchestration**: the buyer signs each order. This is
-> worse UX than card-on-file recurring, but it's the safest path before
-> we ship the v0.2 Soroban contract that pre-authorizes future debits.
-> See the [SCF proposal](../scf/soroban-subscription-proposal.md) for v0.2.
+> **Off-chain orchestration trade-off**: the buyer signs each order. This is
+> worse UX than card-on-file recurring. The v0.2 on-chain autocharge model
+> (live on mainnet) removes the per-cycle signature by pulling against a
+> standing SEP-41 allowance instead. See
+> [On-chain autocharge (v0.2)](#on-chain-autocharge-v02).
 
 ## Step-by-step
 
@@ -214,19 +222,40 @@ create a new one if the merchant wants to switch USDC → PYUSD.
 See [api-reference/subscriptions](../api-reference/subscriptions.md) for the
 full Subscription object shape and endpoint details.
 
-## v0.2 preview: Soroban-native subscriptions
+## On-chain autocharge (v0.2)
 
 The off-chain orchestration approach has UX friction: the buyer signs each
-cycle. v0.2 ships a Soroban contract that pre-authorizes future debits
-once. After buyer signs the authorization, the backend (or anyone) calls
-`charge(id)` on the contract; the contract pulls the amount from buyer to
-merchant in one transaction. No buyer signature per cycle.
+cycle. v0.2 removes that. It is **live on mainnet** as the subscription contract
+`CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP` (deployed
+2026-06-03).
 
-When v0.2 ships:
+Flow:
 
-- the API surface stays the same
-- `subscriptions.soroban_contract_id` populates with the on-chain id
-- the listener watches contract events instead of memo-matched payments
-- `subscription.charged` webhooks fire identically
+1. The buyer grants a standing SEP-41 allowance once, off-band:
+   `token.approve(buyer, contract, cap, expiry)`.
+2. Each cycle, a relayer (fee-payer only, never custodial) calls `autocharge(id)`
+   on the contract; the contract pulls the amount from buyer to merchant via
+   `transfer_from`. No buyer signature per cycle.
+3. Settlement is bounded by two independent ceilings: the contract-side limits
+   (status / period / `max_periods` / `expires_at`) and the SAC-side allowance
+   (cap AND expiry ledger). When the allowance is exhausted or expired,
+   `autocharge` fails and the buyer must re-approve. This is the hard
+   non-custodial ceiling.
 
-Migration path will be documented when v0.2 lands. Expected: 2026-Q3.
+The off-chain cron half of v0.2 is `scripts/autocharge-scheduler.mjs`: it queries
+for due subscriptions (active, with a Soroban subscription id, `next_charge_at`
+in the past) and fires `autocharge(id)`. It is dry-run by default and requires
+`CHARGE=1` (plus `CONFIRM_MAINNET=1` on mainnet).
+
+For autocharge:
+
+- `subscriptions.soroban_contract_id` is populated with the on-chain id
+- the listener watches contract events
+- `subscription.charged` webhooks fire identically to the off-chain model
+
+The v0.3 on-chain attestation gate (`autocharge_attested`, which requires a
+fresh single-use ed25519 attestation verified on-chain before settling) is
+proven on testnet only and is NOT deployed on mainnet. Mainnet autocharge runs
+v0.2 without the gate. See
+[contracts/subscription](../contracts/subscription.md) for the full on-chain
+model and the testnet/mainnet seam.

@@ -31,6 +31,7 @@ foreign-capital reporting from 4 May 2026.
 | 519 | governance and prudential requirements for SPSAVs (specific PSAVs) |
 | 520 | minimum capital tiers (~R$2M+ depending on activity) |
 | 521 | **classifies stablecoin trading as `operações de câmbio`** (FX) |
+| 561 | **classifies cross-border stablecoin operations as `câmbio`** (FX); see below |
 
 The 521 reclassification is the load-bearing fact for SlipPay. It means:
 **any actor that mediates BRL ↔ USDC for a Brazilian user is operating
@@ -38,6 +39,26 @@ inside the FX market** and must comply with FX rules (which require either
 a banco autorizado or a partnership with one).
 
 Source: [Machado Meyer summary](https://www.machadomeyer.com.br/pt/inteligencia-juridica/publicacoes-ij/bancario-seguros-e-financeiro-ij/regulamentacao-de-vasps-no-mercado-de-cambio)
+
+### BCB Resolução 561 — cross-border stablecoin as câmbio
+
+Resolution 561 extends the 521 reasoning to the cross-border case: a stablecoin
+operation that moves value across the border for a Brazilian user is classified
+as an `operação de câmbio` (foreign-exchange). This matters directly for any
+cross-border take-rate. A fee charged on a BRL-to-foreign or foreign-to-BRL
+stablecoin flow sits inside the FX perimeter, so a "cross-border payments PSP
+that skims a spread on the corridor" model is not available to SlipPay without a
+banco autorizado or an FX-licensed partner on that leg. Charging a cross-border
+spread directly is an FX operation, not a software fee.
+
+SlipPay's response is the domestic-USD-account framing: position the product as
+a dollar-denominated account and payment surface used inside Brazil (receive,
+hold, and pay USDC domestically), rather than as a cross-border corridor with a
+take-rate. The domestic framing keeps SlipPay's own monetization on the software
+side (merchant API, checkout, settlement infrastructure) and pushes any actual
+BRL/FX leg into a licensed partner's perimeter, consistent with the
+partnership-with-VASP architecture below. This is a constraint to design around,
+not a stop: it tells us where a fee can and cannot legally sit.
 
 ### Self-custody not banned, but VASP must KYC the wallet
 

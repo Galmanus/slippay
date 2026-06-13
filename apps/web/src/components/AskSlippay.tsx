@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 
@@ -45,7 +45,7 @@ const QUICK_PROMPTS: Array<{ tag: string; prompt: string }> = [
 // bluewave design tokens (matching bluewaveai.online)
 const BONE = "#EFE9DD";
 const INK  = "#1A1A17";
-const KLEIN = "#b5e853";
+const KLEIN = "#FDDA24";
 
 export function AskSlippay() {
   const [open, setOpen] = useState(false);
@@ -190,7 +190,7 @@ export function AskSlippay() {
             bottom: "max(1.25rem, env(safe-area-inset-bottom))",
             right:  "max(1rem, env(safe-area-inset-right))",
           }}
-          className="fixed z-50 px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)] active:scale-95"
+          className="fixed z-50 rounded-full px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)] active:scale-95"
           aria-label="Ask Slippay"
         >
           <span style={{ background: KLEIN }} className="inline-block w-1.5 h-1.5" />
@@ -213,7 +213,7 @@ export function AskSlippay() {
       {/* Side panel — slides in from right */}
       <aside
         style={{ background: BONE, color: INK }}
-        className={`fixed top-0 right-0 bottom-0 z-50 w-full md:w-[560px] flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed top-0 right-0 bottom-0 z-50 w-full md:w-[560px] md:rounded-l-2xl md:overflow-hidden flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* INK header bar */}
         <div style={{ background: INK, color: BONE }} className="px-7 pt-7 pb-6 flex items-start justify-between">
@@ -224,7 +224,7 @@ export function AskSlippay() {
               <span className="opacity-40">·</span>
               <span>resposta na hora</span>
             </div>
-            <h2 className="mt-3 text-[28px] md:text-[34px] leading-none tracking-[-0.02em] font-medium" style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}>
+            <h2 className="mt-3 text-[28px] md:text-[34px] leading-none tracking-[-0.02em] font-medium" style={{ fontFamily: "'DM Sans', 'Inter', sans-serif" }}>
               Fala com o SlipPay
             </h2>
             <div className="mt-2 text-[11px] tracking-tight opacity-55 max-w-[42ch]" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -441,9 +441,9 @@ function ThinkingIndicator() {
   return (
     <div className="flex items-center gap-3 py-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       <div className="flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853]" style={{ animation: "ask-pulse 1.2s ease-in-out infinite" }} />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853] opacity-60" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#b5e853] opacity-30" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" style={{ animation: "ask-pulse 1.2s ease-in-out infinite" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] opacity-60" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
+        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] opacity-30" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
       </div>
       <span className="text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
         thinking · {phrases[idx]}

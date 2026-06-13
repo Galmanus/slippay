@@ -20,9 +20,13 @@ const CHECKOUT_BASE = Deno.env.get("CHECKOUT_BASE_URL") ?? "http://localhost:517
 
 const SOROBAN_NETWORK = (Deno.env.get("STELLAR_NETWORK")?.toLowerCase() ?? "testnet") as
   "testnet" | "mainnet";
+// Network-CORRECT contract selection. The previous code preferred the testnet
+// contract regardless of SOROBAN_NETWORK — on a PUBLIC/mainnet config that would
+// silently bind subscriptions to the testnet contract id. Pick by network.
 const SOROBAN_CONTRACT_DEFAULT =
-  Deno.env.get("SLIPPAY_SUBSCRIPTION_CONTRACT_TESTNET") ??
-  Deno.env.get("SLIPPAY_SUBSCRIPTION_CONTRACT_MAINNET") ?? null;
+  SOROBAN_NETWORK === "mainnet"
+    ? (Deno.env.get("SLIPPAY_SUBSCRIPTION_CONTRACT_MAINNET") ?? null)
+    : (Deno.env.get("SLIPPAY_SUBSCRIPTION_CONTRACT_TESTNET") ?? null);
 
 // POST /v1/subscriptions — create a subscription
 r.post("/", requireApiKey, async (c) => {
@@ -153,6 +157,8 @@ r.post("/:id/charge", requireApiKey, async (c) => {
 
   const { data: order, error: orderErr } = await sb.from("orders").insert({
     merchant_id: merchant.id,
+    // Pin the consented payout address at charge time (recipient-drift defense).
+    merchant_stellar_address: merchant.stellar_address ?? null,
     subscription_id: id,
     external_ref: sub.external_ref,
     brl_amount: sub.brl_amount,
@@ -224,7 +230,7 @@ r.post("/:id/onchain-charge", requireApiKey, async (c) => {
   if (!contractId) {
     return c.json({
       error: "no_onchain_contract",
-      detail: "subscription has no soroban_contract_id and SLIPPAY_SUBSCRIPTION_CONTRACT_TESTNET env not set",
+      detail: `subscription has no soroban_contract_id and SLIPPAY_SUBSCRIPTION_CONTRACT_${SOROBAN_NETWORK.toUpperCase()} env not set`,
     }, 409);
   }
   if (!sub.soroban_subscription_id) {
