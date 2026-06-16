@@ -187,6 +187,56 @@ r.get("/order/:id", async (c) => {
   }
 });
 
+// ── On-ramp (fiat Pix -> crypto) ────────────────────────────────────────────
+// Charge-model providers (CriptoPix) need inline payer identity (CPF + DOB);
+// passed via `identity`. The response carries `paymentInstructions.pixCode`
+// (the Pix copy-paste / brCode) to render for the payer.
+const OnRampSchema = z.object({
+  customerId: z.string().min(1),
+  quoteId: z.string().min(1),
+  stellarAddress: z.string().min(1),
+  fromCurrency: z.string().min(3), // e.g. "BRL"
+  toCurrency: z.string().min(2), // e.g. "USDC"
+  amount: z.string().min(1),
+  memo: z.string().optional(),
+  bankAccountId: z.string().optional(),
+  identity: z.object({
+    name: z.string(),
+    email: z.string(),
+    taxId: z.string(),
+    taxIdCountry: z.string().optional(),
+    birthDate: z.string().optional(),
+  }).optional(),
+});
+
+r.post("/onramp", async (c) => {
+  const p = provider(c);
+  if (p instanceof Response) return p;
+  let input: z.infer<typeof OnRampSchema>;
+  try {
+    input = OnRampSchema.parse(await c.req.json());
+  } catch (e) {
+    return c.json({ error: "validation_error", issues: (e as { issues?: unknown }).issues }, 400);
+  }
+  try {
+    return c.json({ order: await p.createOnRamp(input) }, 201);
+  } catch (e) {
+    return fail(c, e);
+  }
+});
+
+r.get("/onramp/:id", async (c) => {
+  const p = provider(c);
+  if (p instanceof Response) return p;
+  try {
+    const tx = await p.getOnRampTransaction(c.req.param("id"));
+    if (!tx) return c.json({ error: "not_found" }, 404);
+    return c.json({ order: tx });
+  } catch (e) {
+    return fail(c, e);
+  }
+});
+
 // Diagnostic: list rampable assets (confirms the USDC identifier on Stellar).
 r.get("/assets", async (c) => {
   const p = provider(c);

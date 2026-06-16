@@ -17,13 +17,42 @@
 // routes/offramp.ts depend only on the `Anchor` interface, not on Etherfuse.
 
 import { EtherfuseClient } from "./etherfuse/index.ts";
+import { CriptoPixClient } from "./criptopix/index.ts";
+import { getRampTx } from "./store.ts";
 import type { Anchor } from "./types.ts";
 
 let cached: Anchor | null | undefined;
 
-/** The configured ramp provider, or null when disabled/unconfigured. Memoized. */
+/** The configured ramp provider, or null when disabled/unconfigured. Memoized.
+ *
+ * Provider precedence: CriptoPix (BR Pix, charge-model) when CRIPTOPIX_ENABLED=1,
+ * else Etherfuse (Stellar) when ETHERFUSE_ENABLED=1, else null (surface dormant).
+ *
+ * CriptoPix env:
+ *   CRIPTOPIX_ENABLED=1
+ *   CRIPTOPIX_CLIENT_ID, CRIPTOPIX_CLIENT_SECRET  (from the CriptoPix partner team)
+ *   CRIPTOPIX_BASE_URL   (e.g. https://api.criptonopix.app.br)
+ *   CRIPTOPIX_ASSET      (optional; "USDT" default, "USDC" once confirmed)
+ */
 export function getRampProvider(): Anchor | null {
   if (cached !== undefined) return cached;
+
+  if (Deno.env.get("CRIPTOPIX_ENABLED") === "1") {
+    const clientId = Deno.env.get("CRIPTOPIX_CLIENT_ID")?.trim();
+    const clientSecret = Deno.env.get("CRIPTOPIX_CLIENT_SECRET")?.trim();
+    const baseUrl = Deno.env.get("CRIPTOPIX_BASE_URL")?.trim();
+    if (clientId && clientSecret && baseUrl) {
+      cached = new CriptoPixClient({
+        clientId,
+        clientSecret,
+        baseUrl,
+        asset: Deno.env.get("CRIPTOPIX_ASSET")?.trim() || "USDT",
+        lookup: (id) => getRampTx(id),
+      });
+      return cached;
+    }
+  }
+
   const apiKey = Deno.env.get("ETHERFUSE_API_KEY")?.trim();
   const enabled = Deno.env.get("ETHERFUSE_ENABLED") === "1";
   if (!enabled || !apiKey) {
