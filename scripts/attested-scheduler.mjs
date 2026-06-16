@@ -37,10 +37,10 @@ async function subIds() {
   if (process.env.SUB_IDS) return process.env.SUB_IDS.split(",").map((s) => s.trim()).filter(Boolean);
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) { log("no SUB_IDS and no Supabase creds — nothing to do."); return []; }
-  const net = IS_MAINNET ? "mainnet" : "testnet";
-  // Active, due subs on this network. Non-gated ones fail at SIMULATION
-  // (AttesterNotSet) and never submit, so no gas is wasted — safe to scan all.
-  const q = `${url}/rest/v1/subscriptions?status=eq.active&network=eq.${net}&next_charge_at=lte.${new Date().toISOString()}&select=soroban_subscription_id`;
+  // Active, due subs. Non-gated ones fail at SIMULATION (AttesterNotSet) and
+  // never submit, so no gas is wasted — safe to scan all. (No `network` column
+  // exists on `subscriptions`; this deployment is single-network per box.)
+  const q = `${url}/rest/v1/subscriptions?status=eq.active&next_charge_at=lte.${new Date().toISOString()}&select=soroban_subscription_id`;
   try {
     const r = await fetch(q, { headers: { apikey: key, authorization: `Bearer ${key}` } });
     if (!r.ok) { log(`supabase ${r.status} — skipping this run`); return []; }
