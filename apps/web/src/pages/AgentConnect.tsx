@@ -37,7 +37,8 @@ export default function AgentConnect() {
   const [expirySecs, setExpirySecs] = useState(604_800);
   const [recipients, setRecipients] = useState("");      // one per line; empty = any
   const [policy, setPolicy] = useState("");              // optional JSON → ssl_hash
-  const [agentName, setAgentName] = useState("");
+  // value is only written (from the connect request), never rendered yet
+  const [, setAgentName] = useState("");
 
   const [state, setState] = useState<State>("form");
   const [error, setError] = useState<string | null>(null);

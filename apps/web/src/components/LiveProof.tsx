@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 
 // LiveProof — a subtle, honest engagement cue placed across the site. One quiet
 // monospace line: a live pulse, the real time since the last on-chain payment
@@ -44,7 +43,6 @@ export function LiveProof({ dark = false, prominent = false, lang = "en" }: { da
   }, []);
 
   const muted = dark ? "rgba(241,238,231,.5)" : "rgba(10,10,10,.5)";
-  const accent = dark ? "#FDDA24" : "#A16207";
   const Dot = () => <span className="opacity-30">·</span>;
 
   if (prominent) {
@@ -55,7 +53,6 @@ export function LiveProof({ dark = false, prominent = false, lang = "en" }: { da
         </span>
         {last && <span className="text-[#0a0a0a]/55">{t.last} <span className="tabular-nums text-[#0a0a0a]/80">{rel(last, lang)}</span></span>}
         <span className="text-[#0a0a0a]/55">{t.cheapBig}</span>
-        <Link to="/cockpit" className="font-medium hover:opacity-70 transition-opacity" style={{ color: "#6f6862" }}>{t.seeBig}</Link>
       </div>
     );
   }
@@ -65,7 +62,6 @@ export function LiveProof({ dark = false, prominent = false, lang = "en" }: { da
       <span className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> {t.live}</span>
       {last && <><Dot /><span>{t.last} {rel(last, lang)}</span></>}
       <Dot /><span>{t.cheap}</span>
-      <Dot /><Link to="/cockpit" className="hover:opacity-100 transition-opacity" style={{ color: accent }}>{t.see}</Link>
     </div>
   );
 }
