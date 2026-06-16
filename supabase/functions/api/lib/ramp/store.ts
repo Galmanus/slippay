@@ -119,7 +119,9 @@ export async function saveRampTx(rec: {
     raw: rec.raw ?? null,
     updated_at: new Date().toISOString(),
   }, { onConflict: "gateway_id" });
-  if (error) throw new Error(`ramp_transactions saveRampTx failed: ${error.message}`);
+  // Best-effort status mirror: a missing table (migration not applied yet) must
+  // not break charge creation. Log and continue.
+  if (error) console.error(`ramp_transactions saveRampTx skipped: ${error.message}`);
 }
 
 /** Read a stored ramp transaction by gateway id (or partner transaction id). */
@@ -130,7 +132,9 @@ export async function getRampTx(id: string): Promise<RampTxRecord | null> {
     .select("*")
     .or(`gateway_id.eq.${id},partner_transaction_id.eq.${id}`)
     .maybeSingle();
-  if (error) throw new Error(`ramp_transactions read failed: ${error.message}`);
+  // Missing table / read error: treat as "not found" so status polling degrades
+  // gracefully instead of 500ing before the migration is applied.
+  if (error) { console.error(`ramp_transactions read skipped: ${error.message}`); return null; }
   if (!data) return null;
   const r = data as Record<string, unknown>;
   return {
