@@ -168,7 +168,7 @@ export default function PayDemo() {
           payment — authorized only by you, verified on-chain.
           <span className="text-[#0a0a0a] font-medium"> Free, on your phone. No app, no seed phrase.</span>
         </p>
-        <a href="/anchor-demo" className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-0.5">
+        <a href="/cash" className="mt-5 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-0.5">
           No dollars yet? Add funds<span className="text-[#0a0a0a]/40">→</span>
         </a>
 

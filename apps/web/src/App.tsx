@@ -24,7 +24,6 @@ import BioTest from "./pages/BioTest.tsx";
 import PayDemo from "./pages/PayDemo.tsx";
 import Cobrar from "./pages/Cobrar.tsx";
 import Account from "./pages/Account.tsx";
-import Buy from "./pages/Buy.tsx";
 import Cash from "./pages/Cash.tsx";
 import Gate from "./pages/Gate.tsx";
 import Store from "./pages/Store.tsx";
@@ -59,8 +58,8 @@ export default function App() {
       <Route path="/pay" element={<PayDemo />} />
       <Route path="/cobrar" element={<Cobrar />} />
       <Route path="/account" element={<Account />} />
-      <Route path="/buy" element={<Buy />} />
-      <Route path="/comprar" element={<Buy />} />
+      <Route path="/buy" element={<Cash />} />
+      <Route path="/comprar" element={<Cash />} />
       <Route path="/cash" element={<Cash />} />
       <Route path="/pix" element={<Cash />} />
       <Route path="/gate" element={<Gate />} />
