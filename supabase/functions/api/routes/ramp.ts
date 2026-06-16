@@ -59,9 +59,16 @@ function bearer(c: Context): string | null {
   return m ? m[1].trim() : null;
 }
 
+// Health/registration probe: lets the provider (or a browser) confirm the URL
+// is alive before the integration is enabled. Always 200.
+r.get("/criptopix/webhook", (c) =>
+  c.json({ ok: true, endpoint: "criptopix-webhook", method: "POST" }));
+
 r.post("/criptopix/webhook", async (c) => {
   const secret = Deno.env.get("CRIPTOPIX_CLIENT_SECRET")?.trim();
-  if (!secret) return c.json({ error: "ramp_disabled" }, 503);
+  // Gated (no secret yet): ack so the provider can register/validate the URL.
+  // Real notifications are JWT-verified once CRIPTOPIX_CLIENT_SECRET is set.
+  if (!secret) return c.json({ ok: true, gated: true });
 
   const token = bearer(c);
   if (!token) return c.json({ error: "missing_token" }, 401);
