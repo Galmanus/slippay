@@ -6,9 +6,10 @@
 // Note: 4P settles on EVM/Solana (NOT Stellar), so the buyer supplies an
 // EVM/Solana USDC wallet address. (Stellar-native settlement would need a bridge.)
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/auth.tsx";
+import { loadAccount } from "../lib/account";
 import {
   createOnramp4p,
   getOnramp4p,
@@ -37,7 +38,8 @@ export default function Cash() {
   const [step, setStep] = useState<Step>("amount");
 
   const [cpf, setCpf] = useState("");
-  const [wallet, setWallet] = useState("");
+  // The receiving wallet IS the user's biometric (passkey) wallet — never typed.
+  const acct = useMemo(() => loadAccount(), []);
 
   const [order, setOrder] = useState<Ramp4pOrder | null>(null);
   const [status, setStatus] = useState<string>("pending");
@@ -79,14 +81,14 @@ export default function Cash() {
 
   async function confirm() {
     setErr(null);
+    if (!acct) { setErr("Crie sua conta com Face ID primeiro."); return; }
     if (onlyDigits(cpf).length !== 11) { setErr("CPF inválido (11 dígitos)."); return; }
-    if (!wallet.trim()) { setErr(`Informe a carteira que vai receber o ${asset} (${chain}).`); return; }
     if (!email) { setErr("Entre na sua conta para continuar."); return; }
     setBusy(true);
     try {
       const o = await createOnramp4p({
         amountBrl: brl,
-        receiverWallet: wallet.trim(),
+        receiverWallet: acct.walletId, // the user's biometric (passkey) wallet
         email,
         cpf: onlyDigits(cpf),
       });
@@ -167,25 +169,25 @@ export default function Cash() {
                   </div>
                 </div>
 
-                {email ? (
+                {acct ? (
                   <button onClick={() => setStep("identity")} disabled={cryptoOut == null || brl <= 0} className={`mt-8 ${yellowBtn}`}>
                     Continuar com Pix →
                   </button>
                 ) : (
-                  <Link to="/login" className={`mt-8 inline-flex items-center justify-center ${yellowBtn}`}>Entrar para continuar →</Link>
+                  <Link to="/account" className={`mt-8 inline-flex items-center justify-center ${yellowBtn}`}>Criar conta com Face ID →</Link>
                 )}
               </>
             )}
 
             {step === "identity" && (
               <div className="mt-12 rounded-3xl border border-[#0a0a0a]/12 bg-white/40 p-6 md:p-8">
-                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">Seus dados</div>
-                <p className="mt-2 text-[13px] text-[#0a0a0a]/55">O Pix exige seu CPF. O dólar cai direto na carteira que você informar — ninguém segura no meio.</p>
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">Seu CPF</div>
+                <p className="mt-2 text-[13px] text-[#0a0a0a]/55">O Pix exige seu CPF. O dólar cai na <b>sua carteira</b> — a mesma da sua digital. Você não precisa de carteira nenhuma, nem colar endereço.</p>
                 <div className="mt-6 space-y-4">
                   <input value={cpf} onChange={(e) => setCpf(e.target.value)} placeholder="CPF" inputMode="numeric"
                     className="w-full rounded-xl border border-[#0a0a0a]/15 bg-white/60 px-4 py-3 outline-none focus:border-[#0a0a0a]/40" />
-                  <input value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder={`Sua carteira ${asset} (${chain})`}
-                    className="w-full rounded-xl border border-[#0a0a0a]/15 bg-white/60 px-4 py-3 font-mono text-[13px] outline-none focus:border-[#0a0a0a]/40" />
+                  <input value={email ?? ""} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail (recibo do Pix)" inputMode="email"
+                    className="w-full rounded-xl border border-[#0a0a0a]/15 bg-white/60 px-4 py-3 outline-none focus:border-[#0a0a0a]/40" />
                 </div>
                 {err && <div className="mt-4 text-[13px] text-red-700">{err}</div>}
                 <div className="mt-6 flex items-center gap-4">
