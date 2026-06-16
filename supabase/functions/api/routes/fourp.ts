@@ -105,7 +105,20 @@ r.post("/quote", async (c) => {
   }
   try {
     const q = await cl.quote(String(input.amountBrl));
-    return c.json({ quote: q });
+    // Slippay spread (default 2.8%). Applied to the displayed crypto output.
+    // NOTE: real capture requires 4P to settle the NET amount (fee field) or a
+    // rev-share — on a direct-to-user on-ramp the Pix lands at 4P, not Slippay.
+    const bps = Number(Deno.env.get("FOURP_MARGIN_BPS"));
+    const marginBps = Number.isFinite(bps) && bps >= 0 && bps <= 1000 ? bps : 280;
+    const map = q.quote ?? {};
+    for (const k of Object.keys(map)) {
+      const gross = map[k].price;
+      map[k] = {
+        ...map[k],
+        price: Number((gross * (1 - marginBps / 10_000)).toFixed(8)),
+      };
+    }
+    return c.json({ quote: q, marginBps });
   } catch (e) {
     return fail(c, e);
   }
