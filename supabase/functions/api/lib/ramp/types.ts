@@ -294,6 +294,9 @@ export interface RampIdentity {
     taxId: string;
     /** ISO 3166-1 alpha-3 country code for the tax ID (e.g. `"BRA"`). Defaults to `"BRA"` if omitted. */
     taxIdCountry?: string;
+    /** Date of birth (DD/MM/AAAA) — required by some BR Pix charge-model providers
+     *  (e.g. Cripto no Pix) for payer verification at charge time. */
+    birthDate?: string;
 }
 
 // =============================================================================
@@ -464,6 +467,32 @@ export interface KycSubmissionResult {
     kycStatus: KycStatus;
     /** Submission identifier for tracking, if available. */
     submissionId?: string;
+}
+
+// =============================================================================
+// Ramp transaction store record (webhook-backed status, charge-model providers)
+// =============================================================================
+
+/** A ramp transaction status row mirrored from a provider webhook. Used by
+ *  charge-model providers (e.g. CriptoPix) that have no GET-by-id endpoint, so
+ *  the Anchor read methods resolve against a local store instead. */
+export interface RampTxRecord {
+    gatewayId: string;
+    partnerTransactionId?: string;
+    transactionId?: string;
+    businessId?: string;
+    provider: string;
+    transactionType?: string;
+    transactionStatus?: string;
+    errorType?: string;
+    errorMessage?: string;
+    userId?: string;
+    usdtAmount?: number;
+    reaisAmount?: number;
+    brCode?: string;
+    hashWeb3?: string;
+    endToEndId?: string;
+    afterPaymentId?: string;
 }
 
 // =============================================================================

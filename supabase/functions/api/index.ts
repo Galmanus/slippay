@@ -10,6 +10,9 @@ import x402 from "./routes/x402.ts";
 import billing from "./routes/billing.ts";
 import metrics from "./routes/metrics.ts";
 import relayer from "./routes/relayer.ts";
+import ramp from "./routes/ramp.ts";
+import offramp from "./routes/offramp.ts";
+import fourp from "./routes/fourp.ts";
 
 const api = new Hono().basePath("/api");
 api.use("*", errorMiddleware);
@@ -46,6 +49,12 @@ api.route("/v1/x402", x402);
 // Gas-sponsor relayer for the biometric payment flow (pays network fees only;
 // user funds stay in the Face-ID-controlled passkey wallet — see relayer.ts).
 api.route("/v1/relayer", relayer);
+// Ramp provider webhooks (CriptoPix status -> ramp_transactions store).
+api.route("/v1/ramp", ramp);
+// On/off-ramp surface (quote, on-ramp, off-ramp, status) — provider-agnostic.
+api.route("/v1/offramp", offramp);
+// 4P Finance ramp (on-ramp Pix->wallet; dormant until FOURP_API_KEY set).
+api.route("/v1/4p", fourp);
 
 const app = new Hono();
 app.route("/", api);
