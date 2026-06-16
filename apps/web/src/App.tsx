@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import AgentHome from "./pages/AgentHome.tsx";
 import LandingV2 from "./pages/LandingV2.tsx";
 import Builders from "./pages/Builders.tsx";
-import Cockpit from "./pages/Cockpit.tsx";
 import Verify from "./pages/Verify.tsx";
 import Home from "./pages/Home.tsx";
 import Agents from "./pages/Agents.tsx";
@@ -26,6 +25,7 @@ import PayDemo from "./pages/PayDemo.tsx";
 import Cobrar from "./pages/Cobrar.tsx";
 import Account from "./pages/Account.tsx";
 import Buy from "./pages/Buy.tsx";
+import Cash from "./pages/Cash.tsx";
 import Gate from "./pages/Gate.tsx";
 import Store from "./pages/Store.tsx";
 import PolicySubscribe from "./pages/PolicySubscribe.tsx";
@@ -42,7 +42,6 @@ export default function App() {
       <Route path="/v1" element={<AgentHome />} />
       <Route path="/builders" element={<Builders />} />
       <Route path="/v2" element={<LandingV2 />} />
-      <Route path="/cockpit" element={<Cockpit />} />
       <Route path="/human" element={<Home />} />
       <Route path="/verify" element={<Verify />} />
       <Route path="/agents" element={<Agents />} />
@@ -62,6 +61,8 @@ export default function App() {
       <Route path="/account" element={<Account />} />
       <Route path="/buy" element={<Buy />} />
       <Route path="/comprar" element={<Buy />} />
+      <Route path="/cash" element={<Cash />} />
+      <Route path="/pix" element={<Cash />} />
       <Route path="/gate" element={<Gate />} />
       <Route path="/loja" element={<Store />} />
       <Route path="/s/:subId" element={<PolicySubscribe />} />

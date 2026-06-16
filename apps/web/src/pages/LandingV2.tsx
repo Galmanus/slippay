@@ -171,7 +171,7 @@ export default function LandingV2() {
   // consumer-first nav (who the landing speaks to). Institutional/technical links
   // (gate, live, investors, manifesto) move to the footer so the IA picks a lane.
   const NAV: [string, string][] = [[t.nav.security, "/security"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.login, "/account"]];
-  const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"]];
+  const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"]];
 
   useEffect(() => {
     const root = document.documentElement;
