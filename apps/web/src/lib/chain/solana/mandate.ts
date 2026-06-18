@@ -4,7 +4,9 @@
 // in Node). Program proven on Solana: 5/5 bounded-autonomy tests green (2026-06-17).
 
 import { AnchorProvider, Program, BN, type Idl } from "@coral-xyz/anchor";
-import { PublicKey, SystemProgram } from "@solana/web3.js";
+import {
+  Connection, PublicKey, SystemProgram, type TransactionInstruction,
+} from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import idlJson from "./idl/slippay_mandate.json";
 
@@ -22,6 +24,37 @@ export function mandatePda(owner: PublicKey, mint: PublicKey): PublicKey {
     [SEED, owner.toBuffer(), mint.toBuffer()],
     MANDATE_PROGRAM_ID,
   )[0];
+}
+
+// Read-only provider just to build instructions (signing is done by the bound
+// wallet, e.g. LazorKit). The stub wallet is never asked to sign.
+function readProvider(connection: Connection, payer: PublicKey): AnchorProvider {
+  const stub = {
+    publicKey: payer,
+    signTransaction: async <T>(t: T) => t,
+    signAllTransactions: async <T>(t: T[]) => t,
+  };
+  return new AnchorProvider(connection, stub as unknown as AnchorProvider["wallet"], { commitment: "confirmed" });
+}
+
+/** Build the single pay_split instruction for a one-time checkout. The buyer
+ *  (payer) is the authority; merchant + platform token accounts must already
+ *  exist (guarded at onboarding via checkReceiveAddress). One instruction → one
+ *  CPI for a single-CPI smart wallet (LazorKit). */
+export async function buildPaySplitIx(connection: Connection, a: {
+  payer: PublicKey; mint: PublicKey; payerToken: PublicKey;
+  merchantToken: PublicKey; platformToken: PublicKey; amount: BN; feeBp: number;
+}): Promise<TransactionInstruction> {
+  const program = new Program(idlJson as Idl, readProvider(connection, a.payer));
+  // methods is IDL-runtime-typed; cast to reach paySplit + instruction().
+  const methods = program.methods as unknown as {
+    paySplit(amount: BN, feeBp: number): { accounts(a: unknown): { instruction(): Promise<TransactionInstruction> } };
+  };
+  return methods.paySplit(a.amount, a.feeBp).accounts({
+    payer: a.payer, mint: a.mint,
+    payerToken: a.payerToken, merchantToken: a.merchantToken, platformToken: a.platformToken,
+    tokenProgram: TOKEN_PROGRAM_ID,
+  }).instruction();
 }
 
 export interface MandateRules {

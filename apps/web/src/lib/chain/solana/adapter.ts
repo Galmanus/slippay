@@ -13,20 +13,17 @@
 // React gate (components/SolanaWalletGate) on connect; until then the payment
 // methods throw via boundSolanaWallet().
 
-import {
-  Connection, PublicKey, type TransactionInstruction,
-} from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import {
   getAssociatedTokenAddressSync,
-  createAssociatedTokenAccountIdempotentInstruction,
-  createTransferInstruction,
   createApproveInstruction,
 } from "@solana/spl-token";
+import { BN } from "@coral-xyz/anchor";
 import type {
   ChainAdapter, AddressCheck, OneTimePayArgs, ApproveArgs, PayResult,
 } from "../types.ts";
-import { usdcMint, rpcUrl, toBaseUnits, splitFee } from "./usdc.ts";
-import { mandatePda } from "./mandate.ts";
+import { usdcMint, rpcUrl, toBaseUnits } from "./usdc.ts";
+import { mandatePda, buildPaySplitIx } from "./mandate.ts";
 import { boundSolanaWallet } from "./wallet.ts";
 
 export { bindSolanaWallet, type SolanaWallet } from "./wallet.ts";
@@ -72,27 +69,24 @@ export const solanaAdapter: ChainAdapter = {
     const merchant = new PublicKey(a.merchantAddress);
     const platform = new PublicKey(a.platformAddress);
 
-    const total = toBaseUnits(a.usdcAmount);
-    const { merchant: merchantUnits, fee } = splitFee(total, a.platformFeeBp);
-
     const buyerAta = getAssociatedTokenAddressSync(mint, buyer);
     const merchantAta = getAssociatedTokenAddressSync(mint, merchant);
     const platformAta = getAssociatedTokenAddressSync(mint, platform);
 
-    const ixs: TransactionInstruction[] = [
-      // Idempotent: no-op if the ATA already exists. Buyer fronts rent.
-      createAssociatedTokenAccountIdempotentInstruction(buyer, merchantAta, merchant, mint),
-      createTransferInstruction(buyerAta, merchantAta, buyer, merchantUnits),
-    ];
-    if (fee > 0n) {
-      ixs.push(createAssociatedTokenAccountIdempotentInstruction(buyer, platformAta, platform, mint));
-      ixs.push(createTransferInstruction(buyerAta, platformAta, buyer, fee));
-    }
+    // ONE instruction (pay_split) — the program splits merchant vs fee on-chain.
+    // Fits a single-CPI smart wallet (LazorKit). Merchant/platform ATAs must
+    // pre-exist (guarded at onboarding via checkReceiveAddress).
+    const ix = await buildPaySplitIx(connection(), {
+      payer: buyer, mint, payerToken: buyerAta,
+      merchantToken: merchantAta, platformToken: platformAta,
+      amount: new BN(toBaseUnits(a.usdcAmount).toString()),
+      feeBp: a.platformFeeBp,
+    });
     // TODO: attach order id (a.memoHex) via the SPL Memo program for on-chain
     // order binding (Stellar Memo.hash parity). Backend currently binds by
     // buyer+recipient+amount.
 
-    const hash = await wallet.execute(ixs);
+    const hash = await wallet.execute([ix]);
     return { hash };
   },
 
