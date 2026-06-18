@@ -146,7 +146,8 @@ export default function Checkout() {
                           // Chain-agnostic: the active adapter (Stellar today) builds,
                           // signs and submits. State transitions stay user-visible.
                           setSubmitState("signing");
-                          const { hash } = await getChainAdapter().payOneTime({
+                          const adapter = await getChainAdapter();
+                          const { hash } = await adapter.payOneTime({
                             buyerAddress: walletAddress,
                             merchantAddress: order.merchant_stellar_address,
                             platformAddress,
