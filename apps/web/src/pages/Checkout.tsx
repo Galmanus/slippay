@@ -4,8 +4,7 @@ import { fetchOrder, type PublicOrder } from "../lib/api.ts";
 import { Countdown } from "../components/Countdown.tsx";
 import { PayButton } from "../components/PayButton.tsx";
 import { Logo } from "../components/Logo.tsx";
-import { buildAtomicTx, fetchSequence, submitSignedTx } from "../lib/stellar.ts";
-import { signTx } from "../lib/wallet.ts";
+import { getChainAdapter } from "../lib/chain/index.ts";
 
 type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "paid" | "error";
 
@@ -144,23 +143,18 @@ export default function Checkout() {
                           if (!order.merchant_stellar_address) throw new Error("merchant has no stellar_address");
                           const platformAddress = import.meta.env.VITE_PLATFORM_ADDRESS;
                           if (!platformAddress) throw new Error("VITE_PLATFORM_ADDRESS not configured");
-                          const network = (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() as "TESTNET" | "PUBLIC";
-                          const seq = await fetchSequence(network, walletAddress);
-                          const xdr = await buildAtomicTx({
-                            buyerPublicKey: walletAddress,
-                            buyerSequence: seq,
+                          // Chain-agnostic: the active adapter (Stellar today) builds,
+                          // signs and submits. State transitions stay user-visible.
+                          setSubmitState("signing");
+                          const { hash } = await getChainAdapter().payOneTime({
+                            buyerAddress: walletAddress,
                             merchantAddress: order.merchant_stellar_address,
                             platformAddress,
                             usdcAmount: order.usdc_amount,
                             platformFeeBp: 297, // 2.97% canonical (ideally read order.platform_fee_bp)
-                            memo: order.memo,
-                            network,
+                            memoHex: order.memo,
                             maxTime: Math.floor(new Date(order.expires_at).getTime() / 1000),
                           });
-                          setSubmitState("signing");
-                          const signed = await signTx(xdr);
-                          setSubmitState("submitting");
-                          const { hash } = await submitSignedTx(network, signed);
                           setTxHash(hash);
                           setSubmitState("submitted");
                         } catch (e: unknown) {
