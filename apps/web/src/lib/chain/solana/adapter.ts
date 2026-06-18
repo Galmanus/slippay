@@ -30,6 +30,14 @@ export { bindSolanaWallet, type SolanaWallet } from "./wallet.ts";
 
 function connection(): Connection { return new Connection(rpcUrl(), "confirmed"); }
 
+// Parse a Solana address with a diagnostic error. Guards the #1 cross-chain
+// trap: an order built for Stellar carries a G... merchant address, which is not
+// a valid Solana pubkey — fail with a clear message instead of "Invalid public key".
+function solPubkey(addr: string, label: string): PublicKey {
+  try { return new PublicKey(addr.trim()); }
+  catch { throw new Error(`${label} is not a valid Solana address ("${addr.slice(0, 12)}…") — Solana checkout needs a Solana merchant address (the order carries a Stellar one)`); }
+}
+
 export const solanaAdapter: ChainAdapter = {
   id: "solana",
 
@@ -65,13 +73,16 @@ export const solanaAdapter: ChainAdapter = {
   async payOneTime(a: OneTimePayArgs): Promise<PayResult> {
     const wallet = boundSolanaWallet();
     const mint = usdcMint();
-    const buyer = new PublicKey(a.buyerAddress);
-    const merchant = new PublicKey(a.merchantAddress);
-    const platform = new PublicKey(a.platformAddress);
+    const buyer = solPubkey(a.buyerAddress, "buyer");
+    const merchant = solPubkey(a.merchantAddress, "merchant address");
+    const platform = solPubkey(a.platformAddress, "platform address");
 
-    const buyerAta = getAssociatedTokenAddressSync(mint, buyer);
-    const merchantAta = getAssociatedTokenAddressSync(mint, merchant);
-    const platformAta = getAssociatedTokenAddressSync(mint, platform);
+    // allowOwnerOffCurve=true: the buyer is a LazorKit smart wallet (a PDA, off
+    // curve); merchant/platform may also be PDAs. Relaxing the assertion is safe —
+    // the ATA derivation is identical for on-curve owners.
+    const buyerAta = getAssociatedTokenAddressSync(mint, buyer, true);
+    const merchantAta = getAssociatedTokenAddressSync(mint, merchant, true);
+    const platformAta = getAssociatedTokenAddressSync(mint, platform, true);
 
     // ONE instruction (pay_split) — the program splits merchant vs fee on-chain.
     // Fits a single-CPI smart wallet (LazorKit). Merchant/platform ATAs must
@@ -94,7 +105,8 @@ export const solanaAdapter: ChainAdapter = {
     const wallet = boundSolanaWallet();
     const mint = usdcMint();
     const owner = new PublicKey(a.buyerAddress);
-    const ownerAta = getAssociatedTokenAddressSync(mint, owner);
+    // off-curve: the owner is a LazorKit smart wallet PDA.
+    const ownerAta = getAssociatedTokenAddressSync(mint, owner, true);
 
     // The single signature that delegates bounded spend: approve the mandate PDA
     // (derived from owner+mint) as the SPL delegate up to the cap. durationSecs is
