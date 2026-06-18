@@ -7,12 +7,14 @@
 //                   the mandate PDA (mirrors the Stellar SEP-41 allowance). The
 //                   PDA is derived from owner+mint, not the passed spender.
 //
-// Wallet/signing is bound by increment 4 (passkey/relayer biometric signer).
-// Until a wallet is bound, connectWallet() throws; the payment builders are
-// otherwise complete.
+// Signing is done by the bound biometric wallet (LazorKit passkey + paymaster):
+// the adapter builds instructions and hands them to wallet.execute(), which
+// signs with the passkey, sponsors gas, and submits. The wallet is bound by the
+// React gate (components/SolanaWalletGate) on connect; until then the payment
+// methods throw via boundSolanaWallet().
 
 import {
-  Connection, PublicKey, Transaction, type TransactionInstruction,
+  Connection, PublicKey, type TransactionInstruction,
 } from "@solana/web3.js";
 import {
   getAssociatedTokenAddressSync,
@@ -25,40 +27,19 @@ import type {
 } from "../types.ts";
 import { usdcMint, rpcUrl, toBaseUnits, splitFee } from "./usdc.ts";
 import { mandatePda } from "./mandate.ts";
+import { boundSolanaWallet } from "./wallet.ts";
 
-/** The biometric signer (passkey/relayer), bound at increment 4. */
-export interface SolanaSigner {
-  publicKey: PublicKey;
-  signTransaction(tx: Transaction): Promise<Transaction>;
-}
-
-let bound: SolanaSigner | null = null;
-/** Bind the active Solana wallet signer (called by the wallet layer). */
-export function bindSolanaWallet(signer: SolanaSigner | null): void { bound = signer; }
-function requireSigner(): SolanaSigner {
-  if (!bound) throw new Error("no solana wallet bound — biometric signer is increment 4");
-  return bound;
-}
+export { bindSolanaWallet, type SolanaWallet } from "./wallet.ts";
 
 function connection(): Connection { return new Connection(rpcUrl(), "confirmed"); }
-
-async function signSendConfirm(conn: Connection, ixs: TransactionInstruction[], payer: PublicKey): Promise<string> {
-  const signer = requireSigner();
-  const tx = new Transaction().add(...ixs);
-  const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash();
-  tx.recentBlockhash = blockhash;
-  tx.feePayer = payer;
-  const signed = await signer.signTransaction(tx);
-  const sig = await conn.sendRawTransaction(signed.serialize());
-  await conn.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed");
-  return sig;
-}
 
 export const solanaAdapter: ChainAdapter = {
   id: "solana",
 
   async connectWallet(): Promise<string> {
-    return requireSigner().publicKey.toBase58();
+    // The connect UX is the React gate (LazorKit hook); here we just report the
+    // already-connected address. Throws if nothing is bound yet.
+    return boundSolanaWallet().address;
   },
 
   isValidAddress(addr: string): boolean {
@@ -85,7 +66,7 @@ export const solanaAdapter: ChainAdapter = {
   },
 
   async payOneTime(a: OneTimePayArgs): Promise<PayResult> {
-    const conn = connection();
+    const wallet = boundSolanaWallet();
     const mint = usdcMint();
     const buyer = new PublicKey(a.buyerAddress);
     const merchant = new PublicKey(a.merchantAddress);
@@ -107,16 +88,16 @@ export const solanaAdapter: ChainAdapter = {
       ixs.push(createAssociatedTokenAccountIdempotentInstruction(buyer, platformAta, platform, mint));
       ixs.push(createTransferInstruction(buyerAta, platformAta, buyer, fee));
     }
-    // TODO(increment 4): attach order id (a.memoHex) via the SPL Memo program for
-    // on-chain order binding (Stellar Memo.hash parity). Backend currently binds
-    // by buyer+recipient+amount.
+    // TODO: attach order id (a.memoHex) via the SPL Memo program for on-chain
+    // order binding (Stellar Memo.hash parity). Backend currently binds by
+    // buyer+recipient+amount.
 
-    const hash = await signSendConfirm(conn, ixs, buyer);
+    const hash = await wallet.execute(ixs);
     return { hash };
   },
 
   async approveRecurring(a: ApproveArgs): Promise<PayResult> {
-    const conn = connection();
+    const wallet = boundSolanaWallet();
     const mint = usdcMint();
     const owner = new PublicKey(a.buyerAddress);
     const ownerAta = getAssociatedTokenAddressSync(mint, owner);
@@ -129,7 +110,7 @@ export const solanaAdapter: ChainAdapter = {
     const amount = toBaseUnits(a.capUsdc); // 6-dp base units
 
     const ix = createApproveInstruction(ownerAta, spenderPda, owner, amount);
-    const hash = await signSendConfirm(conn, [ix], owner);
+    const hash = await wallet.execute([ix]);
     return { hash };
   },
 };
