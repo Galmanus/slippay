@@ -5,6 +5,7 @@ import { Countdown } from "../components/Countdown.tsx";
 import { PayButton } from "../components/PayButton.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { getChainAdapter } from "../lib/chain/index.ts";
+import { chainId } from "../lib/chain/validate.ts";
 
 type SubmitState = "idle" | "building" | "signing" | "submitting" | "submitted" | "paid" | "error";
 
@@ -140,7 +141,17 @@ export default function Checkout() {
                         setError(null);
                         setSubmitState("building");
                         try {
-                          if (!order.merchant_stellar_address) throw new Error("merchant has no stellar_address");
+                          // Merchant receive address. STOPGAP: the order only carries a
+                          // Stellar address (PublicOrder.merchant_stellar_address). Until orders
+                          // carry a Solana merchant address, the Solana checkout reads it from
+                          // VITE_SOLANA_MERCHANT_ADDRESS (devnet e2e only).
+                          const isSolana = chainId() === "solana";
+                          const merchantAddress = isSolana
+                            ? (import.meta.env.VITE_SOLANA_MERCHANT_ADDRESS as string | undefined)
+                            : order.merchant_stellar_address;
+                          if (!merchantAddress) throw new Error(isSolana
+                            ? "VITE_SOLANA_MERCHANT_ADDRESS not set (devnet stopgap until orders carry a Solana merchant address)"
+                            : "merchant has no stellar_address");
                           const platformAddress = import.meta.env.VITE_PLATFORM_ADDRESS;
                           if (!platformAddress) throw new Error("VITE_PLATFORM_ADDRESS not configured");
                           // Chain-agnostic: the active adapter (Stellar today) builds,
@@ -149,7 +160,7 @@ export default function Checkout() {
                           const adapter = await getChainAdapter();
                           const { hash } = await adapter.payOneTime({
                             buyerAddress: walletAddress,
-                            merchantAddress: order.merchant_stellar_address,
+                            merchantAddress,
                             platformAddress,
                             usdcAmount: order.usdc_amount,
                             platformFeeBp: 297, // 2.97% canonical (ideally read order.platform_fee_bp)
