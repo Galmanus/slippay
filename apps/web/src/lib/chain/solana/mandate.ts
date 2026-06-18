@@ -44,17 +44,28 @@ function readProvider(connection: Connection, payer: PublicKey): AnchorProvider 
 export async function buildPaySplitIx(connection: Connection, a: {
   payer: PublicKey; mint: PublicKey; payerToken: PublicKey;
   merchantToken: PublicKey; platformToken: PublicKey; amount: BN; feeBp: number;
+  orderId: number[]; // 32 bytes — binds the payment to the order (on-chain event)
 }): Promise<TransactionInstruction> {
+  if (a.orderId.length !== 32) throw new Error("orderId must be 32 bytes");
   const program = new Program(idlJson as Idl, readProvider(connection, a.payer));
   // methods is IDL-runtime-typed; cast to reach paySplit + instruction().
   const methods = program.methods as unknown as {
-    paySplit(amount: BN, feeBp: number): { accounts(a: unknown): { instruction(): Promise<TransactionInstruction> } };
+    paySplit(amount: BN, feeBp: number, orderId: number[]): { accounts(a: unknown): { instruction(): Promise<TransactionInstruction> } };
   };
-  return methods.paySplit(a.amount, a.feeBp).accounts({
+  return methods.paySplit(a.amount, a.feeBp, a.orderId).accounts({
     payer: a.payer, mint: a.mint,
     payerToken: a.payerToken, merchantToken: a.merchantToken, platformToken: a.platformToken,
     tokenProgram: TOKEN_PROGRAM_ID,
   }).instruction();
+}
+
+/** 32-byte hex (the order memo) → number[32] for the program's order_id arg. */
+export function orderIdFromHex(hex: string): number[] {
+  const h = hex.startsWith("0x") ? hex.slice(2) : hex;
+  if (h.length !== 64 || !/^[0-9a-fA-F]+$/.test(h)) throw new Error("order memo must be 32-byte hex");
+  const out: number[] = [];
+  for (let i = 0; i < 64; i += 2) out.push(parseInt(h.slice(i, i + 2), 16));
+  return out;
 }
 
 export interface MandateRules {
