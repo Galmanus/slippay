@@ -10,7 +10,6 @@
 
 import { type ReactNode, useEffect } from "react";
 import { LazorkitProvider, useWallet } from "@lazorkit/wallet";
-import { rpcUrl } from "../../lib/chain/solana/usdc.ts";
 import { bindSolanaWallet } from "../../lib/chain/solana/wallet.ts";
 
 function Binder() {
@@ -44,8 +43,10 @@ function Binder() {
 }
 
 export function SolanaWalletBridge({ children }: { children: ReactNode }) {
+  // No props → SDK default: Solana devnet + portal.lazor.sh + public Kora
+  // paymaster. Exactly what the devnet bring-up needs (zero infra).
   return (
-    <LazorkitProvider rpcUrl={rpcUrl()}>
+    <LazorkitProvider>
       <Binder />
       {children}
     </LazorkitProvider>

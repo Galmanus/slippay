@@ -163,6 +163,61 @@
       ]
     },
     {
+      "name": "pay_split",
+      "docs": [
+        "One-time checkout split: pay `amount` from the buyer, with `fee_bp` going",
+        "to the platform and the rest to the merchant — in ONE instruction (one CPI",
+        "for a smart wallet like LazorKit, whose hook executes a single CPI). The",
+        "split is computed on-chain (integer floor; dust accrues to the merchant,",
+        "never overcharges the platform), so it cannot be tampered client-side.",
+        "Authority is the buyer (`payer`), a normal signer — no mandate/delegate."
+      ],
+      "discriminator": [
+        210,
+        192,
+        93,
+        102,
+        207,
+        166,
+        128,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "payer_token",
+          "writable": true
+        },
+        {
+          "name": "merchant_token",
+          "writable": true
+        },
+        {
+          "name": "platform_token",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "fee_bp",
+          "type": "u16"
+        }
+      ]
+    },
+    {
       "name": "set_paused",
       "discriminator": [
         91,
@@ -309,6 +364,19 @@
         221,
         132
       ]
+    },
+    {
+      "name": "SplitPaid",
+      "discriminator": [
+        223,
+        17,
+        5,
+        250,
+        228,
+        37,
+        72,
+        80
+      ]
     }
   ],
   "errors": [
@@ -361,6 +429,16 @@
       "code": 6009,
       "name": "Overflow",
       "msg": "overflow"
+    },
+    {
+      "code": 6010,
+      "name": "BadAmount",
+      "msg": "amount must be > 0"
+    },
+    {
+      "code": 6011,
+      "name": "BadFeeBp",
+      "msg": "fee_bp must be <= 10000"
     }
   ],
   "types": [
@@ -438,6 +516,30 @@
             "type": {
               "vec": "pubkey"
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SplitPaid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "payer",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant",
+            "type": "pubkey"
+          },
+          {
+            "name": "merchant_amount",
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
           }
         ]
       }
