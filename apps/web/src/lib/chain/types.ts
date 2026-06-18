@@ -31,16 +31,16 @@ export interface OneTimePayArgs {
 }
 
 export interface ApproveArgs {
-  /** Token contract/SAC (Stellar) or mint (Solana). */
-  tokenAddress: string;
-  owner: string;
-  /** The subscription contract (Stellar) / mandate PDA spender (Solana). */
-  spender: string;
-  /** Base-unit amount (i128 stroops on Stellar; u64 base units on Solana). */
-  amount: string;
-  /** Stellar: expiration ledger. Solana: ignored (delegate has no ledger ttl). */
-  expirationLedger?: number;
-  rpcUrl?: string;
+  /** Buyer/owner wallet granting the recurring authorization. */
+  buyerAddress: string;
+  /** Human USDC cap the recurring debit may draw up to (e.g. "12"). The adapter
+   *  converts to the chain's base units (7-dp stroops on Stellar, 6-dp on Solana). */
+  capUsdc: string;
+  /** How long the authorization lasts, in seconds. Stellar maps it to ledgers;
+   *  Solana ignores it (an SPL delegate has no ledger ttl). Default ~9 months.
+   *  The recurring SPENDER (Stellar subscription contract vs Solana mandate PDA)
+   *  is owned by each adapter — not passed here, since it differs by chain. */
+  durationSecs?: number;
 }
 
 export interface PayResult {

@@ -4,7 +4,7 @@ import { useAuth, supabase } from "../lib/auth.tsx";
 import { authFetch } from "../lib/apiAuth.ts";
 import { StellarAddressInput } from "../components/StellarAddressInput.tsx";
 import { LiveProof } from "../components/LiveProof.tsx";
-import { isValidStellarAddress } from "../lib/stellar.ts";
+import { isValidAddress } from "../lib/chain/validate.ts";
 
 const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 
@@ -33,7 +33,7 @@ export default function Dashboard() {
   const [stellarAddress, setStellarAddress] = useState("");
   const nav = useNavigate();
   const onboardNetwork = "TESTNET" as const;
-  const addrFormatInvalid = stellarAddress.trim() !== "" && !isValidStellarAddress(stellarAddress);
+  const addrFormatInvalid = stellarAddress.trim() !== "" && !isValidAddress(stellarAddress);
 
   useEffect(() => {
     if (!session) return;

@@ -117,16 +117,16 @@ export const solanaAdapter: ChainAdapter = {
 
   async approveRecurring(a: ApproveArgs): Promise<PayResult> {
     const conn = connection();
-    const mint = new PublicKey(a.tokenAddress);
-    const owner = new PublicKey(a.owner);
+    const mint = usdcMint();
+    const owner = new PublicKey(a.buyerAddress);
     const ownerAta = getAssociatedTokenAddressSync(mint, owner);
 
     // The single signature that delegates bounded spend: approve the mandate PDA
-    // (derived from owner+mint, NOT the passed Stellar-contract spender) as the
-    // SPL delegate up to `amount`. Caps/allowlist are set separately via
-    // SlippayMandate.initMandate at subscription setup.
+    // (derived from owner+mint) as the SPL delegate up to the cap. durationSecs is
+    // ignored — an SPL delegate has no ledger ttl. Caps/allowlist are set
+    // separately via SlippayMandate.initMandate at subscription setup.
     const spenderPda = mandatePda(owner, mint);
-    const amount = BigInt(a.amount);
+    const amount = toBaseUnits(a.capUsdc); // 6-dp base units
 
     const ix = createApproveInstruction(ownerAta, spenderPda, owner, amount);
     const hash = await signSendConfirm(conn, [ix], owner);
