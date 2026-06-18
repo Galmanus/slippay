@@ -23,7 +23,7 @@ import type {
   ChainAdapter, AddressCheck, OneTimePayArgs, ApproveArgs, PayResult,
 } from "../types.ts";
 import { usdcMint, rpcUrl, toBaseUnits } from "./usdc.ts";
-import { mandatePda, buildPaySplitIx } from "./mandate.ts";
+import { mandatePda, buildPaySplitIx, orderIdFromHex } from "./mandate.ts";
 import { boundSolanaWallet } from "./wallet.ts";
 
 export { bindSolanaWallet, type SolanaWallet } from "./wallet.ts";
@@ -76,15 +76,15 @@ export const solanaAdapter: ChainAdapter = {
     // ONE instruction (pay_split) — the program splits merchant vs fee on-chain.
     // Fits a single-CPI smart wallet (LazorKit). Merchant/platform ATAs must
     // pre-exist (guarded at onboarding via checkReceiveAddress).
+    // order_id binds the payment to the order on-chain (emitted in SplitPaid) —
+    // the Solana analogue of the Stellar Memo.hash, in the same single CPI.
     const ix = await buildPaySplitIx(connection(), {
       payer: buyer, mint, payerToken: buyerAta,
       merchantToken: merchantAta, platformToken: platformAta,
       amount: new BN(toBaseUnits(a.usdcAmount).toString()),
       feeBp: a.platformFeeBp,
+      orderId: orderIdFromHex(a.memoHex),
     });
-    // TODO: attach order id (a.memoHex) via the SPL Memo program for on-chain
-    // order binding (Stellar Memo.hash parity). Backend currently binds by
-    // buyer+recipient+amount.
 
     const hash = await wallet.execute([ix]);
     return { hash };

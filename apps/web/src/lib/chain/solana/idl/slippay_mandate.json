@@ -214,6 +214,15 @@
         {
           "name": "fee_bp",
           "type": "u16"
+        },
+        {
+          "name": "order_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
         }
       ]
     },
@@ -540,6 +549,19 @@
           {
             "name": "fee",
             "type": "u64"
+          },
+          {
+            "name": "order_id",
+            "docs": [
+              "32-byte order id — binds the on-chain payment to the off-chain order",
+              "(the Solana analogue of the Stellar Memo.hash). Backends reconcile on this."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
           }
         ]
       }
