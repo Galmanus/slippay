@@ -19,20 +19,17 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
 import { PayButton } from "../components/PayButton.tsx";
-import { Asset, Networks, rpc as SorobanRpc } from "@stellar/stellar-sdk";
-import { approveAllowance, requestOnchainCharge, signAndSubmitContractCharge } from "../lib/soroban.ts";
+// authorizeRecurring goes through the chain adapter (Stellar today, Solana when
+// VITE_CHAIN=solana). pay() stays Stellar-only: it settles a Soroban contract
+// charge whose unsigned XDR is built by the API — there is no Solana backend for
+// that path yet, so abstracting it would be theater.
+import { requestOnchainCharge, signAndSubmitContractCharge } from "../lib/soroban.ts";
+import { getChainAdapter } from "../lib/chain/index.ts";
 
 const IS_PUBLIC = (import.meta.env.VITE_STELLAR_NETWORK ?? "TESTNET").toUpperCase() === "PUBLIC";
 const EXPLORER_BASE = IS_PUBLIC
   ? "https://stellar.expert/explorer/public/tx"
   : "https://stellar.expert/explorer/testnet/tx";
-const RPC_URL = IS_PUBLIC ? "https://soroban-mainnet.stellar.org" : "https://soroban-testnet.stellar.org";
-const USDC_ISSUER = IS_PUBLIC
-  ? "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
-  : "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
-// Subscription contract (spender for the allowance). Mainnet = CBJMQ6ZY.
-const SUB_CONTRACT = (import.meta.env.VITE_SUB_CONTRACT as string | undefined)
-  ?? "CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN";
 
 type State = "idle" | "building" | "signing" | "submitting" | "done" | "error";
 
@@ -54,16 +51,10 @@ export default function Sub() {
     setError(null);
     try {
       setState("signing");
-      const sac = new Asset("USDC", USDC_ISSUER).contractId(IS_PUBLIC ? Networks.PUBLIC : Networks.TESTNET);
-      const server = new SorobanRpc.Server(RPC_URL);
-      const { sequence } = await server.getLatestLedger();
-      const h = await approveAllowance({
-        sacAddress: sac,
-        owner: wallet,
-        spender: SUB_CONTRACT,
-        amount: "120000000",                  // cap: 12 USDC (e.g. 12 × 1.0 monthly)
-        expirationLedger: sequence + 5_000_000, // ~9 months of ledgers
-        rpcUrl: RPC_URL,
+      const adapter = await getChainAdapter();
+      const { hash: h } = await adapter.approveRecurring({
+        buyerAddress: wallet,
+        capUsdc: "12",   // cap: 12 USDC (e.g. 12 × 1.0 monthly); ~9 months default
       });
       setHash(h);
       setState("done");

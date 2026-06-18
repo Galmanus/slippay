@@ -13,7 +13,8 @@
 // recipient-redirection hole the settlement guard exists to prevent).
 
 import { useEffect, useState } from "react";
-import { checkReceiveAddress, type AddressCheck } from "../lib/stellar.ts";
+import { getChainAdapter, type AddressCheck } from "../lib/chain/index.ts";
+import { chainId } from "../lib/chain/validate.ts";
 
 export function StellarAddressInput({
   value,
@@ -36,11 +37,16 @@ export function StellarAddressInput({
     if (a === "") { setCheck(null); setChecking(false); return; }
     setChecking(true);
     let cancelled = false;
-    const t = setTimeout(() => {
-      checkReceiveAddress(network, a)
-        .then(c => { if (!cancelled) setCheck(c); })
-        .catch(() => { if (!cancelled) setCheck({ validFormat: true, accountExists: null, hasUsdcTrustline: null }); })
-        .finally(() => { if (!cancelled) setChecking(false); });
+    const t = setTimeout(async () => {
+      try {
+        const adapter = await getChainAdapter();
+        const c = await adapter.checkReceiveAddress(a);
+        if (!cancelled) setCheck(c);
+      } catch {
+        if (!cancelled) setCheck({ validFormat: true, accountExists: null, hasUsdcTrustline: null });
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
     }, 500);
     return () => { cancelled = true; clearTimeout(t); };
   }, [value, network]);
@@ -74,7 +80,9 @@ function Status({ address, network, checking, check }: {
   if (checking) {
     text = `Checking on ${network.toLowerCase()}…`;
   } else if (check && !check.validFormat) {
-    dot = RED; color = RED; text = "Not a valid Stellar address — must start with G and be 56 characters.";
+    dot = RED; color = RED; text = chainId() === "solana"
+      ? "Not a valid Solana address."
+      : "Not a valid Stellar address — must start with G and be 56 characters.";
   } else if (check && check.accountExists === false) {
     dot = AMBER; color = AMBER; text = `Account not found on ${network.toLowerCase()}. Fund it before it can receive payments.`;
   } else if (check && check.accountExists === null) {

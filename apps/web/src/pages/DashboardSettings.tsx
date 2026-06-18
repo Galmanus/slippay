@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { authFetch } from "../lib/apiAuth.ts";
-import { checkReceiveAddress, isValidStellarAddress, type AddressCheck } from "../lib/stellar.ts";
+import { isValidAddress } from "../lib/chain/validate.ts";
+import { getChainAdapter, type AddressCheck } from "../lib/chain/index.ts";
 
 interface MerchantFull {
   id: string;
@@ -26,7 +27,7 @@ export default function DashboardSettings() {
   const [addrChecking, setAddrChecking] = useState(false);
 
   const network = (merchant?.network === "PUBLIC" ? "PUBLIC" : "TESTNET") as "TESTNET" | "PUBLIC";
-  const addrFormatInvalid = stellarAddress.trim() !== "" && !isValidStellarAddress(stellarAddress);
+  const addrFormatInvalid = stellarAddress.trim() !== "" && !isValidAddress(stellarAddress);
 
   // Live-verify the receive address against Horizon (debounced). Guards the #1
   // onboarding silent-failure: a bad/trustline-less address saves clean, then
@@ -34,18 +35,23 @@ export default function DashboardSettings() {
   useEffect(() => {
     const a = stellarAddress.trim();
     if (a === "") { setAddrCheck(null); setAddrChecking(false); return; }
-    if (!isValidStellarAddress(a)) {
+    if (!isValidAddress(a)) {
       setAddrCheck({ validFormat: false, accountExists: null, hasUsdcTrustline: null });
       setAddrChecking(false);
       return;
     }
     setAddrChecking(true);
     let cancelled = false;
-    const t = setTimeout(() => {
-      checkReceiveAddress(network, a)
-        .then(c => { if (!cancelled) setAddrCheck(c); })
-        .catch(() => { if (!cancelled) setAddrCheck({ validFormat: true, accountExists: null, hasUsdcTrustline: null }); })
-        .finally(() => { if (!cancelled) setAddrChecking(false); });
+    const t = setTimeout(async () => {
+      try {
+        const adapter = await getChainAdapter();
+        const c = await adapter.checkReceiveAddress(a);
+        if (!cancelled) setAddrCheck(c);
+      } catch {
+        if (!cancelled) setAddrCheck({ validFormat: true, accountExists: null, hasUsdcTrustline: null });
+      } finally {
+        if (!cancelled) setAddrChecking(false);
+      }
     }, 500);
     return () => { cancelled = true; clearTimeout(t); };
   }, [stellarAddress, network]);
