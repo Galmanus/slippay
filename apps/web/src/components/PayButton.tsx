@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { connectWallet } from "../lib/wallet.ts";
+import { getChainAdapter } from "../lib/chain/index.ts";
 
 export function PayButton({ onConnected }: { onConnected: (addr: string) => void }) {
   const [loading, setLoading] = useState(false);
@@ -12,7 +12,7 @@ export function PayButton({ onConnected }: { onConnected: (addr: string) => void
           setLoading(true);
           setError(null);
           try {
-            const addr = await connectWallet();
+            const addr = await (await getChainAdapter()).connectWallet();
             onConnected(addr);
           } catch (e: unknown) {
             setError(e instanceof Error ? e.message : "wallet error");
