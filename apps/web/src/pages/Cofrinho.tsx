@@ -14,7 +14,10 @@
 
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import NumberFlow from "@number-flow/react";
 import { Waitlist } from "../components/Waitlist.tsx";
+
+const brlFmt = { style: "currency" as const, currency: "BRL", maximumFractionDigits: 0 };
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -278,7 +281,7 @@ export default function Cofrinho() {
         <div className="w-full max-w-[440px] mx-auto md:justify-self-end">
           <div className="rounded-[1.75rem] border border-[#0a0a0a]/12 bg-[#f5f3ee] p-7 md:p-9">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">{t.calc.after}</div>
-            <div className="mt-3 text-5xl md:text-6xl font-black tracking-[-0.03em] tabular-nums transition-all" style={display}>{fmtBRL(Math.round(sim.grown))}</div>
+            <div className="mt-3 text-5xl md:text-6xl font-black tracking-[-0.03em] tabular-nums" style={display}><NumberFlow value={Math.round(sim.grown)} format={brlFmt} locales="pt-BR" /></div>
             <div className="mt-6 flex flex-col gap-3">
               <div className="flex items-center justify-between border-t border-[#0a0a0a]/10 pt-3">
                 <span className="text-[13px] text-[#0a0a0a]/60">{t.calc.protected}</span>
@@ -286,7 +289,7 @@ export default function Cofrinho() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[13px] text-[#0a0a0a]/60">{t.calc.yielded}</span>
-                <span className="font-mono text-[13px] font-semibold" style={{ color: earning ? "#0a0a0a" : GRAY }}>+ {fmtBRL(Math.round(sim.yielded))}</span>
+                <span className="font-mono text-[13px] font-semibold tabular-nums" style={{ color: earning ? "#0a0a0a" : GRAY }}>+ <NumberFlow value={Math.round(sim.yielded)} format={brlFmt} locales="pt-BR" /></span>
               </div>
             </div>
             <div className="mt-5 h-2 rounded-full bg-[#0a0a0a]/10 overflow-hidden">
