@@ -11,7 +11,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import idlJson from "./idl/slippay_mandate.json";
 
 export const MANDATE_PROGRAM_ID = new PublicKey(
-  "VhvqPBz1qJ1sKEY5tAzsWcyNkFP5GLRjZa8j4eGA8n8",
+  "CmDKY8MxCWkCN9etSeKApHKnGuTKK6vn7qzhTkAtM9Bv",
 );
 
 const SEED = Buffer.from("mandate");
