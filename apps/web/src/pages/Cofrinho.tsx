@@ -14,6 +14,7 @@
 
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { Waitlist } from "../components/Waitlist.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -227,11 +228,12 @@ export default function Cofrinho() {
       {/* HERO — dollar that earns */}
       <section className="bg-[#f5f3ee] text-[#0a0a0a]">
         <div className="max-w-[920px] mx-auto px-6 pt-32 md:pt-40 pb-16 md:pb-20 flex flex-col items-center text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/45">{t.hero.eyebrow}</span>
+          <span className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 border border-[#0a0a0a]/15 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55"><span className="w-1.5 h-1.5 rounded-full" style={{ background: ACCENT }} />{lang === "pt" ? "em breve · entre na lista" : "coming soon · join the list"}</span>
+          <span className="mt-4 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/45">{t.hero.eyebrow}</span>
           <img src="/cofrinho.svg" alt="slippay" className="mt-6 w-44 sm:w-52 md:w-[300px] h-auto select-none" draggable={false} />
           <h1 className="mt-8 md:mt-10 font-black uppercase tracking-[-0.03em] leading-[0.9] text-[clamp(2rem,7.5vw,4.75rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
           <p className="mt-6 text-base md:text-xl text-[#0a0a0a]/65 max-w-[36ch] md:max-w-[44ch] leading-relaxed">{t.hero.sub}</p>
-          <Link to="/account" className={btn + " mt-9"}>{t.hero.cta}</Link>
+          <a href="#lista" className={btn + " mt-9"}>{t.hero.cta}</a>
           <span className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
         </div>
       </section>
@@ -343,13 +345,13 @@ export default function Cofrinho() {
         </div>
       </div></section>
 
-      {/* CTA */}
-      <section className={sec}><div className="max-w-[1200px] mx-auto px-6 md:px-12 py-28 md:py-40">
+      {/* CTA — waitlist */}
+      <section id="lista" className={sec}><div className="max-w-[1200px] mx-auto px-6 md:px-12 py-28 md:py-40">
         <h2 className="font-black uppercase tracking-[-0.055em] leading-[0.82] text-[clamp(3rem,13vw,10rem)] text-center md:text-left" style={display}>{t.cta.h}</h2>
         <div className="mt-8 flex flex-col gap-1 text-xl md:text-2xl text-[#0a0a0a]/65 text-center md:text-left">{t.cta.lines.map((l) => <span key={l}>{l}</span>)}</div>
-        <div className="mt-12 flex flex-wrap items-center gap-6 justify-center md:justify-start">
-          <Link to="/account" className={btn}>{t.cta.btn}</Link>
-          <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.cta.note}</span>
+        <div className="mt-12 flex flex-col items-center md:items-start gap-5">
+          <Waitlist source="cofrinho" lang={lang} />
+          <Link to="/account" className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/45 border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-0.5">{lang === "pt" ? "ver o app ao vivo →" : "see the live app →"}</Link>
         </div>
         <div className="mt-20 font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/30">{t.footer}</div>
       </div></section>
