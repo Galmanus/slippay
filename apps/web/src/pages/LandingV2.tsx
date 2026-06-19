@@ -18,7 +18,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   en: {
-    nav: { security: "Security", pay: "Pay", receive: "Receive", login: "Login", tryFree: "Get started", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
+    nav: { security: "Security", pay: "Pay", receive: "Receive", cofrinho: "Cofrinho", login: "Login", tryFree: "Get started", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
     hero: { eyebrow: "live · real money", h1: "Your dollars, in Pix.", mark: "dollars", sub: "Buy dollars, send to a friend, pay a bill, or let it earn, your call. All with one touch, in under 10 seconds. And best of all, nobody moves it without your signature.", cta: "Get started", note: "10 seconds · biometrics · no card", liveTag: "live · mainnet" },
     yours: { n: "001", stamp: "yours", h: "Yours. For real.", items: [
       ["Only your fingerprint opens it", "Your face or fingerprint approves every move. No password, no recovery phrase to memorize. No one else."],
@@ -43,7 +43,7 @@ const COPY = {
       supportLabel: "support the team", supportText: "Built solo in Brazil. If this earned your respect, send a few dollars, one touch.", supportBtn: "Support with $10 ↗", footer: "slippay · your money, yours · live, real money" },
   },
   pt: {
-    nav: { security: "Segurança", pay: "Pagar", receive: "Receber", login: "Entrar", tryFree: "Começar", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
+    nav: { security: "Segurança", pay: "Pagar", receive: "Receber", cofrinho: "Cofrinho", login: "Entrar", tryFree: "Começar", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
     hero: { eyebrow: "ao vivo · dinheiro de verdade", h1: "Seus dólares, no Pix.", mark: "dólares", sub: "Compre dólar, envie para um amigo, pague uma conta ou deixe rendendo, você escolhe. Tudo com um toque, em menos de 10 segundos. E o melhor, ninguém move sem você assinar.", cta: "Começar", note: "10 segundos · biometria · sem cartão", liveTag: "ao vivo · mainnet" },
     yours: { n: "001", stamp: "é seu", h: "É seu. De verdade.", items: [
       ["Só a sua digital abre", "O seu rosto ou digital aprova cada movimento. Sem senha e sem código pra decorar. Mais ninguém."],
@@ -96,7 +96,7 @@ export default function LandingV2() {
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
 
-  const NAV: [string, string][] = [[t.nav.security, "/security"], [t.nav.pay, "/pay"], [t.nav.receive, "/cobrar"], [t.nav.login, "/account"]];
+  const NAV: [string, string][] = [[t.nav.cofrinho, "/cofrinho"], [t.nav.receive, "/receber"], [t.nav.pay, "/pay"], [t.nav.login, "/account"]];
   const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"], [t.nav.builders, "/builders"]];
 
   useEffect(() => {
@@ -160,15 +160,18 @@ export default function LandingV2() {
           <img src="/cofrinho.svg" alt="slippay" className="w-52 sm:w-60 md:w-[320px] h-auto select-none" draggable={false} />
           <h1 className="mt-8 md:mt-10 font-black uppercase tracking-[-0.03em] leading-[0.9] text-[clamp(1.85rem,7vw,4.5rem)] max-w-[12ch]" style={display}>{t.hero.h1}</h1>
           <p className="mt-6 text-base md:text-xl text-[#0a0a0a]/65 max-w-[34ch] md:max-w-[42ch] leading-relaxed">{t.hero.sub}</p>
-          <Link
-            to="/account"
-            className={btn + " mt-9"}
-            onMouseMove={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.22}px, ${(e.clientY - r.top - r.height / 2) * 0.4}px)`;
-            }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
-          >{t.hero.cta}</Link>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+            <Link
+              to="/cofrinho"
+              className={btn}
+              onMouseMove={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.22}px, ${(e.clientY - r.top - r.height / 2) * 0.4}px)`;
+              }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+            >{lang === "pt" ? "Quero meu cofrinho" : "Get my cofrinho"}</Link>
+            <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
+          </div>
           <span className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
         </div>
         <div className="max-w-[420px] mx-auto px-6 pb-20 md:pb-28">
