@@ -35,6 +35,7 @@ import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
 import Cofrinho from "./pages/Cofrinho.tsx";
 import Receber from "./pages/Receber.tsx";
+import Empresas from "./pages/Empresas.tsx";
 
 export default function App() {
   return (
@@ -42,6 +43,8 @@ export default function App() {
       <Route path="/" element={<LandingV2 />} />
       <Route path="/cofrinho" element={<Cofrinho />} />
       <Route path="/receber" element={<Receber />} />
+      <Route path="/empresas" element={<Empresas />} />
+      <Route path="/b2b" element={<Empresas />} />
       <Route path="/v1" element={<AgentHome />} />
       <Route path="/builders" element={<Builders />} />
       <Route path="/v2" element={<LandingV2 />} />
