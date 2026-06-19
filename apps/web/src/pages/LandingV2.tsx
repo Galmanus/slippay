@@ -154,22 +154,23 @@ export default function LandingV2() {
         )}
       </header>
 
-      {/* HERO — cofrinho: centered piggy + headline + live card below (bone) */}
+      {/* HERO — austere editorial (root hero is shared with B2B; the cofrinho
+          character lives on /cofrinho + /receber, not here — brand verdict). */}
       <section className="bg-[#f5f3ee] text-[#0a0a0a]">
-        <div className="max-w-[900px] mx-auto px-6 pt-32 md:pt-40 pb-14 md:pb-16 flex flex-col items-center text-center">
-          <img src="/cofrinho.svg" alt="slippay" className="w-52 sm:w-60 md:w-[320px] h-auto select-none" draggable={false} />
-          <h1 className="mt-8 md:mt-10 font-black uppercase tracking-[-0.03em] leading-[0.9] text-[clamp(1.85rem,7vw,4.5rem)] max-w-[12ch]" style={display}>{t.hero.h1}</h1>
+        <div className="max-w-[1000px] mx-auto px-6 pt-36 md:pt-48 pb-14 md:pb-16 flex flex-col items-center text-center">
+          <span className="font-mono text-[10px] uppercase tracking-[0.26em] text-[#0a0a0a]/45">{t.hero.eyebrow}</span>
+          <h1 className="mt-7 font-black uppercase tracking-[-0.035em] leading-[0.88] text-[clamp(2.5rem,9.5vw,6.5rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
           <p className="mt-6 text-base md:text-xl text-[#0a0a0a]/65 max-w-[34ch] md:max-w-[42ch] leading-relaxed">{t.hero.sub}</p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
             <Link
-              to="/cofrinho"
+              to="/account"
               className={btn}
               onMouseMove={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
                 e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.22}px, ${(e.clientY - r.top - r.height / 2) * 0.4}px)`;
               }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
-            >{lang === "pt" ? "Quero meu cofrinho" : "Get my cofrinho"}</Link>
+            >{t.hero.cta}</Link>
             <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
           </div>
           <span className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
