@@ -34,12 +34,14 @@ import Manifesto from "./pages/Manifesto.tsx";
 import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
 import Cofrinho from "./pages/Cofrinho.tsx";
+import Receber from "./pages/Receber.tsx";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingV2 />} />
       <Route path="/cofrinho" element={<Cofrinho />} />
+      <Route path="/receber" element={<Receber />} />
       <Route path="/v1" element={<AgentHome />} />
       <Route path="/builders" element={<Builders />} />
       <Route path="/v2" element={<LandingV2 />} />
