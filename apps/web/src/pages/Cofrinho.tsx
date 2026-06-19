@@ -245,11 +245,11 @@ export default function Cofrinho() {
         <div className="mt-14 flex flex-col gap-7 max-w-[760px]">
           <div>
             <div className="flex items-baseline justify-between mb-2"><span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">{t.bar.poupLabel}</span></div>
-            <div className="h-12 md:h-14 rounded-r-xl bg-[#0a0a0a]/12" style={{ width: `${poupW}%` }} />
+            <div className="bar-fill h-12 md:h-14 rounded-r-xl bg-[#0a0a0a]/12" style={{ width: `${poupW}%` }} />
           </div>
           <div>
             <div className="flex items-baseline justify-between mb-2"><span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]">{t.bar.cofreLabel}</span></div>
-            <div className="h-12 md:h-14 rounded-r-xl" style={{ width: `${cofreW}%`, background: ACCENT }} />
+            <div className="bar-fill h-12 md:h-14 rounded-r-xl" style={{ width: `${cofreW}%`, background: ACCENT, transitionDelay: "160ms" }} />
           </div>
         </div>
         <p className="mt-8 text-[14px] leading-relaxed text-[#0a0a0a]/55 max-w-[60ch]">{t.bar.foot}</p>
