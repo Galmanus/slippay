@@ -279,7 +279,14 @@ export default function Cofrinho() {
         </div>
 
         <div className="w-full max-w-[440px] mx-auto md:justify-self-end">
-          <div className="rounded-[1.75rem] border border-[#0a0a0a]/12 bg-[#f5f3ee] p-7 md:p-9">
+          <div
+            className="spotlight rounded-[1.75rem] border border-[#0a0a0a]/12 bg-[#f5f3ee] p-7 md:p-9"
+            onMouseMove={(e) => {
+              const r = e.currentTarget.getBoundingClientRect();
+              e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+              e.currentTarget.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
+            }}
+          >
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">{t.calc.after}</div>
             <div className="mt-3 text-5xl md:text-6xl font-black tracking-[-0.03em] tabular-nums" style={display}><NumberFlow value={Math.round(sim.grown)} format={brlFmt} locales="pt-BR" /></div>
             <div className="mt-6 flex flex-col gap-3">

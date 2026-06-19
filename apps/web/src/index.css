@@ -90,6 +90,16 @@ html { scroll-behavior: smooth; }
 .js-reveal .bar-fill { transform: scaleX(0); }
 .js-reveal [data-reveal].reveal-in .bar-fill { transform: scaleX(1); }
 
+/* Cursor spotlight — a whisper of gold that follows the pointer on a card.
+   Low alpha on BONE: premium, never gaudy. Pure CSS vars, zero JS lib. */
+.spotlight { position: relative; }
+.spotlight::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(253, 218, 36, 0.07), transparent 45%);
+  opacity: 0; transition: opacity 300ms ease;
+}
+.spotlight:hover::before { opacity: 1; }
+
 /* Global reduced-motion net — belt and suspenders over the per-element rules. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
