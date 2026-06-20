@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AccountDemo } from "../components/AccountDemo.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
-import { FloatingCoins } from "../components/FloatingCoins.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -156,8 +155,6 @@ export default function LandingV2() {
       {/* HERO — asymmetric editorial (Yeezy) + Stripe motors: live gold mesh on the
           right, text left-aligned, refined type, on-chain proof. Static headline. */}
       <section className="relative bg-[#f5f3ee] text-[#0a0a0a] overflow-hidden">
-        {/* floating USDC coins — right side, behind the left-aligned text */}
-        <FloatingCoins className="pointer-events-none absolute inset-y-0 right-0 w-[55%] hidden md:block [mask-image:linear-gradient(to_right,transparent,#000_30%)]" />
         <div className="relative max-w-[1240px] mx-auto px-6 md:px-12 pt-36 md:pt-44 pb-16 md:pb-24">
           <div className="max-w-[760px]">
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
