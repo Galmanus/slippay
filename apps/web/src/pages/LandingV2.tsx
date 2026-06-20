@@ -36,8 +36,9 @@ const COPY = {
       ["I have a large amount. Can I use it?", "Yes. The money stays in your hands, never ours. For large deposits and withdrawals, conversion routes through a Banco Central–licensed partner, with identity verification and FX compliance."],
       ["Can it really not be frozen?", "Right. Slippay never holds your money, so there's nothing for us, or a bank, to freeze. Only your biometrics move it."],
     ] as [string, string][] },
+    mcp: { n: "007", stamp: "for agents", h: "Your AI agent can pay. By itself.", body: "Slippay ships as an MCP server: any AI agent gets the payment rail as tools, pay, set a recurring subscription, and re-verify a spending-bound certificate offline. Non-custodial and backend-free: the agent holds its own wallet key, signs straight to Stellar. Slippay never holds funds, never signs.", cmd: "npx -y @slippay/mcp", cta: "Read the docs →", discover: "live at /.well-known/mcp" },
     cta: { n: "008", stamp: "start", h: "Start now.", lines: ["From Pix to dollars in seconds.", "Yours, your way."], btn: "Get started", note: "No card · 2 minutes · biometrics",
-      supportLabel: "support the team", supportText: "Built solo in Brazil. If this earned your respect, send a few dollars, one touch.", supportBtn: "Support with $10 ↗", footer: "slippay · your money, yours · live, real money" },
+      footer: "slippay · your money, yours · live, real money" },
   },
   pt: {
     nav: { security: "Segurança", pay: "Pagar", receive: "Receber", cofrinho: "Cofrinho", login: "Entrar", tryFree: "Começar", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
@@ -61,8 +62,9 @@ const COPY = {
       ["Tenho um valor alto. Posso usar?", "Pode. O dinheiro fica na sua mão, nunca na nossa. Para entradas e saídas grandes, a conversão passa por um parceiro licenciado pelo Banco Central, com verificação de identidade e câmbio em conformidade."],
       ["Não congela mesmo?", "Isso. A Slippay nunca segura o seu dinheiro, então não há o que nós, ou um banco, congelar. Só a sua biometria move."],
     ] as [string, string][] },
+    mcp: { n: "007", stamp: "para agentes", h: "Seu agente de IA paga. Sozinho.", body: "O Slippay vem como um servidor MCP: qualquer agente de IA ganha o rail de pagamento como ferramentas, pagar, criar uma assinatura recorrente e re-verificar um certificado de limite de gasto offline. Non-custodial e sem backend: o agente segura a própria chave da carteira e assina direto na Stellar. O Slippay nunca segura fundo, nunca assina.", cmd: "npx -y @slippay/mcp", cta: "Ler a documentação →", discover: "no ar em /.well-known/mcp" },
     cta: { n: "008", stamp: "comece", h: "Comece agora.", lines: ["De Pix a dólar em segundos.", "Seu, do seu jeito."], btn: "Começar", note: "Sem cartão · 2 minutos · biometria",
-      supportLabel: "apoie o time", supportText: "Feito sozinho no Brasil. Se ganhou o seu respeito, manda uns dólares, um toque.", supportBtn: "Apoiar com $10 ↗", footer: "slippay · seu dinheiro, seu · no ar, dinheiro de verdade" },
+      footer: "slippay · seu dinheiro, seu · no ar, dinheiro de verdade" },
   },
 } as const;
 
@@ -128,7 +130,7 @@ export default function LandingV2() {
         <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline transition-opacity hover:opacity-70">{label}</Link>)}
-          <a href="/zk/index.html" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
+          <a href="/zk" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
           <Link to="/builders" className="hidden md:inline transition-opacity hover:opacity-70">Builders</Link>
           <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hidden md:inline transition-opacity hover:opacity-70">Docs</a>
           <span className="hidden md:inline"><LangToggle /></span>
@@ -142,7 +144,7 @@ export default function LandingV2() {
         {menuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
             {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
-            <a href="/zk/index.html" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
+            <a href="/zk" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
             <Link to="/builders" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Builders</Link>
             <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Docs</a>
             <div className="py-3 border-b border-[#0a0a0a]/8"><LangToggle /></div>
@@ -227,7 +229,7 @@ export default function LandingV2() {
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,5rem)] max-w-[18ch]`} style={display}>{t.zk.h}</h2>
         <p className="mt-8 text-lg md:text-2xl text-[#0a0a0a]/70 leading-relaxed max-w-[54ch] mx-auto md:mx-0">{t.zk.body}</p>
         <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <a href="/zk/index.html" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
+          <a href="/zk" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
           <a href={xurl("tx", ZK_MAINNET_TX)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.zk.link}</a>
         </div>
       </div></section>
@@ -256,7 +258,23 @@ export default function LandingV2() {
         </div>
       </div></section>
 
-      {/* 006 · CTA */}
+      {/* 007 · MCP — the agent rail, last section before the CTA */}
+      <section className="px-4 md:px-6 py-2"><div data-reveal className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-24 md:py-36">
+        <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#f1eee7]/40">
+          <span className="text-[#FDDA24]">{t.mcp.n}</span><span className="h-px w-8 bg-[#f1eee7]/30" /><span>{t.mcp.stamp}</span>
+        </div>
+        <h2 className="mt-10 font-black uppercase tracking-[-0.04em] leading-[0.88] text-[clamp(2.5rem,8vw,5.5rem)] max-w-[15ch]" style={display}>{t.mcp.h}</h2>
+        <p className="mt-8 text-lg md:text-2xl text-[#f1eee7]/70 leading-relaxed max-w-[56ch]">{t.mcp.body}</p>
+        <div className="mt-10 inline-flex items-center gap-3 rounded-xl bg-[#f1eee7]/[0.06] border border-[#f1eee7]/15 px-5 py-3.5 font-mono text-[13px] md:text-[15px]">
+          <span className="text-[#FDDA24]">$</span><span className="text-[#f1eee7]/90 select-all">{t.mcp.cmd}</span>
+        </div>
+        <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
+          <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold">{t.mcp.cta}</a>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/40 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" />{t.mcp.discover}</span>
+        </div>
+      </div></section>
+
+      {/* 008 · CTA */}
       <section className={sec}><div className="max-w-[1200px] mx-auto px-6 md:px-12 py-28 md:py-44">
         <Stamp n={t.cta.n} label={t.cta.stamp} />
         <h2 className="mt-10 font-black uppercase tracking-[-0.055em] leading-[0.8] text-[clamp(3.5rem,16vw,12rem)] text-center md:text-left" style={display}>{t.cta.h}</h2>

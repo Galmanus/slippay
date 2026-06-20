@@ -72,7 +72,7 @@
 <div class="hero"><div class="wrap reveal">
   <div class="eyebrow">confidential identity + bounded autonomy</div>
   <h1 style="margin-top:22px">One proof. <mark>Two truths.</mark> Zero data.</h1>
-  <p>A verified human lets an AI agent pay their bills. Two zero-knowledge proofs, verified on <b>Stellar mainnet</b>: the person is real, of age and non-sanctioned — and every payment obeyed the mandate. Without revealing identity, amounts or recipients. And only the regulator, with the key, opens the total.</p>
+  <p>A verified human lets an AI agent pay their bills. Two zero-knowledge proofs, verified on <b>Stellar mainnet</b>: the person is real, of age and non-sanctioned, and every payment obeyed the mandate. Without revealing identity, amounts or recipients. And only the regulator, with the key, opens the total.</p>
   <div class="meta">
     <div><div class="k">on-chain proofs</div><div class="v">2 <span style="font-size:14px;color:var(--ink-soft)">· KYC + mandate</span></div></div>
     <div><div class="k">data revealed</div><div class="v">0 <span style="font-size:14px;color:var(--ink-soft)">· prove-not-send</span></div></div>
@@ -80,34 +80,34 @@
   </div>
 </div></div>
 
-<!-- STEP 1 — KYC -->
+<!-- STEP 1, KYC -->
 <section><div class="wrap">
   <div class="shead"><span class="num">01</span><h2>Who: the human proves, without showing.</h2></div>
-  <p class="lede">Before a single cent, the person proves eligibility — without handing over their ID. The licensed partner runs KYC and signs the credential; Slippay only sees the cryptographic commitment, never the data.</p>
+  <p class="lede">Before a single cent, the person proves eligibility, without handing over their ID. The licensed partner runs KYC and signs the credential; Slippay only sees the cryptographic commitment, never the data.</p>
   <div class="steps">
     <div class="step"><span class="badge ok">proved</span><div class="ci">registered</div><h3>Valid credential</h3><p>In the partner’s issued-credential tree. Which one? Nobody knows.</p></div>
     <div class="step"><span class="badge priv">private</span><div class="ci">age ≥ 18</div><h3>Of age</h3><p>Proves 18+ without revealing the birth date.</p></div>
-    <div class="step"><span class="badge priv">private</span><div class="ci">sanctions</div><h3>Non-sanctioned</h3><p>Off the sanctions list — without revealing the identifier.</p></div>
+    <div class="step"><span class="badge priv">private</span><div class="ci">sanctions</div><h3>Non-sanctioned</h3><p>Off the sanctions list, without revealing the identifier.</p></div>
   </div>
   <a class="tx" href="https://stellar.expert/explorer/public/tx/83ee1697486a24c3fd389b812f00c5693659cc3837f6fa653c42b62afc1751d6" target="_blank" rel="noreferrer">↗ KYC proof · verify=true on mainnet · tx 83ee1697…</a>
 </div></section>
 
-<!-- STEP 2 — mandate -->
+<!-- STEP 2, mandate -->
 <section><div class="wrap">
   <div class="shead"><span class="num">02</span><h2>What: the agent proves it obeyed.</h2></div>
-  <p class="lede">Now the agent pays on its own — but only within the owner’s rule. A single proof attests that the month’s 8 payments fit the mandate. The rule is public; the payments are not.</p>
+  <p class="lede">Now the agent pays on its own, but only within the owner’s rule. A single proof attests that the month’s 8 payments fit the mandate. The rule is public; the payments are not.</p>
   <div class="steps">
     <div class="step"><span class="badge pub">public</span><div class="ci">per-payment cap</div><h3>R$ 500</h3><p>no payment in the batch exceeded it.</p></div>
     <div class="step"><span class="badge pub">public</span><div class="ci">allowlist</div><h3>authorized recipients</h3><p>every payment went to an approved address.</p></div>
-    <div class="step"><span class="badge priv">private</span><div class="ci">8 amounts + recipients</div><h3>hidden</h3><p>the proof attests they fit the rule — without showing which.</p></div>
+    <div class="step"><span class="badge priv">private</span><div class="ci">8 amounts + recipients</div><h3>hidden</h3><p>the proof attests they fit the rule, without showing which.</p></div>
   </div>
   <a class="tx" href="https://stellar.expert/explorer/public/contract/CBDS2YSLATINQVUDG5Y5HV4KQBEAVFDRPEINVEUTYSX3CZZQKBY5U3FE" target="_blank" rel="noreferrer">↗ mandate verifier · live on mainnet · contract CBDS2YSL…</a>
 </div></section>
 
-<!-- STEP 3 — regulator flip -->
+<!-- STEP 3, regulator flip -->
 <section><div class="wrap">
   <div class="shead"><span class="num">03</span><h2>The regulator’s door.</h2></div>
-  <p class="lede">The public sees only the ciphertext. The regulator — and only them, with the private key — recovers the real total spent that month. Privacy for everyone, legal recourse for who needs it. Not Tornado: there is a door, and only one.</p>
+  <p class="lede">The public sees only the ciphertext. The regulator, and only them, with the private key, recovers the real total spent that month. Privacy for everyone, legal recourse for who needs it. Not Tornado: there is a door, and only one.</p>
   <div class="flip">
     <div class="pane">
       <h4>public / auditor</h4>
@@ -119,7 +119,7 @@
     <div class="pane reg">
       <h4>regulator · with the key</h4>
       <div class="cap">what only they recover</div>
-      <div class="reveal-amt" id="amt">— — —</div>
+      <div class="reveal-amt" id="amt">· · ·</div>
       <div class="row"><span>real total spent</span><span class="mono" id="rstatus">awaiting key</span></div>
       <button class="btn" id="decBtn" onclick="decrypt()">decrypt with the key →</button>
     </div>
