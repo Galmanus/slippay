@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AccountDemo } from "../components/AccountDemo.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
-import { MeshGradient } from "../components/MeshGradient.tsx";
+import { GoldWaves } from "../components/GoldWaves.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -158,8 +158,8 @@ export default function LandingV2() {
       {/* HERO — asymmetric editorial (Yeezy) + Stripe motors: live gold mesh on the
           right, text left-aligned, refined type, on-chain proof. Static headline. */}
       <section className="relative bg-[#f5f3ee] text-[#0a0a0a] overflow-hidden">
-        {/* live silk gold mesh — right two-thirds, feathered into the bone canvas */}
-        <MeshGradient className="pointer-events-none absolute inset-y-0 right-0 w-[78%] md:w-[62%] h-full opacity-90 [mask-image:linear-gradient(to_right,transparent,#000_42%)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_42%)]" />
+        {/* flowing gold line-art — right side, feathered into the bone canvas */}
+        <GoldWaves className="pointer-events-none absolute inset-y-0 right-0 w-[85%] md:w-[68%] h-full [mask-image:linear-gradient(to_right,transparent,#000_38%)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_38%)]" />
         <div className="relative max-w-[1240px] mx-auto px-6 md:px-12 pt-36 md:pt-44 pb-16 md:pb-24">
           <div className="max-w-[760px]">
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
