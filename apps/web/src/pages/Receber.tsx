@@ -1,4 +1,4 @@
-// /receber — receberPix: rotate your Pix key, every incoming Pix auto-becomes USDC
+// /receber — receberPix: link your Pix key, every incoming Pix auto-becomes USDC
 // in YOUR biometric wallet. Receiving IS activation (stolen: Bipa/BitPix → R$4bn).
 // Acquisition funnel + hackathon demo centerpiece. B2B payout section folded in
 // (freelancer/PJ receiving from abroad = the real money, stolen: BlindPay).
@@ -22,19 +22,19 @@ type Lang = "pt" | "en";
 
 const COPY = {
   pt: {
-    nav: { cofrinho: "Cofrinho", pay: "Pagar", login: "Entrar", cta: "Girar minha chave" },
+    nav: { cofrinho: "Cofrinho", pay: "Pagar", login: "Entrar", cta: "Conectar meu Pix" },
     hero: {
       eyebrow: "receberPix · em dólar",
       h1: "Todo Pix que cair vira dólar.",
-      sub: "Gire a sua chave Pix uma vez. A partir daí, cada Pix que você recebe vira dólar digital na sua carteira — automático, na hora, sem você tocar em nada. E o dólar é seu: ninguém congela.",
-      cta: "Girar minha chave",
+      sub: "Conecte a sua chave Pix uma vez. A partir daí, cada Pix que você recebe vira dólar digital na sua carteira — automático, na hora, sem você tocar em nada. E o dólar é seu: ninguém congela.",
+      cta: "Conectar meu Pix",
       note: "biometria · sem cartão · sem seed phrase",
     },
     how: {
       stamp: "como funciona",
       h: "Receber já é ter dólar.",
       steps: [
-        ["Gire a chave", "Aponte a sua chave Pix pro Slippay. Uma vez."],
+        ["Conecte seu Pix", "Aponte a sua chave Pix pro Slippay. Uma vez só."],
         ["O Pix cai", "Quem te paga manda um Pix normal, em real."],
         ["Vira dólar na sua carteira", "Em segundos, virou dólar digital — na sua mão, não na nossa."],
       ] as [string, string][],
@@ -69,23 +69,23 @@ const COPY = {
       contractBtn: "O contrato no ar ↗",
       tag: "ao vivo · mainnet stellar",
     },
-    cta: { h: "Gire a chave.", lines: ["Todo Pix vira dólar.", "Seu, do seu jeito."], btn: "Girar minha chave", note: "2 minutos · biometria" },
+    cta: { h: "Conecte seu Pix.", lines: ["Todo Pix vira dólar.", "Seu, do seu jeito."], btn: "Conectar meu Pix", note: "2 minutos · biometria" },
     footer: "slippay · receberPix em dólar · seu dinheiro, seu",
   },
   en: {
-    nav: { cofrinho: "Cofrinho", pay: "Pay", login: "Login", cta: "Point my key" },
+    nav: { cofrinho: "Cofrinho", pay: "Pay", login: "Login", cta: "Connect my Pix" },
     hero: {
       eyebrow: "receberPix · in dollars",
       h1: "Every Pix you receive becomes dollars.",
-      sub: "Point your Pix key at Slippay once. From then on, every Pix you receive turns into digital dollars in your wallet — automatic, instant, zero touch. And the dollars are yours: nobody freezes them.",
-      cta: "Point my key",
+      sub: "Connect your Pix key to Slippay once. From then on, every Pix you receive turns into digital dollars in your wallet — automatic, instant, zero touch. And the dollars are yours: nobody freezes them.",
+      cta: "Connect my Pix",
       note: "biometrics · no card · no seed phrase",
     },
     how: {
       stamp: "how it works",
       h: "Receiving already means dollars.",
       steps: [
-        ["Point your key", "Aim your Pix key at Slippay. Once."],
+        ["Connect your Pix", "Link your Pix key to Slippay. Just once."],
         ["The Pix lands", "Whoever pays you sends a normal Pix, in reais."],
         ["Dollars in your wallet", "In seconds it's digital dollars — in your hands, not ours."],
       ] as [string, string][],
@@ -120,7 +120,7 @@ const COPY = {
       contractBtn: "The live contract ↗",
       tag: "live · stellar mainnet",
     },
-    cta: { h: "Point your key.", lines: ["Every Pix becomes dollars.", "Yours, your way."], btn: "Point my key", note: "2 minutes · biometrics" },
+    cta: { h: "Connect your Pix.", lines: ["Every Pix becomes dollars.", "Yours, your way."], btn: "Connect my Pix", note: "2 minutes · biometrics" },
     footer: "slippay · receberPix in dollars · your money, yours",
   },
 } as const;
