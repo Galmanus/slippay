@@ -158,9 +158,15 @@ export default function LandingV2() {
           character lives on /cofrinho + /receber, not here — brand verdict). */}
       <section className="bg-[#f5f3ee] text-[#0a0a0a]">
         <div className="max-w-[1000px] mx-auto px-6 pt-36 md:pt-48 pb-14 md:pb-16 flex flex-col items-center text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.26em] text-[#0a0a0a]/45">{t.hero.eyebrow}</span>
-          <h1 className="mt-7 font-black uppercase tracking-[-0.035em] leading-[0.88] text-[clamp(2.5rem,9.5vw,6.5rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
-          <p className="mt-6 text-base md:text-xl text-[#0a0a0a]/65 max-w-[34ch] md:max-w-[42ch] leading-relaxed">{t.hero.sub}</p>
+          {/* eyebrow + headline + sub emerge like a dream: mask-rise on the title,
+              soft fade-up on the rest, staggered. */}
+          <span className="hero-in font-mono text-[10px] uppercase tracking-[0.26em] text-[#0a0a0a]/45" style={{ animationDelay: "60ms" }}>{t.hero.eyebrow}</span>
+          <h1 className="mt-7 font-black uppercase tracking-[-0.035em] leading-[0.88] text-[clamp(2.5rem,9.5vw,6.5rem)] max-w-[13ch]" style={display}>
+            {t.hero.h1.split(" ").map((word, i) => (
+              <span key={i} className="mask-clip"><span className="mask-up" style={{ animationDelay: `${120 + i * 90}ms` }}>{word}&nbsp;</span></span>
+            ))}
+          </h1>
+          <p className="hero-in mt-6 text-base md:text-xl text-[#0a0a0a]/65 max-w-[34ch] md:max-w-[42ch] leading-relaxed" style={{ animationDelay: "520ms" }}>{t.hero.sub}</p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
             <Link
               to="/account"
