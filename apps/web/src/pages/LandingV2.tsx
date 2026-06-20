@@ -10,7 +10,6 @@ import { MandateDemo } from "../components/MandateDemo.tsx";
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
 const ZK_MAINNET_TX = "4ffedf70df2c1c0665b04a03b689244e38d27cd8b27dd699399447228c0596ee";
-const TEAM_USDC = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";
 const xurl = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
 type Lang = "pt" | "en";
 
@@ -29,8 +28,8 @@ const COPY = {
       ["In your wallet", "Ready to use worldwide."],
     ] as [string, string][], foot: "~1.9% vs ~5% at a bank. The rest stays yours." },
     control: { n: "003", stamp: "control", h: "It pays on its own. Never against you.", body: "Set the rule once, like 'pay Maria, up to R$500 a month'. It executes on time. Anything above, or an address you never approved, locks on the spot.", gateLink: "How the rules work →" },
-    business: { n: "006", stamp: "for business", h: "For your company.", body: "For businesses we build an AI agent that pays your bills — suppliers, subscriptions, payroll — on time and inside the limits you set. Built and tuned for your operation, not a template. It can't overspend, and it proves it didn't.", cta: "Get a custom solution →" },
-    zk: { n: "004", stamp: "the proof", h: "It proves it behaved. Without showing your money.", body: "The agent can now prove — on Stellar, anyone can check — that every payment it made followed your rules, without revealing the amounts or who got paid. And only an authorized regulator, holding a key, can ever open the real numbers. Nobody else.", link: "See it live on mainnet →" },
+    business: { n: "006", stamp: "for business", h: "For your company.", body: "For businesses we build an AI agent that pays your bills, suppliers, subscriptions, payroll, on time and inside the limits you set. Built and tuned for your operation, not a template. It can't overspend, and it proves it didn't.", cta: "Get a custom solution →" },
+    zk: { n: "004", stamp: "the proof", h: "It proves it behaved. Without showing your money.", body: "The agent can now prove, on Stellar, anyone can check, that every payment it made followed your rules, without revealing the amounts or who got paid. And only an authorized regulator, holding a key, can ever open the real numbers. Nobody else.", link: "See it live on mainnet →" },
     proof: { n: "005", stamp: "proof", h: "Proven on-chain.", lead: "Real, verifiable transfers. Not custody: it's yours, and you can check.", shots: ["your account · mainnet", "confirm with a touch", "verified on-chain receipt"], btnReal: "See a real payment ↗", btnContract: "The live contract ↗" },
     faq: { n: "007", stamp: "questions", h: "Before you ask.", items: [
       ["Can I withdraw in dollars?", "Yes. The balance is real dollars and it's yours. Send or move it to any wallet anytime. Nothing is locked."],
@@ -54,8 +53,8 @@ const COPY = {
       ["Na sua carteira", "Pronto pra usar no mundo."],
     ] as [string, string][], foot: "~1,9% contra ~5% de banco. O resto fica com você." },
     control: { n: "003", stamp: "controle", h: "Paga sozinho. Nunca contra você.", body: "Você define a regra uma vez, tipo 'pode pagar a Maria, até R$500 por mês'. Ele executa no prazo. Qualquer valor acima, ou um endereço que você não autorizou, trava na hora.", gateLink: "Como as regras funcionam →" },
-    business: { n: "006", stamp: "para empresas", h: "Para a sua empresa.", body: "Para empresas, a gente constrói um agente de IA que paga as suas contas — fornecedores, assinaturas, folha — no prazo e dentro dos limites que você define. Feito e ajustado pra sua operação, não um template. Ele não consegue gastar a mais, e prova que não gastou.", cta: "Quero uma solução personalizada →" },
-    zk: { n: "004", stamp: "a prova", h: "Ele prova que se comportou. Sem mostrar teu dinheiro.", body: "Agora o agente consegue provar — na Stellar, qualquer um confere — que cada pagamento seguiu as suas regras, sem revelar os valores nem pra quem pagou. E só um regulador autorizado, com uma chave, pode abrir os números de verdade. Mais ninguém.", link: "Ver no ar na mainnet →" },
+    business: { n: "006", stamp: "para empresas", h: "Para a sua empresa.", body: "Para empresas, a gente constrói um agente de IA que paga as suas contas (fornecedores, assinaturas, folha) no prazo e dentro dos limites que você define. Feito e ajustado pra sua operação, não um template. Ele não consegue gastar a mais, e prova que não gastou.", cta: "Quero uma solução personalizada →" },
+    zk: { n: "004", stamp: "a prova", h: "Ele prova que se comportou. Sem mostrar o seu dinheiro.", body: "Agora o agente consegue provar, na Stellar, que qualquer um confere que cada pagamento seguiu as suas regras, sem revelar os valores nem pra quem pagou. E só um regulador autorizado, com uma chave, pode abrir os números de verdade. Mais ninguém.", link: "Ver no ar na mainnet →" },
     proof: { n: "005", stamp: "prova", h: "Provado on-chain.", lead: "Transferências reais, verificáveis. Não é custódia: é seu, e dá pra conferir.", shots: ["sua conta · mainnet", "confirmar com um toque", "comprovante verificado on-chain"], btnReal: "Ver um pagamento real ↗", btnContract: "O contrato no ar ↗" },
     faq: { n: "007", stamp: "perguntas", h: "Antes de perguntar.", items: [
       ["Posso sacar em dólar?", "Pode. O saldo é dólar de verdade e é seu. Envie ou leve pra qualquer carteira quando quiser. Nada fica preso."],
@@ -154,44 +153,31 @@ export default function LandingV2() {
 
       {/* HERO — asymmetric editorial (Yeezy) + Stripe motors: live gold mesh on the
           right, text left-aligned, refined type, on-chain proof. Static headline. */}
-      <section className="relative bg-[#f5f3ee] text-[#0a0a0a] overflow-hidden">
-        <div className="relative max-w-[1240px] mx-auto px-6 md:px-12 pt-36 md:pt-44 pb-16 md:pb-24">
-          <div className="max-w-[760px]">
-            <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0a] animate-pulse" />{t.hero.eyebrow}
-            </span>
-            <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,8vw,6rem)] max-w-[12ch] text-left" style={display}>{t.hero.h1}</h1>
-            <p className="mt-7 text-lg md:text-2xl text-[#0a0a0a]/70 max-w-[46ch] leading-relaxed">{t.hero.sub}</p>
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
-              <Link
-                to="/account"
-                className={btn}
-                onMouseMove={(e) => {
-                  const r = e.currentTarget.getBoundingClientRect();
-                  e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.32}px)`;
-                }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
-              >{t.hero.cta}</Link>
-              <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
-            </div>
-            <span className="mt-6 block font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
+      <section className="bg-[#f5f3ee] text-[#0a0a0a]">
+        <div className="max-w-[1000px] mx-auto px-6 pt-36 md:pt-48 pb-14 md:pb-16 flex flex-col items-center text-center">
+          <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0a] animate-pulse" />{t.hero.eyebrow}
+          </span>
+          <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,9vw,6rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
+          <p className="mt-7 text-lg md:text-2xl text-[#0a0a0a]/70 max-w-[44ch] leading-relaxed">{t.hero.sub}</p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+            <Link
+              to="/account"
+              className={btn}
+              onMouseMove={(e) => {
+                const r = e.currentTarget.getBoundingClientRect();
+                e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.32}px)`;
+              }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+            >{t.hero.cta}</Link>
+            <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
           </div>
-          {/* on-chain proof strip — our social proof substitute (no fake client logos) */}
-          <div className="mt-16 md:mt-20 pt-6 border-t border-[#0a0a0a]/12 flex flex-wrap items-center gap-x-8 gap-y-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/50">
-            <span>{lang === "pt" ? "ao vivo na mainnet stellar" : "live on stellar mainnet"}</span>
-            <span className="hidden sm:inline">·</span>
-            <span>{lang === "pt" ? "contrato verificável on-chain" : "on-chain verifiable contract"}</span>
-            <span className="hidden sm:inline">·</span>
-            <span>0,98%</span>
-            <span className="hidden sm:inline">·</span>
-            <a href="/zk/composed.html" className="inline-flex items-center gap-1.5 hover:text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
-          </div>
+          <span className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
+        </div>
+        <div className="max-w-[420px] mx-auto px-6 pb-20 md:pb-28">
+          <AccountDemo lang={lang} />
         </div>
       </section>
-      {/* live account demo — moved below the fold as proof-in-action */}
-      <section className={sec}><div className="max-w-[420px] mx-auto px-6 py-16 md:py-20">
-        <AccountDemo lang={lang} />
-      </div></section>
 
       {/* 001 · YOURS — sovereignty, the spine */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
@@ -279,14 +265,6 @@ export default function LandingV2() {
           <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">{t.cta.note}</span>
         </div>
 
-        <div className="mt-20 pt-10 border-t border-[#0a0a0a]/10 max-w-[460px]">
-          <div className="font-mono text-[10px] uppercase tracking-[0.24em]" style={{ color: GRAY }}>{t.cta.supportLabel}</div>
-          <p className="mt-3 text-[15px] text-[#0a0a0a]/60">{t.cta.supportText}</p>
-          <div className="mt-5 flex flex-col items-start gap-3">
-            <Link to={`/pay?to=${TEAM_USDC}&amount=100000000&asset=USDC`} className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-semibold">{t.cta.supportBtn}</Link>
-            <span className="font-mono text-[10px] text-[#0a0a0a]/40 break-all">USDC · {TEAM_USDC}</span>
-          </div>
-        </div>
         <div className="mt-16 flex flex-wrap gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45">
           {NAV_MORE.map(([label, href]) => <Link key={href} to={href} className="hover:text-[#0a0a0a]">{label}</Link>)}
         </div>

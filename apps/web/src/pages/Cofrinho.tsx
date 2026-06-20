@@ -38,7 +38,7 @@ const COPY = {
     hero: {
       eyebrow: "o cofrinho que rende · em dólar",
       h1: "Seu dinheiro em dólar. Rendendo. Seu.",
-      sub: "Guarde em dólar dentro do Pix e deixe render — com um toque. Ninguém congela, ninguém move sem a sua digital. O dólar é seu, as chaves são suas.",
+      sub: "Guarde em dólar dentro do Pix e deixe render, com um toque. Ninguém congela, ninguém move sem a sua digital. O dólar é seu, as chaves são suas.",
       cta: "Quero meu cofrinho",
       note: "sem cartão · biometria · sem seed phrase",
     },
@@ -47,7 +47,7 @@ const COPY = {
       h: "Real na poupança encolhe. Dólar no cofrinho rende.",
       poupLabel: "poupança · em real",
       cofreLabel: "cofrinho · em dólar",
-      foot: "Taxas ilustrativas (~6% a.a.). A diferença real é a moeda: o real perde valor, o dólar protege — e ainda rende.",
+      foot: "Taxas ilustrativas (~6% a.a.). A diferença real é a moeda: o real perde valor, o dólar protege, e ainda rende.",
     },
     calc: {
       stamp: "simule",
@@ -83,8 +83,8 @@ const COPY = {
       stamp: "a diferença",
       h: "Eles seguram. A gente não.",
       items: [
-        ["Conta custodiada congela.", "Banco e fintech podem bloquear, segurar ou perder o seu dinheiro — ele fica no balanço deles. Não dá pra congelar o que a gente nunca toca."],
-        ["Spread escondido vira surpresa.", "O incumbente esconde a taxa no câmbio. A nossa é 0,98% na cara, travada na confirmação. Você fica com 100% do rendimento — sem carry escondido."],
+        ["Conta custodiada congela.", "Banco e fintech podem bloquear, segurar ou perder o seu dinheiro, ele fica no balanço deles. Não dá pra congelar o que a gente nunca toca."],
+        ["Spread escondido vira surpresa.", "O incumbente esconde a taxa no câmbio. A nossa é 0,98% na cara, travada na confirmação. Você fica com 100% do rendimento, sem carry escondido."],
         ["Empresa de verdade.", "Bluewave · CNPJ 66.381.800/0001-08 · brasileira, com cara e endereço. Cada conversão tem recibo on-chain que você audita."],
       ] as [string, string][],
     },
@@ -96,7 +96,7 @@ const COPY = {
     hero: {
       eyebrow: "the piggy bank that earns · in dollars",
       h1: "Your money in dollars. Earning. Yours.",
-      sub: "Keep dollars inside Pix and let them earn — one touch. Nobody freezes it, nobody moves it without your fingerprint. The dollars are yours, the keys are yours.",
+      sub: "Keep dollars inside Pix and let them earn, one touch. Nobody freezes it, nobody moves it without your fingerprint. The dollars are yours, the keys are yours.",
       cta: "Get my cofrinho",
       note: "no card · biometrics · no seed phrase",
     },
@@ -105,7 +105,7 @@ const COPY = {
       h: "Reais in savings shrink. Dollars in the cofrinho earn.",
       poupLabel: "savings · in reais",
       cofreLabel: "cofrinho · in dollars",
-      foot: "Illustrative rates (~6%/yr). The real edge is the currency: the real loses value, the dollar protects — and earns.",
+      foot: "Illustrative rates (~6%/yr). The real edge is the currency: the real loses value, the dollar protects, and earns.",
     },
     calc: {
       stamp: "simulate",
@@ -141,8 +141,8 @@ const COPY = {
       stamp: "the difference",
       h: "They hold it. We don't.",
       items: [
-        ["Custodial accounts freeze.", "Banks and fintechs can block, hold, or lose your money — it sits on their balance sheet. You can't freeze what we never touch."],
-        ["Hidden spread is a surprise.", "Incumbents bury the fee in the FX rate. Ours is 0.98% on the face, locked at confirmation. You keep 100% of the yield — no hidden carry."],
+        ["Custodial accounts freeze.", "Banks and fintechs can block, hold, or lose your money, it sits on their balance sheet. You can't freeze what we never touch."],
+        ["Hidden spread is a surprise.", "Incumbents bury the fee in the FX rate. Ours is 0.98% on the face, locked at confirmation. You keep 100% of the yield, no hidden carry."],
         ["A real company.", "Bluewave · CNPJ 66.381.800/0001-08 · Brazilian, with a face and an address. Every conversion has an on-chain receipt you can audit."],
       ] as [string, string][],
     },
