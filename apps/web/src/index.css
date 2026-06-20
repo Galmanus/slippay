@@ -124,7 +124,10 @@ html { scroll-behavior: smooth; }
 @keyframes maskUp { from { transform: translateY(115%); } to { transform: translateY(0); } }
 .mask-clip { display: block; overflow: hidden; padding-bottom: 0.06em; }
 .mask-up { display: block; animation: maskUp 1100ms var(--ease-out-expo) both; }
-@media (prefers-reduced-motion: reduce) { .mask-up { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .mask-up { animation: none; transform: none; } }
+/* Word-by-word variant: each word masks individually, inline. */
+h1 .mask-clip { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+h1 .mask-up { display: inline-block; }
 
 /* Animated nav underline. */
 .navlink { position: relative; }
