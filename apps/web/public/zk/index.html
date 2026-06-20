@@ -102,7 +102,7 @@
 <div class="hero"><div class="wrap reveal">
   <div class="eyebrow">provable bounded autonomy</div>
   <h1 style="margin-top:20px">A IA prova que <mark>obedeceu.</mark> Sem mostrar nada.</h1>
-  <p>O agente do Slippay paga as contas sozinho, pelas suas regras. Agora ele prova — numa única prova criptográfica, verificada on-chain — que <b>nenhum pagamento furou a regra</b>, sem revelar valor, recebedor ou total. E só um regulador, com a chave, consegue abrir os números.</p>
+  <p>O agente do Slippay paga as contas sozinho, pelas suas regras. Agora ele prova, numa única prova criptográfica, verificada on-chain, que <b>nenhum pagamento furou a regra</b>, sem revelar valor, recebedor ou total. E só um regulador, com a chave, consegue abrir os números.</p>
   <div class="meta">
     <div><div class="k">verifica on-chain</div><div class="v">44,6M <span style="font-size:14px;color:var(--ink-soft)">instr · 11% do budget</span></div></div>
     <div><div class="k">pagamentos no lote</div><div class="v">8 <span style="font-size:14px;color:var(--ink-soft)">→ escala grátis on-chain</span></div></div>
@@ -123,17 +123,17 @@
 
 <section><div class="wrap">
   <div class="shead"><span class="num">02</span><h2>A regra é pública. Os pagamentos, não.</h2></div>
-  <p class="lede">O mandato do agente é o que entra na prova como público. Os 8 valores e recebedores ficam privados — a prova só atesta que todos cabem na regra.</p>
+  <p class="lede">O mandato do agente é o que entra na prova como público. Os 8 valores e recebedores ficam privados, a prova só atesta que todos cabem na regra.</p>
   <div class="grid3">
     <div class="card"><div class="ci">teto por pagamento</div><h3>R$ 500</h3><p>nenhum pagamento do lote pode passar disso.</p></div>
     <div class="card"><div class="ci">allowlist</div><h3>4 recebedores</h3><p>todo pagamento tem que ir pra um endereço autorizado.</p></div>
-    <div class="card"><div class="ci">teto mensal</div><h3>R$ 2.000</h3><p>a soma do mês não pode estourar — e a soma fica cifrada.</p></div>
+    <div class="card"><div class="ci">teto mensal</div><h3>R$ 2.000</h3><p>a soma do mês não pode estourar, e a soma fica cifrada.</p></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
   <div class="shead"><span class="num">03</span><h2>A porta do regulador.</h2></div>
-  <p class="lede">O público vê só o ciphertext. O regulador — e apenas ele, com a chave privada — recupera o total real gasto. Privacidade pra todos, recurso legal pra quem precisa. Não é Tornado: tem porta, e só uma.</p>
+  <p class="lede">O público vê só o ciphertext. O regulador, e apenas ele, com a chave privada, recupera o total real gasto. Privacidade pra todos, recurso legal pra quem precisa. Não é Tornado: tem porta, e só uma.</p>
   <div class="reg">
     <div class="col">
       <div class="clabel">o que o mundo vê (público)</div>
@@ -158,7 +158,7 @@
   </div>
 </div></section>
 
-<footer><div class="wrap">slippay zk · prova sem revelar · groth16 / bn254 · contrato CBDS2YSL…U3FE · revisão interna feita, auditoria externa em curso — não proteja fundo real ainda</div></footer>
+<footer><div class="wrap">slippay zk · prova sem revelar · groth16 / bn254 · contrato CBDS2YSL…U3FE · revisão interna feita, auditoria externa em curso, não proteja fundo real ainda</div></footer>
 
 <script>
   // real demo batch (private in the proof)
@@ -181,7 +181,7 @@
     L.innerHTML=rows;
   }
   function decrypt(){document.getElementById('rec').className='recovered show';}
-  // public ciphertext (real, from the on-chain proof) — truncated for display
+  // public ciphertext (real, from the on-chain proof), truncated for display
   document.getElementById('ct').innerHTML=
     'encryptedTotal.x<br>639396353211749888971277…<br><br>encryptedTotal.y<br>105740718413147669530046…<br><br>ephemeralKey.x<br>125267700366023675623379…';
   setMode(false);
