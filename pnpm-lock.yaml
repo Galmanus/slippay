@@ -112,6 +112,9 @@ importers:
       react-router-dom:
         specifier: ^6.26.0
         version: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      whatamesh:
+        specifier: ^0.2.0
+        version: 0.2.0
     devDependencies:
       '@types/qrcode':
         specifier: ^1.5.6
@@ -2573,6 +2576,9 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
+  color-schemes-generator@1.0.1:
+    resolution: {integrity: sha512-pmXbEO84zprScjQR2C2wJ980VX0uk2FjUYvjOox91YnX5xgzeNvnCEhANgC7q3RLQE8GnKdJTAzpmbkJsa3LRg==}
+
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
@@ -4414,6 +4420,9 @@ packages:
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
+
+  whatamesh@0.2.0:
+    resolution: {integrity: sha512-p+ZK+IPbW+38UyNvrdxKNC1OFevlxf7xgiyKxYGCkuNrWFjxiY0yrugdry0c2vEC0RQseov+DDSrsQmp7eoLcg==}
 
   whatwg-url@5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
@@ -8149,6 +8158,8 @@ snapshots:
 
   color-name@1.1.4: {}
 
+  color-schemes-generator@1.0.1: {}
+
   combined-stream@1.0.8:
     dependencies:
       delayed-stream: 1.0.0
@@ -10201,6 +10212,10 @@ snapshots:
   vm-browserify@1.1.2: {}
 
   webidl-conversions@3.0.1: {}
+
+  whatamesh@0.2.0:
+    dependencies:
+      color-schemes-generator: 1.0.1
 
   whatwg-url@5.0.0:
     dependencies:

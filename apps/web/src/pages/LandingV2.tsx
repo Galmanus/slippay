@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AccountDemo } from "../components/AccountDemo.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
+import { MeshGradient } from "../components/MeshGradient.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -154,31 +155,48 @@ export default function LandingV2() {
         )}
       </header>
 
-      {/* HERO — austere editorial (root hero is shared with B2B; the cofrinho
-          character lives on /cofrinho + /receber, not here — brand verdict). */}
-      <section className="bg-[#f5f3ee] text-[#0a0a0a]">
-        <div className="max-w-[1000px] mx-auto px-6 pt-36 md:pt-48 pb-14 md:pb-16 flex flex-col items-center text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.26em] text-[#0a0a0a]/45">{t.hero.eyebrow}</span>
-          <h1 className="mt-7 font-black uppercase tracking-[-0.035em] leading-[0.88] text-[clamp(2.5rem,9.5vw,6.5rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
-          <p className="mt-6 text-base md:text-xl text-[#0a0a0a]/65 max-w-[34ch] md:max-w-[42ch] leading-relaxed">{t.hero.sub}</p>
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
-            <Link
-              to="/account"
-              className={btn}
-              onMouseMove={(e) => {
-                const r = e.currentTarget.getBoundingClientRect();
-                e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.22}px, ${(e.clientY - r.top - r.height / 2) * 0.4}px)`;
-              }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
-            >{t.hero.cta}</Link>
-            <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
+      {/* HERO — asymmetric editorial (Yeezy) + Stripe motors: live gold mesh on the
+          right, text left-aligned, refined type, on-chain proof. Static headline. */}
+      <section className="relative bg-[#f5f3ee] text-[#0a0a0a] overflow-hidden">
+        {/* live silk gold mesh — right two-thirds, feathered into the bone canvas */}
+        <MeshGradient className="pointer-events-none absolute inset-y-0 right-0 w-[78%] md:w-[62%] h-full opacity-90 [mask-image:linear-gradient(to_right,transparent,#000_42%)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_42%)]" />
+        <div className="relative max-w-[1240px] mx-auto px-6 md:px-12 pt-36 md:pt-44 pb-16 md:pb-24">
+          <div className="max-w-[760px]">
+            <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0a] animate-pulse" />{t.hero.eyebrow}
+            </span>
+            <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,8vw,6rem)] max-w-[12ch] text-left" style={display}>{t.hero.h1}</h1>
+            <p className="mt-7 text-lg md:text-2xl text-[#0a0a0a]/70 max-w-[46ch] leading-relaxed">{t.hero.sub}</p>
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Link
+                to="/account"
+                className={btn}
+                onMouseMove={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.32}px)`;
+                }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+              >{t.hero.cta}</Link>
+              <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
+            </div>
+            <span className="mt-6 block font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
           </div>
-          <span className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
-        </div>
-        <div className="max-w-[420px] mx-auto px-6 pb-20 md:pb-28">
-          <AccountDemo lang={lang} />
+          {/* on-chain proof strip — our social proof substitute (no fake client logos) */}
+          <div className="mt-16 md:mt-20 pt-6 border-t border-[#0a0a0a]/12 flex flex-wrap items-center gap-x-8 gap-y-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/50">
+            <span>{lang === "pt" ? "ao vivo na mainnet stellar" : "live on stellar mainnet"}</span>
+            <span className="hidden sm:inline">·</span>
+            <span>{lang === "pt" ? "contrato verificável on-chain" : "on-chain verifiable contract"}</span>
+            <span className="hidden sm:inline">·</span>
+            <span>0,98%</span>
+            <span className="hidden sm:inline">·</span>
+            <a href="/zk/composed.html" className="inline-flex items-center gap-1.5 hover:text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
+          </div>
         </div>
       </section>
+      {/* live account demo — moved below the fold as proof-in-action */}
+      <section className={sec}><div className="max-w-[420px] mx-auto px-6 py-16 md:py-20">
+        <AccountDemo lang={lang} />
+      </div></section>
 
       {/* 001 · YOURS — sovereignty, the spine */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
