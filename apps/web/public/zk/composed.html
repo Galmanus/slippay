@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Slippay ZK · uma prova, duas verdades</title>
+<title>Slippay ZK · one proof, two truths</title>
 <style>
   :root{
     --bone:#f1eee7; --ink:#15130f; --ink-soft:#5c574e; --line:#d8d2c6;
@@ -71,60 +71,60 @@
 
 <div class="hero"><div class="wrap reveal">
   <div class="eyebrow">confidential identity + bounded autonomy</div>
-  <h1 style="margin-top:22px">Uma prova. <mark>Duas verdades.</mark> Zero dados.</h1>
-  <p>Um humano verificado deixa um agente de IA pagar suas contas. Duas provas em zero-knowledge, verificadas na <b>mainnet da Stellar</b>: a pessoa é real, de maior e não-sancionada — e cada pagamento obedeceu o mandato. Sem revelar identidade, valores nem recebedores. E só o regulador, com a chave, abre o total.</p>
+  <h1 style="margin-top:22px">One proof. <mark>Two truths.</mark> Zero data.</h1>
+  <p>A verified human lets an AI agent pay their bills. Two zero-knowledge proofs, verified on <b>Stellar mainnet</b>: the person is real, of age and non-sanctioned — and every payment obeyed the mandate. Without revealing identity, amounts or recipients. And only the regulator, with the key, opens the total.</p>
   <div class="meta">
-    <div><div class="k">provas on-chain</div><div class="v">2 <span style="font-size:14px;color:var(--ink-soft)">· KYC + mandato</span></div></div>
-    <div><div class="k">dados revelados</div><div class="v">0 <span style="font-size:14px;color:var(--ink-soft)">· prove-not-send</span></div></div>
+    <div><div class="k">on-chain proofs</div><div class="v">2 <span style="font-size:14px;color:var(--ink-soft)">· KYC + mandate</span></div></div>
+    <div><div class="k">data revealed</div><div class="v">0 <span style="font-size:14px;color:var(--ink-soft)">· prove-not-send</span></div></div>
     <div><div class="k">status</div><div class="v">live · mainnet</div></div>
   </div>
 </div></div>
 
 <!-- STEP 1 — KYC -->
 <section><div class="wrap">
-  <div class="shead"><span class="num">01</span><h2>Quem: o humano prova, sem se mostrar.</h2></div>
-  <p class="lede">Antes de qualquer centavo, a pessoa prova que é elegível — sem entregar o CPF. O parceiro licenciado faz o KYC e assina a credencial; a Slippay só vê o compromisso criptográfico, nunca os dados.</p>
+  <div class="shead"><span class="num">01</span><h2>Who: the human proves, without showing.</h2></div>
+  <p class="lede">Before a single cent, the person proves eligibility — without handing over their ID. The licensed partner runs KYC and signs the credential; Slippay only sees the cryptographic commitment, never the data.</p>
   <div class="steps">
-    <div class="step"><span class="badge ok">provado</span><div class="ci">registrado</div><h3>Credencial válida</h3><p>Pertence à árvore de credenciais emitidas pelo parceiro. Qual delas? Ninguém sabe.</p></div>
-    <div class="step"><span class="badge priv">privado</span><div class="ci">idade ≥ 18</div><h3>Maior de idade</h3><p>Prova que tem 18+ sem revelar a data de nascimento.</p></div>
-    <div class="step"><span class="badge priv">privado</span><div class="ci">sanções</div><h3>Não-sancionado</h3><p>Fora da lista de sancionados — sem revelar o identificador.</p></div>
+    <div class="step"><span class="badge ok">proved</span><div class="ci">registered</div><h3>Valid credential</h3><p>In the partner’s issued-credential tree. Which one? Nobody knows.</p></div>
+    <div class="step"><span class="badge priv">private</span><div class="ci">age ≥ 18</div><h3>Of age</h3><p>Proves 18+ without revealing the birth date.</p></div>
+    <div class="step"><span class="badge priv">private</span><div class="ci">sanctions</div><h3>Non-sanctioned</h3><p>Off the sanctions list — without revealing the identifier.</p></div>
   </div>
-  <a class="tx" href="https://stellar.expert/explorer/public/tx/83ee1697486a24c3fd389b812f00c5693659cc3837f6fa653c42b62afc1751d6" target="_blank" rel="noreferrer">↗ prova de KYC · verify=true na mainnet · tx 83ee1697…</a>
+  <a class="tx" href="https://stellar.expert/explorer/public/tx/83ee1697486a24c3fd389b812f00c5693659cc3837f6fa653c42b62afc1751d6" target="_blank" rel="noreferrer">↗ KYC proof · verify=true on mainnet · tx 83ee1697…</a>
 </div></section>
 
 <!-- STEP 2 — mandate -->
 <section><div class="wrap">
-  <div class="shead"><span class="num">02</span><h2>O quê: o agente prova que obedeceu.</h2></div>
-  <p class="lede">Agora o agente paga sozinho — mas só dentro da regra do dono. Uma única prova atesta que os 8 pagamentos do mês couberam no mandato. A regra é pública; os pagamentos, não.</p>
+  <div class="shead"><span class="num">02</span><h2>What: the agent proves it obeyed.</h2></div>
+  <p class="lede">Now the agent pays on its own — but only within the owner’s rule. A single proof attests that the month’s 8 payments fit the mandate. The rule is public; the payments are not.</p>
   <div class="steps">
-    <div class="step"><span class="badge pub">público</span><div class="ci">teto por pagamento</div><h3>R$ 500</h3><p>nenhum pagamento do lote passou disso.</p></div>
-    <div class="step"><span class="badge pub">público</span><div class="ci">allowlist</div><h3>recebedores autorizados</h3><p>todo pagamento foi pra um endereço aprovado.</p></div>
-    <div class="step"><span class="badge priv">privado</span><div class="ci">8 valores + recebedores</div><h3>escondidos</h3><p>a prova atesta que cabem na regra — sem mostrar quais.</p></div>
+    <div class="step"><span class="badge pub">public</span><div class="ci">per-payment cap</div><h3>R$ 500</h3><p>no payment in the batch exceeded it.</p></div>
+    <div class="step"><span class="badge pub">public</span><div class="ci">allowlist</div><h3>authorized recipients</h3><p>every payment went to an approved address.</p></div>
+    <div class="step"><span class="badge priv">private</span><div class="ci">8 amounts + recipients</div><h3>hidden</h3><p>the proof attests they fit the rule — without showing which.</p></div>
   </div>
-  <a class="tx" href="https://stellar.expert/explorer/public/contract/CBDS2YSLATINQVUDG5Y5HV4KQBEAVFDRPEINVEUTYSX3CZZQKBY5U3FE" target="_blank" rel="noreferrer">↗ verifier do mandato · live na mainnet · contrato CBDS2YSL…</a>
+  <a class="tx" href="https://stellar.expert/explorer/public/contract/CBDS2YSLATINQVUDG5Y5HV4KQBEAVFDRPEINVEUTYSX3CZZQKBY5U3FE" target="_blank" rel="noreferrer">↗ mandate verifier · live on mainnet · contract CBDS2YSL…</a>
 </div></section>
 
 <!-- STEP 3 — regulator flip -->
 <section><div class="wrap">
-  <div class="shead"><span class="num">03</span><h2>A porta do regulador.</h2></div>
-  <p class="lede">O público vê só o ciphertext. O regulador — e só ele, com a chave privada — recupera o total real gasto no mês. Privacidade pra todos, recurso legal pra quem precisa. Não é Tornado: tem porta, e só uma.</p>
+  <div class="shead"><span class="num">03</span><h2>The regulator’s door.</h2></div>
+  <p class="lede">The public sees only the ciphertext. The regulator — and only them, with the private key — recovers the real total spent that month. Privacy for everyone, legal recourse for who needs it. Not Tornado: there is a door, and only one.</p>
   <div class="flip">
     <div class="pane">
-      <h4>público / auditor</h4>
-      <div class="cap mono" style="font-size:11px;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase">o que qualquer um vê</div>
+      <h4>public / auditor</h4>
+      <div class="cap mono" style="font-size:11px;color:var(--ink-soft);letter-spacing:.1em;text-transform:uppercase">what anyone sees</div>
       <div class="cipher" id="cipher">9f3a…c71b 04e8…aa20 1d77…b3f5 e2c0…9148</div>
-      <div class="row"><span>regra cumprida</span><span style="color:var(--ok);font-weight:700">✓ provado</span></div>
-      <div class="row"><span>total do mês</span><span class="mono">cifrado</span></div>
+      <div class="row"><span>rule satisfied</span><span style="color:var(--ok);font-weight:700">✓ proved</span></div>
+      <div class="row"><span>month total</span><span class="mono">encrypted</span></div>
     </div>
     <div class="pane reg">
-      <h4>regulador · com a chave</h4>
-      <div class="cap">o que só ele recupera</div>
+      <h4>regulator · with the key</h4>
+      <div class="cap">what only they recover</div>
       <div class="reveal-amt" id="amt">— — —</div>
-      <div class="row"><span>total real gasto</span><span class="mono" id="rstatus">aguardando chave</span></div>
-      <button class="btn" id="decBtn" onclick="decrypt()">decriptar com a chave →</button>
+      <div class="row"><span>real total spent</span><span class="mono" id="rstatus">awaiting key</span></div>
+      <button class="btn" id="decBtn" onclick="decrypt()">decrypt with the key →</button>
     </div>
   </div>
-  <div class="pill"><span class="dot"></span> as duas provas verificam no mesmo stack BN254/Groth16/Poseidon · Protocol 26</div>
+  <div class="pill"><span class="dot"></span> both proofs verify on the same BN254/Groth16/Poseidon stack · Protocol 26</div>
 </div></section>
 
 <footer><div class="wrap">
@@ -135,10 +135,10 @@
   function decrypt(){
     var amt=document.getElementById("amt"), st=document.getElementById("rstatus"), b=document.getElementById("decBtn");
     var target=1450, t0=null, dur=900;
-    b.disabled=true; b.style.opacity=.5; b.textContent="decriptando…";
+    b.disabled=true; b.style.opacity=.5; b.textContent="decrypting…";
     function step(ts){ if(!t0)t0=ts; var p=Math.min((ts-t0)/dur,1);
       var v=Math.floor(p*target); amt.textContent="R$ "+v.toLocaleString("pt-BR");
-      if(p<1){requestAnimationFrame(step);} else {amt.textContent="R$ 1.450";st.textContent="recuperado";st.style.color="var(--yellow)";b.textContent="total revelado ✓";} }
+      if(p<1){requestAnimationFrame(step);} else {amt.textContent="R$ 1.450";st.textContent="recovered";st.style.color="var(--yellow)";b.textContent="total revealed ✓";} }
     requestAnimationFrame(step);
   }
 </script>
