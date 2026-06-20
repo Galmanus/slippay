@@ -26,7 +26,7 @@ const COPY = {
     hero: {
       eyebrow: "receberPix · em dólar",
       h1: "Todo Pix que cair vira dólar.",
-      sub: "Conecte a sua chave Pix uma vez. A partir daí, cada Pix que você recebe vira dólar digital na sua carteira — automático, na hora, sem você tocar em nada. E o dólar é seu: ninguém congela.",
+      sub: "Conecte a sua chave Pix uma vez. A partir daí, cada Pix que você recebe vira dólar digital na sua carteira, automático, na hora, sem você tocar em nada. E o dólar é seu: ninguém congela.",
       cta: "Conectar meu Pix",
       note: "biometria · sem cartão · sem seed phrase",
     },
@@ -36,14 +36,14 @@ const COPY = {
       steps: [
         ["Conecte seu Pix", "Aponte a sua chave Pix pro Slippay. Uma vez só."],
         ["O Pix cai", "Quem te paga manda um Pix normal, em real."],
-        ["Vira dólar na sua carteira", "Em segundos, virou dólar digital — na sua mão, não na nossa."],
+        ["Vira dólar na sua carteira", "Em segundos, virou dólar digital, na sua mão, não na nossa."],
       ] as [string, string][],
       foot: "Sem decisão de compra, sem corretora. O recebimento é a conta de dólar.",
     },
     b2b: {
       stamp: "o dinheiro grande",
       h: "Recebe do exterior? O dólar chega em minutos.",
-      body: "Freelancer, PJ, agência: quem fatura lá fora perde dias e ~5% em banco e corretora. No Slippay o pagamento vira dólar na sua carteira em minutos, com 0,98% na cara — e você saca, guarda ou converte quando quiser.",
+      body: "Freelancer, PJ, agência: quem fatura lá fora perde dias e ~5% em banco e corretora. No Slippay o pagamento vira dólar na sua carteira em minutos, com 0,98% na cara, e você saca, guarda ou converte quando quiser.",
       bullets: [
         "Liquida em minutos, não em dias",
         "0,98% transparente vs ~5% escondido",
@@ -64,7 +64,7 @@ const COPY = {
     proof: {
       stamp: "a prova",
       h: "Não confie. Confira.",
-      lead: "Cada conversão deixa um recibo on-chain. Não é custódia — é seu, e dá pra auditar agora, sem pedir licença.",
+      lead: "Cada conversão deixa um recibo on-chain. Não é custódia, é seu, e dá pra auditar agora, sem pedir licença.",
       txBtn: "Ver um pagamento real ↗",
       contractBtn: "O contrato no ar ↗",
       tag: "ao vivo · mainnet stellar",
@@ -77,7 +77,7 @@ const COPY = {
     hero: {
       eyebrow: "receberPix · in dollars",
       h1: "Every Pix you receive becomes dollars.",
-      sub: "Connect your Pix key to Slippay once. From then on, every Pix you receive turns into digital dollars in your wallet — automatic, instant, zero touch. And the dollars are yours: nobody freezes them.",
+      sub: "Connect your Pix key to Slippay once. From then on, every Pix you receive turns into digital dollars in your wallet, automatic, instant, zero touch. And the dollars are yours: nobody freezes them.",
       cta: "Connect my Pix",
       note: "biometrics · no card · no seed phrase",
     },
@@ -87,14 +87,14 @@ const COPY = {
       steps: [
         ["Connect your Pix", "Link your Pix key to Slippay. Just once."],
         ["The Pix lands", "Whoever pays you sends a normal Pix, in reais."],
-        ["Dollars in your wallet", "In seconds it's digital dollars — in your hands, not ours."],
+        ["Dollars in your wallet", "In seconds it's digital dollars, in your hands, not ours."],
       ] as [string, string][],
       foot: "No buy decision, no exchange. Receiving is the dollar account.",
     },
     b2b: {
       stamp: "the real money",
       h: "Get paid from abroad? Dollars arrive in minutes.",
-      body: "Freelancers, companies, agencies billing overseas lose days and ~5% to banks and brokers. With Slippay the payment becomes dollars in your wallet in minutes, 0.98% on the face — withdraw, hold, or convert whenever.",
+      body: "Freelancers, companies, agencies billing overseas lose days and ~5% to banks and brokers. With Slippay the payment becomes dollars in your wallet in minutes, 0.98% on the face, withdraw, hold, or convert whenever.",
       bullets: [
         "Settles in minutes, not days",
         "0.98% transparent vs ~5% hidden",
@@ -115,7 +115,7 @@ const COPY = {
     proof: {
       stamp: "the proof",
       h: "Don't trust. Verify.",
-      lead: "Every conversion leaves an on-chain receipt. Not custody — it's yours, and you can audit it now, no permission needed.",
+      lead: "Every conversion leaves an on-chain receipt. Not custody, it's yours, and you can audit it now, no permission needed.",
       txBtn: "See a real payment ↗",
       contractBtn: "The live contract ↗",
       tag: "live · stellar mainnet",

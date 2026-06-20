@@ -22,7 +22,7 @@ const COPY = {
     hero: {
       eyebrow: "para empresas · payout em dólar",
       h1: "Receba e pague em dólar. Em minutos, não dias.",
-      sub: "Freelancer, PJ, agência, marketplace: mova dólar pra dentro e pra fora do Brasil via Pix↔USDC, com liquidação em minutos e 0,98% na cara. Non-custodial — o dinheiro nunca passa pelo nosso balanço.",
+      sub: "Freelancer, PJ, agência, marketplace: mova dólar pra dentro e pra fora do Brasil via Pix↔USDC, com liquidação em minutos e 0,98% na cara. Non-custodial, o dinheiro nunca passa pelo nosso balanço.",
       cta: "Falar com a gente",
       ctaApi: "Ver a API →",
       note: "0% até R$50 mil liquidados · sem setup · sem mensalidade",
@@ -65,7 +65,7 @@ const COPY = {
     proof: {
       stamp: "a prova",
       h: "Provado on-chain. Auditável agora.",
-      lead: "Cada liquidação deixa recibo na mainnet Stellar. Não é a nossa palavra — é o explorer.",
+      lead: "Cada liquidação deixa recibo na mainnet Stellar. Não é a nossa palavra, é o explorer.",
       contractBtn: "Ver o contrato no ar ↗",
       tag: "ao vivo · mainnet stellar",
     },
@@ -77,7 +77,7 @@ const COPY = {
     hero: {
       eyebrow: "for business · dollar payouts",
       h1: "Receive and pay in dollars. In minutes, not days.",
-      sub: "Freelancers, companies, agencies, marketplaces: move dollars in and out of Brazil via Pix↔USDC, settling in minutes at 0.98% on the face. Non-custodial — the money never touches our balance sheet.",
+      sub: "Freelancers, companies, agencies, marketplaces: move dollars in and out of Brazil via Pix↔USDC, settling in minutes at 0.98% on the face. Non-custodial, the money never touches our balance sheet.",
       cta: "Talk to us",
       ctaApi: "See the API →",
       note: "0% up to R$50k settled · no setup · no monthly fee",
@@ -120,7 +120,7 @@ const COPY = {
     proof: {
       stamp: "the proof",
       h: "Proven on-chain. Auditable now.",
-      lead: "Every settlement leaves a receipt on Stellar mainnet. Not our word — the explorer.",
+      lead: "Every settlement leaves a receipt on Stellar mainnet. Not our word, the explorer.",
       contractBtn: "See the live contract ↗",
       tag: "live · stellar mainnet",
     },
