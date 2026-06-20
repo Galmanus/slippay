@@ -6,11 +6,10 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { AccountDemo } from "../components/AccountDemo.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
+import { FloatingCoins } from "../components/FloatingCoins.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
-const LIVE_CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
-const REAL_TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
 const ZK_MAINNET_TX = "4ffedf70df2c1c0665b04a03b689244e38d27cd8b27dd699399447228c0596ee";
 const TEAM_USDC = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";
 const xurl = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
@@ -157,6 +156,8 @@ export default function LandingV2() {
       {/* HERO — asymmetric editorial (Yeezy) + Stripe motors: live gold mesh on the
           right, text left-aligned, refined type, on-chain proof. Static headline. */}
       <section className="relative bg-[#f5f3ee] text-[#0a0a0a] overflow-hidden">
+        {/* floating USDC coins — right side, behind the left-aligned text */}
+        <FloatingCoins className="pointer-events-none absolute inset-y-0 right-0 w-[55%] hidden md:block [mask-image:linear-gradient(to_right,transparent,#000_30%)]" />
         <div className="relative max-w-[1240px] mx-auto px-6 md:px-12 pt-36 md:pt-44 pb-16 md:pb-24">
           <div className="max-w-[760px]">
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
@@ -245,27 +246,6 @@ export default function LandingV2() {
         <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
           <a href="/zk/index.html" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
           <a href={xurl("tx", ZK_MAINNET_TX)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.zk.link}</a>
-        </div>
-      </div></section>
-
-      {/* 005 · PROOF — what separates from "your keys" talk: it's checkable */}
-      <section id="proof" className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
-        <Stamp n={t.proof.n} label={t.proof.stamp} />
-        <h2 className={`mt-10 ${h2} text-[clamp(2.5rem,8vw,5.5rem)]`} style={display}>{t.proof.h}</h2>
-        <p className="mt-6 text-lg md:text-xl text-[#0a0a0a]/65 max-w-[48ch] mx-auto md:mx-0">{t.proof.lead}</p>
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6 items-start">
-          {["/proof/account.jpg", "/proof/pay.jpg", "/proof/receipt.jpg"].map((src, i) => (
-            <figure key={src} className="group">
-              <div className="overflow-hidden rounded-2xl border border-[#0a0a0a]/12 bg-[#f1eee7] transition-transform duration-300 group-hover:-translate-y-1">
-                <img src={src} alt={t.proof.shots[i]} loading="lazy" className="w-full h-auto block" />
-              </div>
-              <figcaption className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45">{t.proof.shots[i]}</figcaption>
-            </figure>
-          ))}
-        </div>
-        <div className="mt-12 flex flex-wrap items-center justify-center md:justify-start gap-x-7 gap-y-4">
-          <a href={xurl("tx", REAL_TX)} target="_blank" rel="noreferrer" className={btn}>{t.proof.btnReal}</a>
-          <a href={xurl("contract", LIVE_CONTRACT)} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.proof.btnContract}</a>
         </div>
       </div></section>
 
