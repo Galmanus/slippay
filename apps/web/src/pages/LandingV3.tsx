@@ -114,6 +114,7 @@ export default function LandingV3() {
         <div className="v3-glow v3-glow-b" />
         <div className="v3-grid" />
         <div className="v3-grain" />
+        <div className="v3-vignette" />
       </div>
 
       {/* header */}
@@ -202,7 +203,9 @@ const V3_CSS = `
 @keyframes v3float-a{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-4vw,4vw) scale(1.12);}}
 @keyframes v3float-b{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(5vw,-3vw) scale(1.1);}}
 .v3-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(100% 60% at 50% 0%,#000 30%,transparent 80%);opacity:.5;}
-.v3-grain{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.v3-grain{position:absolute;inset:0;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.v3-vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 240px 50px rgba(0,0,0,.55);}
+@media(max-width:768px){.v3-grain{opacity:.05;}}
 @media(prefers-reduced-motion:reduce){.v3-glow{animation:none;}}
 
 /* layout */
