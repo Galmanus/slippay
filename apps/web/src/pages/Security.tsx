@@ -5,6 +5,7 @@
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { V3Ribbon } from "../components/V3Ribbon.tsx";
 
 const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 const CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
@@ -80,9 +81,10 @@ export default function Security() {
   const t = C[lang];
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+    <div className="relative min-h-screen bg-transparent text-[#0a0a0a] grain overflow-x-hidden">
+      <V3Ribbon />
       <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#2563eb]">.</span></Link>
         <div className="flex items-center gap-6">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
             <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#0a0a0a]" : "hover:opacity-80"}>PT</button>
@@ -107,7 +109,7 @@ export default function Security() {
         <div className="mt-10 flex flex-col gap-7 max-w-[640px]">
           {t.simple.map(([, text], i) => (
             <div key={i} className="flex gap-4 items-start">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] shrink-0 mt-2.5" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2563eb] shrink-0 mt-2.5" />
               <p className="text-lg md:text-xl leading-relaxed text-[#0a0a0a]/75">{text}</p>
             </div>
           ))}
@@ -147,7 +149,7 @@ export default function Security() {
         </div>
 
         <div className="mt-16">
-          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.cta}</Link>
+          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white">{t.cta}</Link>
         </div>
       </main>
     </div>
