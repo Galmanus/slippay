@@ -1,0 +1,12 @@
+{
+  "FLAVOR": "dev",
+  "CHAIN": "stellar",
+  "STELLAR_NETWORK": "TESTNET",
+  "SOROBAN_RPC": "https://soroban-testnet.stellar.org",
+  "HORIZON_URL": "https://horizon-testnet.stellar.org",
+  "NETWORK_PASSPHRASE": "Test SDF Network ; September 2015",
+  "RP_ID": "app.slippay.cc",
+  "API_BASE": "https://api.slippay.cc/api",
+  "RELAYER_URL": "",
+  "SENTRY_DSN": ""
+}
