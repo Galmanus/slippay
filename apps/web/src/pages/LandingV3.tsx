@@ -305,4 +305,11 @@ const V3_CSS = `
 .v3-marquee-sep{color:var(--cyan);font-style:normal;}
 @keyframes v3marq{to{transform:translateX(-50%);}}
 @media(prefers-reduced-motion:reduce){.v3-marquee-track{animation:none;}}
+
+/* infinity-stolen asymmetric float — margin (not transform) preserves hover lift */
+@media(min-width:861px){
+  .v3-cards{align-items:start;}
+  .v3-cards .v3-card:nth-child(2){margin-top:38px;}
+  .v3-cards .v3-card:nth-child(3){margin-top:16px;}
+}
 `;
