@@ -293,8 +293,8 @@ const V3_CSS = `
   0%,100%{transform:translate3d(0,0,0) scale(1);}
   33%{transform:translate3d(-4%,2%,0) scale(1.08);}
   66%{transform:translate3d(4%,-2%,0) scale(1.04);}}
-@media(max-width:768px){.v3-ribbon{animation:none;height:48vh;filter:blur(34px);}}
-@media(prefers-reduced-motion:reduce){.v3-ribbon{animation:none;}}
+@media(max-width:768px){.v3-ribbon{animation:none;height:48vh;filter:blur(34px);will-change:auto;}}
+@media(prefers-reduced-motion:reduce){.v3-ribbon{animation:none;will-change:auto;}}
 
 /* infinity-stolen proof ticker */
 .v3-marquee{position:relative;z-index:1;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:16px 0;
