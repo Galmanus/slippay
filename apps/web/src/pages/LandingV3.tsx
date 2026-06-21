@@ -113,7 +113,7 @@ export default function LandingV3() {
           <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
             <defs>
               <linearGradient id="v3rg" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#1d4ed8" /><stop offset="30%" stopColor="#2563eb" /><stop offset="52%" stopColor="#60a5fa" /><stop offset="70%" stopColor="#eab308" /><stop offset="88%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#d97706" />
+                <stop offset="0%" stopColor="#60a5fa" /><stop offset="30%" stopColor="#7db1fb" /><stop offset="52%" stopColor="#a9cdfd" /><stop offset="70%" stopColor="#fcd34d" /><stop offset="88%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#f5b942" />
               </linearGradient>
               <filter id="v3warp" x="-20%" y="-70%" width="140%" height="240%">
                 <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="7" result="n" />
@@ -301,9 +301,9 @@ const V3_CSS = `
 /* handhold-accent silk ribbon — defined SVG bezier bands, blue->gold, no WebGL */
 .v3-ribbon{position:absolute;top:52%;left:0;width:100%;height:52vh;z-index:0;pointer-events:none;opacity:.92;}
 .v3-ribbon svg{width:100%;height:100%;display:block;}
-.v3-ribbon-g1{animation:v3rib1 19s ease-in-out infinite;}
-.v3-ribbon-g2{animation:v3rib2 24s ease-in-out infinite;}
-.v3-ribbon-g3{animation:v3rib1 27s ease-in-out infinite reverse;}
+.v3-ribbon-g1{animation:v3rib1 11s ease-in-out infinite;}
+.v3-ribbon-g2{animation:v3rib2 14s ease-in-out infinite;}
+.v3-ribbon-g3{animation:v3rib1 16s ease-in-out infinite reverse;}
 @keyframes v3rib1{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(-58px,16px) skewX(-3deg);}}
 @keyframes v3rib2{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(52px,-20px) skewX(3deg);}}
 @media(max-width:768px){.v3-ribbon{height:34vh;top:50%;}.v3-ribbon-g1,.v3-ribbon-g2,.v3-ribbon-g3{animation:none;}}
