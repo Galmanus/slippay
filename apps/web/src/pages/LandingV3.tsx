@@ -12,7 +12,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   pt: {
-    nav: ["Produto", "Prova", "Agentes", "Docs"],
+    nav: [["Receber", "/receber"], ["Prova", "/zk"], ["Builders", "/builders"], ["Docs", "https://slippay.gitbook.io/slippay-docs"]] as [string, string][],
     cta: "Começar",
     eyebrow: "infraestrutura de dólar · não-custodial · stellar",
     h1a: "Dólar de verdade.",
@@ -40,7 +40,7 @@ const COPY = {
     footer: "slippay · infraestrutura de dólar não-custodial · stellar",
   },
   en: {
-    nav: ["Product", "Proof", "Agents", "Docs"],
+    nav: [["Receive", "/receber"], ["Proof", "/zk"], ["Builders", "/builders"], ["Docs", "https://slippay.gitbook.io/slippay-docs"]] as [string, string][],
     cta: "Get started",
     eyebrow: "dollar infrastructure · non-custodial · stellar",
     h1a: "Real dollars.",
@@ -102,9 +102,11 @@ export default function LandingV3() {
 
       {/* header */}
       <header className="v3-header">
-        <a href="/v3" className="v3-logo">slippay<span>.</span></a>
+        <Link to="/" className="v3-logo">slippay<span>.</span></Link>
         <nav className="v3-nav">
-          {t.nav.map((n) => <span key={n}>{n}</span>)}
+          {t.nav.map(([label, href]) => href.startsWith("http")
+            ? <a key={href} href={href} target="_blank" rel="noreferrer">{label}</a>
+            : <Link key={href} to={href}>{label}</Link>)}
           <button className="v3-langbtn" onClick={() => setLang(lang === "pt" ? "en" : "pt")}>{lang === "pt" ? "EN" : "PT"}</button>
           <Link to="/account" className="v3-cta-sm">{t.cta}</Link>
         </nav>
@@ -193,8 +195,9 @@ const V3_CSS = `
 .v3-logo{font-weight:800;font-size:22px;letter-spacing:-.04em;color:var(--ink);text-decoration:none;}
 .v3-logo span{color:var(--cyan);}
 .v3-nav{display:flex;align-items:center;gap:26px;font-size:13px;color:var(--muted);}
-.v3-nav span{display:none;}
-@media(min-width:860px){.v3-nav span{display:inline;cursor:default;transition:color .2s;}.v3-nav span:hover{color:var(--ink);}}
+.v3-nav>a:not(.v3-cta-sm){display:none;color:var(--muted);text-decoration:none;transition:color .2s;}
+.v3-nav>a:not(.v3-cta-sm):hover{color:var(--ink);}
+@media(min-width:860px){.v3-nav>a:not(.v3-cta-sm){display:inline;}}
 .v3-langbtn{background:none;border:none;color:var(--muted);font:inherit;font-size:12px;letter-spacing:.1em;cursor:pointer;}
 .v3-cta-sm{background:var(--ink);color:var(--bg);text-decoration:none;padding:9px 18px;border-radius:999px;font-size:12px;font-weight:600;letter-spacing:.04em;transition:transform .25s,box-shadow .25s;}
 .v3-cta-sm:hover{transform:translateY(-1px);box-shadow:0 8px 24px -8px rgba(34,211,238,.5);}
