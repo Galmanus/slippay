@@ -109,6 +109,7 @@ export default function LandingV3() {
 
       {/* animated glow field */}
       <div className="v3-bg" aria-hidden>
+        <div className="v3-ribbon" />
         <div className="v3-glow v3-glow-a" />
         <div className="v3-glow v3-glow-b" />
         <div className="v3-grid" />
@@ -195,7 +196,7 @@ const V3_CSS = `
 
 /* animated glow background */
 .v3-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 80% at 50% -10%,#101a30 0%,var(--bg) 60%);}
-.v3-glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;}
+.v3-glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.4;}
 .v3-glow-a{width:46vw;height:46vw;top:-12vw;right:-6vw;background:radial-gradient(circle,rgba(34,211,238,.45),transparent 70%);animation:v3float-a 22s ease-in-out infinite;}
 .v3-glow-b{width:40vw;height:40vw;bottom:-10vw;left:-8vw;background:radial-gradient(circle,rgba(56,189,248,.30),transparent 70%);animation:v3float-b 26s ease-in-out infinite;}
 @keyframes v3float-a{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-4vw,4vw) scale(1.12);}}
@@ -263,4 +264,19 @@ const V3_CSS = `
 .v3-reveal{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease,cubic-bezier(.16,1,.3,1)),transform .8s var(--ease,cubic-bezier(.16,1,.3,1));}
 .v3-reveal.v3-in{opacity:1;transform:none;}
 @media(prefers-reduced-motion:reduce){.v3-reveal{opacity:1;transform:none;}}
+
+/* handhold-accent fluid silk ribbon — cyan->gold mesh, no WebGL */
+.v3-ribbon{position:absolute;top:-15%;left:0;right:0;height:72vh;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(40% 60% at 15% 30%, rgba(34,211,238,.32), transparent 60%),
+    radial-gradient(48% 58% at 80% 40%, rgba(253,218,36,.30), transparent 58%),
+    radial-gradient(38% 54% at 58% 80%, rgba(245,178,40,.22), transparent 60%);
+  filter:blur(44px);will-change:transform;
+  animation:v3ribbon 24s ease-in-out infinite;}
+@keyframes v3ribbon{
+  0%,100%{transform:translate3d(0,0,0) scale(1);}
+  33%{transform:translate3d(-4%,2%,0) scale(1.08);}
+  66%{transform:translate3d(4%,-2%,0) scale(1.04);}}
+@media(max-width:768px){.v3-ribbon{animation:none;height:48vh;filter:blur(34px);}}
+@media(prefers-reduced-motion:reduce){.v3-ribbon{animation:none;}}
 `;
