@@ -7,10 +7,11 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Waitlist } from "../components/Waitlist.tsx";
+import { V3Ribbon } from "../components/V3Ribbon.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
-const ACCENT = "#FDDA24";
+const ACCENT = "#2563eb";
 const LIVE_CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
 const xurl = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
 
@@ -173,7 +174,7 @@ export default function Empresas() {
     );
   };
 
-  const btn = "lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold";
+  const btn = "lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white font-semibold";
   const link = "inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70";
   const sec = "border-t border-[#0a0a0a]/12";
   const h2 = "font-black uppercase tracking-[-0.04em] leading-[0.88] text-center md:text-left mx-auto md:mx-0";
@@ -191,7 +192,8 @@ export default function Empresas() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden" style={display}>
+    <div className="relative min-h-screen bg-transparent text-[#0a0a0a] grain overflow-x-hidden" style={display}>
+      <V3Ribbon />
       <style>{`html{scroll-behavior:smooth}::selection{background:${ACCENT};color:#0a0a0a}`}</style>
 
       <header className={"fixed top-0 left-0 right-0 z-40 px-6 md:px-12 py-4 flex items-center justify-between transition-colors duration-300 " + (scrolled ? "backdrop-blur-md bg-[#f1eee7]/85 border-b border-[#0a0a0a]/8" : "bg-transparent")}>
@@ -201,7 +203,7 @@ export default function Empresas() {
           <Link to="/receber" className="hidden md:inline transition-opacity hover:opacity-70">{t.nav.receive}</Link>
           <a href="/x402-demo" className="hidden md:inline transition-opacity hover:opacity-70">{t.nav.api}</a>
           <span className="hidden md:inline"><LangToggle /></span>
-          <Link to="/account" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] font-semibold hover:opacity-90">{t.nav.cta}</Link>
+          <Link to="/account" className="inline-flex items-center rounded-full px-5 py-2.5 bg-[#0a0a0a] text-white font-semibold hover:opacity-90">{t.nav.cta}</Link>
         </nav>
       </header>
 
@@ -263,7 +265,7 @@ export default function Empresas() {
             </li>
           ))}
         </ul>
-        <a href="/x402-demo" className="mt-10 lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold">{t.api.cta}</a>
+        <a href="/x402-demo" className="mt-10 lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white font-semibold">{t.api.cta}</a>
       </div></section>
 
       {/* PROOF */}

@@ -5,6 +5,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LiveProof } from "../components/LiveProof.tsx";
+import { V3Ribbon } from "../components/V3Ribbon.tsx";
 
 const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 type Lang = "pt" | "en";
@@ -45,10 +46,11 @@ export default function Manifesto() {
   const t = C[lang];
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] overflow-x-hidden">
-      <style>{`::selection{background:#FDDA24;color:#0a0a0a}`}</style>
+    <div className="relative min-h-screen bg-transparent text-[#0a0a0a] overflow-x-hidden">
+      <V3Ribbon />
+      <style>{`::selection{background:#2563eb;color:#ffffff}`}</style>
       <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#2563eb]">.</span></Link>
         <div className="flex items-center gap-6">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/50">
             <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#0a0a0a]" : "hover:opacity-80"}>PT</button>
@@ -76,7 +78,7 @@ export default function Manifesto() {
         ))}
 
         <div className="mt-28 pt-16 border-t border-[#0a0a0a]/10 flex flex-wrap items-center gap-7">
-          <Link to="/account" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.cta}</Link>
+          <Link to="/account" className="lift inline-flex items-center rounded-full px-10 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white">{t.cta}</Link>
           <Link to="/" className="text-[12px] uppercase tracking-[0.18em] text-[#6f6862] hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">{t.home}</Link>
         </div>
         <div className="mt-16"><LiveProof dark lang={lang} /></div>

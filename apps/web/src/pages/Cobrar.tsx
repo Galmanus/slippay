@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import QRCode from "qrcode";
 import { encodeRequest } from "../lib/slippayqr";
 import { LiveProof } from "../components/LiveProof";
+import { V3Ribbon } from "../components/V3Ribbon.tsx";
 
 const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 // Real mainnet recipient (has a USDC trustline). Demo "merchant" receive address.
@@ -43,9 +44,10 @@ export default function Cobrar() {
   }, [amount]);
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
+    <div className="min-h-screen relative bg-transparent text-[#0a0a0a] grain overflow-x-hidden">
+      <V3Ribbon />
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#2563eb]">.</span></Link>
         <Link to="/pay" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Pay →</Link>
       </header>
       <main className="max-w-[560px] mx-auto px-6 md:px-12 pt-10 md:pt-16 pb-24 text-center">
@@ -80,7 +82,7 @@ export default function Cobrar() {
             {err ? "✗ " + err : "● ready to receive · mainnet"}
           </div>
           <button onClick={sharePay}
-            className="lift mt-6 inline-flex items-center justify-center rounded-full px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-medium">
+            className="lift mt-6 inline-flex items-center justify-center rounded-full px-8 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white font-medium">
             {copied ? "Pay link copied ✓" : "Share pay link"}
           </button>
           <div className="mt-3 font-mono text-[10px] text-[#0a0a0a]/40 max-w-[300px] mx-auto break-all">{payLink}</div>

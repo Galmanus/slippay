@@ -4,6 +4,7 @@
 // Do NOT inflate metrics here — investors verify first.
 
 import { Link } from "react-router-dom";
+import { V3Ribbon } from "../components/V3Ribbon.tsx";
 
 const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -12,7 +13,7 @@ const TX = "ede13fb6230334af91b2af1cfab92f86f8f44e8a7755acb57d92891d68a3e957";
 const xc = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
 const CONTACT = "mailto:m.galmanus@gmail.com?subject=SlipPay%20%E2%80%94%20investor";
 
-const mark = { color: "#0a0a0a", background: "#FDDA24", padding: "0 0.06em" } as const;
+const mark = { color: "#0a0a0a", background: "#2563eb", padding: "0 0.06em" } as const;
 
 function Stamp({ n, label }: { n: string; label: string }) {
   return (
@@ -23,16 +24,17 @@ function Stamp({ n, label }: { n: string; label: string }) {
 }
 const Bullets = ({ items }: { items: string[] }) => (
   <div className="mt-6 flex flex-col gap-3 max-w-[64ch]">
-    {items.map((x) => <div key={x} className="flex items-baseline gap-3 text-lg md:text-xl text-[#0a0a0a]/75"><span className="text-[#FDDA24] shrink-0">✓</span><span>{x}</span></div>)}
+    {items.map((x) => <div key={x} className="flex items-baseline gap-3 text-lg md:text-xl text-[#0a0a0a]/75"><span className="text-[#2563eb] shrink-0">✓</span><span>{x}</span></div>)}
   </div>
 );
 
 export default function Investors() {
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <style>{`::selection{background:#FDDA24;color:#0a0a0a}`}</style>
+    <div className="min-h-screen relative bg-transparent text-[#0a0a0a] grain overflow-x-hidden">
+      <V3Ribbon />
+      <style>{`::selection{background:#2563eb;color:#0a0a0a}`}</style>
       <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#2563eb]">.</span></Link>
         <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
       </header>
 
@@ -48,7 +50,7 @@ export default function Investors() {
           BRL in → USDC out → programmable global payments.
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-6">
-          <a href={CONTACT} className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Get in touch</a>
+          <a href={CONTACT} className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white">Get in touch</a>
           <Link to="/gate" className="text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>See the technical moat →</Link>
         </div>
 
@@ -124,7 +126,7 @@ export default function Investors() {
             No wires. No banking delays. No currency friction. Just programmable dollars that move instantly, anywhere.
           </p>
           <div className="mt-10">
-            <a href={CONTACT} className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Talk to the founder</a>
+            <a href={CONTACT} className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white">Talk to the founder</a>
           </div>
         </section>
 
