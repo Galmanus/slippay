@@ -7,12 +7,12 @@
 <style>
   :root{
     --bone:#f1eee7; --ink:#15130f; --ink-soft:#5c574e; --line:#d8d2c6;
-    --yellow:#fdda24; --paper:#fbf9f4; --leak:#b4402f; --ok:#1f7a4d;
+    --yellow:#2563eb; --paper:#fbf9f4; --leak:#b4402f; --ok:#1f7a4d;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
-    background:var(--bone); color:var(--ink);
+    background:transparent; color:var(--ink);
     font-family:"Georgia","Times New Roman",serif;
     -webkit-font-smoothing:antialiased; line-height:1.5;
   }
@@ -91,9 +91,37 @@
   .reveal{opacity:0;transform:translateY(16px);animation:rise .7s forwards}
   @keyframes rise{to{opacity:1;transform:none}}
   @media(max-width:760px){.grid3,.reg,.proof{grid-template-columns:1fr}.reg .col:first-child{border-right:none;border-bottom:2px solid var(--ink)}.proof div{border-right:none;border-bottom:1px solid var(--line)}.row{grid-template-columns:34px 1fr 1fr}}
+
+  /* V3 skin: silk ribbon background */
+  .zkrib{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:radial-gradient(120% 80% at 50% -10%,#faf8f3 0%,#f1eee7 60%)}
+  .zkrib svg{position:absolute;top:46%;left:0;width:100%;height:52vh;display:block}
+  .zkrib-g1{animation:zkrb1 11s ease-in-out infinite}
+  .zkrib-g2{animation:zkrb2 14s ease-in-out infinite}
+  .zkrib-g3{animation:zkrb1 16s ease-in-out infinite reverse}
+  @keyframes zkrb1{0%,100%{transform:translate(0,0) skewX(0deg)}50%{transform:translate(-58px,16px) skewX(-3deg)}}
+  @keyframes zkrb2{0%,100%{transform:translate(0,0) skewX(0deg)}50%{transform:translate(52px,-20px) skewX(3deg)}}
+  @media(max-width:768px){.zkrib svg{height:34vh;top:48%}.zkrib-g1,.zkrib-g2,.zkrib-g3{animation:none}}
+  @media(prefers-reduced-motion:reduce){.zkrib-g1,.zkrib-g2,.zkrib-g3{animation:none}}
+
 </style>
 </head>
 <body>
+<div class="zkrib" aria-hidden>
+  <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="zkrbg" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#60a5fa"/><stop offset="30%" stop-color="#7db1fb"/><stop offset="52%" stop-color="#a9cdfd"/><stop offset="70%" stop-color="#fcd34d"/><stop offset="88%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f5b942"/>
+      </linearGradient>
+      <filter id="zkrwarp" x="-20%" y="-70%" width="140%" height="240%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+    <g class="zkrib-g1"><path d="M-200 242.5 C 160 122.5 360 362.5 720 242.5 S 1280 122.5 1640 242.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.30"/><path d="M-200 247.5 C 160 127.5 360 367.5 720 247.5 S 1280 127.5 1640 247.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.34"/><path d="M-200 252.5 C 160 132.5 360 372.5 720 252.5 S 1280 132.5 1640 252.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.38"/><path d="M-200 257.5 C 160 137.5 360 377.5 720 257.5 S 1280 137.5 1640 257.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.42"/><path d="M-200 262.5 C 160 142.5 360 382.5 720 262.5 S 1280 142.5 1640 262.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.46"/><path d="M-200 267.5 C 160 147.5 360 387.5 720 267.5 S 1280 147.5 1640 267.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.50"/><path d="M-200 272.5 C 160 152.5 360 392.5 720 272.5 S 1280 152.5 1640 272.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.53"/><path d="M-200 277.5 C 160 157.5 360 397.5 720 277.5 S 1280 157.5 1640 277.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.57"/></g>
+    <g class="zkrib-g2"><path d="M-200 282.5 C 160 162.5 360 402.5 720 282.5 S 1280 162.5 1640 282.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.61"/><path d="M-200 287.5 C 160 167.5 360 407.5 720 287.5 S 1280 167.5 1640 287.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.65"/><path d="M-200 292.5 C 160 172.5 360 412.5 720 292.5 S 1280 172.5 1640 292.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.69"/><path d="M-200 297.5 C 160 177.5 360 417.5 720 297.5 S 1280 177.5 1640 297.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.73"/><path d="M-200 302.5 C 160 182.5 360 422.5 720 302.5 S 1280 182.5 1640 302.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.73"/><path d="M-200 307.5 C 160 187.5 360 427.5 720 307.5 S 1280 187.5 1640 307.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.69"/><path d="M-200 312.5 C 160 192.5 360 432.5 720 312.5 S 1280 192.5 1640 312.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.65"/><path d="M-200 317.5 C 160 197.5 360 437.5 720 317.5 S 1280 197.5 1640 317.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.61"/></g>
+    <g class="zkrib-g3"><path d="M-200 322.5 C 160 202.5 360 442.5 720 322.5 S 1280 202.5 1640 322.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.57"/><path d="M-200 327.5 C 160 207.5 360 447.5 720 327.5 S 1280 207.5 1640 327.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.53"/><path d="M-200 332.5 C 160 212.5 360 452.5 720 332.5 S 1280 212.5 1640 332.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.50"/><path d="M-200 337.5 C 160 217.5 360 457.5 720 337.5 S 1280 217.5 1640 337.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.46"/><path d="M-200 342.5 C 160 222.5 360 462.5 720 342.5 S 1280 222.5 1640 342.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.42"/><path d="M-200 347.5 C 160 227.5 360 467.5 720 347.5 S 1280 227.5 1640 347.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.38"/><path d="M-200 352.5 C 160 232.5 360 472.5 720 352.5 S 1280 232.5 1640 352.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.34"/><path d="M-200 357.5 C 160 237.5 360 477.5 720 357.5 S 1280 237.5 1640 357.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.30"/></g>
+  </svg>
+</div>
 <header><div class="wrap">
   <div class="brand"><b>slippay</b> zk</div>
   <div class="tag">real-world zk · stellar</div>
