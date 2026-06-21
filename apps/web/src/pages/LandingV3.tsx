@@ -109,7 +109,31 @@ export default function LandingV3() {
 
       {/* animated glow field */}
       <div className="v3-bg" aria-hidden>
-        <div className="v3-ribbon" />
+        <div className="v3-ribbon">
+          <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="v3rg1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#22d3ee" /><stop offset="46%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#f5b400" />
+              </linearGradient>
+              <linearGradient id="v3rg2" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#38bdf8" /><stop offset="55%" stopColor="#6366f1" /><stop offset="100%" stopColor="#fcd34d" />
+              </linearGradient>
+              <linearGradient id="v3rg3" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#a5f3fc" /><stop offset="100%" stopColor="#fde68a" />
+              </linearGradient>
+              <filter id="v3rblur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="4" /></filter>
+            </defs>
+            <g className="v3-ribbon-g1" filter="url(#v3rblur)">
+              <path d="M-200 300 C 160 180 360 420 720 300 S 1280 180 1640 300" fill="none" stroke="url(#v3rg1)" strokeWidth="72" strokeLinecap="round" opacity="0.6" />
+            </g>
+            <g className="v3-ribbon-g2" filter="url(#v3rblur)">
+              <path d="M-200 342 C 200 244 420 462 760 332 S 1300 222 1640 322" fill="none" stroke="url(#v3rg2)" strokeWidth="46" strokeLinecap="round" opacity="0.5" />
+            </g>
+            <g className="v3-ribbon-g3" filter="url(#v3rblur)">
+              <path d="M-200 268 C 140 202 380 360 700 280 S 1250 172 1640 280" fill="none" stroke="url(#v3rg3)" strokeWidth="22" strokeLinecap="round" opacity="0.55" />
+            </g>
+          </svg>
+        </div>
         <div className="v3-glow v3-glow-a" />
         <div className="v3-glow v3-glow-b" />
         <div className="v3-grid" />
@@ -202,24 +226,16 @@ export default function LandingV3() {
 }
 
 const V3_CSS = `
-.v3{--bg:#0a0e1a;--bg2:#0d1322;--ink:#f3f5fb;--muted:#8a93ad;--cyan:#22d3ee;--cyan2:#38bdf8;--line:rgba(255,255,255,.08);
+.v3{--bg:#f1eee7;--bg2:#ffffff;--ink:#0a0a0a;--muted:#5b5b52;--cyan:#2563eb;--cyan2:#3b82f6;--line:rgba(10,10,10,.10);
   position:relative;min-height:100vh;background:var(--bg);color:var(--ink);overflow-x:hidden;
   font-family:"Space Grotesk","DM Sans",system-ui,sans-serif;}
 .v3 *{box-sizing:border-box;}
-.v3 ::selection{background:var(--cyan);color:var(--bg);}
+.v3 ::selection{background:var(--cyan);color:#fff;}
 
-/* animated glow background */
-.v3-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 80% at 50% -10%,#101a30 0%,var(--bg) 60%);}
-.v3-glow{position:absolute;border-radius:50%;filter:blur(90px);opacity:.4;}
-.v3-glow-a{width:46vw;height:46vw;top:-12vw;right:-6vw;background:radial-gradient(circle,rgba(34,211,238,.45),transparent 70%);animation:v3float-a 22s ease-in-out infinite;}
-.v3-glow-b{width:40vw;height:40vw;bottom:-10vw;left:-8vw;background:radial-gradient(circle,rgba(56,189,248,.30),transparent 70%);animation:v3float-b 26s ease-in-out infinite;}
-@keyframes v3float-a{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-4vw,4vw) scale(1.12);}}
-@keyframes v3float-b{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(5vw,-3vw) scale(1.1);}}
-.v3-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(100% 60% at 50% 0%,#000 30%,transparent 80%);opacity:.5;}
-.v3-grain{position:absolute;inset:0;opacity:.08;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
-.v3-vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 240px 50px rgba(0,0,0,.55);}
-@media(max-width:768px){.v3-grain{opacity:.05;}}
-@media(prefers-reduced-motion:reduce){.v3-glow{animation:none;}}
+/* bone canvas — ribbon is the only accent, no dark clutter */
+.v3-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 80% at 50% -10%,#faf8f3 0%,var(--bg) 60%);}
+.v3-glow,.v3-grain,.v3-vignette{display:none;}
+.v3-grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(100% 50% at 50% 0%,#000 20%,transparent 75%);opacity:.4;}
 
 /* layout */
 .v3-header,.v3-hero,.v3-section,.v3-proof,.v3-close{position:relative;z-index:1;}
@@ -243,8 +259,8 @@ const V3_CSS = `
 .v3-accent{background:linear-gradient(90deg,var(--cyan),var(--cyan2));-webkit-background-clip:text;background-clip:text;color:transparent;}
 .v3-sub{margin:26px auto 0;max-width:52ch;font-size:clamp(1rem,2vw,1.3rem);line-height:1.55;color:var(--muted);}
 .v3-actions{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin-top:38px;}
-.v3-cta{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(90deg,var(--cyan),var(--cyan2));color:#04121a;text-decoration:none;padding:15px 30px;border-radius:999px;font-weight:700;font-size:14px;letter-spacing:.02em;transition:transform .25s,box-shadow .25s;box-shadow:0 10px 30px -10px rgba(34,211,238,.6);}
-.v3-cta:hover{transform:translateY(-2px);box-shadow:0 16px 40px -10px rgba(34,211,238,.75);}
+.v3-cta{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:#fff;text-decoration:none;padding:15px 30px;border-radius:999px;font-weight:700;font-size:14px;letter-spacing:.02em;transition:transform .25s,box-shadow .25s;box-shadow:0 12px 30px -12px rgba(10,10,10,.5);}
+.v3-cta:hover{transform:translateY(-2px);box-shadow:0 18px 44px -12px rgba(10,10,10,.55);}
 .v3-arrow{transition:transform .25s;}
 .v3-cta:hover .v3-arrow{transform:translateX(4px);}
 .v3-ghost{display:inline-flex;align-items:center;color:var(--ink);text-decoration:none;font-size:13px;letter-spacing:.04em;border-bottom:1px solid var(--cyan);padding-bottom:3px;opacity:.85;transition:opacity .2s;}
@@ -259,14 +275,14 @@ const V3_CSS = `
 .v3-h2{font-weight:800;letter-spacing:-.03em;font-size:clamp(1.8rem,5vw,3.4rem);line-height:1.05;max-width:18ch;}
 .v3-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px;}
 @media(max-width:860px){.v3-cards{grid-template-columns:1fr;}}
-.v3-card{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:30px 26px;transition:transform .3s,border-color .3s,box-shadow .3s;}
-.v3-card:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.4);box-shadow:0 20px 50px -24px rgba(34,211,238,.5);}
+.v3-card{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:30px 26px;box-shadow:0 18px 40px -28px rgba(10,10,10,.25);transition:transform .3s,border-color .3s,box-shadow .3s;}
+.v3-card:hover{transform:translateY(-4px);border-color:rgba(37,99,235,.45);box-shadow:0 26px 60px -30px rgba(37,99,235,.4);}
 .v3-card-n{font-family:"Space Mono",monospace;font-size:12px;color:var(--cyan);letter-spacing:.2em;}
 .v3-card-h{margin-top:16px;font-size:22px;font-weight:700;letter-spacing:-.02em;}
 .v3-card-b{margin-top:12px;font-size:14.5px;line-height:1.6;color:var(--muted);}
 
 .v3-proof{padding:clamp(40px,8vh,80px) clamp(20px,5vw,64px);}
-.v3-proof-inner{max-width:1100px;margin:0 auto;background:linear-gradient(135deg,#0e1830,#0a1020);border:1px solid rgba(34,211,238,.25);border-radius:28px;padding:clamp(36px,7vw,72px);text-align:center;display:flex;flex-direction:column;align-items:center;}
+.v3-proof-inner{max-width:1100px;margin:0 auto;background:var(--bg2);border:1px solid var(--line);border-radius:28px;padding:clamp(36px,7vw,72px);text-align:center;display:flex;flex-direction:column;align-items:center;box-shadow:0 30px 70px -40px rgba(10,10,10,.35);}
 .v3-proof-sub{margin:18px auto 32px;max-width:48ch;color:var(--muted);font-size:1.05rem;line-height:1.5;}
 .v3-contract{margin-top:22px;font-family:"Space Mono",monospace;font-size:11px;color:var(--muted);word-break:break-all;max-width:560px;}
 
@@ -281,20 +297,16 @@ const V3_CSS = `
 .v3-reveal.v3-in{opacity:1;transform:none;}
 @media(prefers-reduced-motion:reduce){.v3-reveal{opacity:1;transform:none;}}
 
-/* handhold-accent fluid silk ribbon — cyan->gold mesh, no WebGL */
-.v3-ribbon{position:absolute;top:-15%;left:0;right:0;height:72vh;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(40% 60% at 15% 30%, rgba(34,211,238,.32), transparent 60%),
-    radial-gradient(48% 58% at 80% 40%, rgba(253,218,36,.30), transparent 58%),
-    radial-gradient(38% 54% at 58% 80%, rgba(245,178,40,.22), transparent 60%);
-  filter:blur(44px);will-change:transform;
-  animation:v3ribbon 24s ease-in-out infinite;}
-@keyframes v3ribbon{
-  0%,100%{transform:translate3d(0,0,0) scale(1);}
-  33%{transform:translate3d(-4%,2%,0) scale(1.08);}
-  66%{transform:translate3d(4%,-2%,0) scale(1.04);}}
-@media(max-width:768px){.v3-ribbon{animation:none;height:48vh;filter:blur(34px);will-change:auto;}}
-@media(prefers-reduced-motion:reduce){.v3-ribbon{animation:none;will-change:auto;}}
+/* handhold-accent silk ribbon — defined SVG bezier bands, blue->gold, no WebGL */
+.v3-ribbon{position:absolute;top:52%;left:0;width:100%;height:52vh;z-index:0;pointer-events:none;opacity:.92;}
+.v3-ribbon svg{width:100%;height:100%;display:block;}
+.v3-ribbon-g1{animation:v3rib1 19s ease-in-out infinite;}
+.v3-ribbon-g2{animation:v3rib2 24s ease-in-out infinite;}
+.v3-ribbon-g3{animation:v3rib1 27s ease-in-out infinite reverse;}
+@keyframes v3rib1{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(-58px,16px) skewX(-3deg);}}
+@keyframes v3rib2{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(52px,-20px) skewX(3deg);}}
+@media(max-width:768px){.v3-ribbon{height:34vh;top:50%;}.v3-ribbon-g1,.v3-ribbon-g2,.v3-ribbon-g3{animation:none;}}
+@media(prefers-reduced-motion:reduce){.v3-ribbon-g1,.v3-ribbon-g2,.v3-ribbon-g3{animation:none;}}
 
 /* infinity-stolen proof ticker */
 .v3-marquee{position:relative;z-index:1;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:16px 0;
