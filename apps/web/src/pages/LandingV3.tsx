@@ -112,26 +112,27 @@ export default function LandingV3() {
         <div className="v3-ribbon">
           <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
             <defs>
-              <linearGradient id="v3rg1" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#22d3ee" /><stop offset="46%" stopColor="#3b82f6" /><stop offset="100%" stopColor="#f5b400" />
+              <linearGradient id="v3rg" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#1d4ed8" /><stop offset="30%" stopColor="#2563eb" /><stop offset="52%" stopColor="#60a5fa" /><stop offset="70%" stopColor="#eab308" /><stop offset="88%" stopColor="#f59e0b" /><stop offset="100%" stopColor="#d97706" />
               </linearGradient>
-              <linearGradient id="v3rg2" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#38bdf8" /><stop offset="55%" stopColor="#6366f1" /><stop offset="100%" stopColor="#fcd34d" />
-              </linearGradient>
-              <linearGradient id="v3rg3" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#a5f3fc" /><stop offset="100%" stopColor="#fde68a" />
-              </linearGradient>
-              <filter id="v3rblur" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="4" /></filter>
+              <filter id="v3warp" x="-20%" y="-70%" width="140%" height="240%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="7" result="n" />
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G" />
+              </filter>
             </defs>
-            <g className="v3-ribbon-g1" filter="url(#v3rblur)">
-              <path d="M-200 300 C 160 180 360 420 720 300 S 1280 180 1640 300" fill="none" stroke="url(#v3rg1)" strokeWidth="72" strokeLinecap="round" opacity="0.6" />
-            </g>
-            <g className="v3-ribbon-g2" filter="url(#v3rblur)">
-              <path d="M-200 342 C 200 244 420 462 760 332 S 1300 222 1640 322" fill="none" stroke="url(#v3rg2)" strokeWidth="46" strokeLinecap="round" opacity="0.5" />
-            </g>
-            <g className="v3-ribbon-g3" filter="url(#v3rblur)">
-              <path d="M-200 268 C 140 202 380 360 700 280 S 1250 172 1640 280" fill="none" stroke="url(#v3rg3)" strokeWidth="22" strokeLinecap="round" opacity="0.55" />
-            </g>
+            {[0, 1, 2].map((g) => (
+              <g key={g} className={`v3-ribbon-g${g + 1}`} filter="url(#v3warp)">
+                {Array.from({ length: 8 }).map((_, i) => {
+                  const k = g * 8 + i;
+                  const off = (k - 11.5) * 5;
+                  const op = (0.3 + 0.45 * (1 - Math.abs(k - 11.5) / 11.5)).toFixed(2);
+                  return (
+                    <path key={i} d={`M-200 ${300 + off} C 160 ${180 + off} 360 ${420 + off} 720 ${300 + off} S 1280 ${180 + off} 1640 ${300 + off}`}
+                      fill="none" stroke="url(#v3rg)" strokeWidth="3.6" strokeLinecap="round" opacity={op} />
+                  );
+                })}
+              </g>
+            ))}
           </svg>
         </div>
         <div className="v3-glow v3-glow-a" />
