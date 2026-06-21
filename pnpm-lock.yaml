@@ -97,6 +97,9 @@ importers:
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
+      lenis:
+        specifier: ^1.3.23
+        version: 1.3.23(react@18.3.1)
       marked:
         specifier: ^18.0.3
         version: 18.0.3
@@ -1799,14 +1802,17 @@ packages:
   '@stellar/stellar-base@13.1.0':
     resolution: {integrity: sha512-90EArG+eCCEzDGj3OJNoCtwpWDwxjv+rs/RNPhvg4bulpjN/CSRj+Ys/SalRcfM4/WRC5/qAfjzmJBAuquWhkA==}
     engines: {node: '>=18.0.0'}
+    deprecated: This package is now rolled into @stellar/stellar-sdk. Please use @stellar/stellar-sdk to continue receiving updates and support.
 
   '@stellar/stellar-base@14.0.1':
     resolution: {integrity: sha512-mI6Kjh9hGWDA1APawQTtCbR7702dNT/8Te1uuRFPqqdoAKBk3WpXOQI3ZSZO+5olW7BSHpmVG5KBPZpIpQxIvw==}
     engines: {node: '>=20.0.0'}
+    deprecated: This package is now rolled into @stellar/stellar-sdk. Please use @stellar/stellar-sdk to continue receiving updates and support.
 
   '@stellar/stellar-base@15.0.0':
     resolution: {integrity: sha512-XQhxUr9BYiEcFcgc4oWcCMR9QJCny/GmmGsuwPKf/ieIcOeb5149KLHYx9mJCA0ea8QbucR2/GzV58QbXOTxQA==}
     engines: {node: '>=20.0.0'}
+    deprecated: This package is now rolled into @stellar/stellar-sdk. Please use @stellar/stellar-sdk to continue receiving updates and support.
 
   '@stellar/stellar-sdk@13.3.0':
     resolution: {integrity: sha512-8+GHcZLp+mdin8gSjcgfb/Lb6sSMYRX6Nf/0LcSJxvjLQR0XHpjGzOiRbYb2jSXo51EnA6kAV5j+4Pzh5OUKUg==}
@@ -3291,6 +3297,20 @@ packages:
 
   keyvaluestorage-interface@1.0.0:
     resolution: {integrity: sha512-8t6Q3TclQ4uZynJY9IGr2+SsIGwK9JHcO6ootkHCGA0CrQCRy+VkouYNO2xicET6b9al7QKzpebNow+gkpCL8g==}
+
+  lenis@1.3.23:
+    resolution: {integrity: sha512-YxYq3TJqj9sJNv0V9SkyQHejt14xwyIwgDaaMK89Uf9SxQfIszu+gTQSSphh6BWlLTNVKvvXAGkg+Zf+oFIevg==}
+    peerDependencies:
+      '@nuxt/kit': '>=3.0.0'
+      react: '>=17.0.0'
+      vue: '>=3.0.0'
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      react:
+        optional: true
+      vue:
+        optional: true
 
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
@@ -8951,6 +8971,10 @@ snapshots:
       safe-buffer: 5.2.1
 
   keyvaluestorage-interface@1.0.0: {}
+
+  lenis@1.3.23(react@18.3.1):
+    optionalDependencies:
+      react: 18.3.1
 
   lilconfig@3.1.3: {}
 

@@ -86,6 +86,21 @@ export default function LandingV3() {
     return () => io.disconnect();
   }, []);
 
+  // smooth scroll (landing-scoped, torn down on unmount; respects reduced-motion + mobile)
+  useEffect(() => {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    let cancelled = false;
+    let lenis: { raf: (t: number) => void; destroy: () => void } | null = null;
+    import("lenis").then(({ default: Lenis }) => {
+      if (cancelled) return;
+      lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+      const loop = (time: number) => { lenis?.raf(time); raf = requestAnimationFrame(loop); };
+      raf = requestAnimationFrame(loop);
+    });
+    return () => { cancelled = true; cancelAnimationFrame(raf); lenis?.destroy(); };
+  }, []);
+
   const xurl = `https://stellar.expert/explorer/public/contract/${ZK_CONTRACT}`;
 
   return (
