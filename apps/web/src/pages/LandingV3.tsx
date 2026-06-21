@@ -5,6 +5,7 @@
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { PayFlowDemo } from "../components/PayFlowDemo.tsx";
 
 const ZK_CONTRACT = "CBDS2YSLATINQVUDG5Y5HV4KQBEAVFDRPEINVEUTYSX3CZZQKBY5U3FE";
 
@@ -25,6 +26,8 @@ const COPY = {
       ["mainnet stellar", "contrato vivo, verificável agora"],
       ["zero-knowledge", "prova de conformidade sem revelar nada"],
     ],
+    demoTitle: "Veja em ação.",
+    demoSub: "Recebe dólar, assina com o rosto, prova on-chain. Em três toques, sem banco no meio.",
     sectionsTitle: "Construído como infraestrutura, não como app.",
     features: [
       ["Carteira biométrica", "Sem seed phrase, sem senha. Face ID ou digital assina cada transação, dentro do enclave seguro do aparelho."],
@@ -53,6 +56,8 @@ const COPY = {
       ["stellar mainnet", "live contract, verifiable now"],
       ["zero-knowledge", "compliance proof revealing nothing"],
     ],
+    demoTitle: "See it in action.",
+    demoSub: "Receive dollars, sign with your face, prove on-chain. Three taps, no bank in between.",
     sectionsTitle: "Built as infrastructure, not an app.",
     features: [
       ["Biometric wallet", "No seed phrase, no password. Face ID or fingerprint signs every transaction inside the device's secure enclave."],
@@ -189,6 +194,13 @@ export default function LandingV3() {
         </div>
       </div>
 
+      {/* live demo — cinematic iPhone (scan → Face ID → paid, real mainnet tx) */}
+      <section className="v3-demo v3-reveal">
+        <h2 className="v3-h2 v3-demo-h">{t.demoTitle}</h2>
+        <p className="v3-demo-sub">{t.demoSub}</p>
+        <div className="v3-demo-stage"><PayFlowDemo /></div>
+      </section>
+
       {/* features */}
       <section className="v3-section v3-reveal">
         <h2 className="v3-h2">{t.sectionsTitle}</h2>
@@ -272,6 +284,10 @@ const V3_CSS = `
 .v3-metric-k{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);}
 .v3-metric-v{margin-top:8px;font-size:14px;color:var(--muted);line-height:1.4;}
 
+.v3-demo{max-width:1100px;margin:0 auto;padding:clamp(50px,9vh,110px) clamp(20px,5vw,64px);text-align:center;display:flex;flex-direction:column;align-items:center;}
+.v3-demo-h{max-width:none;}
+.v3-demo-sub{margin:18px auto 48px;max-width:46ch;color:var(--muted);font-size:1.05rem;line-height:1.55;}
+.v3-demo-stage{display:flex;justify-content:center;width:100%;}
 .v3-section{max-width:1100px;margin:0 auto;padding:clamp(60px,12vh,120px) clamp(20px,5vw,64px);}
 .v3-h2{font-weight:800;letter-spacing:-.03em;font-size:clamp(1.8rem,5vw,3.4rem);line-height:1.05;max-width:18ch;}
 .v3-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px;}
