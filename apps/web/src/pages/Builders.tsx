@@ -6,6 +6,7 @@
 
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { V3Ribbon } from "../components/V3Ribbon.tsx";
 import { Logo } from "../components/Logo.tsx";
 import { LivePaymentCard } from "../components/LivePaymentCard.tsx";
 import { RuleSandbox } from "../components/RuleSandbox.tsx";
@@ -41,7 +42,7 @@ function Artifact({ label, id, href, net }: { label: string; id: string; href: s
         <div className="font-mono text-[13px] text-[#0a0a0a] truncate">{trunc(id)}</div>
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <span className={`font-mono text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded ${net === "mainnet" ? "bg-[#0a0a0a] text-[#FDDA24]" : "bg-[#0a0a0a]/[0.06] text-[#0a0a0a]/55"}`}>{net}</span>
+        <span className={`font-mono text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded ${net === "mainnet" ? "bg-[#0a0a0a] text-[#2563eb]" : "bg-[#0a0a0a]/[0.06] text-[#0a0a0a]/55"}`}>{net}</span>
         <span className="text-[#0a0a0a]/40 group-hover:text-[#0a0a0a] transition-colors">↗</span>
       </div>
     </a>
@@ -68,7 +69,8 @@ export default function Builders() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain">
+    <div className="relative min-h-screen bg-transparent text-[#0a0a0a] grain">
+      <V3Ribbon />
       {/* header */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[#f1eee7]/80 border-b border-[#0a0a0a]/8">
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
@@ -88,13 +90,13 @@ export default function Builders() {
           <div>
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/35">for builders · live on stellar mainnet</div>
             <h1 className="mt-6 font-bold uppercase tracking-[-0.04em] leading-[0.95] text-[clamp(2.2rem,5.5vw,4rem)]" style={display}>
-              Payment rails for <em className="not-italic" style={{ color: "#A16207" }}>autonomous agents.</em>
+              Payment rails for <em className="not-italic" style={{ color: "#1d4ed8" }}>autonomous agents.</em>
             </h1>
             <p className="mt-7 text-xl md:text-2xl leading-snug max-w-[30ch]" style={display}>
               An agent pays on its own — and <strong>can't exceed the limit you set</strong>. We prove that bound on-chain, not in a slide. Non-custodial. Live on mainnet.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
-              <a href={pub("tx", REAL_TX)} target="_blank" rel="noreferrer" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">Verify a real payment ↗</a>
+              <a href={pub("tx", REAL_TX)} target="_blank" rel="noreferrer" className="lift inline-flex items-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white">Verify a real payment ↗</a>
               <a href="#mechanism" className="text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>How it works ↓</a>
             </div>
           </div>
@@ -115,7 +117,7 @@ export default function Builders() {
             ["Slippay", "The bound is enforced where the money moves: on-chain, in the contract, and attested by an independent signer. The agent literally cannot execute outside it."],
           ].map(([h, b], i) => (
             <div key={i}>
-              <div className="font-mono text-[11px] text-[#FDDA24] bg-[#0a0a0a] inline-block px-2 py-0.5 rounded">{`0${i + 1}`}</div>
+              <div className="font-mono text-[11px] text-[#2563eb] bg-[#0a0a0a] inline-block px-2 py-0.5 rounded">{`0${i + 1}`}</div>
               <div className="mt-3 font-bold text-lg" style={display}>{h}</div>
               <p className="mt-2 text-[#0a0a0a]/65 leading-relaxed">{b}</p>
             </div>
@@ -268,7 +270,7 @@ revoke(id)`}</pre>
             <div key={i} className="rounded-xl border border-[#0a0a0a]/12 px-4 py-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="font-bold" style={display}>{h}</div>
-                <span className={`font-mono text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded ${tag === "mainnet" || tag === "live" ? "bg-[#0a0a0a] text-[#FDDA24]" : "bg-[#0a0a0a]/[0.06] text-[#0a0a0a]/55"}`}>{tag}</span>
+                <span className={`font-mono text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded ${tag === "mainnet" || tag === "live" ? "bg-[#0a0a0a] text-[#2563eb]" : "bg-[#0a0a0a]/[0.06] text-[#0a0a0a]/55"}`}>{tag}</span>
               </div>
               <p className="mt-2 text-[14px] text-[#0a0a0a]/60 leading-relaxed">{b}</p>
             </div>
@@ -313,7 +315,7 @@ revoke(id)`}</pre>
           Open the contract. See for yourself.
         </h2>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
-          <a href={pub("contract", RAIL_MAINNET)} target="_blank" rel="noreferrer" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">The live contract ↗</a>
+          <a href={pub("contract", RAIL_MAINNET)} target="_blank" rel="noreferrer" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#0a0a0a] text-white">The live contract ↗</a>
           <a href={pub("tx", REAL_TX)} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>A real payment ↗</a>
         </div>
         <div className="mt-12 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/35">slippay · provable agent payments · stellar mainnet</div>
