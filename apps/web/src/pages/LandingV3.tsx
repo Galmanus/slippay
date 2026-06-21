@@ -151,6 +151,19 @@ export default function LandingV3() {
         </div>
       </section>
 
+      {/* proof marquee */}
+      <div className="v3-marquee" aria-hidden>
+        <div className="v3-marquee-track">
+          {[0, 1].map((row) => (
+            <div key={row} className="v3-marquee-row">
+              {["Stellar", "USDC", "Pix", "CCTP", "mainnet", "on-chain proof", "non-custodial", "zero-knowledge"].map((w) => (
+                <span key={w} className="v3-marquee-item">{w}<i className="v3-marquee-sep">·</i></span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* features */}
       <section className="v3-section v3-reveal">
         <h2 className="v3-h2">{t.sectionsTitle}</h2>
@@ -282,4 +295,14 @@ const V3_CSS = `
   66%{transform:translate3d(4%,-2%,0) scale(1.04);}}
 @media(max-width:768px){.v3-ribbon{animation:none;height:48vh;filter:blur(34px);}}
 @media(prefers-reduced-motion:reduce){.v3-ribbon{animation:none;}}
+
+/* infinity-stolen proof ticker */
+.v3-marquee{position:relative;z-index:1;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:16px 0;
+  mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);}
+.v3-marquee-track{display:flex;width:max-content;animation:v3marq 34s linear infinite;}
+.v3-marquee-row{display:flex;align-items:center;}
+.v3-marquee-item{display:inline-flex;align-items:center;gap:22px;font-family:"Space Mono",monospace;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);padding-right:22px;white-space:nowrap;}
+.v3-marquee-sep{color:var(--cyan);font-style:normal;}
+@keyframes v3marq{to{transform:translateX(-50%);}}
+@media(prefers-reduced-motion:reduce){.v3-marquee-track{animation:none;}}
 `;
