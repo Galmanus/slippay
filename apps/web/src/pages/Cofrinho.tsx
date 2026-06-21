@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import NumberFlow from "@number-flow/react";
 import { Waitlist } from "../components/Waitlist.tsx";
+import { PayFlowDemo } from "../components/PayFlowDemo.tsx";
 
 const brlFmt = { style: "currency" as const, currency: "BRL", maximumFractionDigits: 0 };
 
@@ -240,6 +241,16 @@ export default function Cofrinho() {
         </div>
       </section>
 
+      {/* DEMO — cinematic iPhone (scan → Face ID → paid, real mainnet tx) */}
+      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-32 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+        <div>
+          <Stamp label={lang === "pt" ? "veja funcionar" : "see it work"} />
+          <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6.5vw,4.25rem)] max-w-[13ch]`} style={display}>{lang === "pt" ? "Três toques. Sem banco." : "Three taps. No bank."}</h2>
+          <p className="mt-6 text-base md:text-xl text-[#0a0a0a]/60 max-w-[40ch] leading-relaxed">{lang === "pt" ? "Aponta no QR, assina com o rosto, pago. Cada movimento deixa prova na mainnet." : "Point at the QR, sign with your face, paid. Every move leaves proof on mainnet."}</p>
+        </div>
+        <div className="flex justify-center md:justify-self-end"><PayFlowDemo /></div>
+      </div></section>
+
       {/* ANTI-SAVINGS BAR — the pitch in one bar (stolen: DollarUp) */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-32">
         <Stamp label={t.bar.stamp} />
@@ -335,6 +346,22 @@ export default function Cofrinho() {
           ))}
         </div>
         <a href={xurl("contract", LIVE_CONTRACT)} target="_blank" rel="noreferrer" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{t.trust.contractBtn}</a>
+      </div></section>
+
+      {/* ZK — confidential proof (prove without revealing) */}
+      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-32">
+        <Stamp label={lang === "pt" ? "prova confidencial · zk" : "confidential proof · zk"} />
+        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Prova que obedeceu. Sem mostrar nada." : "Proves it obeyed. Without showing anything."}</h2>
+        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Um circuito de conhecimento-zero prova on-chain que as regras foram cumpridas — idade, sanções, limites — sem revelar valor, recebedor ou identidade. Verificado na mainnet Stellar." : "A zero-knowledge circuit proves on-chain that the rules were met — age, sanctions, limits — without revealing amount, recipient or identity. Verified on Stellar mainnet."}</p>
+        <Link to="/zk" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{lang === "pt" ? "ver a prova zk →" : "see the zk proof →"}</Link>
+      </div></section>
+
+      {/* MCP — rail for agents */}
+      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-32">
+        <Stamp label={lang === "pt" ? "rail pra agentes · mcp" : "rail for agents · mcp"} />
+        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Agentes pagam dentro do limite provado." : "Agents pay within a proven limit."}</h2>
+        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Servidor MCP nativo: qualquer agente de IA paga por conta, dentro de limites provados on-chain. Non-custodial, sem backend no caminho do dinheiro." : "Native MCP server: any AI agent pays on its own, within limits proven on-chain. Non-custodial, no backend in the money path."}</p>
+        <Link to="/builders" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{lang === "pt" ? "docs pra builders →" : "builder docs →"}</Link>
       </div></section>
 
       {/* ATTACK — they hold + hide the spread; we don't (inverted INK punch) */}
