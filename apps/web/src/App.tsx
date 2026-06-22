@@ -34,8 +34,8 @@ import Security from "./pages/Security.tsx";
 import Manifesto from "./pages/Manifesto.tsx";
 import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
-import Cofrinho from "./pages/Cofrinho.tsx";
 import PixPay from "./pages/PixPay.tsx";
+import ZkRedirect from "./pages/ZkRedirect.tsx";
 import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
 
@@ -44,8 +44,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingV2 />} />
       <Route path="/v3" element={<LandingV3 />} />
+      <Route path="/zk" element={<ZkRedirect />} />
       <Route path="/cofrinho-landing" element={<LandingV2 />} />
-      <Route path="/cofrinho" element={<Cofrinho />} />
       <Route path="/receber" element={<Receber />} />
       {import.meta.env.VITE_PAGFINANCE_ENABLED === "1" && <Route path="/pix-pay" element={<PixPay />} />}
       <Route path="/empresas" element={<Empresas />} />

@@ -199,7 +199,6 @@ export default function Empresas() {
       <header className={"fixed top-0 left-0 right-0 z-40 px-6 md:px-12 py-4 flex items-center justify-between transition-colors duration-300 " + (scrolled ? "backdrop-blur-md bg-[#f1eee7]/85 border-b border-[#0a0a0a]/8" : "bg-transparent")}>
         <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span style={{ color: ACCENT }}>.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
-          <Link to="/cofrinho" className="hidden md:inline transition-opacity hover:opacity-70">{t.nav.cofrinho}</Link>
           <Link to="/receber" className="hidden md:inline transition-opacity hover:opacity-70">{t.nav.receive}</Link>
           <a href="/x402-demo" className="hidden md:inline transition-opacity hover:opacity-70">{t.nav.api}</a>
           <span className="hidden md:inline"><LangToggle /></span>
