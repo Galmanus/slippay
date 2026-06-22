@@ -353,7 +353,7 @@ export default function Cofrinho() {
         <Stamp label={lang === "pt" ? "prova confidencial · zk" : "confidential proof · zk"} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Prova que obedeceu. Sem mostrar nada." : "Proves it obeyed. Without showing anything."}</h2>
         <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Um circuito de conhecimento-zero prova on-chain que as regras foram cumpridas — idade, sanções, limites — sem revelar valor, recebedor ou identidade. Verificado na mainnet Stellar." : "A zero-knowledge circuit proves on-chain that the rules were met — age, sanctions, limits — without revealing amount, recipient or identity. Verified on Stellar mainnet."}</p>
-        <Link to="/zk" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{lang === "pt" ? "ver a prova zk →" : "see the zk proof →"}</Link>
+        <a href="/zk/index.html" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{lang === "pt" ? "ver a prova zk →" : "see the zk proof →"}</a>
       </div></section>
 
       {/* MCP — rail for agents */}
