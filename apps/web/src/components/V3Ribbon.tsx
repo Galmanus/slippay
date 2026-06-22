@@ -1,5 +1,5 @@
 // V3Ribbon — the shared "skin" background for SlipPay public pages.
-// A fixed, full-bleed bone canvas + the animated blue→gold silk ribbon
+// A fixed, full-bleed bone canvas + the animated gold silk ribbon
 // (24 displaced strands) extracted from the approved LandingV3 hero.
 // Sits at z-index:-1 behind all page content, so a page opts in by rendering
 // <V3Ribbon /> once and making its own root background transparent.
@@ -31,7 +31,7 @@ export function V3Ribbon() {
         <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
           <defs>
             <linearGradient id="v3rbg" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#60a5fa" /><stop offset="30%" stopColor="#7db1fb" /><stop offset="52%" stopColor="#a9cdfd" /><stop offset="70%" stopColor="#fcd34d" /><stop offset="88%" stopColor="#fbbf24" /><stop offset="100%" stopColor="#f5b942" />
+              <stop offset="0%" stopColor="#fde68a" /><stop offset="30%" stopColor="#fcd34d" /><stop offset="52%" stopColor="#FDDA24" /><stop offset="70%" stopColor="#fbbf24" /><stop offset="88%" stopColor="#f5b942" /><stop offset="100%" stopColor="#eaa520" />
             </linearGradient>
             <filter id="v3rbwarp" x="-20%" y="-70%" width="140%" height="240%">
               <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="7" result="n" />
