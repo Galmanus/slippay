@@ -37,9 +37,9 @@ const COPY = {
   pt: {
     nav: { pay: "Pagar", receive: "Receber", login: "Entrar", cta: "Quero meu cofrinho" },
     hero: {
-      eyebrow: "o cofrinho que rende · em dólar",
-      h1: "Seu dinheiro em dólar. Rendendo. Seu.",
-      sub: "Guarde em dólar dentro do Pix e deixe render, com um toque. Ninguém congela, ninguém move sem a sua digital. O dólar é seu, as chaves são suas.",
+      eyebrow: "o cofrinho que rende em dólar",
+      h1: "Guarde em dólar. Gaste no Pix.",
+      sub: "Deixe render com um toque, dentro do Pix. Você controla a carteira: cada movimento é autorizado pela sua biometria e fica registrado on-chain.",
       cta: "Quero meu cofrinho",
       note: "sem cartão · biometria · sem seed phrase",
     },
@@ -48,7 +48,7 @@ const COPY = {
       h: "Real na poupança encolhe. Dólar no cofrinho rende.",
       poupLabel: "poupança · em real",
       cofreLabel: "cofrinho · em dólar",
-      foot: "Taxas ilustrativas (~6% a.a.). A diferença real é a moeda: o real perde valor, o dólar protege, e ainda rende.",
+      foot: "Taxas ilustrativas (~6% a.a.). Mais que o rendimento, o que importa é a moeda: o dólar historicamente preserva valor melhor que o real no longo prazo.",
     },
     calc: {
       stamp: "simule",
@@ -62,42 +62,41 @@ const COPY = {
     },
     fee: {
       stamp: "a conta limpa",
-      h: "Você fica com a diferença.",
+      h: "Fique com mais da diferença.",
       rows: [
         ["Cartão / banco no exterior", "~5%", false],
-        ["Outras fintechs", "~1,5%", false],
-        ["Slippay", "0,98%", true],
+        ["Slippay", "~1,9%", true],
       ] as [string, string, boolean][],
-      foot: "Taxa travada na confirmação. Sem letra miúda, sem mensalidade.",
+      foot: "Você vê o custo antes de confirmar. Sem mensalidade, sem surpresa no câmbio.",
     },
     trust: {
       stamp: "a prova",
-      h: "Não confie. Confira.",
+      h: "Não confie. Verifique.",
       items: [
-        ["Zero custódia", "O dólar fica na sua carteira, nunca no nosso balanço. Não dá pra congelar o que a gente não segura."],
-        ["Provado on-chain", "Contrato vivo na mainnet Stellar. Qualquer um audita o código e as transações, agora."],
-        ["Só a sua digital move", "Biometria assina cada movimento. Sem senha, sem seed, sem ninguém no meio."],
+        ["O dólar é seu, não nosso", "Os dólares ficam na sua carteira. A Slippay nunca tem a custódia, então não há o que congelar."],
+        ["Verificável on-chain", "Transações registradas na mainnet Stellar. Qualquer pessoa pode conferir, agora."],
+        ["Só você autoriza", "Cada movimento exige a sua biometria. Sem senha, sem seed phrase, sem intermediário."],
       ] as [string, string][],
-      contractBtn: "Ver o contrato no ar ↗",
+      contractBtn: "Ver o contrato ↗",
     },
     attack: {
       stamp: "a diferença",
-      h: "Eles seguram. A gente não.",
+      h: "Eles seguram. Você controla.",
       items: [
-        ["Conta custodiada congela.", "Banco e fintech podem bloquear, segurar ou perder o seu dinheiro, ele fica no balanço deles. Não dá pra congelar o que a gente nunca toca."],
-        ["Spread escondido vira surpresa.", "O incumbente esconde a taxa no câmbio. A nossa é 0,98% na cara, travada na confirmação. Você fica com 100% do rendimento, sem carry escondido."],
-        ["Empresa de verdade.", "Bluewave · CNPJ 66.381.800/0001-08 · brasileira, com cara e endereço. Cada conversão tem recibo on-chain que você audita."],
+        ["Custódia tradicional cria dependência.", "Banco e fintech mantêm o dinheiro sob a custódia deles. Aqui, a carteira é sua."],
+        ["Spread escondido custa caro.", "Muitos concorrentes embutem a taxa no câmbio. Na Slippay, o custo aparece antes da confirmação."],
+        ["Empresa brasileira.", "Bluewave · CNPJ 66.381.800/0001-08. Cada conversão gera um registro on-chain que você pode auditar."],
       ] as [string, string][],
     },
-    cta: { h: "Comece o seu cofrinho.", lines: ["Dólar que rende, dentro do Pix.", "Seu, do seu jeito."], btn: "Quero meu cofrinho", note: "2 minutos · biometria · sem cartão" },
-    footer: "slippay · o cofrinho que rende · seu dinheiro, seu",
+    cta: { h: "Comece seu cofrinho.", lines: ["Dólar que rende, dentro do Pix.", "Guarde. Proteja. Use."], btn: "Entrar na lista", note: "2 minutos · biometria · sem cartão" },
+    footer: "slippay · o cofrinho que rende em dólar",
   },
   en: {
     nav: { pay: "Pay", receive: "Receive", login: "Login", cta: "Get my cofrinho" },
     hero: {
-      eyebrow: "the piggy bank that earns · in dollars",
-      h1: "Your money in dollars. Earning. Yours.",
-      sub: "Keep dollars inside Pix and let them earn, one touch. Nobody freezes it, nobody moves it without your fingerprint. The dollars are yours, the keys are yours.",
+      eyebrow: "dollars that earn, inside Pix",
+      h1: "Keep dollars. Spend in Pix.",
+      sub: "Let them earn with one touch, inside Pix. You hold the wallet: every move is authorized by your biometrics and recorded on-chain.",
       cta: "Get my cofrinho",
       note: "no card · biometrics · no seed phrase",
     },
@@ -106,7 +105,7 @@ const COPY = {
       h: "Reais in savings shrink. Dollars in the cofrinho earn.",
       poupLabel: "savings · in reais",
       cofreLabel: "cofrinho · in dollars",
-      foot: "Illustrative rates (~6%/yr). The real edge is the currency: the real loses value, the dollar protects, and earns.",
+      foot: "Illustrative rates (~6%/yr). More than the yield, what matters is the currency: the dollar has historically held value better than the real over the long run.",
     },
     calc: {
       stamp: "simulate",
@@ -120,35 +119,34 @@ const COPY = {
     },
     fee: {
       stamp: "the clean math",
-      h: "You keep the difference.",
+      h: "Keep more of the difference.",
       rows: [
         ["Card / bank abroad", "~5%", false],
-        ["Other fintechs", "~1.5%", false],
-        ["Slippay", "0.98%", true],
+        ["Slippay", "~1.9%", true],
       ] as [string, string, boolean][],
-      foot: "Fee locked at confirmation. No fine print, no monthly fee.",
+      foot: "You see the cost before you confirm. No monthly fee, no FX surprise.",
     },
     trust: {
       stamp: "the proof",
       h: "Don't trust. Verify.",
       items: [
-        ["Zero custody", "The dollars live in your wallet, never on our balance sheet. You can't freeze what we don't hold."],
-        ["Proven on-chain", "Live contract on Stellar mainnet. Anyone audits the code and the transactions, now."],
-        ["Only your fingerprint moves it", "Biometrics sign every move. No password, no seed, nobody in between."],
+        ["The dollars are yours, not ours", "They stay in your wallet. Slippay never holds custody, so there's nothing to freeze."],
+        ["Verifiable on-chain", "Transactions recorded on Stellar mainnet. Anyone can check, right now."],
+        ["Only you authorize", "Every move needs your biometrics. No password, no seed phrase, no middleman."],
       ] as [string, string][],
-      contractBtn: "See the live contract ↗",
+      contractBtn: "See the contract ↗",
     },
     attack: {
       stamp: "the difference",
-      h: "They hold it. We don't.",
+      h: "They hold it. You control it.",
       items: [
-        ["Custodial accounts freeze.", "Banks and fintechs can block, hold, or lose your money, it sits on their balance sheet. You can't freeze what we never touch."],
-        ["Hidden spread is a surprise.", "Incumbents bury the fee in the FX rate. Ours is 0.98% on the face, locked at confirmation. You keep 100% of the yield, no hidden carry."],
-        ["A real company.", "Bluewave · CNPJ 66.381.800/0001-08 · Brazilian, with a face and an address. Every conversion has an on-chain receipt you can audit."],
+        ["Custody creates dependency.", "Banks and fintechs keep the money under their custody. Here, the wallet is yours."],
+        ["Hidden spread costs you.", "Many competitors bury the fee in the FX rate. At Slippay, the cost shows before you confirm."],
+        ["A Brazilian company.", "Bluewave · CNPJ 66.381.800/0001-08. Every conversion creates an on-chain record you can audit."],
       ] as [string, string][],
     },
-    cta: { h: "Start your cofrinho.", lines: ["Dollars that earn, inside Pix.", "Yours, your way."], btn: "Get my cofrinho", note: "2 minutes · biometrics · no card" },
-    footer: "slippay · the piggy bank that earns · your money, yours",
+    cta: { h: "Start your cofrinho.", lines: ["Dollars that earn, inside Pix.", "Keep it. Protect it. Use it."], btn: "Join the list", note: "2 minutes · biometrics · no card" },
+    footer: "slippay · dollars that earn, inside Pix",
   },
 } as const;
 
@@ -166,7 +164,7 @@ export default function Cofrinho() {
   const [scrolled, setScrolled] = useState(false);
   const [lang, setLang] = useState<Lang>(() => {
     try { const s = localStorage.getItem("slippay.lang"); if (s === "pt" || s === "en") return s; } catch { /* */ }
-    return (typeof navigator !== "undefined" && navigator.language?.toLowerCase().startsWith("pt")) ? "pt" : "en";
+    return "pt";
   });
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
@@ -351,16 +349,16 @@ export default function Cofrinho() {
       {/* ZK — confidential proof (prove without revealing) */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-32">
         <Stamp label={lang === "pt" ? "prova confidencial · zk" : "confidential proof · zk"} />
-        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Prova que obedeceu. Sem mostrar nada." : "Proves it obeyed. Without showing anything."}</h2>
-        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Um circuito de conhecimento-zero prova on-chain que as regras foram cumpridas — idade, sanções, limites — sem revelar valor, recebedor ou identidade. Verificado na mainnet Stellar." : "A zero-knowledge circuit proves on-chain that the rules were met — age, sanctions, limits — without revealing amount, recipient or identity. Verified on Stellar mainnet."}</p>
+        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Prove que cumpriu as regras sem expor seus dados." : "Prove you followed the rules without exposing your data."}</h2>
+        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Provas de conhecimento-zero validam critérios como idade, sanções e limites sem revelar identidade, saldo ou destinatário. Verificado na mainnet Stellar." : "Zero-knowledge proofs validate criteria like age, sanctions and limits without revealing identity, balance or recipient. Verified on Stellar mainnet."}</p>
         <a href="/zk/index.html" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{lang === "pt" ? "ver a prova zk →" : "see the zk proof →"}</a>
       </div></section>
 
       {/* MCP — rail for agents */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-32">
         <Stamp label={lang === "pt" ? "rail pra agentes · mcp" : "rail for agents · mcp"} />
-        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Agentes pagam dentro do limite provado." : "Agents pay within a proven limit."}</h2>
-        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Servidor MCP nativo: qualquer agente de IA paga por conta, dentro de limites provados on-chain. Non-custodial, sem backend no caminho do dinheiro." : "Native MCP server: any AI agent pays on its own, within limits proven on-chain. Non-custodial, no backend in the money path."}</p>
+        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)] max-w-[16ch]`} style={display}>{lang === "pt" ? "Pagamentos para agentes de IA, com limite verificável." : "Payments for AI agents, with a verifiable limit."}</h2>
+        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/60 max-w-[58ch] leading-relaxed">{lang === "pt" ? "Servidor MCP nativo: agentes operam dentro de regras comprovadas on-chain, sem custódia e sem intermediário no caminho do dinheiro." : "Native MCP server: agents operate within rules proven on-chain, with no custody and no middleman in the money path."}</p>
         <Link to="/builders" className="mt-12 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: ACCENT, color: "#0a0a0a" }}>{lang === "pt" ? "docs pra builders →" : "builder docs →"}</Link>
       </div></section>
 
