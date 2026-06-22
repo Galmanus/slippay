@@ -138,3 +138,38 @@ export async function buildAtomicTx(args: BuildAtomicTxArgs): Promise<string> {
 
   return tx.toXDR();
 }
+
+/** Simple single-operation USDC payment (off-ramp: pay a provider's receiver).
+ *  Unlike buildAtomicTx there is no merchant/fee split — one payment to one
+ *  destination, with an optional text memo (providers like PagFinance use it to
+ *  reconcile the deposit). Signing stays client-side (non-custodial). */
+export async function buildUsdcPaymentTx(args: {
+  sourcePublicKey: string;
+  sourceSequence: string;
+  destination: string;
+  amount: string;
+  memoText?: string;
+  network: "TESTNET" | "PUBLIC";
+}): Promise<string> {
+  const amt = Number(args.amount);
+  if (!isFinite(amt) || amt <= 0) throw new Error("invalid_amount");
+
+  const issuer = ISSUERS[args.network];
+  const usdc = new Asset(USDC_ASSET_CODE, issuer);
+  const account = new Account(args.sourcePublicKey, args.sourceSequence);
+
+  const builder = new TransactionBuilder(account, {
+    fee: BASE_FEE,
+    networkPassphrase: PASSPHRASES[args.network],
+    timebounds: { minTime: 0, maxTime: Math.floor(Date.now() / 1000) + 300 },
+    ...(args.memoText ? { memo: Memo.text(args.memoText) } : {}),
+  })
+    .addOperation(Operation.payment({
+      destination: args.destination,
+      asset: usdc,
+      amount: amt.toFixed(7),
+    }))
+    .build();
+
+  return builder.toXDR();
+}

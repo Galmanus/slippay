@@ -35,6 +35,7 @@ import Manifesto from "./pages/Manifesto.tsx";
 import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
 import Cofrinho from "./pages/Cofrinho.tsx";
+import PixPay from "./pages/PixPay.tsx";
 import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
 
@@ -46,6 +47,7 @@ export default function App() {
       <Route path="/cofrinho-landing" element={<LandingV2 />} />
       <Route path="/cofrinho" element={<Cofrinho />} />
       <Route path="/receber" element={<Receber />} />
+      {import.meta.env.VITE_PAGFINANCE_ENABLED === "1" && <Route path="/pix-pay" element={<PixPay />} />}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/b2b" element={<Empresas />} />
       <Route path="/v1" element={<AgentHome />} />
