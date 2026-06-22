@@ -16,7 +16,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { security: "Security", pay: "Pay", receive: "Receive", cofrinho: "Cofrinho", login: "Login", tryFree: "Get started", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "live · real money", h1: "Your dollars, in Pix.", mark: "dollars", sub: "Buy dollars, send to a friend, pay a bill, or let it earn, your call. All with one touch, in under 10 seconds. And best of all, nobody moves it without your signature.", cta: "Get started", note: "10 seconds · biometrics · no card", liveTag: "live · mainnet" },
+    hero: { eyebrow: "stellar mainnet · zk proof · non-custodial", h1: "Your dollars, in Pix.", mark: "dollars", sub: "Buy USDC with a Pix in ~10s. The key is yours, biometrics sign, every payment leaves a ZK proof on Stellar.", cta: "Get started", note: "no card · 2 min · biometrics", liveTag: "live · mainnet", metrics: [["stellar mainnet", "live contract, verify now"], ["zk proof", "no data revealed"], ["~10s", "pix → usdc"]] as [string, string][] },
     yours: { n: "001", stamp: "yours", h: "Yours. For real.", items: [
       ["Only your fingerprint opens it", "Your face or fingerprint approves every move. No password, no recovery phrase to memorize. No one else."],
       ["Nobody freezes it", "The money lives in your wallet, never on a bank's balance sheet. It can't be blocked, held, or seized."],
@@ -42,7 +42,7 @@ const COPY = {
   },
   pt: {
     nav: { security: "Segurança", pay: "Pagar", receive: "Receber", cofrinho: "Cofrinho", login: "Entrar", tryFree: "Começar", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "ao vivo · dinheiro de verdade", h1: "Seus dólares, no Pix.", mark: "dólares", sub: "Compre dólar, envie para um amigo, pague uma conta ou deixe rendendo, você escolhe. Tudo com um toque, em menos de 10 segundos. E o melhor, ninguém move sem você assinar.", cta: "Começar", note: "10 segundos · biometria · sem cartão", liveTag: "ao vivo · mainnet" },
+    hero: { eyebrow: "stellar mainnet · prova zk · não-custodial", h1: "Seus dólares, no Pix.", mark: "dólares", sub: "Compre USDC com um Pix em ~10s. A chave é sua, a biometria assina, cada pagamento deixa prova ZK on-chain na Stellar.", cta: "Começar", note: "sem cartão · 2 min · biometria", liveTag: "ao vivo · mainnet", metrics: [["stellar mainnet", "contrato verificável agora"], ["prova zk", "sem revelar nada"], ["~10s", "pix → usdc"]] as [string, string][] },
     yours: { n: "001", stamp: "é seu", h: "É seu. De verdade.", items: [
       ["Só a sua digital abre", "O seu rosto ou digital aprova cada movimento. Sem senha e sem código pra decorar. Mais ninguém."],
       ["Ninguém congela", "O dinheiro fica na sua carteira, nunca no balanço de um banco. Não dá pra bloquear, segurar ou tomar."],
@@ -95,7 +95,7 @@ export default function LandingV2() {
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
 
-  const NAV: [string, string][] = [[t.nav.cofrinho, "/cofrinho"], [t.nav.receive, "/receber"], [t.nav.pay, "/pay"], [t.nav.login, "/account"]];
+  const NAV: [string, string][] = [[t.nav.receive, "/receber"], [t.nav.pay, "/pay"], [t.nav.login, "/account"]];
   const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"], [t.nav.builders, "/builders"]];
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function LandingV2() {
         <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline transition-opacity hover:opacity-70">{label}</Link>)}
-          <a href="/zk" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
+          <a href="/zk/index.html" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
           <Link to="/builders" className="hidden md:inline transition-opacity hover:opacity-70">Builders</Link>
           <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hidden md:inline transition-opacity hover:opacity-70">Docs</a>
           <span className="hidden md:inline"><LangToggle /></span>
@@ -144,7 +144,7 @@ export default function LandingV2() {
         {menuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
             {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
-            <a href="/zk" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
+            <a href="/zk/index.html" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
             <Link to="/builders" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Builders</Link>
             <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Docs</a>
             <div className="py-3 border-b border-[#0a0a0a]/8"><LangToggle /></div>
@@ -153,35 +153,58 @@ export default function LandingV2() {
         )}
       </header>
 
-      {/* HERO — asymmetric editorial (Yeezy) + Stripe motors: live gold mesh on the
-          right, text left-aligned, refined type, on-chain proof. Static headline. */}
+      {/* HERO — 2-col: text left, phone right. Stellar + ZK leads above the fold. */}
       <section className="bg-[#f5f3ee] text-[#0a0a0a]">
-        <div className="max-w-[1000px] mx-auto px-6 pt-36 md:pt-48 pb-14 md:pb-16 flex flex-col items-center text-center">
-          <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#0a0a0a] animate-pulse" />{t.hero.eyebrow}
-          </span>
-          <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,9vw,6rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
-          <p className="mt-7 text-lg md:text-2xl text-[#0a0a0a]/70 max-w-[44ch] leading-relaxed">{t.hero.sub}</p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
-            <Link
-              to="/account"
-              className={btn}
-              onMouseMove={(e) => {
-                const r = e.currentTarget.getBoundingClientRect();
-                e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.32}px)`;
-              }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
-            >{t.hero.cta}</Link>
-            <Link to="/receber" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "receber em dólar →" : "receive in dollars →"}</Link>
+        <div className="max-w-[1200px] mx-auto px-6 pt-32 md:pt-40 pb-16 md:pb-24 grid md:grid-cols-[1fr_auto] gap-10 md:gap-20 items-center">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#FDDA24" }} />{t.hero.eyebrow}
+            </span>
+            <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,9vw,6rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
+            <p className="mt-6 text-lg md:text-xl text-[#0a0a0a]/70 max-w-[44ch] leading-relaxed">{t.hero.sub}</p>
+            <div className="mt-8 grid grid-cols-3 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-xl overflow-hidden w-full max-w-[420px]">
+              {t.hero.metrics.map(([k, v]) => (
+                <div key={k} className="bg-[#f5f3ee] px-2 py-3 text-center">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.12em] font-semibold" style={{ color: "#FDDA24" }}>{k}</div>
+                  <div className="mt-0.5 text-[10px] text-[#0a0a0a]/50 leading-tight">{v}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-4">
+              <Link
+                to="/account"
+                className={btn}
+                onMouseMove={(e) => {
+                  const r = e.currentTarget.getBoundingClientRect();
+                  e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.18}px, ${(e.clientY - r.top - r.height / 2) * 0.32}px)`;
+                }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; }}
+              >{t.hero.cta}</Link>
+              <a href={xurl("tx", ZK_MAINNET_TX)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 pb-1 hover:opacity-70" style={{ borderColor: "#FDDA24", color: "#0a0a0a" }}>{lang === "pt" ? "ver prova on-chain ↗" : "see on-chain proof ↗"}</a>
+            </div>
+            <span className="mt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
           </div>
-          <span className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
-        </div>
-        <div className="max-w-[420px] mx-auto px-6 pb-20 md:pb-28">
-          <AccountDemo lang={lang} />
+          <div className="mx-auto md:mx-0 max-w-[290px]">
+            <AccountDemo lang={lang} />
+          </div>
         </div>
       </section>
 
-      {/* 001 · YOURS — sovereignty, the spine */}
+      {/* 001 · ZK — proof first: most technically impressive, leads for judges */}
+      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
+        <Stamp n={t.zk.n} label={t.zk.stamp} />
+        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,5rem)] max-w-[18ch]`} style={display}>{t.zk.h}</h2>
+        <p className="mt-8 text-lg md:text-2xl text-[#0a0a0a]/70 leading-relaxed max-w-[54ch] mx-auto md:mx-0">{t.zk.body}</p>
+        <div className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#0a0a0a]/[0.04] border border-[#0a0a0a]/10 px-4 py-3 font-mono text-[11px] text-[#0a0a0a]/50 select-all max-w-full overflow-x-auto">
+          <span style={{ color: "#FDDA24" }}>tx</span><span className="truncate">{ZK_MAINNET_TX}</span>
+        </div>
+        <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <a href="/zk/index.html" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
+          <a href={xurl("tx", ZK_MAINNET_TX)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.zk.link}</a>
+        </div>
+      </div></section>
+
+      {/* 002 · YOURS — sovereignty, the spine */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
         <Stamp n={t.yours.n} label={t.yours.stamp} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.5rem,8vw,5.5rem)] max-w-[16ch]`} style={display}>{t.yours.h}</h2>
@@ -196,7 +219,7 @@ export default function LandingV2() {
         </div>
       </div></section>
 
-      {/* 002 · HOW — Pix to dollars, the entry ticket, minimal */}
+      {/* 003 · HOW — Pix to dollars, the entry ticket, minimal */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
         <Stamp n={t.how.n} label={t.how.stamp} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.5rem,9vw,6rem)]`} style={display}>{t.how.h}</h2>
@@ -212,7 +235,7 @@ export default function LandingV2() {
         <p className="mt-8 text-lg md:text-xl font-medium tracking-[-0.01em]">{t.how.foot}</p>
       </div></section>
 
-      {/* 003 · CONTROL — it pays on its own, never breaks your rule */}
+      {/* 004 · CONTROL — it pays on its own, never breaks your rule */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
         <div>
           <Stamp n={t.control.n} label={t.control.stamp} />
@@ -221,17 +244,6 @@ export default function LandingV2() {
           <Link to="/gate" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.control.gateLink}</Link>
         </div>
         <div className="w-full max-w-[440px] mx-auto md:justify-self-end"><MandateDemo lang={lang} /></div>
-      </div></section>
-
-      {/* 004 · ZK — it proves it obeyed without revealing the money */}
-      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
-        <Stamp n={t.zk.n} label={t.zk.stamp} />
-        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,5rem)] max-w-[18ch]`} style={display}>{t.zk.h}</h2>
-        <p className="mt-8 text-lg md:text-2xl text-[#0a0a0a]/70 leading-relaxed max-w-[54ch] mx-auto md:mx-0">{t.zk.body}</p>
-        <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <a href="/zk" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
-          <a href={xurl("tx", ZK_MAINNET_TX)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.zk.link}</a>
-        </div>
       </div></section>
 
       {/* 006 · BUSINESS — for companies: a custom agent that pays your bills */}
