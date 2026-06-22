@@ -90,7 +90,7 @@ export default function LandingV2() {
 
   const [lang, setLang] = useState<Lang>(() => {
     try { const s = localStorage.getItem("slippay.lang"); if (s === "pt" || s === "en") return s; } catch { /* */ }
-    return (typeof navigator !== "undefined" && navigator.language?.toLowerCase().startsWith("pt")) ? "pt" : "en";
+    return "pt";
   });
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];

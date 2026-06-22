@@ -42,7 +42,7 @@ import Empresas from "./pages/Empresas.tsx";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Cofrinho />} />
+      <Route path="/" element={<LandingV2 />} />
       <Route path="/v3" element={<LandingV3 />} />
       <Route path="/cofrinho-landing" element={<LandingV2 />} />
       <Route path="/cofrinho" element={<Cofrinho />} />
