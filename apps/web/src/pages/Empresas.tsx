@@ -11,7 +11,7 @@ import { V3Ribbon } from "../components/V3Ribbon.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
-const ACCENT = "#2563eb";
+const ACCENT = "#FDDA24";
 const LIVE_CONTRACT = "CCT3KJXRUO3HJJ2GLTW2MISSQVUEKOPUG3B4YQH75TCGKAOC4P6FIKUF";
 const xurl = (p: string, id: string) => `https://stellar.expert/explorer/public/${p}/${id}`;
 
