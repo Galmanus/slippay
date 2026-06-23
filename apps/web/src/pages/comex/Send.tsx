@@ -6,6 +6,7 @@ import {
   buildUsdcPaymentTx,
 } from "../../lib/stellar.ts";
 import { authorizePayment } from "../../lib/authorizeTx.ts";
+import { requiresApproval, approvalLimitUsd, logAction } from "../../lib/comexGuards.ts";
 import ConfirmTxModal from "../../components/ConfirmTxModal.tsx";
 import type { TxSummary } from "../../lib/txguard.ts";
 
@@ -20,6 +21,8 @@ export default function Send() {
   const [busy, setBusy] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsSecondApproval, setNeedsSecondApproval] = useState(false);
+  const [secondApprovalConfirmed, setSecondApprovalConfirmed] = useState(false);
 
   // ConfirmTxModal state
   const [modalSummary, setModalSummary] = useState<TxSummary | null>(null);
@@ -53,6 +56,13 @@ export default function Send() {
     if (!address || !canSend) return;
     setError(null);
     setTxHash(null);
+
+    const needsApproval = requiresApproval(amount, approvalLimitUsd());
+    if (needsApproval && !secondApprovalConfirmed) {
+      setNeedsSecondApproval(true);
+      return;
+    }
+
     setBusy(true);
     try {
       const seq = await fetchSequence(NETWORK, address);
@@ -72,8 +82,18 @@ export default function Send() {
         expect: { destination: destination.trim(), amount: amtNum.toFixed(7), assetCode: "USDC" },
       });
       setTxHash(result.hash);
+      logAction({
+        at: new Date().toISOString(),
+        actor: address,
+        action: "send",
+        amount: amount,
+        destination: destination.trim(),
+        txHash: result.hash,
+      });
       setDestination("");
       setAmount("");
+      setSecondApprovalConfirmed(false);
+      setNeedsSecondApproval(false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "erro desconhecido");
     } finally {
@@ -138,10 +158,28 @@ export default function Send() {
           />
         </div>
 
+        {/* Second approver gate */}
+        {needsSecondApproval && !secondApprovalConfirmed && (
+          <div className="border-l-2 border-yellow-500 pl-4 py-4 mb-6 space-y-4">
+            <p className="text-[10px] uppercase tracking-[0.14em] text-yellow-700">
+              Esta operação exige aprovação de um segundo responsável
+            </p>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={secondApprovalConfirmed}
+                onChange={(e) => setSecondApprovalConfirmed(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-xs text-[#0a0a0a]/70">Confirmo que esta transferência foi aprovada</span>
+            </label>
+          </div>
+        )}
+
         {/* Send button */}
         <button
           onClick={doSend}
-          disabled={!canSend}
+          disabled={!canSend || (needsSecondApproval && !secondApprovalConfirmed)}
           className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-40"
         >
           {busy ? "Processando..." : "Enviar"}
