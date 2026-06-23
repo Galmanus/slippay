@@ -128,7 +128,7 @@ function ComexWalletProviderInner({ children }: { children: ReactNode }) {
   const signHash = useCallback(
     async (hash: Buffer): Promise<Buffer> => {
       if (!address) throw new Error("comexPrivy: Stellar wallet not available");
-      const hexHash = hash.toString("hex") as `0x${string}`;
+      const hexHash = hash.toString("hex");
       const { signature } = await signRawHash({
         address,
         chainType: "stellar",

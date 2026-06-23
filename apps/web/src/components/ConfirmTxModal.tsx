@@ -2,11 +2,12 @@ import type { TxSummary, OpSummary } from "../lib/txguard.ts";
 
 interface Props {
   summary: TxSummary;
+  intent?: string;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export default function ConfirmTxModal({ summary, onConfirm, onCancel }: Props) {
+export default function ConfirmTxModal({ summary, intent, onConfirm, onCancel }: Props) {
   const payments = summary.operations.filter((o) => o.type === "payment");
 
   return (
@@ -22,6 +23,13 @@ export default function ConfirmTxModal({ summary, onConfirm, onCancel }: Props) 
           <span className="inline-block w-2 h-2 bg-[#0a0a0a]/70 mr-2 align-middle" />
           Confirmar transação
         </div>
+
+        {/* Intent — shown prominently above decoded summary when present */}
+        {intent && (
+          <div className="mb-6 px-4 py-3 bg-[#0a0a0a]/5 border-l-2 border-[#0a0a0a]">
+            <p className="text-sm font-bold text-[#0a0a0a]">{intent}</p>
+          </div>
+        )}
 
         {/* Operations */}
         <div className="space-y-6">

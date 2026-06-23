@@ -7,6 +7,12 @@ import type { TxSummary } from "../../lib/txguard.ts";
 
 const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "PUBLIC").toUpperCase() as "TESTNET" | "PUBLIC";
 
+function vaultDisplay(): string {
+  const v = import.meta.env.VITE_DEFINDEX_USDC_VAULT as string | undefined ?? "";
+  if (v.length <= 10) return v;
+  return `${v.slice(0, 6)}...${v.slice(-4)}`;
+}
+
 type ActionPhase = "idle" | "loading" | "done" | "error";
 
 export default function Yield() {
@@ -24,15 +30,19 @@ export default function Yield() {
   const [withdrawError, setWithdrawError] = useState("");
 
   const [modalSummary, setModalSummary] = useState<TxSummary | null>(null);
+  const [modalIntent, setModalIntent] = useState<string | undefined>(undefined);
   const resolveConfirmRef = useRef<((v: boolean) => void) | null>(null);
-  const openConfirmModal = useCallback((summary: TxSummary): Promise<boolean> => {
+
+  const openConfirmModal = useCallback((summary: TxSummary, intent?: string): Promise<boolean> => {
     return new Promise((resolve) => {
       resolveConfirmRef.current = resolve;
+      setModalIntent(intent);
       setModalSummary(summary);
     });
   }, []);
-  function handleConfirm() { setModalSummary(null); resolveConfirmRef.current?.(true); resolveConfirmRef.current = null; }
-  function handleCancel() { setModalSummary(null); resolveConfirmRef.current?.(false); resolveConfirmRef.current = null; }
+
+  function handleConfirm() { setModalSummary(null); setModalIntent(undefined); resolveConfirmRef.current?.(true); resolveConfirmRef.current = null; }
+  function handleCancel() { setModalSummary(null); setModalIntent(undefined); resolveConfirmRef.current?.(false); resolveConfirmRef.current = null; }
 
   async function loadPosition() {
     if (!address) return;
@@ -57,9 +67,10 @@ export default function Yield() {
     if (!address || !signHash) return;
     setDepositError("");
     setDepositPhase("loading");
+    const intent = `Depósito de ${depositAmount} USDC no cofre de rendimento (${vaultDisplay()})`;
     try {
       const xdr = await buildDepositTx(address, depositAmount);
-      await authorizeContractCall({ xdr, network: NETWORK, publicKey: address, signHash, confirm: openConfirmModal });
+      await authorizeContractCall({ xdr, network: NETWORK, publicKey: address, signHash, confirm: (s) => openConfirmModal(s, intent) });
       setDepositPhase("done");
       setDepositAmount("");
       await loadPosition();
@@ -73,9 +84,10 @@ export default function Yield() {
     if (!address || !signHash) return;
     setWithdrawError("");
     setWithdrawPhase("loading");
+    const intent = `Resgate de ${withdrawAmount} USDC do cofre de rendimento`;
     try {
       const xdr = await buildWithdrawTx(address, withdrawAmount);
-      await authorizeContractCall({ xdr, network: NETWORK, publicKey: address, signHash, confirm: openConfirmModal });
+      await authorizeContractCall({ xdr, network: NETWORK, publicKey: address, signHash, confirm: (s) => openConfirmModal(s, intent) });
       setWithdrawPhase("done");
       setWithdrawAmount("");
       await loadPosition();
@@ -181,6 +193,7 @@ export default function Yield() {
       {modalSummary && (
         <ConfirmTxModal
           summary={modalSummary}
+          intent={modalIntent}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
         />
