@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useComexWallet } from "../../lib/comexPrivy.tsx";
 import { fetchSequence, buildUsdcPaymentTx } from "../../lib/stellar.ts";
 import { authorizePayment } from "../../lib/authorizeTx.ts";
+import { requiresApproval, approvalLimitUsd, logAction } from "../../lib/comexGuards.ts";
 import * as pag from "../../lib/pagfinance.ts";
 import ConfirmTxModal from "../../components/ConfirmTxModal.tsx";
 import type { TxSummary } from "../../lib/txguard.ts";
@@ -27,6 +28,8 @@ export default function Exchange() {
   const [sellQuote, setSellQuote] = useState<pag.PagQuote | null>(null);
   const [txHash, setTxHash] = useState("");
   const [sellError, setSellError] = useState("");
+  const [needsSecondApprovalSell, setNeedsSecondApprovalSell] = useState(false);
+  const [secondApprovalConfirmedSell, setSecondApprovalConfirmedSell] = useState(false);
 
   // Modal
   const [modalSummary, setModalSummary] = useState<TxSummary | null>(null);
@@ -101,6 +104,13 @@ export default function Exchange() {
 
   async function doConfirmarVenda() {
     if (!address || !signHash || !sellQuote) return;
+
+    const needsApproval = requiresApproval(sellAmount, approvalLimitUsd());
+    if (needsApproval && !secondApprovalConfirmedSell) {
+      setNeedsSecondApprovalSell(true);
+      return;
+    }
+
     setSellPhase("signing");
     try {
       const result = await pag.createPayment({ quoteId: sellQuote.quoteId, sender: address });
@@ -123,12 +133,22 @@ export default function Exchange() {
         expect: { destination: receiver, amount, assetCode: "USDC" },
       });
       setTxHash(hash);
+      logAction({
+        at: new Date().toISOString(),
+        actor: address,
+        action: "sell",
+        amount: sellAmount,
+        destination: receiver,
+        txHash: hash,
+      });
       try {
         await pag.submitPayment({ txHash: hash, sender: address });
         setSellPhase("done");
       } catch {
         setSellPhase("partner_pending");
       }
+      setSecondApprovalConfirmedSell(false);
+      setNeedsSecondApprovalSell(false);
     } catch (e: unknown) {
       setSellError(e instanceof Error ? e.message : "erro na transação");
       setSellPhase("error");
@@ -249,8 +269,24 @@ export default function Exchange() {
                 </>
               )}
             </div>
-            <button className={btnCls} onClick={doConfirmarVenda}>Confirmar e assinar</button>
-            <button className="w-full py-3 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55" onClick={() => setSellPhase("idle")}>Cancelar</button>
+            {needsSecondApprovalSell && !secondApprovalConfirmedSell && (
+              <div className="border-l-2 border-yellow-500 pl-4 py-4 space-y-4">
+                <p className="text-[10px] uppercase tracking-[0.14em] text-yellow-700">
+                  Esta operação exige aprovação de um segundo responsável
+                </p>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={secondApprovalConfirmedSell}
+                    onChange={(e) => setSecondApprovalConfirmedSell(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-xs text-[#0a0a0a]/70">Confirmo que esta venda foi aprovada</span>
+                </label>
+              </div>
+            )}
+            <button className={btnCls} onClick={doConfirmarVenda} disabled={needsSecondApprovalSell && !secondApprovalConfirmedSell}>Confirmar e assinar</button>
+            <button className="w-full py-3 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55" onClick={() => { setSellPhase("idle"); setNeedsSecondApprovalSell(false); setSecondApprovalConfirmedSell(false); }}>Cancelar</button>
           </div>
         )}
 
