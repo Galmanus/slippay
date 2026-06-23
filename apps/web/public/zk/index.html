@@ -26,23 +26,44 @@
   .num{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--ink-soft)}
 
   /* ── header / nav ── */
-  header{border-bottom:2px solid var(--ink);padding:0;position:sticky;top:0;background:var(--bone);z-index:5}
-  header .wrap{display:flex;justify-content:space-between;align-items:center;height:58px}
-  .brand{font-weight:700;letter-spacing:-.03em;font-size:20px;text-decoration:none;color:var(--ink);line-height:1}
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:40;
+    padding:16px 48px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--bone);
+    border-bottom:1px solid rgba(10,10,10,0.08);
+  }
+  .brand{
+    font-weight:800;letter-spacing:-.04em;font-size:clamp(22px,3vw,30px);
+    text-decoration:none;color:var(--ink);line-height:1;text-transform:lowercase;
+  }
   .brand .dot{color:var(--yellow)}
-  nav{display:flex;align-items:center;gap:28px}
-  nav a{font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-decoration:none;opacity:.7;transition:opacity .15s}
-  nav a:hover{opacity:1}
-  nav a.active{opacity:1;border-bottom:2px solid var(--yellow)}
-  @media(max-width:520px){
-    header .wrap{height:52px}
-    nav{gap:16px}
-    nav a{font-size:10px;letter-spacing:.12em}
-    .brand{font-size:17px}
+  nav{display:flex;align-items:center;gap:20px}
+  .nav-links{display:flex;align-items:center;gap:20px}
+  .nav-links a{
+    font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(10,10,10,0.55);text-decoration:none;transition:opacity .15s;
+  }
+  .nav-links a:hover{opacity:0.7}
+  .nav-pill{
+    display:inline-flex;align-items:center;
+    border-radius:9999px;padding:10px 20px;
+    background:var(--yellow);color:var(--ink);
+    font-weight:600;font-size:14px;
+    text-decoration:none;transition:opacity .15s;
+    white-space:nowrap;
+  }
+  .nav-pill:hover{opacity:0.9}
+  @media(max-width:639px){
+    header{padding:12px 24px}
+    .nav-links{display:none}
+  }
+  @media(min-width:640px) and (max-width:900px){
+    header{padding:14px 32px}
   }
 
   /* ── hero ── */
-  .hero{padding:90px 0 70px;border-bottom:1px solid var(--line)}
+  .hero{padding:120px 0 70px;border-bottom:1px solid var(--line)}
   .hero h1{font-size:clamp(38px,7vw,82px);line-height:.98;letter-spacing:-.03em;font-weight:700;max-width:14ch}
   .hero h1 mark{background:var(--yellow);padding:0 .08em;color:inherit}
   .hero p{margin-top:30px;font-size:clamp(17px,2.4vw,22px);max-width:46ch;color:var(--ink-soft);line-height:1.45}
@@ -144,14 +165,15 @@
 </div>
 
 <header>
-  <div class="wrap">
-    <a href="/" class="brand">slippay<span class="dot">.</span></a>
-    <nav>
+  <a href="/" class="brand">slippay<span class="dot">.</span></a>
+  <nav>
+    <div class="nav-links">
       <a href="/">site</a>
       <a href="/comex">comex</a>
       <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noopener">docs</a>
-    </nav>
-  </div>
+    </div>
+    <a href="/account" class="nav-pill">criar conta</a>
+  </nav>
 </header>
 
 <div class="hero"><div class="wrap reveal">
