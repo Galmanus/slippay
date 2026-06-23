@@ -16,14 +16,33 @@ function sampleXdr(amount: string): string {
   return tx.toXDR();
 }
 
+function twoPaymentXdr(): string {
+  const tx = new TransactionBuilder(new Account(SRC, "123"), {
+    fee: BASE_FEE, networkPassphrase: Networks.PUBLIC,
+    timebounds: { minTime: 0, maxTime: 0 },
+  })
+    .addOperation(Operation.payment({ destination: DEST, asset: new Asset("USDC", ISSUER), amount: "10" }))
+    .addOperation(Operation.payment({ destination: SRC, asset: new Asset("USDC", ISSUER), amount: "999" }))
+    .build();
+  return tx.toXDR();
+}
+
+function xlmXdr(): string {
+  const tx = new TransactionBuilder(new Account(SRC, "123"), {
+    fee: BASE_FEE, networkPassphrase: Networks.PUBLIC,
+    timebounds: { minTime: 0, maxTime: 0 },
+  }).addOperation(Operation.payment({ destination: DEST, asset: Asset.native(), amount: "10.5" })).build();
+  return tx.toXDR();
+}
+
 describe("decodeTx", () => {
   it("extracts destination, amount and asset from a payment XDR", () => {
     const s = decodeTx(sampleXdr("10.5"), "PUBLIC");
     expect(s.source).toBe(SRC);
-    expect(s.operations[0]?.type).toBe("payment");
-    expect(s.operations[0]?.destination).toBe(DEST);
-    expect(s.operations[0]?.amount).toBe("10.5000000");
-    expect(s.operations[0]?.assetCode).toBe("USDC");
+    expect(s.operations[0]!.type).toBe("payment");
+    expect(s.operations[0]!.destination).toBe(DEST);
+    expect(s.operations[0]!.amount).toBe("10.5000000");
+    expect(s.operations[0]!.assetCode).toBe("USDC");
   });
 });
 
@@ -36,16 +55,25 @@ describe("localHash", () => {
 });
 
 describe("assertPaymentMatches", () => {
-  it("passes when destination and amount match", () => {
+  it("passes when destination, asset and amount match", () => {
     const s = decodeTx(sampleXdr("10.5"), "PUBLIC");
     expect(() => assertPaymentMatches(s, { destination: DEST, amount: "10.5", assetCode: "USDC" })).not.toThrow();
   });
   it("throws on destination mismatch (receiver substitution)", () => {
     const s = decodeTx(sampleXdr("10.5"), "PUBLIC");
-    expect(() => assertPaymentMatches(s, { destination: SRC, amount: "10.5" })).toThrow();
+    expect(() => assertPaymentMatches(s, { destination: SRC, amount: "10.5", assetCode: "USDC" })).toThrow();
   });
   it("throws on amount drift beyond tolerance", () => {
     const s = decodeTx(sampleXdr("10.5"), "PUBLIC");
-    expect(() => assertPaymentMatches(s, { destination: DEST, amount: "10.6" })).toThrow();
+    expect(() => assertPaymentMatches(s, { destination: DEST, amount: "10.6", assetCode: "USDC" })).toThrow();
+  });
+  it("throws on asset mismatch (XLM where USDC expected)", () => {
+    const s = decodeTx(xlmXdr(), "PUBLIC");
+    expect(() => assertPaymentMatches(s, { destination: DEST, amount: "10.5", assetCode: "USDC" })).toThrow(/ativo/);
+  });
+  it("throws when more than one payment op is present (hidden second payment)", () => {
+    const s = decodeTx(twoPaymentXdr(), "PUBLIC");
+    expect(() => assertPaymentMatches(s, { destination: DEST, amount: "10", assetCode: "USDC" })).toThrow(/exatamente 1/);
   });
 });
+
