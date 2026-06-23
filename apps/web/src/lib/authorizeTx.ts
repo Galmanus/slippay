@@ -20,3 +20,18 @@ export async function authorizePayment(args: {
   const signed = attachSignature(args.xdr, args.network, args.publicKey, sig); // 6. attach + submit
   return submitSignedTx(args.network, signed);
 }
+
+export async function authorizeContractCall(args: {
+  xdr: string;
+  network: "TESTNET" | "PUBLIC";
+  publicKey: string;
+  signHash: (hash: Buffer) => Promise<Buffer>;
+  confirm: (s: TxSummary) => Promise<boolean>;
+}): Promise<{ hash: string }> {
+  const summary = decodeTx(args.xdr, args.network);
+  if (!(await args.confirm(summary))) throw new Error("operação cancelada pelo usuário");
+  const hash = localHash(args.xdr, args.network);
+  const sig = await args.signHash(hash);
+  const signed = attachSignature(args.xdr, args.network, args.publicKey, sig);
+  return submitSignedTx(args.network, signed);
+}
