@@ -125,9 +125,12 @@ function ComexSolanaProviderInner({ children }: { children: ReactNode }) {
     | undefined;
   const email = emailAccount?.address ?? null;
 
-  // First Solana embedded wallet. With createOnLogin='all-users' this is
-  // auto-created; the effect below is belt-and-suspenders.
-  const solanaWallet: ConnectedStandardSolanaWallet | undefined = wallets[0];
+  // [M-3] Defensively pick the embedded Solana wallet. With createOnLogin='all-users'
+  // there should always be one after auth, but guard against empty array.
+  // wallets[0] is fine when the array is non-empty; the guard is against an empty array
+  // and ensures we never throw on undefined before address is accessible.
+  const solanaWallet: ConnectedStandardSolanaWallet | undefined =
+    wallets.length > 0 ? wallets[0] : undefined;
   const address: string | null = solanaWallet?.address ?? null;
 
   // Auto-create Solana wallet on first login if absent

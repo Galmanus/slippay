@@ -22,6 +22,8 @@ export default function SolanaSend() {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [txSig, setTxSig] = useState<string | null>(null);
+  /** true = confirmed on-chain, false = sent but confirmation pending/timed out */
+  const [txConfirmed, setTxConfirmed] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // ConfirmTxModal state — we synthesize a TxSummary for the modal
@@ -29,17 +31,18 @@ export default function SolanaSend() {
   const resolveConfirmRef = useRef<((v: boolean) => void) | null>(null);
 
   const openConfirmModal = useCallback(
-    (decoded: { to: string; amount: string }): Promise<boolean> => {
+    (decoded: { to: string; amount: string; ownerAddress: string }): Promise<boolean> => {
       return new Promise((resolve) => {
         resolveConfirmRef.current = resolve;
-        // Synthesize a TxSummary compatible with ConfirmTxModal
+        // [I-2] Show the owner address (base58) the user recognizes, not the ATA.
         const summary: TxSummary = {
           source: address ?? "",
           fee: "~0.000005 SOL",
           operations: [
             {
               type: "payment",
-              destination: decoded.to,
+              // ownerAddress is what the human can verify; ATA is internal
+              destination: decoded.ownerAddress,
               amount: decoded.amount,
               assetCode: "USDC",
             },
@@ -72,6 +75,7 @@ export default function SolanaSend() {
     if (!address || !canSend) return;
     setError(null);
     setTxSig(null);
+    setTxConfirmed(true);
     setBusy(true);
     try {
       const connection = new Connection(rpcUrl());
@@ -84,8 +88,11 @@ export default function SolanaSend() {
         confirm: (decoded) => openConfirmModal(decoded),
       });
       setTxSig(result.signature);
-      setDestination("");
-      setAmount("");
+      setTxConfirmed(result.confirmed);
+      if (result.confirmed) {
+        setDestination("");
+        setAmount("");
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "erro desconhecido");
     } finally {
@@ -160,14 +167,35 @@ export default function SolanaSend() {
           {busy ? "Processando..." : "Enviar"}
         </button>
 
-        {/* Success */}
-        {txSig && (
+        {/* Success — confirmed */}
+        {txSig && txConfirmed && (
           <div className="mt-8 border-l-2 border-[#FDDA24] pl-4">
             <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
               <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Transferência enviada
             </div>
             <a
               className="text-xs font-mono mt-2 block break-all hover:opacity-60"
+              href={`https://solscan.io/tx/${txSig}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {txSig}
+            </a>
+          </div>
+        )}
+
+        {/* Pending confirmation — sent but not yet confirmed */}
+        {txSig && !txConfirmed && (
+          <div className="mt-8 border-l-2 border-[#0a0a0a]/40 pl-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
+              <span className="inline-block w-1.5 h-1.5 bg-[#0a0a0a]/40 animate-pulse" />
+              Enviado, confirmando...
+            </div>
+            <p className="text-xs text-[#0a0a0a]/60 mt-1">
+              A transação foi enviada à rede. Verifique o status no Solscan.
+            </p>
+            <a
+              className="text-xs font-mono mt-2 block break-all hover:opacity-60 text-[#0a0a0a]/70"
               href={`https://solscan.io/tx/${txSig}`}
               target="_blank"
               rel="noreferrer"
