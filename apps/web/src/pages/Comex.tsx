@@ -1,11 +1,14 @@
 import { useComexWallet } from "../lib/comexPrivy.tsx";
-import { useMfaEnrollment } from "@privy-io/react-auth";
+import { useMfaEnrollment, usePrivy } from "@privy-io/react-auth";
 import ComexDashboard from "./comex/Dashboard.tsx";
 
 export default function Comex() {
   const { ready, authenticated, login } = useComexWallet();
   // useMfaEnrollment: kept at page level so MFA modal is accessible post-auth.
-  useMfaEnrollment();
+  // VERIFY-WITH-KEYS: gate is now implemented below. Confirm `user.mfaMethods` shape
+  // matches the live Privy session (type: LinkedMfaAccount[]) before relying on it in prod.
+  const { showMfaEnrollmentModal } = useMfaEnrollment();
+  const { user } = usePrivy();
 
   // 1. SDK not ready yet
   if (!ready) {
@@ -67,9 +70,26 @@ export default function Comex() {
     );
   }
 
-  // 3. Authenticated → dashboard
-  // VERIFY-WITH-KEYS: when VITE_PRIVY_APP_ID is set, gate on
-  // usePrivy().user.mfaMethods.length === 0 to prompt MFA enrollment before
-  // rendering ComexDashboard. Use showMfaEnrollmentModal() from useMfaEnrollment().
+  // 3. Authenticated — MFA gate
+  // Block dashboard if no MFA method enrolled. Self-attest via mfaMethods array.
+  if (!user || (user.mfaMethods?.length ?? 0) === 0) {
+    return (
+      <div className="min-h-screen bg-[#f1eee7] flex items-center justify-center">
+        <div className="max-w-sm text-center space-y-6 px-8">
+          <p className="text-sm text-[#0a0a0a]/70">
+            Ative a verificação em duas etapas (2FA) para proteger a conta da empresa
+          </p>
+          <button
+            onClick={showMfaEnrollmentModal}
+            className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a]"
+          >
+            Ativar 2FA
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Authenticated + MFA enrolled → dashboard
   return <ComexDashboard />;
 }

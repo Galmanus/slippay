@@ -162,7 +162,7 @@ export default function Send() {
         {needsSecondApproval && !secondApprovalConfirmed && (
           <div className="border-l-2 border-yellow-500 pl-4 py-4 mb-6 space-y-4">
             <p className="text-[10px] uppercase tracking-[0.14em] text-yellow-700">
-              Esta operação exige aprovação de um segundo responsável
+              Confirmação adicional (acima de US$ {approvalLimitUsd()}). Controle dual real com 2º responsável chega na fase 2.
             </p>
             <label className="flex items-center gap-3 cursor-pointer">
               <input

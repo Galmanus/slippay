@@ -17,7 +17,7 @@ export function decodeTx(xdr: string, network: "TESTNET" | "PUBLIC"): TxSummary 
   return {
     source: tx.source,
     fee: String(tx.fee),
-    memo: tx.memo?.value ? String(tx.memo.value) : undefined,
+    memo: (tx.memo && tx.memo.type === "text" && typeof tx.memo.value === "string") ? tx.memo.value : undefined,
     operations: ops,
   };
 }
