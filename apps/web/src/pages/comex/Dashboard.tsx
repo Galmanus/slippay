@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useComexWallet } from "../../lib/comexPrivy.tsx";
+import Balance from "./Balance.tsx";
+import Send from "./Send.tsx";
 
 type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 const TABS: Tab[] = ["Saldo", "Enviar", "Câmbio", "Render"];
@@ -47,12 +49,24 @@ export default function ComexDashboard() {
         </div>
       </nav>
 
-      {/* Panel — placeholder */}
+      {/* Panel */}
       <main className="flex-1 flex items-start">
-        <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-16">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
-            {activeTab} — em breve
+        <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-16 grid md:grid-cols-12 gap-8 md:gap-16">
+          <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+            <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
+            {activeTab === "Saldo" && "001. Saldo"}
+            {activeTab === "Enviar" && "002. Enviar"}
+            {activeTab === "Câmbio" && "003. Câmbio"}
+            {activeTab === "Render" && "004. Render"}
           </div>
+
+          {activeTab === "Saldo" && <Balance />}
+          {activeTab === "Enviar" && <Send />}
+          {(activeTab === "Câmbio" || activeTab === "Render") && (
+            <div className="md:col-span-9 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
+              {activeTab} — em breve
+            </div>
+          )}
         </div>
       </main>
     </div>
