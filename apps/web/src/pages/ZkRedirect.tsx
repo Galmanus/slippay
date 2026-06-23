@@ -6,7 +6,7 @@ import { useEffect } from "react";
 // This bounces it to the real static ZK page.
 export default function ZkRedirect() {
   useEffect(() => {
-    window.location.replace("/zk/index.html");
+    window.location.replace("/zk/");
   }, []);
   return null;
 }

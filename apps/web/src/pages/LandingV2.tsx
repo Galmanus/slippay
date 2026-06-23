@@ -130,7 +130,7 @@ export default function LandingV2() {
         <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline transition-opacity hover:opacity-70">{label}</Link>)}
-          <a href="/zk/index.html" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
+          <a href="/zk/" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
           <Link to="/builders" className="hidden md:inline transition-opacity hover:opacity-70">Builders</Link>
           <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hidden md:inline transition-opacity hover:opacity-70">Docs</a>
           <Link to="/comex" className="hidden md:inline transition-opacity hover:opacity-70">comex</Link>
@@ -145,7 +145,7 @@ export default function LandingV2() {
         {menuOpen && (
           <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
             {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
-            <a href="/zk/index.html" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
+            <a href="/zk/" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
             <Link to="/builders" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Builders</Link>
             <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Docs</a>
             <Link to="/comex" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">comex</Link>
@@ -201,7 +201,7 @@ export default function LandingV2() {
           <span style={{ color: "#FDDA24" }}>tx</span><span className="truncate">{ZK_MAINNET_TX}</span>
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <a href="/zk/index.html" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
+          <a href="/zk/" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-[#0a0a0a] border-b-2 border-[#FDDA24] hover:opacity-70 pb-1">{lang === "pt" ? "Ver a demonstração →" : "See the demo →"}</a>
           <a href={xurl("tx", ZK_MAINNET_TX)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.zk.link}</a>
         </div>
       </div></section>
