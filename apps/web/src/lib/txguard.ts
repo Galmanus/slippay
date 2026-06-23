@@ -28,17 +28,25 @@ export function localHash(xdr: string, network: "TESTNET" | "PUBLIC"): Buffer {
 
 export function assertPaymentMatches(
   s: TxSummary,
-  expect: { destination: string; amount: string; assetCode?: string },
+  expect: { destination: string; amount: string; assetCode: string },
 ): void {
-  const pay = s.operations.find((o) => o.type === "payment");
-  if (!pay) throw new Error("guard: nenhuma operação de pagamento no XDR");
+  const pays = s.operations.filter((o) => o.type === "payment");
+  if (pays.length !== 1) {
+    throw new Error(`guard: esperava exatamente 1 pagamento, encontrei ${pays.length}`);
+  }
+  const pay = pays[0]!;
   if (pay.destination !== expect.destination.trim()) {
     throw new Error(`guard: destino divergente (assinaria ${pay.destination}, esperado ${expect.destination})`);
   }
-  if (expect.assetCode && pay.assetCode !== expect.assetCode) {
+  if (pay.assetCode !== expect.assetCode) {
     throw new Error(`guard: ativo divergente (${pay.assetCode} vs ${expect.assetCode})`);
   }
-  if (Math.abs(Number(pay.amount) - Number(expect.amount)) > 1e-7) {
+  const got = Number(pay.amount);
+  const want = Number(expect.amount);
+  if (!Number.isFinite(got) || !Number.isFinite(want)) {
+    throw new Error("guard: valor não numérico");
+  }
+  if (Math.abs(got - want) > 1e-7) {
     throw new Error(`guard: valor divergente (assinaria ${pay.amount}, esperado ${expect.amount})`);
   }
 }
