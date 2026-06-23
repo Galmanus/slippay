@@ -133,6 +133,7 @@ export default function LandingV2() {
           <a href="/zk/index.html" className="hidden md:inline-flex items-center gap-1 transition-opacity hover:opacity-70 text-[#0a0a0a]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK</a>
           <Link to="/builders" className="hidden md:inline transition-opacity hover:opacity-70">Builders</Link>
           <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hidden md:inline transition-opacity hover:opacity-70">Docs</a>
+          <Link to="/comex" className="hidden md:inline transition-opacity hover:opacity-70">for business</Link>
           <span className="hidden md:inline"><LangToggle /></span>
           <Link to="/account" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] font-semibold hover:opacity-90">{t.nav.tryFree}</Link>
           <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="md:hidden flex flex-col gap-[5px] p-1">
@@ -147,6 +148,7 @@ export default function LandingV2() {
             <a href="/zk/index.html" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8 inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" />ZK · prova sem revelar</a>
             <Link to="/builders" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Builders</Link>
             <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">Docs</a>
+            <Link to="/comex" onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">for business</Link>
             <div className="py-3 border-b border-[#0a0a0a]/8"><LangToggle /></div>
             <Link to="/account" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#FDDA24] text-[#0a0a0a] font-semibold">{t.nav.tryFree}</Link>
           </div>
