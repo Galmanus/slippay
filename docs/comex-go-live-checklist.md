@@ -24,6 +24,7 @@ Branch: `feat/comex-treasury-phase1`. Tudo Solana, non-custodial.
 - [ ] `VITE_PRIVY_APP_ID=<app id>`
 - [ ] `VITE_SOLANA_NETWORK=mainnet`
 - [ ] `VITE_SOLANA_RPC=<url do RPC pago>`  ← senão cai no público (frágil)
+- [ ] `VITE_4P_OFFRAMP_RECEIVER=<endereço Solana base58 da 4P>`  ← **segurança (I-3)**: pino do receiver da venda. Sem isso a venda fica desabilitada; se a 4P retornar endereço diferente do pino, a operação é bloqueada antes de assinar. Pedir o endereço oficial à 4P.
 - [ ] (USDC mint mainnet é fixo no código — Circle `EPjFW...grmGp2`, não setar)
 - [ ] NÃO existe secret de assinatura no front (non-custodial) — confirmar: `grep -ri "AUTHORIZATION_PRIVATE\|secret" apps/web/src` = vazio
 
