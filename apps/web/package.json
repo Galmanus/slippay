@@ -13,10 +13,12 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.31",
     "@creit.tech/stellar-wallets-kit": "^2.1.0",
+    "@defindex/sdk": "^0.3.0",
     "@fontsource/space-grotesk": "^5.2.10",
     "@fontsource/space-mono": "^5.2.9",
     "@lazorkit/wallet": "^1.4",
     "@number-flow/react": "^0.6.0",
+    "@privy-io/react-auth": "^3.32.2",
     "@slippay/shared": "workspace:*",
     "@solana/spl-token": "^0.4",
     "@solana/web3.js": "^1.95",
