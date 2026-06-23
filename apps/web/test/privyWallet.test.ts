@@ -18,8 +18,7 @@ describe("attachSignature", () => {
     const kp = Keypair.random();
     const xdr = unsigned(kp.publicKey());
     const hash = TransactionBuilder.fromXDR(xdr, Networks.PUBLIC).hash();
-    const rawSig = kp.sign(hash); // simulates what Privy raw-sign returns (Ed25519 over the hash)
-
+    const rawSig = kp.sign(hash);
     const signedXdr = attachSignature(xdr, "PUBLIC", kp.publicKey(), rawSig);
     const signed = TransactionBuilder.fromXDR(signedXdr, Networks.PUBLIC);
     expect(signed.signatures.length).toBe(1);
@@ -33,5 +32,14 @@ describe("attachSignature", () => {
     const rawSig = kp.sign(tx.hash());
     const signed = TransactionBuilder.fromXDR(attachSignature(xdr, "PUBLIC", kp.publicKey(), rawSig), Networks.PUBLIC);
     expect(kp.verify(signed.hash(), signed.signatures[0]!.signature()!)).toBe(true);
+  });
+
+  it("rejects fee-bump transactions", () => {
+    const kp = Keypair.random();
+    const feeSource = Keypair.random();
+    const inner = TransactionBuilder.fromXDR(unsigned(kp.publicKey()), Networks.PUBLIC);
+    inner.sign(kp);
+    const fb = TransactionBuilder.buildFeeBumpTransaction(feeSource, "200", inner as any, Networks.PUBLIC);
+    expect(() => attachSignature(fb.toXDR(), "PUBLIC", kp.publicKey(), Buffer.alloc(64))).toThrow(/fee-bump/);
   });
 });
