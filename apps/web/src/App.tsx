@@ -39,6 +39,9 @@ import ZkRedirect from "./pages/ZkRedirect.tsx";
 import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
 
+
+import Comex from "./pages/Comex.tsx";
+import { ComexPrivyProvider } from "./lib/comexPrivy.tsx";
 export default function App() {
   return (
     <Routes>
@@ -48,6 +51,7 @@ export default function App() {
       <Route path="/cofrinho-landing" element={<LandingV2 />} />
       <Route path="/receber" element={<Receber />} />
       {import.meta.env.VITE_PAGFINANCE_ENABLED === "1" && <Route path="/pix-pay" element={<PixPay />} />}
+      {import.meta.env.VITE_COMEX_ENABLED === "1" && <Route path="/comex" element={<ComexPrivyProvider><Comex /></ComexPrivyProvider>} />}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/b2b" element={<Empresas />} />
       <Route path="/v1" element={<AgentHome />} />
