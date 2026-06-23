@@ -15,24 +15,23 @@ function unsigned(src: string, amount: string): string {
 describe("authorizePayment", () => {
   it("aborts before signing when the decoded destination does not match expected", async () => {
     const kp = Keypair.random();
-    const xdr = unsigned(kp.publicKey(), "100");
-    const privy = { walletApi: { rawSign: vi.fn() } };
+    const signHash = vi.fn();
     await expect(authorizePayment({
-      xdr, network: "PUBLIC", walletId: "w1", publicKey: kp.publicKey(), privy,
+      xdr: unsigned(kp.publicKey(), "100"), network: "PUBLIC", publicKey: kp.publicKey(), signHash,
       confirm: async () => true,
       expect: { destination: "GBBKIN4ZQWJUND63GSFEXLKZFLXZ3J265FPGYKPLGXA34QYSAFFC3C5X", amount: "100", assetCode: "USDC" },
     })).rejects.toThrow(/destino divergente/);
-    expect(privy.walletApi.rawSign).not.toHaveBeenCalled();
+    expect(signHash).not.toHaveBeenCalled();
   });
 
   it("aborts when the human rejects the confirmation (never signs)", async () => {
     const kp = Keypair.random();
-    const privy = { walletApi: { rawSign: vi.fn() } };
+    const signHash = vi.fn();
     await expect(authorizePayment({
-      xdr: unsigned(kp.publicKey(), "5"), network: "PUBLIC", walletId: "w1",
-      publicKey: kp.publicKey(), privy, confirm: async () => false,
+      xdr: unsigned(kp.publicKey(), "5"), network: "PUBLIC", publicKey: kp.publicKey(), signHash,
+      confirm: async () => false,
       expect: { destination: DEST, amount: "5", assetCode: "USDC" },
     })).rejects.toThrow(/cancelad/i);
-    expect(privy.walletApi.rawSign).not.toHaveBeenCalled();
+    expect(signHash).not.toHaveBeenCalled();
   });
 });
