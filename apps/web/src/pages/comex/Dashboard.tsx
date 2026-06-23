@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useComexWallet } from "../../lib/comexPrivy.tsx";
 import Balance from "./Balance.tsx";
 import Send from "./Send.tsx";
+import Exchange from "./Exchange.tsx";
+import Yield from "./Yield.tsx";
 
 type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 const TABS: Tab[] = ["Saldo", "Enviar", "Câmbio", "Render"];
@@ -62,11 +64,8 @@ export default function ComexDashboard() {
 
           {activeTab === "Saldo" && <Balance />}
           {activeTab === "Enviar" && <Send />}
-          {(activeTab === "Câmbio" || activeTab === "Render") && (
-            <div className="md:col-span-9 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
-              {activeTab} — em breve
-            </div>
-          )}
+          {activeTab === "Câmbio" && <Exchange />}
+          {activeTab === "Render" && <Yield />}
         </div>
       </main>
     </div>
