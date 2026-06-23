@@ -4,37 +4,51 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Slippay ZK · prova sem revelar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bone:#f1eee7; --ink:#15130f; --ink-soft:#5c574e; --line:#d8d2c6;
+    --bone:#f1eee7; --ink:#0a0a0a; --ink-soft:#5c574e; --line:#d8d2c6;
     --yellow:#FDDA24; --paper:#fbf9f4; --leak:#b4402f; --ok:#1f7a4d;
+    --mono:"SFMono-Regular","Consolas","Liberation Mono",monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
     background:transparent; color:var(--ink);
-    font-family:"Georgia","Times New Roman",serif;
+    font-family:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
     -webkit-font-smoothing:antialiased; line-height:1.5;
   }
-  .mono{font-family:"SFMono-Regular","Consolas","Liberation Mono",monospace}
+  .mono{font-family:var(--mono)}
   .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
-  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-soft);font-family:"SFMono-Regular",monospace}
-  .num{font-family:"SFMono-Regular",monospace;font-size:12px;letter-spacing:.2em;color:var(--ink-soft)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-soft)}
+  .num{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--ink-soft)}
 
-  /* hero */
-  header{border-bottom:2px solid var(--ink);padding:22px 0;position:sticky;top:0;background:var(--bone);z-index:5}
-  header .wrap{display:flex;justify-content:space-between;align-items:baseline}
-  .brand{font-weight:700;letter-spacing:-.02em;font-size:18px}
-  .brand b{background:var(--yellow);padding:0 4px}
-  .tag{font-family:"SFMono-Regular",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+  /* ── header / nav ── */
+  header{border-bottom:2px solid var(--ink);padding:0;position:sticky;top:0;background:var(--bone);z-index:5}
+  header .wrap{display:flex;justify-content:space-between;align-items:center;height:58px}
+  .brand{font-weight:700;letter-spacing:-.03em;font-size:20px;text-decoration:none;color:var(--ink);line-height:1}
+  .brand .dot{color:var(--yellow)}
+  nav{display:flex;align-items:center;gap:28px}
+  nav a{font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-decoration:none;opacity:.7;transition:opacity .15s}
+  nav a:hover{opacity:1}
+  nav a.active{opacity:1;border-bottom:2px solid var(--yellow)}
+  @media(max-width:520px){
+    header .wrap{height:52px}
+    nav{gap:16px}
+    nav a{font-size:10px;letter-spacing:.12em}
+    .brand{font-size:17px}
+  }
 
+  /* ── hero ── */
   .hero{padding:90px 0 70px;border-bottom:1px solid var(--line)}
   .hero h1{font-size:clamp(38px,7vw,82px);line-height:.98;letter-spacing:-.03em;font-weight:700;max-width:14ch}
-  .hero h1 mark{background:var(--yellow);padding:0 .08em}
+  .hero h1 mark{background:var(--yellow);padding:0 .08em;color:inherit}
   .hero p{margin-top:30px;font-size:clamp(17px,2.4vw,22px);max-width:46ch;color:var(--ink-soft);line-height:1.45}
   .hero .meta{margin-top:42px;display:flex;gap:34px;flex-wrap:wrap}
   .hero .meta div{border-left:2px solid var(--ink);padding-left:14px}
-  .hero .meta .k{font-family:"SFMono-Regular",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  .hero .meta .k{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
   .hero .meta .v{font-size:25px;font-weight:700;letter-spacing:-.02em;margin-top:3px}
 
   section{padding:74px 0;border-bottom:1px solid var(--line)}
@@ -43,18 +57,18 @@
   .lede{font-size:18px;color:var(--ink-soft);max-width:60ch;margin-bottom:40px;line-height:1.5}
 
   /* contrast */
-  .toggle{display:inline-flex;border:2px solid var(--ink);margin-bottom:34px;font-family:"SFMono-Regular",monospace;font-size:13px}
+  .toggle{display:inline-flex;border:2px solid var(--ink);margin-bottom:34px;font-family:var(--mono);font-size:13px}
   .toggle button{padding:11px 20px;background:var(--bone);border:none;cursor:pointer;font:inherit;letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
   .toggle button.on{background:var(--ink);color:var(--bone)}
   .ledger{border:2px solid var(--ink);background:var(--paper)}
-  .ledger .lh{display:flex;justify-content:space-between;padding:14px 20px;border-bottom:2px solid var(--ink);font-family:"SFMono-Regular",monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+  .ledger .lh{display:flex;justify-content:space-between;padding:14px 20px;border-bottom:2px solid var(--ink);font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase}
   .ledger .lh .dot{font-weight:700}
-  .row{display:grid;grid-template-columns:46px 1fr 1fr;padding:13px 20px;border-bottom:1px solid var(--line);font-family:"SFMono-Regular",monospace;font-size:14px;align-items:center}
+  .row{display:grid;grid-template-columns:46px 1fr 1fr;padding:13px 20px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:14px;align-items:center}
   .row:last-child{border-bottom:none}
   .row .i{color:var(--ink-soft)}
   .leakv{color:var(--leak);font-weight:700}
   .hidev{color:var(--ink-soft);letter-spacing:.05em}
-  .verdict{padding:20px;display:flex;align-items:center;gap:14px;border-top:2px solid var(--ink);font-family:"SFMono-Regular",monospace}
+  .verdict{padding:20px;display:flex;align-items:center;gap:14px;border-top:2px solid var(--ink);font-family:var(--mono)}
   .badge{display:inline-block;padding:5px 11px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
   .badge.bad{background:var(--leak);color:#fff}
   .badge.good{background:var(--ok);color:#fff}
@@ -64,33 +78,40 @@
   /* mandate cards */
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
   .card{border:2px solid var(--ink);padding:24px;background:var(--paper)}
-  .card .ci{font-family:"SFMono-Regular",monospace;font-size:11px;letter-spacing:.2em;color:var(--ink-soft);text-transform:uppercase}
-  .card h3{font-size:21px;margin:10px 0 8px;letter-spacing:-.01em}
+  .card .ci{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-soft);text-transform:uppercase}
+  .card h3{font-size:21px;margin:10px 0 8px;letter-spacing:-.01em;font-weight:700}
   .card p{font-size:14.5px;color:var(--ink-soft)}
 
   /* regulator */
   .reg{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2px solid var(--ink);background:var(--paper)}
   .reg .col{padding:30px}
   .reg .col:first-child{border-right:2px solid var(--ink)}
-  .reg .clabel{font-family:"SFMono-Regular",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
-  .ct{font-family:"SFMono-Regular",monospace;font-size:12.5px;word-break:break-all;color:var(--ink);background:var(--bone);padding:14px;border:1px dashed var(--line);line-height:1.7}
-  .reg button{margin-top:22px;background:var(--ink);color:var(--bone);border:none;padding:14px 22px;font-family:"SFMono-Regular",monospace;font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+  .reg .clabel{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:16px}
+  .ct{font-family:var(--mono);font-size:12.5px;word-break:break-all;color:var(--ink);background:var(--bone);padding:14px;border:1px dashed var(--line);line-height:1.7}
+  .reg button{margin-top:22px;background:var(--ink);color:var(--bone);border:none;padding:14px 22px;font-family:var(--mono);font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s}
   .reg button:hover{background:var(--yellow);color:var(--ink)}
   .recovered{font-size:54px;font-weight:700;letter-spacing:-.03em;opacity:0;transition:opacity .5s;margin-top:8px}
   .recovered.show{opacity:1}
-  .recovered small{display:block;font-size:13px;font-weight:400;font-family:"SFMono-Regular",monospace;color:var(--ink-soft);letter-spacing:.04em;margin-top:6px}
+  .recovered small{display:block;font-size:13px;font-weight:400;font-family:var(--mono);color:var(--ink-soft);letter-spacing:.04em;margin-top:6px}
 
   /* proof strip */
   .proof{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:2px solid var(--ink)}
   .proof div{padding:26px;border-right:1px solid var(--line)}
   .proof div:last-child{border-right:none}
-  .proof .pk{font-family:"SFMono-Regular",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  .proof .pk{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
   .proof .pv{font-size:30px;font-weight:700;letter-spacing:-.02em;margin-top:8px}
   .proof a{color:var(--ink);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
-  footer{padding:50px 0;font-family:"SFMono-Regular",monospace;font-size:12px;color:var(--ink-soft);letter-spacing:.06em}
+  footer{padding:50px 0;font-family:var(--mono);font-size:12px;color:var(--ink-soft);letter-spacing:.06em}
+
   .reveal{opacity:0;transform:translateY(16px);animation:rise .7s forwards}
   @keyframes rise{to{opacity:1;transform:none}}
-  @media(max-width:760px){.grid3,.reg,.proof{grid-template-columns:1fr}.reg .col:first-child{border-right:none;border-bottom:2px solid var(--ink)}.proof div{border-right:none;border-bottom:1px solid var(--line)}.row{grid-template-columns:34px 1fr 1fr}}
+
+  @media(max-width:760px){
+    .grid3,.reg,.proof{grid-template-columns:1fr}
+    .reg .col:first-child{border-right:none;border-bottom:2px solid var(--ink)}
+    .proof div{border-right:none;border-bottom:1px solid var(--line)}
+    .row{grid-template-columns:34px 1fr 1fr}
+  }
 
   /* V3 skin: silk ribbon background */
   .zkrib{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:radial-gradient(120% 80% at 50% -10%,#faf8f3 0%,#f1eee7 60%)}
@@ -102,7 +123,6 @@
   @keyframes zkrb2{0%,100%{transform:translate(0,0) skewX(0deg)}50%{transform:translate(52px,-20px) skewX(3deg)}}
   @media(max-width:768px){.zkrib svg{height:34vh;top:48%}.zkrib-g1,.zkrib-g2,.zkrib-g3{animation:none}}
   @media(prefers-reduced-motion:reduce){.zkrib-g1,.zkrib-g2,.zkrib-g3{animation:none}}
-
 </style>
 </head>
 <body>
@@ -122,10 +142,17 @@
     <g class="zkrib-g3"><path d="M-200 322.5 C 160 202.5 360 442.5 720 322.5 S 1280 202.5 1640 322.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.57"/><path d="M-200 327.5 C 160 207.5 360 447.5 720 327.5 S 1280 207.5 1640 327.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.53"/><path d="M-200 332.5 C 160 212.5 360 452.5 720 332.5 S 1280 212.5 1640 332.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.50"/><path d="M-200 337.5 C 160 217.5 360 457.5 720 337.5 S 1280 217.5 1640 337.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.46"/><path d="M-200 342.5 C 160 222.5 360 462.5 720 342.5 S 1280 222.5 1640 342.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.42"/><path d="M-200 347.5 C 160 227.5 360 467.5 720 347.5 S 1280 227.5 1640 347.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.38"/><path d="M-200 352.5 C 160 232.5 360 472.5 720 352.5 S 1280 232.5 1640 352.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.34"/><path d="M-200 357.5 C 160 237.5 360 477.5 720 357.5 S 1280 237.5 1640 357.5" fill="none" stroke="url(#zkrbg)" stroke-width="3.6" stroke-linecap="round" opacity="0.30"/></g>
   </svg>
 </div>
-<header><div class="wrap">
-  <div class="brand"><b>slippay</b> zk</div>
-  <div class="tag">real-world zk · stellar</div>
-</div></header>
+
+<header>
+  <div class="wrap">
+    <a href="/" class="brand">slippay<span class="dot">.</span></a>
+    <nav>
+      <a href="/">site</a>
+      <a href="/comex">comex</a>
+      <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noopener">docs</a>
+    </nav>
+  </div>
+</header>
 
 <div class="hero"><div class="wrap reveal">
   <div class="eyebrow">provable bounded autonomy</div>
