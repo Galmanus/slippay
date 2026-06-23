@@ -4,10 +4,10 @@
 //   1. build   — buildUsdcTransfer (construct the tx locally, never from server)
 //   2. decode  — decodeUsdcTransfer (extract to+amount from the BUILT tx)
 //   3. assert  — assertTransferMatches (machine check: decoded vs caller's expected)
-//   4. confirm — human confirmation callback (user sees decoded details)
+//   4. confirm — human confirmation callback (user sees decoded details + owner address)
 //   5. sign    — signTransaction (Privy embedded wallet) — ONLY after confirm=true
-//   6. send    — sendRawTransaction + confirmTransaction on-chain
-//   7. return  — { signature }
+//   6. send    — sendRawTransaction (capture sig first), then confirmTransaction
+//   7. return  — { signature, confirmed }
 //
 // Signing before human confirms is a violation of this contract.
 
@@ -15,7 +15,6 @@ import {
   Connection,
   PublicKey,
   Transaction,
-  sendAndConfirmRawTransaction,
 } from "@solana/web3.js";
 import {
   getAssociatedTokenAddress,
@@ -70,12 +69,20 @@ export async function buildUsdcTransfer(
  * Decodes a Transaction built by buildUsdcTransfer and extracts to+amount.
  * Returns human-readable amount (USDC, NOT base units).
  *
- * Assumes the first instruction is a TransferChecked SPL instruction.
- * Throws if the instruction is absent or malformed.
+ * Validates that the first instruction is TransferChecked (discriminant byte = 12).
+ * Throws if the instruction is absent, malformed, or is not TransferChecked.
  */
 export function decodeUsdcTransfer(tx: Transaction): { to: string; amount: string } {
   const ix = tx.instructions[0];
   if (!ix) throw new Error("solanaAuthorize: transaction has no instructions");
+
+  // [M-1] Validate SPL opcode: first byte must be 12 (TransferChecked discriminant).
+  const data = ix.data;
+  if (data.length < 1 || data[0] !== 12) {
+    throw new Error(
+      `solanaAuthorize: instrução SPL inesperada (não é TransferChecked) — byte[0]=${data[0] ?? "undefined"}`,
+    );
+  }
 
   // TransferChecked layout (spl-token instruction index 12):
   // accounts: [source, mint, dest, authority, ...]
@@ -89,7 +96,6 @@ export function decodeUsdcTransfer(tx: Transaction): { to: string; amount: strin
   // The caller asserts this against the expected destination.
   const destAta = accounts[2]!.pubkey.toBase58();
 
-  const data = ix.data;
   if (data.length < 10) {
     throw new Error("solanaAuthorize: instruction data too short to decode amount");
   }
@@ -148,10 +154,27 @@ export function assertTransferMatches(
 export interface AuthorizeSolanaPaymentArgs {
   connection: Connection;
   from: PublicKey;
+  /** Owner address (base58) — shown to the human in the confirm modal. */
   to: PublicKey;
   usdcAmount: string;
   signTransaction: (tx: Transaction) => Promise<Transaction>;
-  confirm: (decoded: { to: string; amount: string }) => Promise<boolean>;
+  /**
+   * Human confirmation callback.
+   * Receives decoded ATA + amount (for machine display) AND the original owner address
+   * so the modal can show "Para: <owner base58>" that the human recognizes.
+   */
+  confirm: (decoded: { to: string; amount: string; ownerAddress: string }) => Promise<boolean>;
+}
+
+/**
+ * Result of authorizeSolanaPayment.
+ * signature is always present once broadcast (even if confirmation times out).
+ * confirmed=false means: tx was sent but on-chain confirmation did not arrive —
+ * the caller MUST show the solscan link and a "enviado, confirmando…" state.
+ */
+export interface AuthorizeSolanaPaymentResult {
+  signature: string;
+  confirmed: boolean;
 }
 
 /**
@@ -159,30 +182,33 @@ export interface AuthorizeSolanaPaymentArgs {
  *
  * Gate order enforcement:
  *   1. build  → buildUsdcTransfer
- *   2. decode → decodeUsdcTransfer
+ *   2. decode → decodeUsdcTransfer  (also validates TransferChecked opcode — M-1)
  *   3. assert → assertTransferMatches
- *   4. human confirm → confirm(decoded)   ← if false, throw (never reach sign)
+ *   4. human confirm → confirm(decoded + ownerAddress)   ← if false, throw (never reach sign)
  *   5. sign   → signTransaction
- *   6. send   → sendAndConfirmRawTransaction
- *   7. return → { signature }
+ *   6. send   → sendRawTransaction (sig captured FIRST — I-1)
+ *   7. confirm → confirmTransaction in separate try (timeout does NOT lose sig)
+ *   8. return → { signature, confirmed }
  */
 export async function authorizeSolanaPayment(
   args: AuthorizeSolanaPaymentArgs,
-): Promise<{ signature: string }> {
+): Promise<AuthorizeSolanaPaymentResult> {
   const { connection, from, to, usdcAmount, signTransaction, confirm } = args;
 
   // 1. Build
   const tx = await buildUsdcTransfer(connection, from, to, usdcAmount);
 
-  // 2. Decode
+  // 2. Decode (includes TransferChecked opcode validation per M-1)
   const decoded = decodeUsdcTransfer(tx);
 
   // 3. Assert (machine check before human ever sees it — catches server-side manipulation)
   const toAta = (await getAssociatedTokenAddress(usdcMint(), to, true)).toBase58();
   assertTransferMatches(decoded, { to: toAta, amount: usdcAmount });
 
-  // 4. Human confirm — MUST happen before sign
-  const approved = await confirm(decoded);
+  // 4. Human confirm — MUST happen before sign.
+  // Pass ownerAddress (base58) so the modal shows the recognizable address, not the ATA.
+  const ownerAddress = to.toBase58();
+  const approved = await confirm({ ...decoded, ownerAddress });
   if (!approved) {
     throw new Error("cancelado pelo usuário");
   }
@@ -190,12 +216,25 @@ export async function authorizeSolanaPayment(
   // 5. Sign — only reached if human confirmed
   const signed = await signTransaction(tx);
 
-  // 6. Send raw + wait for on-chain confirmation
+  // 6. Send raw — capture signature BEFORE awaiting confirmation (I-1).
+  // If confirmTransaction times out, the sig is still returned so the caller
+  // can show the solscan link and "enviado, confirmando…" state.
   const raw = signed.serialize();
-  const signature = await sendAndConfirmRawTransaction(connection, raw, {
-    commitment: "confirmed",
+  const signature = await connection.sendRawTransaction(raw, {
+    skipPreflight: false,
+    preflightCommitment: "confirmed",
   });
 
-  // 7. Return
-  return { signature };
+  // 7. Confirm on-chain in a separate try — timeout does NOT lose the sig.
+  let confirmed = false;
+  try {
+    await connection.confirmTransaction(signature, "confirmed");
+    confirmed = true;
+  } catch {
+    // Confirmation timed out or network error — tx may still land.
+    // Caller receives confirmed=false + signature to surface recovery UI.
+  }
+
+  // 8. Return
+  return { signature, confirmed };
 }

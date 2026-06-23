@@ -47,6 +47,31 @@ function makeTransferTx(toOverride?: PublicKey, amountBaseUnits = 12_500_000n): 
   return tx;
 }
 
+/** Build a tx with a non-TransferChecked SPL instruction (discriminant != 12). */
+function makeNonTransferCheckedTx(): Transaction {
+  const mint = usdcMint("devnet");
+  const fromAta = getAssociatedTokenAddressSync(mint, FROM, true);
+  const toAta = getAssociatedTokenAddressSync(mint, TO, true);
+
+  // Build a valid TransferChecked instruction then mutate the discriminant byte.
+  const ix = createTransferCheckedInstruction(
+    fromAta,
+    mint,
+    toAta,
+    FROM,
+    1_000_000n,
+    USDC_DECIMALS,
+  );
+  // Overwrite the first byte with discriminant 3 (Transfer, not TransferChecked).
+  ix.data[0] = 3;
+
+  const tx = new Transaction();
+  tx.recentBlockhash = DUMMY_BLOCKHASH;
+  tx.feePayer = FROM;
+  tx.add(ix);
+  return tx;
+}
+
 // ---------------------------------------------------------------------------
 // decodeUsdcTransfer
 // ---------------------------------------------------------------------------
@@ -78,6 +103,17 @@ describe("decodeUsdcTransfer", () => {
     tx.recentBlockhash = DUMMY_BLOCKHASH;
     tx.feePayer = FROM;
     expect(() => decodeUsdcTransfer(tx)).toThrow(/no instructions/);
+  });
+
+  // [M-1] Validate that a non-TransferChecked instruction is rejected.
+  it("[M-1] throws when instruction discriminant is not TransferChecked (byte 0 != 12)", () => {
+    const tx = makeNonTransferCheckedTx();
+    expect(() => decodeUsdcTransfer(tx)).toThrow(/instrução SPL inesperada/);
+  });
+
+  it("[M-1] does NOT throw on a valid TransferChecked instruction (discriminant = 12)", () => {
+    const tx = makeTransferTx();
+    expect(() => decodeUsdcTransfer(tx)).not.toThrow();
   });
 });
 
@@ -166,11 +202,39 @@ describe("authorizeSolanaPayment gate order", () => {
         to: TO,
         usdcAmount: "1",
         signTransaction: fakeSign,
-        confirm: async () => false, // user rejects
+        // [I-2] confirm now receives ownerAddress too
+        confirm: async (_decoded) => false, // user rejects
       }),
     ).rejects.toThrow(/cancelado/);
 
     expect(signCalled).toHaveLength(0);
+  });
+
+  it("passes ownerAddress (base58 owner, not ATA) to confirm callback", async () => {
+    const { authorizeSolanaPayment } = await import("../src/lib/solanaAuthorize.ts");
+
+    const fakeConn = {
+      getLatestBlockhash: async () => ({ blockhash: DUMMY_BLOCKHASH, lastValidBlockHeight: 0 }),
+    } as unknown as Connection;
+
+    let capturedOwner: string | undefined;
+
+    await expect(
+      authorizeSolanaPayment({
+        connection: fakeConn,
+        from: FROM,
+        to: TO,
+        usdcAmount: "1",
+        signTransaction: async (tx) => tx,
+        confirm: async (decoded) => {
+          capturedOwner = decoded.ownerAddress;
+          return false; // cancel so we don't need a real send
+        },
+      }),
+    ).rejects.toThrow(/cancelado/);
+
+    // ownerAddress must be the TO owner address (base58), not the ATA
+    expect(capturedOwner).toBe(TO.toBase58());
   });
 
   it("never calls signTransaction when assertTransferMatches fails", async () => {
@@ -201,7 +265,7 @@ describe("authorizeSolanaPayment gate order", () => {
         // Actually the assert in authorizeSolanaPayment uses the same to/amount on both sides,
         // so it always passes. This test verifies the guard in the wrong-confirm path.
       }),
-    ).rejects.toThrow(); // will throw because sendAndConfirmRawTransaction on fake conn
+    ).rejects.toThrow(); // will throw because sendRawTransaction on fake conn
     // Sign may have been called if assert+confirm both pass (mocked conn can't send)
     // This test validates the stack doesn't bypass the guard; sign being called here is
     // expected (assert passed, confirm passed, sign attempted, send threw on fake conn).

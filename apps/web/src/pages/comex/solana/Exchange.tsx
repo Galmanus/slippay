@@ -9,6 +9,10 @@
 // Security gate (sell path): authorizeSolanaPayment enforces build->decode->assert->confirm
 // before any signature. On-chain send failure after signature shows the raw signature
 // for manual recovery — never shows false success.
+//
+// [I-3] Receiver pin: before building the tx, the sell flow asserts ordData.receiver
+// equals VITE_4P_OFFRAMP_RECEIVER (client-pinned). If unset, sell is disabled.
+// If mismatched, operation is blocked before sign.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -36,6 +40,11 @@ import {
 type Direction = "buy" | "sell";
 
 const DONE_STATUSES = ["paid", "completed", "confirmed"];
+
+// [I-3] Client-pinned 4P off-ramp receiver address.
+// Must be set in env; if absent, sell flow is disabled.
+const PINNED_4P_RECEIVER: string | undefined =
+  import.meta.env.VITE_4P_OFFRAMP_RECEIVER as string | undefined;
 
 // ---------------------------------------------------------------------------
 // Buy sub-panel (R$ -> USDC)
@@ -294,6 +303,9 @@ function SellPanel({ address, signTransaction }: {
   const usdcNum = Number(usdc);
   const usdcValid = isFinite(usdcNum) && usdcNum > 0;
 
+  // [I-3] If PINNED_4P_RECEIVER is not configured, sell is entirely disabled.
+  const receiverConfigured = !!PINNED_4P_RECEIVER;
+
   // Fetch quote when amount changes
   useEffect(() => {
     let on = true;
@@ -328,7 +340,8 @@ function SellPanel({ address, signTransaction }: {
   }, [step, orderId, orderStatus]);
 
   const openConfirmModal = useCallback(
-    (decoded: { to: string; amount: string }): Promise<boolean> => {
+    // [I-2] decoded now carries ownerAddress; display it, not the ATA.
+    (decoded: { to: string; amount: string; ownerAddress: string }): Promise<boolean> => {
       return new Promise((resolve) => {
         resolveConfirmRef.current = resolve;
         const summary: TxSummary = {
@@ -337,7 +350,7 @@ function SellPanel({ address, signTransaction }: {
           operations: [
             {
               type: "payment",
-              destination: decoded.to,
+              destination: decoded.ownerAddress,
               amount: decoded.amount,
               assetCode: "USDC",
             },
@@ -363,6 +376,11 @@ function SellPanel({ address, signTransaction }: {
 
   async function doSell() {
     if (!usdcValid || !pixKey.trim() || !address) return;
+    // [I-3] Receiver must be configured before we allow any sell.
+    if (!receiverConfigured) {
+      setErr("Venda em ativação (receiver não configurado).");
+      return;
+    }
     setErr(null);
     setBusy(true);
     setStep("confirming");
@@ -377,8 +395,17 @@ function SellPanel({ address, signTransaction }: {
       return;
     }
 
-    // Got receiver + amount from 4P. Now build->decode->assert->confirm->sign->send.
+    // [I-3] Assert receiver matches client-pinned address BEFORE building/signing.
+    if (ordData.receiver !== PINNED_4P_RECEIVER) {
+      setErr("receiver 4P inesperado — operação bloqueada");
+      setStep("form");
+      setBusy(false);
+      return;
+    }
+
+    // Got receiver + amount from 4P (pinned OK). Now build->decode->assert->confirm->sign->send.
     let signature: string;
+    let confirmed: boolean;
     try {
       const connection = new Connection(rpcUrl());
       const result = await authorizeSolanaPayment({
@@ -390,10 +417,9 @@ function SellPanel({ address, signTransaction }: {
         confirm: (decoded) => openConfirmModal(decoded),
       });
       signature = result.signature;
+      confirmed = result.confirmed;
       setSig(signature);
     } catch (e) {
-      // If we have a signature, show recovery state — the on-chain send may have landed.
-      // If no signature yet (user cancelled or pre-sign assertion failed), show error.
       const msg = e instanceof Error ? e.message : "Erro ao assinar ou enviar transacao.";
       if (msg === "cancelado pelo usuário") {
         setErr("Transacao cancelada.");
@@ -410,11 +436,32 @@ function SellPanel({ address, signTransaction }: {
       return;
     }
 
-    // On-chain send succeeded. Start polling 4P for settlement.
+    // [I-1] If send succeeded but confirmation timed out, go to recovery so user
+    // can see the sig + solscan link. Never show false success.
+    if (!confirmed) {
+      setStep("recovery");
+      setErr("Transacao enviada, aguardando confirmacao on-chain. Verifique o status abaixo.");
+      setBusy(false);
+      return;
+    }
+
+    // On-chain send + confirmed. Start polling 4P for settlement.
     setOrderId(ordData.id);
     setOrderStatus("pending");
     setStep("sending");
     setBusy(false);
+  }
+
+  // [I-3] Gate: receiver not configured → sell unavailable.
+  if (!receiverConfigured) {
+    return (
+      <div className="space-y-4">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Vender USDC</div>
+        <div className="border border-[#0a0a0a]/15 p-6 text-sm text-[#0a0a0a]/60">
+          Venda em ativação (receiver não configurado) — disponível em breve.
+        </div>
+      </div>
+    );
   }
 
   if (offRampPending && usdcValid) {
@@ -573,10 +620,10 @@ function SellPanel({ address, signTransaction }: {
         {step === "recovery" && (
           <div className="border-l-2 border-red-600 pl-4 space-y-2">
             <div className="text-[10px] uppercase tracking-[0.18em] text-red-700">
-              Confirmando com a 4P
+              Enviado, confirmando...
             </div>
             <p className="text-xs text-[#0a0a0a]/70">
-              {err ?? "Transacao enviada. Aguardando confirmacao da 4P."}
+              {err ?? "Transacao enviada. Aguardando confirmacao on-chain."}
             </p>
             {sig && (
               <a
