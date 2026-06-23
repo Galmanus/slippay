@@ -1,22 +1,40 @@
-// VERIFY-WITH-KEYS: the Privy raw-sign + Stellar-address-derivation calls below are wired per Privy docs but unverifiable without VITE_PRIVY_APP_ID. Re-check against the installed @privy-io/react-auth version when the App ID is set.
+// VERIFY-WITH-KEYS: Privy API calls used (from @privy-io/react-auth@3.32.2 installed types):
+//
+// Wallet creation (extended-chains):
+//   const { createWallet } = useCreateWallet();
+//   const { wallet } = await createWallet({ chainType: 'stellar' });
+//   // wallet.address → G... (Stellar Ed25519 public key / account ID)
+//
+// Wallet lookup from user:
+//   user.linkedAccounts.find((a) => a.type === 'wallet' && a.chainType === 'stellar')
+//   // returns WalletWithMetadata | undefined; .address is the G... address
+//
+// Sign raw hash (extended-chains):
+//   const { signRawHash } = useSignRawHash();
+//   const { signature } = await signRawHash({ address, chainType: 'stellar', hash: `0x${hexHash}` });
+//   // signature: `0x${string}` — 64-byte Ed25519 signature (r+s)
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, type ReactNode } from "react";
 import {
   PrivyProvider,
   usePrivy,
-  useWallets,
-  type ConnectedWallet,
   type PrivyClientConfig,
 } from "@privy-io/react-auth";
+import {
+  useCreateWallet,
+  useSignRawHash,
+} from "@privy-io/react-auth/extended-chains";
 
 // ---------------------------------------------------------------------------
-// Provider
+// Provider config
 // ---------------------------------------------------------------------------
 
 const PRIVY_CONFIG: PrivyClientConfig = {
   loginMethods: ["email"],
+  // Stellar is an extended chain — not listed under embeddedWallets.
+  // We create the Stellar wallet imperatively after login via useCreateWallet.
   embeddedWallets: {
-    ethereum: { createOnLogin: "users-without-wallets" },
+    ethereum: { createOnLogin: "off" },
   },
   mfa: {
     noPromptOnMfaRequired: false,
@@ -42,17 +60,16 @@ interface ComexWalletCtx {
   ready: boolean;
   authenticated: boolean;
   email: string | null;
-  /** Ethereum hex address of the Privy embedded wallet (stable account ID).
-   *  VERIFY-WITH-KEYS: if a Stellar Ed25519 chain is added to Privy's config,
-   *  replace with the Stellar G... address from the Stellar embedded wallet. */
+  /** Stellar account ID (G... address) of the user's Privy-managed Ed25519 wallet. */
   address: string | null;
   walletId: string | null;
   login: () => void;
   logout: () => Promise<void>;
-  /** Signs arbitrary raw bytes using the embedded wallet via personal_sign.
-   *  Returns raw signature bytes (65 bytes: r+s+v).
-   *  VERIFY-WITH-KEYS: personal_sign adds an EIP-191 prefix. For bare hash
-   *  signing (Stellar), use rawSignHash from privyWallet.ts (server-wallet path). */
+  /**
+   * Signs a raw 32-byte hash using the Stellar Ed25519 embedded wallet via
+   * useSignRawHash from @privy-io/react-auth/extended-chains.
+   * Returns a 64-byte Buffer (Ed25519 r+s signature, no EIP-191 prefix).
+   */
   signHash: (hash: Buffer) => Promise<Buffer>;
 }
 
@@ -73,7 +90,12 @@ const ComexWalletContext = createContext<ComexWalletCtx>({
 
 function ComexWalletProviderInner({ children }: { children: ReactNode }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const { wallets } = useWallets();
+  const { createWallet } = useCreateWallet();
+  const { signRawHash } = useSignRawHash();
+
+  // Track whether we have already attempted wallet creation this session
+  // to avoid duplicate calls during re-renders.
+  const creatingRef = useRef(false);
 
   // Resolve email from linked accounts
   const emailAccount = user?.linkedAccounts?.find((a) => a.type === "email") as
@@ -81,23 +103,42 @@ function ComexWalletProviderInner({ children }: { children: ReactNode }) {
     | undefined;
   const email = emailAccount?.address ?? null;
 
-  // First embedded (Privy-created) wallet
-  const embedded: ConnectedWallet | null =
-    (wallets as ConnectedWallet[]).find(
-      (w) => w.walletClientType === "privy" || w.walletClientType === "privy-v2",
-    ) ?? null;
+  // Find existing Stellar wallet from linked accounts
+  const stellarAccount = user?.linkedAccounts?.find(
+    (a) => a.type === "wallet" && (a as { chainType?: string }).chainType === "stellar",
+  ) as { type: "wallet"; chainType: string; address: string; id?: string | null } | undefined;
 
-  const address: string | null = embedded?.address ?? null;
-  const walletId: string | null = embedded?.address ?? null;
+  const address: string | null = stellarAccount?.address ?? null;
+  const walletId: string | null = stellarAccount?.id ?? null;
 
-  async function signHash(hash: Buffer): Promise<Buffer> {
-    if (!embedded) throw new Error("comexPrivy: carteira incorporada não disponível");
-    // ConnectedWallet.sign() wraps personal_sign (EIP-191 prefix applied).
-    // For raw Ed25519 Stellar signing, use rawSignHash from privyWallet.ts instead.
-    // VERIFY-WITH-KEYS: confirm behavior with VITE_PRIVY_APP_ID configured.
-    const sig = await embedded.sign(`0x${hash.toString("hex")}`);
-    return Buffer.from(sig.replace(/^0x/, ""), "hex");
-  }
+  // Auto-create Stellar wallet on first login if absent
+  useEffect(() => {
+    if (!authenticated || !ready || address || creatingRef.current) return;
+    creatingRef.current = true;
+    createWallet({ chainType: "stellar" })
+      .catch((err: unknown) => {
+        // Non-fatal: user can retry; log for debugging
+        console.error("comexPrivy: failed to create Stellar wallet", err);
+      })
+      .finally(() => {
+        creatingRef.current = false;
+      });
+  }, [authenticated, ready, address, createWallet]);
+
+  const signHash = useCallback(
+    async (hash: Buffer): Promise<Buffer> => {
+      if (!address) throw new Error("comexPrivy: Stellar wallet not available");
+      const hexHash = hash.toString("hex") as `0x${string}`;
+      const { signature } = await signRawHash({
+        address,
+        chainType: "stellar",
+        hash: `0x${hexHash}`,
+      });
+      // signature is 0x-prefixed 64-byte hex Ed25519 (r+s)
+      return Buffer.from(signature.replace(/^0x/, ""), "hex");
+    },
+    [address, signRawHash],
+  );
 
   return (
     <ComexWalletContext.Provider
