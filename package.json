@@ -16,5 +16,10 @@
   },
   "devDependencies": {
     "typescript": "^5.6.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@solana-program/token>@solana/kit": "5.5.1"
+    }
   }
 }
