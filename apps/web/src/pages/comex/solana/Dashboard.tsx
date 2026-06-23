@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useComexSolanaWallet } from "../../../lib/comexSolana.tsx";
 import SolanaBalance from "./Balance.tsx";
 import SolanaSend from "./Send.tsx";
+import Exchange from "./Exchange.tsx";
 
 type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 const TABS: Tab[] = ["Saldo", "Enviar", "Câmbio", "Render"];
@@ -62,16 +63,7 @@ export default function ComexSolanaDashboard() {
 
           {activeTab === "Saldo" && <SolanaBalance />}
           {activeTab === "Enviar" && <SolanaSend />}
-          {activeTab === "Câmbio" && (
-            <div className="md:col-span-9 max-w-xl">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-8 block">
-                Câmbio
-              </div>
-              <p className="text-sm text-[#0a0a0a]/55">
-                Câmbio R$↔USD via 4P — em ativação
-              </p>
-            </div>
-          )}
+          {activeTab === "Câmbio" && <Exchange />}
           {activeTab === "Render" && (
             <div className="md:col-span-9 max-w-xl">
               <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-8 block">
