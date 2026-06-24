@@ -143,6 +143,54 @@ inbound flow. Merchants on a 100% non-custodial setup should configure
 `platform_fee_bp` to 0 and accept SlipPay charges per-transaction via a
 separate billing relationship.
 
+## The signing moment: WYSIWYS
+
+Non-custodial is only as strong as the signing moment. Holding no keys
+means nothing if a compromised backend, a MITM, or a buggy API can
+substitute the destination or inflate the amount in the XDR blob the user
+signs without them noticing. SlipPay closes this gap with an explicit
+**what-you-see-is-what-you-sign (WYSIWYS)** gate, enforced in code on
+every money path.
+
+The gate runs in this order on every payment:
+
+1. **Build** — the app (or the Supabase edge function) constructs the
+   unsigned transaction.
+2. **Decode** — that exact transaction is decoded client-side;
+   `apps/web/src/lib/txguard.ts` re-parses the XDR and re-derives its hash
+   locally. It asserts the transaction is a single payment operation whose
+   `{destination, amount, asset}` matches what the user expressed as
+   intent. It rejects: NaN amounts, multi-operation smuggling (a second
+   payment hidden inside the envelope), wrong asset, receiver substitution,
+   amount drift. For Solana, the equivalent decode+assert runs in
+   `apps/web/src/lib/solanaAuthorize.ts`.
+3. **Assert** — the mismatch check is synchronous and fail-closed; if it
+   throws, no confirmation dialog appears, signing is unreachable.
+4. **Human confirm** — only after the user sees and confirms the decoded
+   values does the gate proceed.
+5. **Re-derive + sign** — the hash is re-derived from the decoded
+   transaction locally (not trusted from the server), then signed.
+
+`apps/web/src/lib/authorizeTx.ts` (Stellar) and
+`apps/web/src/lib/solanaAuthorize.ts` (Solana) are the orchestrators the
+UI must call for any signature. There is no bypass: signing is unreachable
+without passing through these gates.
+
+The gate is identical on all three surfaces — human checkout, agent rail,
+comex treasury. A compromised server cannot make a user sign a payment they
+did not see.
+
+**Other enforced guarantees:**
+
+- No server-side signing or authorization key is present in the web client
+  bundle (CI-checkable: no `AUTHORIZATION_PRIVATE` or service-role secret
+  in the built output).
+- The relayer is a fee-payer only; it validates that sponsorable operations
+  are limited to gas sponsorship and fails closed if anything else is
+  attempted.
+- Comex wallets are user-owned Privy embedded wallets, not server wallets.
+  SlipPay never holds the private key.
+
 ## Comparison
 
 | layer | SlipPay | Coinbase Commerce | BitPay |

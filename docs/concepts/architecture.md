@@ -1,24 +1,34 @@
 # Architecture
 
 SlipPay is a non-custodial USDC payment and agent-payment-integrity layer on
-Stellar. This page covers the full current system: the off-chain API and
-listener, the on-chain contract suite, the autocharge scheduler and gas-sponsor
-relayer, the two npm packages, and the two web surfaces. It states the
+Stellar, with Solana in parallel migration. This page covers the full current
+system: the off-chain API and listener, the on-chain contract suite, the
+autocharge scheduler and gas-sponsor relayer, the two npm packages, the three
+web surfaces, and the cross-cutting WYSIWYS signing gate. It states the
 testnet/mainnet seam explicitly wherever a layer is not yet live on mainnet.
 
-Non-custodial here is a precise property: the buyer's or agent's wallet signs
-funds directly to the merchant. SlipPay never holds funds and never has signing
-authority over user funds. The relayer is a fee-payer only; it sponsors gas and
-cannot move user funds.
+Non-custodial here is a precise property: the buyer's, agent's, or company's
+wallet signs funds directly to the recipient. SlipPay never holds funds and
+never has signing authority over user funds. The relayer is a fee-payer only;
+it sponsors gas and cannot move user funds.
 
 ## Layered diagram
 
 ```
-  HUMAN SURFACE                                    AGENT / BUILDER SURFACE
-  (apps/web: /, /pay, /cobrar,                     (@slippay/mcp, @slippay/attester,
-   /comprovante, /sub, /checkout)                   /agents, /verify)
-        |                                                   |
-        v                                                   v
+  HUMAN SURFACE          AGENT / BUILDER SURFACE      COMEX B2B TREASURY
+  (apps/web: /, /pay,    (@slippay/mcp,               (apps/web: /comex,
+   /cobrar, /comprovante,  @slippay/attester,           Privy embedded wallet,
+   /sub, /checkout)        /agents, /verify)            R$↔USD via 4P partner,
+        |                         |                     DeFindex yield on idle USD)
+        |                         |                           |
+        +-------------------------+---------------------------+
+                                  |
+                      WYSIWYS SIGNING GATE (cross-cutting)
+                      decode → assert → human confirm →
+                      re-derive hash locally → sign client-side
+                      (txguard.ts Stellar · solanaAuthorize.ts Solana)
+                                  |
+                                  v
   +-----------------------------+         +-----------------------------------+
   | api (Deno + Hono)           |         | @slippay/mcp  (agent holds its    |
   | supabase/functions/api      |         |   own key; backend-free path)     |
@@ -33,11 +43,13 @@ cannot move user funds.
   | Postgres  |   | Stellar (Soroban contracts + SEP-41 tokens)          |
   | (Supabase)|   |                                                      |
   +-----------+   |  subscription  (MAINNET v0.2 autocharge;             |
-        ^         |     v0.1 per-period charge; v0.3 attested gate       |
-        |         |     TESTNET ONLY)                                    |
-        |         |  smart-wallet  (TESTNET ONLY: WebAuthn + agent       |
-        |         |     session keys)                                    |
-        |         |  checkout      (TESTNET ONLY: atomic fee-split)      |
+        ^         |     v0.4 autocharge + attestation gate +             |
+        |         |     2.97% on-chain platform fee — live rail;         |
+        |         |     v0.2 autocharge — mainnet, no gate)              |
+        |         |  smart-wallet  (MAINNET wasm; per-user instances     |
+        |         |     deployed on demand by relayer)                   |
+        |         |  checkout      (TESTNET ONLY: atomic fee-split,      |
+        |         |     now WYSIWYS-gated client-side)                   |
         |         |  receipt                                             |
         |         +------------------------------------------------------+
         |                         ^                  ^
@@ -48,6 +60,11 @@ cannot move user funds.
   |  SSE)     |   | (off-chain cron, |   |  sponsorable ops fail-closed  |
   +-----------+   |  fee-payer only) |   +------------------------------+
                   +------------------+
+                                  |
+        +-------------------------+
+        | Solana (comex treasury, gated; CCTP bridge Stellar↔Solana)    |
+        | Privy non-custodial wallet · 4P câmbio · DeFindex yield       |
+        +----------------------------------------------------------------+
 
   ORTHOGONAL: axl-compiler (Rust, build-only). Compiles an agent { } block to
   a proof-carrying certificate of the spending bound. No on-chain artifact.
@@ -89,7 +106,8 @@ Routes:
 - `/v1/ask` — concierge chat endpoint.
 
 There is no autocharge or CCTP endpoint in the API. Autocharge runs as an
-off-chain scheduler (below); CCTP is not built.
+off-chain scheduler (below). CCTP (Stellar↔Solana) is a Circle protocol used
+at the chain adapter layer, not exposed via the API.
 
 ### Listener
 
@@ -129,33 +147,29 @@ Network names: Stellar mainnet is `PUBLIC`; testnet is `TESTNET`.
 
 ### subscription — recurring debit (`contracts/subscription`)
 
-Three models share the contract family. The mainnet/testnet seam runs through
+Four models share the contract family. The mainnet/testnet seam runs through
 the middle of it.
 
-- **v0.1 per-period charge** (MAINNET). Buyer signs every period. `charge(id)`
-  uses `require_auth_for_args` binding the buyer signature to
-  `(id, token, merchant, amount)`, then performs a nested SEP-41
-  `token.transfer(buyer -> merchant)`. A real-keypair mainnet charge has been
-  proven on mainnet.
-- **v0.2 autocharge** (MAINNET, the current live model). No per-period buyer
-  signature. The buyer grants a standing SEP-41 allowance once, off-band
+- **v0.2 autocharge** (MAINNET). No per-period buyer signature. The buyer
+  grants a standing SEP-41 allowance once, off-band
   (`token.approve(buyer, contract, cap, expiry)`). Then `autocharge(id)` pulls
   via `transfer_from(spender=contract, buyer -> merchant)` each period, and any
   relayer can submit. Two independent ceilings apply: the contract side
   (`status`, `period`, `max_periods`, `expires_at`) and the SAC side (allowance
   cap and allowance expiry ledger). When the allowance is exhausted or expired,
   `transfer_from` fails and the buyer must re-approve. That allowance is a hard
-  on-chain ceiling, not a backend policy. The autocharge mechanism is proven on
-  testnet.
-- **v0.3 attestation gate** (TESTNET ONLY, not on mainnet).
-  `autocharge_attested(id, not_after, signature)` plus `set_attester`, with an
-  on-chain `env.crypto().ed25519_verify`. The signed message is 44 bytes:
-  `id(32) || charges_done(u32 BE, 4) || not_after(u64 BE, 8)`. The `id` binding
-  blocks cross-subscription replay; the `charges_done` binding makes each
-  attestation single-use; `not_after` is freshness. `ed25519_verify` traps and
-  reverts, so the gate is fail-closed. This is implemented in source with six
-  contract tests and proven on testnet via end-to-end scripts. Mainnet currently
-  runs v0.2 without the gate. This seam is load-bearing and must not be blurred.
+  on-chain ceiling, not a backend policy. Contract:
+  `CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP` (wasm `f8cfed71…`).
+- **v0.4 autocharge + attestation gate + 2.97% on-chain platform fee** (MAINNET,
+  the live rail). `autocharge_attested(id, not_after, signature)` plus
+  `set_attester`, with an on-chain `env.crypto().ed25519_verify`. The signed
+  message is 44 bytes: `id(32) || charges_done(u32 BE, 4) || not_after(u64 BE,
+  8)`. The `id` binding blocks cross-subscription replay; the `charges_done`
+  binding makes each attestation single-use; `not_after` is freshness.
+  `ed25519_verify` traps and reverts, so the gate is fail-closed. The 2.97%
+  platform fee is computed and split on-chain at charge time. Contract:
+  `CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U` (wasm
+  `4312612c…`). This seam is load-bearing and must not be blurred.
 
 Other entrypoints: `create` (buyer-auth; minimum period 86400s in production,
 1s only under the `demo` cargo feature, which must never ship to mainnet),
@@ -167,9 +181,9 @@ storage write is followed by `extend_ttl(17280, 535000)`, and there is
 
 ### smart-wallet — WebAuthn/passkey custom account (`contracts/smart-wallet`)
 
-TESTNET ONLY, v0.1. A per-user instance is deployed per wallet from a template.
-Not on mainnet. It is a Soroban custom account (CAP-46-11 `__check_auth`) with
-two authorization models dispatched on the credential type:
+Wasm on MAINNET (`8e9b6760…`); per-user instances deployed on demand by the
+gas-sponsor relayer. Each instance is a Soroban custom account (CAP-46-11
+`__check_auth`) with two authorization models dispatched on the credential type:
 
 - **Passkey** (`WalletAuth::Passkey`): real on-chain WebAuthn.
   `verify_webauthn` binds to the transaction by requiring the base64url-nopad of
@@ -251,9 +265,16 @@ HTTP 403 when refused. A demo key is derived from a fixed seed if
 ## Web app (`apps/web`)
 
 Built for mainnet (`VITE_STELLAR_NETWORK=PUBLIC`). The `VITE_` values are public
-configuration, not secrets (API base, network, platform address, the v0.2
-subscription contract id, the Supabase URL and anon key). Two surfaces share the
-SPA; see [two-narratives](two-narratives.md) for the split.
+configuration, not secrets (API base, network, platform address, the v0.4
+subscription contract id, the Supabase URL and anon key). Three surfaces share
+the SPA; see [two-narratives](two-narratives.md) for the human/agent split and
+the comex go-live checklist for the B2B surface.
+
+The active chain is selected by `VITE_CHAIN` via the `ChainAdapter`
+(`apps/web/src/lib/chain`). All pages call one interface (`payOneTime`,
+`approveRecurring`, address checks); Stellar and Solana adapters implement it
+side by side. The comex surface targets Solana and is gated pending partner
+keys + Solana cutover.
 
 Real versus demo on the human surface:
 
@@ -265,6 +286,8 @@ Real versus demo on the human surface:
   forgeable claims and is labeled as such.
 - `/verify` is real but client-side only: it re-hashes the spec and regenerates
   the SMT-LIB obligations. No solver runs in-browser yet.
+- `/checkout` is testnet only; the client flow is now WYSIWYS-gated
+  (`apps/web/src/lib/txguard.ts`), meaning no blind-sign path remains.
 - `/cobrar` generates a `slippay:pay` QR, but the recipient is a throwaway
   testnet keypair, so it is a demo merchant, not productionized.
 - `/sub/:id` is a real rail on a demo surface (it needs a demo merchant key in
@@ -300,7 +323,7 @@ default is 297 bp (2.97%). The fee is computed, persisted, and exposed per order
  12. merchant fulfills order                            <- merchant
 ```
 
-## How an agent autocharge flows (v0.2 mainnet, plus the testnet gate)
+## How an agent autocharge flows (v0.4 mainnet, attestation gate live)
 
 ```
   setup (principal, once):
@@ -310,18 +333,19 @@ default is 297 bp (2.97%). The fee is computed, persisted, and exposed per order
 
   recurring (no per-period buyer signature):
     1. autocharge scheduler finds due subs (Supabase)   <- off-chain cron
-    2. relayer signs the envelope (fee-payer only)      <- relayer
-    3. autocharge(id) on the subscription contract      <- Stellar
-    4. transfer_from(contract, buyer -> merchant)       <- SEP-41, bounded by
-         within contract + allowance ceilings              both ceilings
-    5. listener observes settlement                     <- listener
-    6. slippay_status / /comprovante reads the result   <- agent / human
+    2. agent commits its surface to @slippay/attester
+    3. attester signs an ed25519 verdict iff in-surface (fail-closed)
+    4. relayer signs the envelope (fee-payer only)      <- relayer
+    5. autocharge_attested(id, not_after, signature)    <- Stellar (mainnet v0.4)
+         verifies the 44-byte message on-chain via ed25519_verify (fail-closed)
+    6. transfer_from(contract, buyer -> merchant)       <- SEP-41, bounded by
+         within contract + allowance ceilings              both ceilings;
+         2.97% platform fee split on-chain at charge time
+    7. listener observes settlement                     <- listener
+    8. slippay_status / /comprovante reads the result   <- agent / human
 
-  TESTNET-ONLY integrity gate (v0.3), inserted before step 3:
-    i.   agent commits its surface to @slippay/attester
-    ii.  attester signs an ed25519 verdict iff in-surface (fail-closed)
-    iii. autocharge_attested(id, not_after, signature) verifies the same
-         44-byte message on-chain with ed25519_verify (fail-closed)
+  v0.2 (mainnet, no attestation gate — still operational for existing subs):
+    steps 2-3 and 5's on-chain verify are absent; autocharge(id) pulls directly.
 ```
 
 The composition, outside-in: the attester verdict (off-chain, fail-closed)
@@ -331,6 +355,67 @@ by a fee-payer-only relayer, and the whole rail is exposed to agents through the
 @slippay/mcp role membrane. AXL is an orthogonal layer: it makes the spending
 bound a re-checkable theorem rather than a runtime assertion. See
 [proof-bounded-settlement](proof-bounded-settlement.md).
+
+## Multi-chain (`apps/web/src/lib/chain`)
+
+Stellar is the live settlement chain. Solana is being brought up in parallel,
+non-destructively, so the live product is never at risk during the migration.
+
+- **`ChainAdapter`** — a single interface (`payOneTime`, `approveRecurring`,
+  address validation) that all pages call. The active chain is chosen by the
+  `VITE_CHAIN` env var. Stellar and Solana adapters implement it side by side in
+  `apps/web/src/lib/chain`.
+- **Comex on Solana** — the corporate treasury surface targets Solana because the
+  licensed câmbio partner (4P Finance) settles there. Wallet = Privy embedded
+  Solana wallet (email + MFA, non-custodial, no biometric required for corporate
+  multi-user flow); yield = DeFindex on idle USD. The WYSIWYS gate is ported to
+  Solana (`apps/web/src/lib/solanaAuthorize.ts`). State: built + adversarially
+  reviewed; gated pending 4P partner keys + Solana cutover
+  ([go-live checklist](../comex-go-live-checklist.md)).
+- **CCTP** — Circle's Cross-Chain Transfer Protocol is live on Stellar mainnet,
+  providing native USDC movement between Stellar and Solana without wrapped-token
+  bridges when cross-chain settlement is needed.
+
+## WYSIWYS signing gate (cross-cutting)
+
+Every money path — human checkout, agent autocharge, comex treasury transfer —
+runs through the same gate before any key is used to sign:
+
+1. Build the unsigned transaction (XDR on Stellar, instruction set on Solana).
+2. **Decode that exact transaction** and display the real destination, amount, and asset.
+3. **Assert** that the decoded destination and amount match what the user or agent intended. This catches receiver-substitution and amount-drift even from a compromised backend.
+4. Only after explicit human or agent confirmation, **re-derive the hash locally** and sign.
+
+A compromised server, a man-in-the-middle, or a buggy API cannot make a user
+sign a payment they did not see. Implementation:
+
+- `apps/web/src/lib/txguard.ts` (Stellar): decodes an XDR envelope, re-derives
+  its hash locally, and asserts the transaction contains exactly one payment
+  operation matching `{destination, amount, asset}`. Rejects NaN, multi-payment
+  smuggling, wrong asset, receiver substitution, and amount drift.
+- `apps/web/src/lib/solanaAuthorize.ts` (Solana): the same gate for the comex
+  Solana path and any future Solana surface. The UI must call this orchestrator;
+  signing is unreachable without an explicit confirmation.
+
+The checkout's previous blind-sign path was caught in adversarial review and
+closed. The gate is now the only entry to any signature on any surface.
+
+## Comex B2B treasury surface
+
+A corporate (non-biometric, multi-user) account for import/export companies:
+
+- **Auth**: Privy embedded Solana wallet, email + MFA. Non-custodial: the wallet
+  is user-owned, not a server wallet.
+- **Câmbio**: R$↔USD conversion through 4P Finance (the licensed partner).
+  SlipPay's non-custodial classification depends on not holding funds during
+  conversion; 4P is the licensed exchanger.
+- **Yield**: DeFindex on idle USD.
+- **WYSIWYS**: all treasury transfers run through `solanaAuthorize.ts` before
+  signing.
+- **State**: built + adversarially reviewed (receiver-pinning gap caught and
+  closed). Gated behind feature flag; ships with the Solana cutover. See
+  [comex go-live checklist](../comex-go-live-checklist.md) and
+  [4P Solana ramp](../4P_SOLANA_RAMP.md).
 
 ## AXL (`axl-compiler`)
 
@@ -360,13 +445,20 @@ doc describing Vercel plus Actions is stale.
 
 ## Status and honest limitations
 
-- v0.3 attestation gate: proven on testnet, not on mainnet. Mainnet runs v0.2
-  (allowance, no gate).
-- smart-wallet and checkout: testnet only.
+- Subscription v0.2 (autocharge, no gate): mainnet
+  (`CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP`).
+- Subscription v0.4 (autocharge + attestation gate + 2.97% on-chain fee): mainnet,
+  the live rail (`CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U`).
+- Smart-wallet: wasm on mainnet (`8e9b6760…`); per-user instances deployed on demand.
+- Checkout: testnet only; WYSIWYS-gated client-side (no blind-sign path).
+- ZK proof-of-mandate + proof-of-KYC (Groth16): mainnet, zero-PII; generic verifier live.
+- Comex treasury (Privy + 4P + DeFindex): built + adversarially reviewed on Solana;
+  gated pending partner keys + Solana cutover.
+- CCTP (Stellar↔Solana): live on Stellar mainnet.
 - axl-compiler: build-only, no on-chain artifact, certificate not a required CI
   gate, zero downstream adoption.
-- No third-party audit of the newer contracts (smart-wallet, checkout,
-  autocharge, axl). Existing audits cover the WooCommerce plugin only. There is
-  a self-run adversarial audit harness on testnet.
+- No third-party audit of the newer contracts (smart-wallet, checkout, subscription
+  v0.4, axl). Existing audits cover the WooCommerce plugin only. There is a
+  self-run adversarial audit harness; findings are fixed before shipping.
 - No paying customers and no GMV. The Circle USDC issuer account referenced in
   configuration is the asset issuer, not SlipPay activity.
