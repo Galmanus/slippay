@@ -1,4 +1,4 @@
-import { TransactionBuilder, Networks } from "@stellar/stellar-sdk";
+import { TransactionBuilder, Networks, StrKey } from "@stellar/stellar-sdk";
 
 const PASS: Record<string, string> = { TESTNET: Networks.TESTNET, PUBLIC: Networks.PUBLIC };
 
@@ -24,6 +24,10 @@ export function decodeTx(xdr: string, network: "TESTNET" | "PUBLIC"): TxSummary 
 
 export function localHash(xdr: string, network: "TESTNET" | "PUBLIC"): Buffer {
   return TransactionBuilder.fromXDR(xdr, PASS[network]!).hash();
+}
+
+export function isValidStellarAddress(address: string): boolean {
+  try { return StrKey.isValidEd25519PublicKey(address); } catch { return false; }
 }
 
 export function assertPaymentMatches(
