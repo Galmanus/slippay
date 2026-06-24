@@ -5,6 +5,7 @@ import {
   Memo,
   Networks,
   Operation,
+  StrKey,
   TransactionBuilder,
   BASE_FEE,
 } from "@stellar/stellar-sdk";
@@ -37,6 +38,12 @@ const PASSPHRASES: Record<string, string> = {
   TESTNET: Networks.TESTNET,
   PUBLIC:  Networks.PUBLIC,
 };
+
+/** True iff `address` is a well-formed Stellar Ed25519 public key (G..., 56
+ *  chars, base32 with a valid checksum). Pure/offline — no network. */
+export function isValidStellarAddress(address: string): boolean {
+  return StrKey.isValidEd25519PublicKey(address.trim());
+}
 
 export interface BuildAtomicTxArgs {
   buyerPublicKey: string;

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { SupabaseClient } from "supabase";
+import { StrKey } from "npm:@stellar/stellar-sdk";
 import { CreateMerchantInputSchema, PatchMerchantInputSchema, type Merchant } from "@slippay/shared";
 import { requireJwt } from "../middleware/auth_jwt.ts";
 import { generateApiKey, hashApiKey, prefixOf } from "../lib/apikey.ts";
@@ -16,6 +17,9 @@ r.post("/", requireJwt, async (c) => {
   const user = c.get("user");
   const sb = c.get("supabase");
   const input = CreateMerchantInputSchema.parse(await c.req.json());
+  if (input.stellar_address != null && !StrKey.isValidEd25519PublicKey(input.stellar_address)) {
+    return c.json({ error: "invalid_stellar_address" }, 400);
+  }
   const apiKey = generateApiKey();
   const hash = await hashApiKey(apiKey.plain);
   const prefix = prefixOf(apiKey.plain);
@@ -55,6 +59,10 @@ r.patch("/me", requireJwt, async (c) => {
   const user = c.get("user");
   const sb = c.get("supabase");
   const input = PatchMerchantInputSchema.parse(await c.req.json());
+  if ((input as { stellar_address?: string }).stellar_address != null &&
+      !StrKey.isValidEd25519PublicKey((input as { stellar_address?: string }).stellar_address!)) {
+    return c.json({ error: "invalid_stellar_address" }, 400);
+  }
   const { data, error } = await sb
     .from("merchants")
     .update(input)
