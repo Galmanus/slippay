@@ -44,7 +44,9 @@ do, that is a bug worth an issue.
 
 The three surfaces never fork the money path: they all reduce to *build an unsigned
 transfer → the user verifies what they sign → the user signs → submit*. The same
-[security gate](#security-model) protects all three.
+[security gate](#security-model) is the standard across them — live today on the
+comex treasury and the checkout, and being unified into the single signing
+chokepoint for every remaining path.
 
 ---
 
@@ -52,7 +54,8 @@ transfer → the user verifies what they sign → the user signs → submit*. Th
 
 Most "crypto payment" UX asks the user to trust a screen and then sign an opaque
 blob. SlipPay's design rule is the opposite — **what you see is what you sign
-(WYSIWYS)**, enforced in code on every money path:
+(WYSIWYS)**, enforced in code at the signing step (live on the comex treasury and
+the checkout; being made the single chokepoint for the remaining paths):
 
 1. The app builds the transaction.
 2. It **decodes that exact transaction** and shows the real destination + amount + asset.
@@ -143,8 +146,11 @@ risk during the migration.
 Non-custodial is only as strong as the signing moment. SlipPay treats that moment
 as the threat surface and hardens it the same way everywhere.
 
-**The WYSIWYS signing gate** — every money path runs `decode → assert → human
-confirm → local hash → sign`:
+**The WYSIWYS signing gate** — the standard signing path is `decode → assert →
+human confirm → local hash → sign`. It is live on the comex treasury and the
+checkout; the remaining consumer paths (e.g. the off-ramp and subscription pages)
+are being migrated behind the same orchestrator so it becomes the single
+chokepoint for every signature:
 - `apps/web/src/lib/txguard.ts` (Stellar): decode an XDR, re-derive its hash
   locally, assert a single payment matches `{destination, amount, asset}` (rejects
   NaN, multi-payment smuggling, wrong asset, receiver substitution, amount drift).
