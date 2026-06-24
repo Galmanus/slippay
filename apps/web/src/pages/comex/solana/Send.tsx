@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { useComexSolanaWallet } from "../../../lib/comexSolana.tsx";
 import { authorizeSolanaPayment } from "../../../lib/solanaAuthorize.ts";
-import { rpcUrl } from "../../../lib/chain/solana/usdc.ts";
+import { rpcUrl, usdcMint } from "../../../lib/chain/solana/usdc.ts";
 import ConfirmTxModal from "../../../components/ConfirmTxModal.tsx";
 import type { TxSummary } from "../../../lib/txguard.ts";
 
@@ -78,12 +79,35 @@ export default function SolanaSend() {
     setTxConfirmed(true);
     setBusy(true);
     try {
+      // [FIX-3] Pre-check: fetch USDC balance and block if insufficient.
       const connection = new Connection(rpcUrl());
+      const ownerPubkey = new PublicKey(address);
+      let walletBalance = 0;
+      try {
+        const ata = await getAssociatedTokenAddress(usdcMint(), ownerPubkey, true);
+        const resp = await connection.getTokenAccountBalance(ata);
+        walletBalance = resp.value.uiAmount ?? 0;
+      } catch {
+        // ATA doesn't exist → balance is 0
+        walletBalance = 0;
+      }
+      if (amtNum > walletBalance) {
+        setError(
+          `Saldo insuficiente: você tem $${walletBalance.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6,
+          })} USDC`,
+        );
+        setBusy(false);
+        return;
+      }
+
+      // [FIX-2] Pass raw trimmed string — no Number→toFixed round-trip (float error).
       const result = await authorizeSolanaPayment({
         connection,
-        from: new PublicKey(address),
+        from: ownerPubkey,
         to: new PublicKey(destination.trim()),
-        usdcAmount: amtNum.toFixed(6),
+        usdcAmount: amount.trim(),
         signTransaction,
         confirm: (decoded) => openConfirmModal(decoded),
       });

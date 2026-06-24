@@ -7,13 +7,25 @@ describe("toBaseUnits", () => {
     expect(toBaseUnits("12.50")).toBe(12_500_000n);
     expect(toBaseUnits("0.000001")).toBe(1n);
   });
-  it("truncates beyond 6 decimals (no rounding up)", () => {
-    expect(toBaseUnits("1.2345678")).toBe(1_234_567n);
+  it("rejects more than 6 decimal places (USDC precision on Solana)", () => {
+    // Previously truncated; now rejected to prevent precision confusion.
+    expect(() => toBaseUnits("1.2345678")).toThrow("invalid_amount");
+    expect(() => toBaseUnits("0.0000001")).toThrow("invalid_amount");
   });
   it("rejects non-positive / junk", () => {
     expect(() => toBaseUnits("0")).toThrow("invalid_amount");
     expect(() => toBaseUnits("-1")).toThrow();
     expect(() => toBaseUnits("abc")).toThrow();
+  });
+  it("rejects scientific notation and other non-decimal strings", () => {
+    expect(() => toBaseUnits("1e3")).toThrow("invalid_amount");
+    expect(() => toBaseUnits("1E6")).toThrow("invalid_amount");
+    expect(() => toBaseUnits("1.5e2")).toThrow("invalid_amount");
+  });
+  it("accepts valid decimal strings", () => {
+    expect(toBaseUnits("10.5")).toBe(10_500_000n);
+    expect(toBaseUnits("1.000001")).toBe(1_000_001n);
+    expect(toBaseUnits("100")).toBe(100_000_000n);
   });
   it("USDC_DECIMALS is 6", () => expect(USDC_DECIMALS).toBe(6));
 });

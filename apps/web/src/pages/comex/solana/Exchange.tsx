@@ -16,9 +16,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Connection, PublicKey } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 import { useComexSolanaWallet } from "../../../lib/comexSolana.tsx";
 import { authorizeSolanaPayment } from "../../../lib/solanaAuthorize.ts";
-import { rpcUrl } from "../../../lib/chain/solana/usdc.ts";
+import { rpcUrl, usdcMint } from "../../../lib/chain/solana/usdc.ts";
 import ConfirmTxModal from "../../../components/ConfirmTxModal.tsx";
 import type { TxSummary } from "../../../lib/txguard.ts";
 import {
@@ -401,6 +402,31 @@ function SellPanel({ address, signTransaction }: {
       setStep("form");
       setBusy(false);
       return;
+    }
+
+    // [FIX-3] Pre-check: fetch USDC balance and block if insufficient before signing.
+    {
+      const connection = new Connection(rpcUrl());
+      let walletBalance = 0;
+      try {
+        const ownerPubkey = new PublicKey(address);
+        const ata = await getAssociatedTokenAddress(usdcMint(), ownerPubkey, true);
+        const resp = await connection.getTokenAccountBalance(ata);
+        walletBalance = resp.value.uiAmount ?? 0;
+      } catch {
+        walletBalance = 0;
+      }
+      if (usdcNum > walletBalance) {
+        setErr(
+          `Saldo insuficiente: você tem $${walletBalance.toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 6,
+          })} USDC`,
+        );
+        setStep("form");
+        setBusy(false);
+        return;
+      }
     }
 
     // Got receiver + amount from 4P (pinned OK). Now build->decode->assert->confirm->sign->send.

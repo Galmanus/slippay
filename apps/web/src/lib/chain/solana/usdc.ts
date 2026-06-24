@@ -35,12 +35,22 @@ export function rpcUrl(net: SolNet = solNet()): string {
   return RPCS[net];
 }
 
-/** Human USDC string ("12.50") → integer base units (bigint). Throws on junk. */
+/** Human USDC string ("12.50") → integer base units (bigint). Throws on junk.
+ *
+ * Gate (applied in order):
+ *   1. Strict decimal regex — rejects scientific notation ("1e3"), leading/trailing
+ *      junk, empty string, and anything that isn't /^\d+(\.\d+)?$/.
+ *   2. More than 6 decimal places → invalid (USDC has 6 on Solana).
+ *   3. Value must be > 0.
+ */
 export function toBaseUnits(human: string): bigint {
-  const n = Number(human);
-  if (!isFinite(n) || n <= 0) throw new Error("invalid_amount");
-  // Round to 6 dp at the string level to avoid float error (e.g. 0.1*1e6).
-  const [whole = "0", frac = ""] = human.trim().split(".");
+  const trimmed = human.trim();
+  // [FIX-1] Strict decimal gate — must be digits, optional dot + digits, nothing else.
+  // Rejects: "1e3", "1E6", "abc", "1.2.3", "", "  ", "-1", "+1", etc.
+  if (!/^\d+(\.\d+)?$/.test(trimmed)) throw new Error("invalid_amount");
+  const [whole = "0", frac = ""] = trimmed.split(".");
+  // [FIX-1] Reject more than 6 decimal places (USDC precision on Solana).
+  if (frac.length > USDC_DECIMALS) throw new Error("invalid_amount");
   const fracPadded = (frac + "000000").slice(0, USDC_DECIMALS);
   const units = BigInt(whole) * 1_000_000n + BigInt(fracPadded || "0");
   if (units <= 0n) throw new Error("invalid_amount");
