@@ -10,7 +10,10 @@ export function startManager(db: SupabaseClient) {
   const active = new Map<string, Active>();
 
   async function tick() {
-    const { data, error } = await db.from("merchants").select("stellar_address").eq("active", true).not("stellar_address", "is", null);
+    // Only watch merchants on the same network this listener streams (audit:
+    // a testnet merchant left active would otherwise stream-error forever on a
+    // mainnet listener). Fail-closed: a row with a null/other network is skipped.
+    const { data, error } = await db.from("merchants").select("stellar_address").eq("active", true).eq("network", config.merchantNetwork).not("stellar_address", "is", null);
     if (error) { log("error", "manager_query_failed", { error: error.message }); return; }
     const desired = new Set((data ?? []).map(r => r.stellar_address as string));
 

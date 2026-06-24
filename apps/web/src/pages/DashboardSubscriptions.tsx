@@ -17,7 +17,7 @@ interface SubscriptionRow {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  active:    "bg-[#b5e853]",
+  active:    "bg-[#FDDA24]",
   paused:    "bg-amber-500",
   cancelled: "bg-[#0a0a0a]/30",
   expired:   "bg-[#0a0a0a]/30",

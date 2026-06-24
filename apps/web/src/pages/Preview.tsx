@@ -109,7 +109,7 @@ export default function Preview() {
             {/* SLIPPAY CTA */}
             <button onClick={() => setStep("modal-amount")}
               className="w-full bg-[#0a0a0a] text-[#f1eee7] py-4 text-sm font-bold uppercase tracking-wide rounded border-2 border-[#0a0a0a] hover:bg-[#1a1a1a] flex items-center justify-center gap-3">
-              <span className="inline-block w-2 h-2 bg-[#b5e853]" />
+              <span className="inline-block w-2 h-2 bg-[#FDDA24]" />
               Pagar com SlipPay (USDC · cripto)
             </button>
             <div className="text-[11px] text-[#888] text-center -mt-1">
@@ -163,7 +163,7 @@ export default function Preview() {
                       className={`p-3 border-2 ${net === "STELLAR" ? "border-[#0a0a0a]" : "border-[#0a0a0a]/15"} text-left`}>
                       <div className="text-sm font-medium flex items-center gap-2">
                         Stellar
-                        <span className="text-[9px] uppercase bg-[#b5e853] text-[#0a0a0a] px-1 py-0.5">Live</span>
+                        <span className="text-[9px] uppercase bg-[#FDDA24] text-[#0a0a0a] px-1 py-0.5">Live</span>
                       </div>
                       <div className="text-[10px] text-[#0a0a0a]/55 mt-1">~6s · sub-cent fee</div>
                     </button>
@@ -198,7 +198,7 @@ export default function Preview() {
                         ${w.available ? "border-[#0a0a0a]/15 hover:border-[#0a0a0a] cursor-pointer" : "border-[#0a0a0a]/10 opacity-50 cursor-not-allowed"}`}>
                       <span className="text-sm font-medium">{w.name}</span>
                       {w.tag && (
-                        <span className={`text-[9px] uppercase px-1.5 py-0.5 ${w.available ? "bg-[#b5e853]" : "bg-[#0a0a0a]/15"} text-[#0a0a0a]`}>
+                        <span className={`text-[9px] uppercase px-1.5 py-0.5 ${w.available ? "bg-[#FDDA24]" : "bg-[#0a0a0a]/15"} text-[#0a0a0a]`}>
                           {w.tag}
                         </span>
                       )}
@@ -222,7 +222,7 @@ export default function Preview() {
                 </div>
                 <div className="bg-[#0a0a0a] text-[#f1eee7] p-4 font-mono text-[11px] leading-[1.6]">
                   &gt; signing transaction...<br/>
-                  &gt; memo (hash): <span className="text-[#b5e853]">{Math.random().toString(16).slice(2, 14)}</span>...<br/>
+                  &gt; memo (hash): <span className="text-[#FDDA24]">{Math.random().toString(16).slice(2, 14)}</span>...<br/>
                   &gt; awaiting your wallet approval
                 </div>
                 <button onClick={() => setStep("modal-success")}
@@ -238,7 +238,7 @@ export default function Preview() {
 
             {step === "modal-success" && (
               <div className="p-6 space-y-5 text-center">
-                <div className="w-12 h-12 bg-[#b5e853] mx-auto flex items-center justify-center">
+                <div className="w-12 h-12 bg-[#FDDA24] mx-auto flex items-center justify-center">
                   <span className="text-3xl text-[#0a0a0a]">✓</span>
                 </div>
                 <div className="text-2xl font-medium tracking-tight">Payment confirmed</div>

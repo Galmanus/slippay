@@ -1,0 +1,64 @@
+name: slippay
+description: Slippay, a non-custodial Pix to USDC dollar wallet on Stellar.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # state + DI (Riverpod, 2026 default)
+  flutter_riverpod: ^3.0.0
+  riverpod_annotation: ^3.0.0
+
+  # navigation + deep links (Pix QR / payment links open the app)
+  go_router: ^14.6.0
+  app_links: ^6.3.0
+
+  # chain: Stellar/Soroban from Dart (PIN exact, single-vendor SDK holding USDC)
+  stellar_flutter_sdk: 2.3.2
+
+  # functional error handling (Either, no exceptions across layers)
+  fpdart: ^1.1.0
+
+  # money + crypto helpers
+  decimal: ^3.0.0
+
+  # secure storage (only non-key secrets: credential_id, session token)
+  flutter_secure_storage: ^9.2.2
+
+  # biometrics (app/session lock only, NOT tx authorization)
+  local_auth: ^2.3.0
+
+  # QR scan + generate
+  mobile_scanner: ^5.2.3
+  qr_flutter: ^4.1.0
+
+  # http with cert/pubkey pinning
+  dio: ^5.7.0
+
+  # screenshot block on sensitive screens
+  no_screenshot: ^0.3.0
+
+  # crash reporting (PII scrubbed before leaving device)
+  sentry_flutter: ^8.10.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  riverpod_generator: ^3.0.0
+  build_runner: ^2.4.13
+  custom_lint: ^0.7.0
+  riverpod_lint: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/

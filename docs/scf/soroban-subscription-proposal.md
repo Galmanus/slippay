@@ -1,3 +1,7 @@
+> **Historical / self-superseded.** This was an internal planning document for a
+> Soroban subscription contract. That contract has since been built and deployed
+> on mainnet. Kept for reference only; do not treat it as the current spec.
+
 # Soroban Subscription Contract — internal planning document
 
 > **Status (2026-05-10): superseded for grant purposes.** Slippay is enrolled

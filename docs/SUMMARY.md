@@ -1,14 +1,36 @@
 # Table of contents
 
 * [SlipPay](README.md)
-* [Quickstart](quickstart.md)
+* [Quickstart — human](quickstart-human.md)
+* [Quickstart — agent](quickstart-agent.md)
 * [Merchant onboarding](MERCHANT_ONBOARDING.md)
 
 ## Concepts
 
 * [Architecture](concepts/architecture.md)
+* [Two narratives](concepts/two-narratives.md)
+* [Proof-bounded settlement](concepts/proof-bounded-settlement.md)
+* [Agent-integrity attestation](concepts/agent-integrity-attestation.md)
 * [Non-custodial settlement](concepts/non-custodial-settlement.md)
 * [Regulatory framing](concepts/regulatory.md)
+
+## Contracts
+
+* [Overview](contracts/README.md)
+* [Subscription](contracts/subscription.md)
+* [Smart wallet](contracts/smart-wallet.md)
+* [Checkout](contracts/checkout.md)
+
+## AXL
+
+* [Language](axl/README.md)
+* [Compiler](axl/compiler.md)
+* [Proofs and limits](axl/proofs-and-limits.md)
+
+## Packages
+
+* [@slippay/mcp](packages/slippay-mcp.md)
+* [@slippay/attester](packages/slippay-attester.md)
 
 ## API reference
 
@@ -21,23 +43,27 @@
 
 ## Guides
 
-* [BR-export merchants](guides/br-export-merchants.md)
-* [Drop-in checkout SDK](guides/drop-in-sdk.md)
+* [Biometric pay](guides/biometric-pay.md)
+* [Receive USDC by QR](guides/receive-usdc-qr.md)
+* [Verify a cert](guides/verify-a-cert.md)
+* [Agent surface](product/agent-surface.md)
 * [Recurring billing](guides/recurring-billing.md)
+* [Drop-in checkout SDK](guides/drop-in-sdk.md)
 * [Handle webhooks](guides/webhooks-handler.md)
 * [WooCommerce plugin](guides/woocommerce.md)
 * [E-commerce platforms](guides/platforms.md)
+* [BR-export merchants](guides/br-export-merchants.md)
 
 ## Integrations
 
 * [x402 protocol](integrations/x402.md)
-* [Ask Slippay · SSL v7](integrations/concierge-ssl.md)
+* [MoneyGram](integrations/moneygram.md)
 
-## Smart contract & open source
+## Operations
 
-* [Soroban subscription proposal](scf/soroban-subscription-proposal.md)
-* [Open-source declaration](scf/OPEN_SOURCE.md)
-* [AI disclosure](scf/AI_DISCLOSURE.md)
+* [Deploy](ops/deploy.md)
+* [Mainnet runbook (historical)](ops/mainnet-runbook.md)
+* [Mainnet readiness (historical)](mainnet-readiness.md)
 
 ## Security
 
@@ -49,7 +75,8 @@
 * [Audit 005](security/audit-005.md)
 * [Audit 006](security/audit-006.md)
 
-## Operations
+## Open source
 
-* [Mainnet readiness](mainnet-readiness.md)
-* [Mainnet runbook](ops/mainnet-runbook.md)
+* [Open-source declaration](scf/OPEN_SOURCE.md)
+* [AI disclosure](scf/AI_DISCLOSURE.md)
+* [Soroban subscription proposal (historical)](scf/soroban-subscription-proposal.md)

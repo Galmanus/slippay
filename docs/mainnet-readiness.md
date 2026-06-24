@@ -1,3 +1,8 @@
+> **Historical.** Mainnet is already live: the subscription/transfer contracts
+> are deployed on Stellar mainnet (`PUBLIC`). This pre-launch readiness checklist
+> is kept for reference only. For deploys, see `docs/ops/deploy.md`. For the
+> current network seam (mainnet vs testnet per contract), see the quickstarts.
+
 # SlipPay — Mainnet Readiness Checklist
 
 > Cross-reference: `docs/superpowers/specs/2026-05-07-slippay-design.md` §9 (security checklist)
@@ -13,7 +18,7 @@
 
 | # | Item | Owner | Verification |
 |---|------|-------|--------------|
-| 1.1 | VASP partnership signed for off-ramp BRL/PIX (target partner: TBD — candidates: Transak, Mercado Bitcoin, Bitso BR) | Marco | Countersigned contract on file; VASP CNPJ verified on Bacen open data |
+| 1.1 | VASP partnership for on/off-ramp BRL/PIX (provider: 4P Finance; PagFinance for off-ramp) | Marco | API key active; live transaction verified |
 | 1.2 | VASP partnership signed for buyer KYC institucional (AML/KYC delegation to licensed party) | Marco | Contract specifies KYC scope, SLA, data sharing terms |
 | 1.3 | Legal opinion in writing from Brazilian fintech law firm classifying SlipPay as **technology provider**, NOT PSAV under BCB Resoluções 519/520/521 | Manuel + legal counsel | Written opinion on firm letterhead; counsel named and OAB registration verified |
 | 1.4 | Terms of Service (ToS) published at `/terms` on the web checkout domain and linked in the checkout iframe footer | Manuel | `curl -I https://<prod-domain>/terms` returns 200; link visible in `apps/web` checkout page source |

@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAMID.cc.slippay.app",
+        "paths": ["/pay", "/pay/*"]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.cc.slippay.app"]
+  }
+}
