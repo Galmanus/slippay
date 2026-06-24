@@ -657,11 +657,10 @@ function dedupeCitations(citations: Citation[]): Citation[] {
 // the user knows something is happening even on a 4-5s cold start.
 function ThinkingIndicator() {
   const phrases = [
-    "loading the docs bundle",
-    "reading the slippay spec",
-    "checking the audit notes",
-    "cross-referencing citations",
-    "drafting a grounded answer",
+    "lendo a documentação",
+    "buscando a resposta certa",
+    "conferindo os detalhes",
+    "montando a resposta",
   ];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -682,7 +681,7 @@ function ThinkingIndicator() {
         className="text-[11px] italic"
         style={{ color: `${INK}55`, fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
       >
-        pensando…
+        {phrases[idx]}…
       </span>
       <style>{`
         @keyframes ask-pulse {
