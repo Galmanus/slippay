@@ -5,7 +5,7 @@ info:
   description: >
     Stellar-native commerce API. Create dollar-denominated orders and
     subscriptions; buyers pay in USDC on Stellar mainnet; merchants receive
-    USDC directly in their own non-custodial wallet. Settlement ~6s, fee 0.98%.
+    USDC directly in their own non-custodial wallet. Settlement ~6s, fee 2.97%.
 
 
     **Authentication.** Two bearer schemes share the `Authorization` header:

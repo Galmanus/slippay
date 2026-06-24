@@ -1,9 +1,23 @@
-import { useState } from "react";
-import { connectWallet } from "../lib/wallet.ts";
+import { useState, Suspense, lazy } from "react";
+import { getChainAdapter } from "../lib/chain/index.ts";
+import { chainId } from "../lib/chain/validate.ts";
+
+// Solana connect uses LazorKit's hook (must run inside its provider) — lazy so
+// @lazorkit stays out of the default Stellar bundle.
+const SolanaPayButton = lazy(() => import("./solana/SolanaPayButton.tsx"));
 
 export function PayButton({ onConnected }: { onConnected: (addr: string) => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (chainId() === "solana") {
+    return (
+      <Suspense fallback={<button disabled className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] opacity-50">Carregando…</button>}>
+        <SolanaPayButton onConnected={onConnected} />
+      </Suspense>
+    );
+  }
+
   return (
     <div>
       <button
@@ -12,7 +26,7 @@ export function PayButton({ onConnected }: { onConnected: (addr: string) => void
           setLoading(true);
           setError(null);
           try {
-            const addr = await connectWallet();
+            const addr = await (await getChainAdapter()).connectWallet();
             onConnected(addr);
           } catch (e: unknown) {
             setError(e instanceof Error ? e.message : "wallet error");

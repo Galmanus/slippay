@@ -1,295 +1,174 @@
-# slippay
+<div align="center">
 
-Stellar-native checkout SDK for Brazilian merchants billing globally. Pix in,
-USDC or PYUSD out, optional cash-out via MoneyGram in 180+ countries. Six-second
-deterministic finality, no chargebacks, non-custodial settlement to merchant.
+# SlipPay
 
-**Status**: testnet live · mainnet planned 2026-Q3 · Soroban subscription contract deployed · partnership-with-licensed-VASP architecture
+**Non-custodial dollar settlement — for people, for agents, for companies.**
 
-```
-backend       https://api.slippay.cc/api/health -> {"ok":true}
-landing live  https://api.slippay.cc/  (app.slippay.cc soon, after vhost+SSL)
-preview demo  https://api.slippay.cc/preview
-contract      CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA  (Stellar testnet)
-              https://stellar.expert/explorer/testnet/contract/CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA
-```
+USDC payments where the user's own wallet signs funds *directly* to the recipient.
+SlipPay never holds funds and never has signing authority over them. The settlement
+core is one rail; three surfaces sit on top of it.
 
-### Live on-chain proof (Stellar testnet)
+`Stellar mainnet` · `Solana (migration)` · `non-custodial` · `Apache-2.0`
 
-A merchant subscription primitive on Soroban — created and charged on chain:
+[Live](https://app.slippay.cc) · [Docs](./docs/README.md) · [Architecture](./docs/concepts/architecture.md) · [Security model](#security-model)
 
-| step | tx | event |
+</div>
+
+---
+
+## What this is
+
+SlipPay turns "holding dollars and moving them" into a touch, without ever taking
+custody. *Non-custodial* is used precisely here, not as a slogan:
+
+> The buyer's, agent's, or company's wallet signs the transaction. SlipPay builds
+> the **unsigned** transaction, the user signs it client-side, and the funds go
+> straight to the recipient. SlipPay's servers never hold a key with authority
+> over user funds. The gas-sponsor relayer is a **fee-payer only** — it pays
+> network fees and cannot move a cent of user money.
+
+Everything in this repository is meant to be verifiable against the code. There
+are **no traction or GMV claims** here. On-chain artifacts list their network and
+address so you can check them yourself. If a doc says something the code does not
+do, that is a bug worth an issue.
+
+---
+
+## Three surfaces, one core
+
+| Surface | Who it's for | What it does | State |
+|---|---|---|---|
+| **Dollar account** | a normal person | receive USDC by QR, verify a payment on-chain, pay with a passkey (Face/Touch ID) — no seed phrase in the user's hands | live on Stellar mainnet |
+| **Agent / builder** | autonomous agents | agent payments bounded by an on-chain spend policy, a fail-closed integrity attestation, and an offline-checkable proof of the spending bound | rail live (mainnet); attested gate on testnet |
+| **Comex treasury** | import/export companies | a corporate (non-biometric, multi-user) account that holds USD, converts R$↔USD through a licensed partner, sends/receives, and earns yield on idle dollars | built, gated; ships with the Solana cutover ([go-live checklist](./docs/comex-go-live-checklist.md)) |
+
+The three surfaces never fork the money path: they all reduce to *build an unsigned
+transfer → the user verifies what they sign → the user signs → submit*. The same
+[security gate](#security-model) protects all three.
+
+---
+
+## Why it's different
+
+Most "crypto payment" UX asks the user to trust a screen and then sign an opaque
+blob. SlipPay's design rule is the opposite — **what you see is what you sign
+(WYSIWYS)**, enforced in code on every money path:
+
+1. The app builds the transaction.
+2. It **decodes that exact transaction** and shows the real destination + amount + asset.
+3. It **asserts** the decoded destination/amount match what the user intended (catches receiver-substitution and amount-drift even from a compromised backend).
+4. Only after explicit human confirmation does it **re-derive the hash locally** and sign.
+
+A compromised server, a man-in-the-middle, or a buggy API cannot make a user sign
+a payment they did not see. This is the property that makes "non-custodial" actually
+mean something at the moment of signing — and it is the same gate on the human
+checkout, the agent rail, and the comex treasury.
+
+Security is done **before** code, not after deploy: each money path goes through a
+written threat model and an adversarial review pass before it ships. See
+[Security model](#security-model).
+
+---
+
+## Status (verified on chain)
+
+Mainnet is Stellar `PUBLIC`. The testnet/mainnet seam is stated explicitly — nothing
+below is dressed up as live when it isn't.
+
+| Component | Network | Address / status |
 |---|---|---|
-| deploy | [fbfdbb66...](https://stellar.expert/explorer/testnet/tx/fbfdbb66b8894539f8db2a928f8925f3bb47903ede65d4541b939d6568b545df) | contract instantiated |
-| `create()` | [8ed4fa21...](https://stellar.expert/explorer/testnet/tx/8ed4fa21923d5433c31663a5e6b43cea8490844682682ba91e228683beedea4a) | `subscription_created` |
-| `charge()` | [688c985a...](https://stellar.expert/explorer/testnet/tx/688c985a4508ce9599a6430b1a004e265e7d60ca20eb28f4b605700b0dd5980b) | `transfer` (native SAC) + `subscription_charged` |
+| Subscription v0.2 autocharge (SEP-41 allowance, no per-period signature) | **mainnet** | `CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP` (wasm `f8cfed71…`) |
+| Subscription v0.4 (autocharge + attestation gate + 2.97% on-chain platform fee) — the live rail | **mainnet** | `CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U` (wasm `4312612c…`) |
+| Smart wallet (WebAuthn/passkey custom account) | **mainnet** | wasm `8e9b6760…`; per-user instances deployed on demand by the gas-sponsor relayer |
+| Checkout (atomic fee split) | testnet | `CBO2COBZUTHH4II4JCQRZVO4RKDUIUH4MXZTAWOYVUZIVYI47UIDQCWQ` — client flow now WYSIWYS-gated |
+| ZK proof-of-mandate + proof-of-KYC (Groth16) | **mainnet** | verified, zero-PII (age + sanctions); generic verifier live |
+| Comex treasury (Privy non-custodial wallet + 4P câmbio + DeFindex yield) | Solana, gated | built + adversarially reviewed; awaits partner keys + Solana cutover |
+| `@slippay/mcp` (agent MCP server) · `@slippay/attester` (integrity oracle) | npm | v0.2.0 · v0.1.0 |
+| AXL compiler (proof-carrying certs) | — | build/test only, no on-chain artifact |
 
-Buyer balance dropped 1.002 XLM (1.0 payment + 0.002 fee). Merchant balance
-rose exactly 1.0 XLM. End-to-end on chain, no off-chain reconciliation.
-
----
-
-## What slippay actually is
-
-A merchant gateway that lets Brazilian e-commerce, SaaS, and exporters accept
-USD-denominated stablecoin payments without ever touching custody themselves
-or running a regulated FX leg. The buyer pays in BRL via Pix (mediated by a
-licensed BR anchor); the merchant receives USDC or PYUSD on Stellar in their
-own wallet, instantly.
-
-Two surfaces, one architecture:
-
-- **For buyers** — a hosted checkout that handles the wallet flow. Pick wallet,
-  approve the payment, done. Currently 5 Stellar wallets supported (Freighter,
-  Lobstr, xBull, Albedo, Hana). Solana on roadmap (not in code yet).
-- **For merchants** — a REST API and a web dashboard. Sign up, drop a Stellar
-  receive address, get an API key, post an order, fire an iframe checkout, get
-  a webhook on payment.
-
-The wedge that survives competitive scrutiny is **not** "1% non-custodial USDC"
-(Coinbase Commerce ships that, Yodl undercuts at 0.2% on EVM). It is:
-
-1. Stellar's deterministic 6-second finality and sub-cent fees, which keep
-   subscription unit economics viable where Ethereum gas variance kills them.
-2. MoneyGram cash-out in 180+ countries, a rail no EVM-based competitor has.
-3. Pix-BRL-in to merchant-USDC-out as a single atomic flow, mediated by a
-   licensed BR anchor, which closes the regulatory gap created by BCB
-   Resoluções 519/520/521 (effective February 2026).
-4. PYUSD support alongside USDC (PayPal's stablecoin live on Stellar since
-   June 2025), giving merchants two USD options instead of one.
+Live services: `https://app.slippay.cc` (web) · `https://app.slippay.cc/api/health` (api).
+The deployed contracts are **not** third-party audited.
 
 ---
 
-## Architecture
+## How the layers compose
 
 ```
-                 buyer                            merchant
-                   |                                  |
-                   v                                  ^
-            +-------------+                    +-------------+
-            |  /checkout  |                    |  dashboard  |
-            |  (slippay   |                    |  + REST API |
-            |   web)      |                    |  + webhooks |
-            +------+------+                    +------+------+
-                   |                                  |
-                   |  signs USDC / PYUSD payment      |
-                   |  to merchant address with        |
-                   |  hash memo = order.id           |
-                   v                                  ^
-            +------+----------------------------------+------+
-            |  Stellar mainnet / testnet                     |
-            |  USDC issuer GA5ZSE...4KZVN  (Circle, mainnet)|
-            |  PYUSD issuer (verify on-chain at deploy)     |
-            +------+----------------------------------+------+
-                   |                                  |
-                   v                                  ^
-            +------+---------+                +-------+-------+
-            | Horizon SSE    | -- payment --> | listener      |
-            | server.payments| event w/ memo  | (Node)        |
-            +----------------+                +-------+-------+
-                                                      |
-                                                      v
-                                         +------------+-----------+
-                                         | matcher                |
-                                         | - asset_code USDC      |
-                                         | - asset_issuer = expected
-                                         | - to == merchant addr  |
-                                         | - memo == order.memo   |
-                                         | - amount >= expected   |
-                                         +------------+-----------+
-                                                      |
-                                                      v
-                                         +------------+-----------+
-                                         | reconciler             |
-                                         | - update orders.status |
-                                         | - bump charges_done    |
-                                         |   (if subscription)    |
-                                         | - enqueue webhook      |
-                                         +------------+-----------+
-                                                      |
-                                                      v
-                                         +------------+-----------+
-                                         | webhook delivery       |
-                                         | HMAC-SHA256 + retries  |
-                                         | 1m 5m 30m 2h 12h 24h   |
-                                         +------------------------+
+agent / human / company commits a recipient + amount + (for agents) a tool surface
+        │
+        ▼
+WYSIWYS gate ── decode the built tx → assert destination/amount → human confirm
+        │        → re-derive hash locally → sign client-side   (never blind-sign)
+        ▼
+@slippay/attester ── ed25519 verdict over 44 bytes (id‖charges_done‖not_after),
+        │              fail-closed, off-chain; signs only if the action is in-surface
+        ▼
+subscription contract  autocharge_attested ── on-chain ed25519_verify (fail-closed) [testnet]
+        │              autocharge           ── pulls via the buyer's one SEP-41 allowance [mainnet]
+        ▼
+relayer (fee-payer only, never custodies) runs the off-chain autocharge scheduler
+        │
+        ▼
+@slippay/mcp exposes the whole rail as agent verbs behind a role membrane
+
+AXL is orthogonal: the spending bound itself is a theorem (z3), re-checkable
+offline via a proof-carrying certificate.
 ```
 
-Three runtime processes, all on a single VPS:
-
-| process       | runtime  | role                                    |
-|---------------|----------|-----------------------------------------|
-| slippay-api   | Deno 2.7 | REST endpoints + hosted SPA (Hono)       |
-| slippay-listener | Node 20  | Horizon SSE watcher + webhook delivery  |
-| postgres      | Supabase | merchants, orders, subscriptions, webhook_deliveries, listener_state |
-
-PM2 supervises both processes. Nginx terminates SSL and proxies api.slippay.cc
-to localhost:8080.
+Full picture: [`docs/concepts/architecture.md`](./docs/concepts/architecture.md).
 
 ---
 
-## Documentation
+## Multi-chain
 
-Full docs are in [`docs/`](./docs/README.md). Highlights:
+Stellar is the live settlement chain. Solana is being brought up in parallel,
+non-destructively, behind a chain-agnostic adapter so the live product is never at
+risk during the migration.
 
-- [Quickstart](./docs/quickstart.md) — first paid order in five minutes
-- [API reference](./docs/README.md#api-reference) — orders, subscriptions, merchants, webhooks
-- [Architecture](./docs/concepts/architecture.md) — the three-process picture
-- [Non-custodial settlement](./docs/concepts/non-custodial-settlement.md) — what we mean precisely
-- [Regulatory framing](./docs/concepts/regulatory.md) — BCB Res 519/520/521 and the partnership-with-VASP model
-- [Drop-in SDK guide](./docs/guides/drop-in-sdk.md) — two lines of JS
-- [Recurring billing](./docs/guides/recurring-billing.md) — subscriptions end-to-end
-- [WooCommerce plugin](./docs/guides/woocommerce.md) — install, configure, ship
-- [Webhook handler](./docs/guides/webhooks-handler.md) — verify HMAC, idempotency, retries
-
-## Quickstart
-
-### Create an order (one-shot payment)
-
-```sh
-curl -X POST https://api.slippay.cc/api/v1/orders \
-  -H "Authorization: Bearer sk_live_your_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "brl_amount": "99.90",
-    "external_ref": "cart_42",
-    "expires_in_minutes": 30
-  }'
-```
-
-Response:
-
-```json
-{
-  "order": {
-    "id": "ord_uuid",
-    "memo": "ce230c...",
-    "usdc_amount": "18.16",
-    "rate_brl_usdc": "5.50",
-    "expires_at": "2026-05-10T14:30:00Z",
-    "status": "pending"
-  },
-  "checkout_url": "https://api.slippay.cc/checkout/ord_uuid"
-}
-```
-
-The buyer opens `checkout_url` and signs once. When the on-chain payment
-confirms (~6 seconds), the listener fires `order.paid` to your webhook URL.
-
-### Create a subscription (recurring billing)
-
-```sh
-curl -X POST https://api.slippay.cc/api/v1/subscriptions \
-  -H "Authorization: Bearer sk_live_your_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "brl_amount": "29.90",
-    "period_seconds": 2592000,
-    "asset_code": "USDC",
-    "max_periods": 12,
-    "external_ref": "customer_42_pro"
-  }'
-```
-
-Then trigger each cycle:
-
-```sh
-curl -X POST https://api.slippay.cc/api/v1/subscriptions/<id>/charge \
-  -H "Authorization: Bearer sk_live_your_key"
-```
-
-The charge call is **idempotent on time** — calling twice within the same period
-returns the same pending order. Each successful payment fires
-`subscription.charged` to the merchant webhook with `subscription_id` set.
-
-A Soroban-native subscription contract (no off-chain trigger needed) is in
-scaffolding under `contracts/subscription/`. v0.1 ships off-chain orchestration;
-v0.2 will pre-authorize the contract to debit the buyer wallet automatically.
-
-### Drop-in checkout SDK
-
-```html
-<script src="https://api.slippay.cc/sdk.js"></script>
-<script>
-  Slippay.open({
-    orderId: "<order.id from POST /v1/orders>",
-    onPaid:      ({ txHash }) => location.href = "/thanks",
-    onCancelled: () => { /* user closed modal */ },
-    onExpired:   () => { /* 30 min passed */ },
-  });
-</script>
-```
-
-See the live integration: [api.slippay.cc/demo](https://api.slippay.cc/demo)
+- **`ChainAdapter`** (`apps/web/src/lib/chain`) — pages talk to one interface
+  (`payOneTime`, `approveRecurring`, address checks); the active chain is chosen by
+  `VITE_CHAIN`. Stellar and Solana adapters implement it side by side.
+- **Comex on Solana** — the corporate treasury surface targets Solana because the
+  licensed câmbio partner (4P) settles there. Wallet = Privy embedded Solana wallet
+  (email + MFA, non-custodial, non-biometric); yield = DeFindex; the WYSIWYS gate is
+  ported to Solana (`apps/web/src/lib/solanaAuthorize.ts`).
+- **CCTP** — Circle's Cross-Chain Transfer Protocol is live on Stellar mainnet,
+  giving native USDC movement between Stellar and Solana without wrapped-token bridges
+  when cross-chain settlement is needed.
 
 ---
 
-## Live endpoints
+## Security model
 
-| URL                                          | what it is                          |
-|----------------------------------------------|-------------------------------------|
-| `GET  https://api.slippay.cc/api/health`     | `{"ok":true}` liveness               |
-| `POST https://api.slippay.cc/api/v1/merchants` | create merchant (JWT auth)        |
-| `GET  https://api.slippay.cc/api/v1/merchants/me` | current merchant                |
-| `POST https://api.slippay.cc/api/v1/orders`  | create one-shot order               |
-| `GET  https://api.slippay.cc/api/v1/orders`  | list merchant orders                |
-| `GET  https://api.slippay.cc/api/v1/orders/:id` | public order read for checkout   |
-| `POST https://api.slippay.cc/api/v1/orders/:id/cancel` | cancel pending order      |
-| `POST https://api.slippay.cc/api/v1/subscriptions` | create subscription           |
-| `GET  https://api.slippay.cc/api/v1/subscriptions` | list subscriptions            |
-| `GET  https://api.slippay.cc/api/v1/subscriptions/:id` | single subscription       |
-| `PATCH https://api.slippay.cc/api/v1/subscriptions/:id` | status / webhook / metadata |
-| `POST https://api.slippay.cc/api/v1/subscriptions/:id/charge` | materialize next charge as order |
-| `POST https://api.slippay.cc/api/v1/subscriptions/:id/cancel` | cancel subscription |
+Non-custodial is only as strong as the signing moment. SlipPay treats that moment
+as the threat surface and hardens it the same way everywhere.
 
-API keys are `Bearer sk_live_<32 random hex bytes>` (256 bits, SHA-256
-fingerprinted in DB). JWT routes require a Supabase auth session.
+**The WYSIWYS signing gate** — every money path runs `decode → assert → human
+confirm → local hash → sign`:
+- `apps/web/src/lib/txguard.ts` (Stellar): decode an XDR, re-derive its hash
+  locally, assert a single payment matches `{destination, amount, asset}` (rejects
+  NaN, multi-payment smuggling, wrong asset, receiver substitution, amount drift).
+- `apps/web/src/lib/authorizeTx.ts` / `solanaAuthorize.ts`: the orchestrator the UI
+  must call for any signature. Signing is unreachable without an explicit confirm.
 
----
+**Non-custodial guarantees, enforced:**
+- the client never holds a server-side signing/authorization key (CI-checkable: no
+  `AUTHORIZATION_PRIVATE` / service-role secret in the web bundle);
+- the relayer sponsors gas only and validates sponsorable ops fail-closed;
+- corporate (comex) wallets are user-owned (Privy embedded), not server wallets.
 
-## What is shipped
+**Process, not vibes:**
+- a written **threat model** precedes each money path (STRIDE pre-mortem, ranked,
+  with concrete mitigations) — see [`docs/superpowers/specs`](./docs/superpowers/specs) and the comex design doc;
+- an **adversarial review** pass attacks each path before it ships; findings are
+  fixed and re-verified (the live checkout's blind-signing gap and the Solana
+  câmbio's receiver-pinning gap were both caught and closed this way);
+- **edge hardening**: HTTPS-only with HSTS, `X-Frame-Options`, `nosniff`,
+  `Referrer-Policy`, `Permissions-Policy`; zero external render-blocking CDN
+  dependencies (fonts self-hosted) so a CDN outage can never blank or hang the app.
 
-| feature                                   | status   | location                                       |
-|-------------------------------------------|----------|------------------------------------------------|
-| One-shot order checkout (BRL -> USDC)     | live     | `supabase/functions/api/routes/orders.ts`      |
-| Stellar Horizon SSE watcher               | live     | `apps/listener/src/horizon.ts`                 |
-| Memo-matched payment reconciler           | live     | `apps/listener/src/matcher.ts`, `reconciler.ts`|
-| HMAC-signed webhook delivery + retries    | live     | `apps/listener/src/webhook.ts`                 |
-| pg_cron stale-order expiry                | live     | `supabase/migrations/20260507120000_pg_cron_expire.sql` |
-| Subscription primitive (CRUD + charge)    | live     | `supabase/functions/api/routes/subscriptions.ts`|
-| Subscription bookkeeping in reconciler    | live     | `apps/listener/src/reconciler.ts`              |
-| Merchant dashboard (orders + subscriptions + settings) | live | `apps/web/src/pages/Dashboard*.tsx`     |
-| Hosted checkout SPA + drop-in SDK         | live     | `apps/web/src/pages/Checkout.tsx`, `public/sdk.js` |
-| Buyer-flow preview (Netshoes-style mock)  | live     | `apps/web/src/pages/Preview.tsx`               |
-| Soroban subscription contract             | **deployed Stellar testnet** | `contracts/subscription/` · contract `CBWJ3LQGO7HBZBQK2MGS75EK266HNW4RJS77BVZIGZGDUUENXQMSHRHA` · 5/5 unit tests pass · live charge verified on chain |
-| PYUSD asset config                        | structural, issuer pending verify | `packages/shared/src/constants.ts` |
-| BR anchor partnership (Pix in)            | pending, intro path being shaped via Stellar Brasil program | `docs/outreach/{transfero,bitso}.md` (drafts on file; warm intro preferred over cold email) |
-
----
-
-## Stack
-
-```
-backend       Deno 2.7 + Hono 4 + zod
-                node 20 + tsx + vitest (listener)
-                @stellar/stellar-sdk ^15
-                @supabase/supabase-js ^2.45
-contracts     Rust 1.92 + soroban-sdk 21.7
-db            Postgres 17 (Supabase) + pg_cron
-infra         Ubuntu 24.04 droplet (DigitalOcean NYC1)
-                nginx + Let's Encrypt
-                PM2 7 (single-host process supervisor)
-frontend      React 18 + Vite 5 + tailwind
-                react-router-dom 6
-                @stellar/stellar-wallets-kit
-package mgmt  pnpm 10 workspaces
-```
-
-The deliberate choice to stay PM2-native instead of docker-compose is
-documented: 2 GB RAM on the droplet, container overhead would eat ~21% of
-usable memory before the apps run, and the OS-level stack (nginx, fail2ban,
-UFW, certbot auto-renew) was already curated for direct localhost processes.
-See `ecosystem.config.cjs`.
+Contract-level audits and the key-custody model live in
+[`docs/security`](./docs/security/key-custody.md).
 
 ---
 
@@ -298,188 +177,87 @@ See `ecosystem.config.cjs`.
 ```
 slippay/
   apps/
+    web/             react SPA · three surfaces (human · agent · comex), checkout, dashboard
     listener/        node + stellar-sdk · Horizon SSE watcher + webhook delivery
-    web/             react SPA · dashboard + checkout + landing + preview + SDK
+    shopify-connector/ · vtex-connector/   commerce integrations
   packages/
-    shared/          ts types + zod schemas + Stellar constants (USDC/PYUSD issuers)
-  supabase/
-    migrations/      4 sql files: schema, RLS, pg_cron, subscriptions
-    functions/api/   deno + hono REST endpoints
+    shared/          ts types + zod schemas + chain constants (USDC issuers/mints)
+    slippay-mcp/     @slippay/mcp · MCP server, agent verbs behind a role membrane
+    slippay-attester/@slippay/attester · agent-integrity attestation oracle (AIA)
   contracts/
-    subscription/    rust soroban contract (compiles to wasm32, 1/5 tests pass on M1)
-  docs/
-    outreach/        partnership pitch drafts (warm-intro path preferred)
-    scf/             internal Soroban subscription planning (superseded by program sprint deliverables)
-    deploy-secrets.md, mainnet-readiness.md, superpowers/
-  scripts/
-    platform-setup.mjs     testnet keypair + friendbot + USDC trustline
-    e2e-subscriptions.mjs  full API surface validator (8/8 PASS in prod)
-    e2e-payment-testnet.mjs full on-chain validator (script ready, listener pickup needs investigation)
-  ecosystem.config.cjs     PM2 process config
+    subscription/    recurring debit: v0.2 autocharge (mainnet), v0.4 attested gate
+    smart-wallet/    WebAuthn/passkey custom account + agent session keys
+    checkout/        atomic fee-split payment
+    receipt/         payment receipt primitive
+  axl-compiler/      rust · AXL DSL → proof-carrying certificates (z3)
+  supabase/
+    functions/api/   deno + hono REST endpoints (build unsigned XDR; never custodial)
+    migrations/      schema, RLS, pg_cron, subscriptions
+  scripts/           e2e + deploy + autocharge scheduler
+  docs/              full documentation (start at docs/README.md)
 ```
 
 ---
 
-## Local development
+## Quickstart
 
 ```sh
-# Pre-reqs: node 20+, pnpm 10, deno 2.x, supabase CLI, docker (for supabase start)
-
+# Pre-reqs: node 22+, pnpm 9, deno 2.x, supabase CLI, rust + soroban (for contracts)
 git clone git@github.com:Galmanus/slippay.git
-cd slippay
-pnpm install
+cd slippay && pnpm install
 
-# Spin up local Supabase (postgres + auth + studio)
-pnpm supabase:start
-pnpm supabase:reset    # apply migrations to fresh db
+pnpm supabase:start && pnpm supabase:reset          # local postgres + auth + schema
 
-# Backend (Deno + Hono)
-cd supabase/functions/api
-deno run --allow-all --watch index.ts
-# api on http://localhost:8000/api
-
-# Listener (separate terminal)
-cd apps/listener
-pnpm dev
-# watches Horizon testnet SSE for any active merchant address
-
-# Frontend (separate terminal)
-cd apps/web
-pnpm dev
-# spa on http://localhost:5173
+# in separate terminals:
+cd supabase/functions/api && deno run --allow-all --watch index.ts   # API (Deno + Hono)
+cd apps/listener && pnpm dev                                          # Horizon listener
+cd apps/web && pnpm dev                                               # web → http://localhost:5173
 ```
 
-Run unit tests:
+Tests:
 
 ```sh
-pnpm -r test                              # everything
-pnpm --filter @slippay/listener test      # matcher, reconciler, webhook, ssrf
-pnpm api:test                             # deno tests
+pnpm -r test                                  # listener + packages + web unit tests
+pnpm api:test                                 # deno API tests
 cd contracts/subscription && cargo test --release
+cd axl-compiler && cargo test
 ```
+
+Path-specific quickstarts: [human](./docs/quickstart-human.md) · [agent](./docs/quickstart-agent.md).
 
 ---
 
-## Production deploy (current)
+## Documentation
 
-The live stack on `165.22.10.194` is provisioned PM2-native:
+Start at [`docs/README.md`](./docs/README.md). Highlights:
 
-```sh
-# server prereqs (one-time, root): nginx, certbot, node 20, pm2, ufw, fail2ban
-# deploy user prereqs (one-time, user-space): pnpm via npm, deno binary
-
-# from the laptop:
-rsync -az --exclude node_modules/ --exclude .git/ --exclude '.env*' \
-  --exclude 'apps/*/dist/' --exclude 'packages/*/dist/' \
-  ./ deploy@host:/opt/slippay-backend/
-
-ssh deploy@host '
-  cd /opt/slippay-backend
-  pnpm install --frozen-lockfile
-  pnpm -r build
-  cd supabase/functions/api && deno cache index.ts && cd /opt/slippay-backend
-  pm2 reload ecosystem.config.cjs --update-env
-'
-```
-
-Secrets live in `/opt/slippay-backend/.env` (mode 600), never committed:
-
-```
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-SLIPPAY_DB_SCHEMA=public
-API_PORT=8080
-CHECKOUT_BASE_URL=https://app.slippay.cc
-RATE_BRL_USDC=          # optional override; else CoinGecko
-STELLAR_NETWORK=TESTNET
-MERCHANT_POLL_MS=30000
-```
-
-Detailed mainnet-readiness checklist: `docs/mainnet-readiness.md`.
+- **Concepts** — [architecture](./docs/concepts/architecture.md) · [non-custodial settlement](./docs/concepts/non-custodial-settlement.md) · [proof-bounded settlement](./docs/concepts/proof-bounded-settlement.md) · [agent-integrity attestation](./docs/concepts/agent-integrity-attestation.md) · [regulatory](./docs/concepts/regulatory.md)
+- **Contracts** — [overview](./docs/contracts/README.md) · [subscription](./docs/contracts/subscription.md) · [smart wallet](./docs/contracts/smart-wallet.md) · [checkout](./docs/contracts/checkout.md)
+- **AXL** — [language](./docs/axl/README.md) · [compiler](./docs/axl/compiler.md) · [proofs and limits](./docs/axl/proofs-and-limits.md)
+- **Packages** — [`@slippay/mcp`](./docs/packages/slippay-mcp.md) · [`@slippay/attester`](./docs/packages/slippay-attester.md)
+- **Comex** — [go-live checklist](./docs/comex-go-live-checklist.md) · [4P Solana ramp](./docs/4P_SOLANA_RAMP.md)
+- **Security** — [key custody](./docs/security/key-custody.md) · audits [001](./docs/security/audit-001.md)–[006](./docs/security/audit-006.md)
+- **API** — [authentication](./docs/api-reference/authentication.md) · [orders](./docs/api-reference/orders.md) · [subscriptions](./docs/api-reference/subscriptions.md) · [merchants](./docs/api-reference/merchants.md) · [webhooks](./docs/api-reference/webhooks.md) · [errors](./docs/api-reference/errors.md) · [OpenAPI](./docs/openapi.yaml)
+- **Ops** — [deploy](./docs/ops/deploy.md)
 
 ---
 
-## Roadmap (falsifiable milestones)
+## Deploy
 
-These are the predictions the project should be measured against. Failures
-should be flagged, not glossed over.
+`app.slippay.cc` and `api.slippay.cc` run on a single VPS under PM2 + nginx (Deno
+serves the API and the built web `dist/`). The web app is built locally and
+rsync'd to the server — not Vercel, not GitHub Actions. See
+[`docs/ops/deploy.md`](./docs/ops/deploy.md).
 
-### 90 days (by 2026-08-10)
+## License
 
-- BRL -> USDC conversion rate >= 30% on first 5 merchants once a BR anchor
-  partnership lands. Below 30% means buyer-side Pix friction is higher than
-  estimated and the architecture needs a rethink.
-- Subscription primitive used by >= 3 paying merchants on mainnet (recurring
-  charges actually fire). Below 3 means subscription was over-engineered.
-- Open-source `stellar-payment-watcher` (extract from `apps/listener`) reaches
-  >= 50 GitHub stars within 90 days of release. Below 50 means dev demand
-  for the abstraction is weaker than predicted.
-
-### 12 months (by 2027-02-10)
-
-- If at least one of {Bitso, Foxbit, Mercado Bitcoin, Conduit/Braza} launches
-  a competing BRL -> USDC merchant checkout at scale, slippay's wedge is
-  closed by an incumbent. The bet is that the incumbents target B2B
-  cross-border and miss the e-commerce checkout layer.
-- BRZ-on-Stellar circulating supply remains <\$5M USD through 2026 (verifiable
-  at app.rwa.xyz/assets/BRZ), confirming that BR-Stellar is functionally
-  greenfield for the foreseeable window.
-
-### Soroban subscription contract — internal planning
-
-`docs/scf/soroban-subscription-proposal.md` is an internal planning document
-laying out a possible Soroban subscription contract roadmap. It is **not**
-the source of the active program deliverables — the live deliverables come
-from the sprint-gated Stellar Brasil program slippay is enrolled in (see
-above).
-
----
-
-## Honest disclosures
-
-Slippay is currently in execution under a Stellar Brasil ecosystem program
-with sprint-gated milestone deliverables. Grant disbursement is tied to
-hitting those milestones; this repo is the working artifact.
-
-The "non-custodial" property is precise: slippay never holds buyer funds at
-any instant. But under BCB Resolução 521, the BRL -> USDC leg is FX-classified
-and requires a licensed counterparty. Mainnet launch is gated on a partnership
-with a licensed BR VASP that handles the regulated FX leg; slippay handles
-the merchant API, settlement matching, webhook delivery, and hosted checkout.
-
-The "Stellar + MoneyGram cash-out 180+ countries" line is structural, not
-volume-based. MoneyGram-on-Stellar processes roughly \$30M cumulative since
-2022 launch — small in absolute terms but unique to Stellar. No EVM-based
-competitor has comparable cash rails.
-
-Competitive landscape (Stellar-native merchant gateways are sparse but not empty):
-
-- **PayKit (`usepaykit/stellartools`)** — global Stellar-native gateway with
-  a richer SDK ecosystem (7 framework adapters, plugin SDK, Soroban
-  subscription engine). Slippay is differentiated by explicit BR positioning,
-  Pix-in path via licensed anchor, and BR-export merchant ICP — not by
-  generic "non-custodial USDC checkout".
-- **Coinbase Commerce** ships 1% non-custodial USDC and is sunsetting their
-  international self-custodial product in 2025 — open capture window for
-  international merchants who want to keep their own keys.
-- **Stripe (Bridge.xyz, $1.1B Feb 2025)** ships USDC checkout to Shopify in
-  34 countries; collides on segments where merchants want fiat conversion.
-- **Circle Payments Network (CPN)**, launched May 2025, is becoming the
-  rails-of-rails; slippay should evaluate becoming a CPN node when the
-  network opens to non-bank participants.
-
----
+Apache-2.0 for the open-source contracts and packages (see
+[`docs/scf/OPEN_SOURCE.md`](./docs/scf/OPEN_SOURCE.md)). Authorship and IP:
+[`IP_OWNERSHIP.md`](./IP_OWNERSHIP.md).
 
 ## Contributing
 
-This is a solo-founder repo at the moment. Issues and PRs welcome; the
-maintainer is the author. License Apache-2.0 for the contract; backend / web
-will be relicensed when the commercial wrapper is finalized (currently
-unlicensed in this repo, treat as source-available for review purposes).
-
-For partnership conversations (BR anchors, Stellar ecosystem, audit firms),
-see `docs/outreach/` for outreach drafts. Slippay is currently routing
-partnership intros through the Stellar Brasil program rather than cold
-outreach where possible.
-
+Solo-founder repo. Issues and PRs welcome at
+[github.com/Galmanus/slippay/issues](https://github.com/Galmanus/slippay/issues).
+Every claim in these docs should be verifiable against the code; if a doc says
+something the code does not do, that is a bug worth an issue.

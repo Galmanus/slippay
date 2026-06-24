@@ -167,7 +167,7 @@ See [webhooks reference](./webhooks.md) for payload shape.
 
 ## Notes on settlement math
 
-SlipPay charges a platform fee (default 1%, configurable per merchant via
+SlipPay charges a platform fee (default 2.97% / 297 bp, configurable per merchant via
 `platform_fee_bp`). The buyer pays `usdc_amount`; the merchant receives
 `usdc_amount * (1 - platform_fee_bp / 10000)`. The platform receives the rest.
 

@@ -31,6 +31,7 @@ foreign-capital reporting from 4 May 2026.
 | 519 | governance and prudential requirements for SPSAVs (specific PSAVs) |
 | 520 | minimum capital tiers (~R$2M+ depending on activity) |
 | 521 | **classifies stablecoin trading as `operações de câmbio`** (FX) |
+| 561 | **classifies cross-border stablecoin operations as `câmbio`** (FX); see below |
 
 The 521 reclassification is the load-bearing fact for SlipPay. It means:
 **any actor that mediates BRL ↔ USDC for a Brazilian user is operating
@@ -38,6 +39,26 @@ inside the FX market** and must comply with FX rules (which require either
 a banco autorizado or a partnership with one).
 
 Source: [Machado Meyer summary](https://www.machadomeyer.com.br/pt/inteligencia-juridica/publicacoes-ij/bancario-seguros-e-financeiro-ij/regulamentacao-de-vasps-no-mercado-de-cambio)
+
+### BCB Resolução 561 — cross-border stablecoin as câmbio
+
+Resolution 561 extends the 521 reasoning to the cross-border case: a stablecoin
+operation that moves value across the border for a Brazilian user is classified
+as an `operação de câmbio` (foreign-exchange). This matters directly for any
+cross-border take-rate. A fee charged on a BRL-to-foreign or foreign-to-BRL
+stablecoin flow sits inside the FX perimeter, so a "cross-border payments PSP
+that skims a spread on the corridor" model is not available to SlipPay without a
+banco autorizado or an FX-licensed partner on that leg. Charging a cross-border
+spread directly is an FX operation, not a software fee.
+
+SlipPay's response is the domestic-USD-account framing: position the product as
+a dollar-denominated account and payment surface used inside Brazil (receive,
+hold, and pay USDC domestically), rather than as a cross-border corridor with a
+take-rate. The domestic framing keeps SlipPay's own monetization on the software
+side (merchant API, checkout, settlement infrastructure) and pushes any actual
+BRL/FX leg into a licensed partner's perimeter, consistent with the
+partnership-with-VASP architecture below. This is a constraint to design around,
+not a stop: it tells us where a fee can and cannot legally sit.
 
 ### Self-custody not banned, but VASP must KYC the wallet
 
@@ -132,6 +153,74 @@ then SlipPay would need to be either a SPSAV with R$2M+ minimum capital
 under Resolução 520 OR partner with a banco autorizado for the FX
 component. The 6–12 month licensing timeline is incompatible with the
 2026-Q3 mainnet plan.
+
+## Comex câmbio leg
+
+Converting R$ to USD (or USD to R$) for a foreign trade operation is câmbio — the
+most tightly regulated activity in the Brazilian payment stack. Anything touching
+that conversion is inside the BCB's FX perimeter regardless of how the tech is
+structured.
+
+### How SlipPay stays outside the FX perimeter
+
+The structure that keeps SlipPay outside VASP/câmbio obligations is the same
+partnership-with-licensed-party model applied to the comex surface, but the
+licensed party in this case is **4P Finance** (the câmbio partner):
+
+- **4P** holds the FX license, **originates the câmbio** conversion (BRL→USDC or
+  USDC→BRL), and is the regulated actor for BCB reporting, AML, and capital
+  requirements.
+- **SlipPay** is the technology platform: builds unsigned transactions, surfaces the
+  WYSIWYS signing gate, routes settlement, and never holds user funds or touches the
+  conversion directly.
+- The corporate wallet (Privy embedded, Solana) is **user-owned**. SlipPay's servers
+  never hold a key with authority over it.
+
+```
+ company (BRL, e.g. importer paying supplier)
+         |
+         v
+   4P Finance (câmbio origination: licensed, KYC, FX, BCB reporting)
+         |
+         v
+   USDC to company's Privy wallet (user-owned, non-custodial)
+         |
+         v
+   SlipPay builds unsigned tx → WYSIWYS gate → user signs → settlement
+```
+
+**This structure only holds while SlipPay does not custody funds and does not
+originate FX.** The regulatory classification follows the architecture. If
+SlipPay were to hold USDC on behalf of a corporate user, or intermediate the
+BRL/USDC conversion directly (e.g., collect BRL via a SlipPay-controlled account
+and settle USDC from it), SlipPay would be inside the câmbio perimeter and would
+need either an FX license or a banco autorizado as counterparty. The architecture
+is the compliance posture.
+
+> **Not legal advice.** The framing above describes the architectural intent and
+> the reasoning on which it rests. Consult a Brazilian lawyer specializing in
+> câmbio and BACEN regulation before any live comex operation.
+
+## Yield (DeFindex) — corporate treasury framing
+
+The comex surface earns yield on idle USDC via DeFindex (on-chain yield aggregator
+on Solana). The regulatory posture for a CNPJ managing its own treasury is more
+defensible than a consumer "savings" product — a company deciding what to do with
+its own working capital is not the same as a retail deposit product.
+
+That said, how the product is described matters as much as what it is:
+
+- Describe the **asset**: USDC, self-custody, variable on-chain yield, **principal
+  at risk** (DeFi protocols carry smart-contract and liquidity risk).
+- Never promise a return, never quote a fixed APY as a forward commitment. Promising
+  a specific return is what triggers securities classification under CVM rules
+  (investment contract), regardless of the underlying instrument.
+- The yield is presented as what it is: a current market rate from on-chain
+  protocols, not a product guarantee.
+
+> **Not legal advice.** CVM classification depends on how a product is marketed and
+> how it is structured contractually. A Brazilian securities lawyer should review
+> any corporate treasury pitch before it goes to market.
 
 ## Other jurisdictions (brief)
 
