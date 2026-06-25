@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 
-// /zk is a static page served from public/zk/index.html. The SPA has no /zk
-// route and the host doesn't rewrite /zk -> /zk/index.html, so hitting /zk
-// directly (a shared link, a judge typing it) falls through to not-found.
-// This bounces it to the real static ZK page.
+// /zk is a static page served from public/zk/index.html. The Deno static server
+// serves `/zk/index.html` directly but returns the SPA for the bare `/zk/` dir
+// request — so redirecting to `/zk/` bounced back into the SPA, which matched
+// this same `/zk` route again: an infinite redirect loop. Redirect to the
+// explicit `/zk/index.html`, which the server serves as the real static ZK page.
 export default function ZkRedirect() {
   useEffect(() => {
-    window.location.replace("/zk/");
+    window.location.replace("/zk/index.html");
   }, []);
   return null;
 }
