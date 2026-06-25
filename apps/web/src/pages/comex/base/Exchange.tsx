@@ -82,6 +82,10 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  // On-chain settlement detection (fallback for the 4P webhook): snapshot the
+  // wallet's USDC balance before the charge, then watch for it to rise.
+  const [baselineRaw, setBaselineRaw] = useState<bigint | null>(null);
+  const [receivedUsdc, setReceivedUsdc] = useState<number | null>(null);
 
   useEffect(() => {
     status4p().then((s) => {
@@ -114,7 +118,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
     return () => clearInterval(t);
   }, [step]);
 
-  // Poll until settled
+  // Poll until settled (4P webhook-backed store)
   useEffect(() => {
     if (step !== "pix" || !order) return;
     if (DONE_STATUSES.includes(orderStatus.toLowerCase())) { setStep("done"); return; }
@@ -127,6 +131,30 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
     return () => clearTimeout(t);
   }, [step, order, orderStatus]);
 
+  // Fallback: detect settlement directly on-chain. The 4P webhook may not fire,
+  // but the USDC landing in the wallet is the source of truth — watch balanceOf
+  // and flip to "done" the moment it rises above the pre-charge baseline.
+  useEffect(() => {
+    if (step !== "pix" || baselineRaw == null || !address) return;
+    let on = true;
+    const iv = setInterval(async () => {
+      try {
+        const raw = await publicClient.readContract({
+          address: usdcAddress(),
+          abi: ERC20_BALANCE_OF_ABI,
+          functionName: "balanceOf",
+          args: [address as `0x${string}`],
+        }) as bigint;
+        if (on && raw > baselineRaw) {
+          setReceivedUsdc(Number(fromBaseUnits(raw - baselineRaw)));
+          setOrderStatus("paid");
+          setStep("done");
+        }
+      } catch { /* keep polling */ }
+    }, 5000);
+    return () => { on = false; clearInterval(iv); };
+  }, [step, baselineRaw, address]);
+
   async function confirmBuy() {
     setErr(null);
     if (!address) { setErr("Conta não disponível — autentique-se primeiro."); return; }
@@ -134,6 +162,19 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
     if (!email) { setErr("E-mail obrigatório."); return; }
     setBusy(true);
     try {
+      // Snapshot pre-charge USDC balance so we can detect settlement on-chain
+      // even if the 4P webhook never fires.
+      try {
+        const raw = await publicClient.readContract({
+          address: usdcAddress(),
+          abi: ERC20_BALANCE_OF_ABI,
+          functionName: "balanceOf",
+          args: [address as `0x${string}`],
+        }) as bigint;
+        setBaselineRaw(raw);
+      } catch { setBaselineRaw(null); }
+      setReceivedUsdc(null);
+
       const o = await createOnramp4p({
         amountBrl: brl,
         receiverWallet: address, // Base 0x address — 4P settles USDC on Base
@@ -344,6 +385,9 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             <span className="inline-block h-2 w-2 bg-[#FDDA24] animate-pulse" />
             Aguardando pagamento... ({orderStatus})
           </div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
+            Confirma sozinho quando o {asset} cair na sua carteira.
+          </div>
         </div>
       )}
 
@@ -353,7 +397,9 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Pagamento confirmado
           </div>
           <p className="text-sm text-[#0a0a0a]/70 mt-2">
-            O {asset} esta sendo enviado para a sua carteira na rede Base.
+            {receivedUsdc != null
+              ? `Recebido: $${usdFmt(receivedUsdc, 2)} ${asset} na sua carteira (rede Base).`
+              : `O ${asset} está sendo enviado para a sua carteira na rede Base.`}
           </p>
         </div>
       )}
