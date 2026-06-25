@@ -52,6 +52,15 @@ do, that is a bug worth an issue.
 > **4P**) all run in production at [app.slippay.cc/comex](https://app.slippay.cc), with
 > the exact dollar rate and fee shown to the user.
 
+> **Agent payments are real on-chain transactions, not slides.** An autonomous agent
+> payment settled on-chain only after an *independent integrity oracle* authorized it
+> — agent initiates, the oracle signs off in its committed surface, and the contract
+> verifies that signature on-chain (`autocharge_attested` + native `ed25519_verify`)
+> before a cent moves. No human in the loop. Verifiable (Stellar testnet):
+> [tx `eee0d71f…`](https://stellar.expert/explorer/testnet/tx/eee0d71f2f2100da1b97c971cec98fe367e89758c0b8b91c29ef6d5e84a602ff).
+> The autonomous debit rail (`autocharge`, SEP-41 allowance) is live on **mainnet**;
+> the attested gate shown here is **testnet** (v0.3).
+
 The three surfaces never fork the money path: they all reduce to *build an unsigned
 transfer → the user verifies what they sign → the user signs → submit*. The same
 [security gate](#security-model) is the standard across them — live today on the
