@@ -44,7 +44,7 @@ do, that is a bug worth an issue.
 |---|---|---|---|
 | **Dollar account** | a normal person | receive USDC by QR, verify a payment on-chain, pay with a passkey (Face/Touch ID) — no seed phrase in the user's hands | live on Stellar mainnet |
 | **Agent / builder** | autonomous agents | agent payments bounded by an on-chain spend policy, a fail-closed integrity attestation, and an offline-checkable proof of the spending bound | rail live (mainnet); attested gate on testnet |
-| **Comex treasury** | import/export companies | a corporate (non-biometric) account on Base that holds USD, sends/receives USDC, and converts R$↔USD through a licensed FX partner; yield on idle dollars is next | **live in production** on Base ([app.slippay.cc/comex](https://app.slippay.cc)) — wallet + send/receive USDC live; **R$→USD buy** (quote + Pix charge) live with licensed partner **4P**, first end-to-end settlement in validation; USD→R$ sell + yield (DeFindex) are phase 2 ([go-live checklist](./docs/comex-go-live-checklist.md)) |
+| **Comex treasury** | import/export companies | a corporate (non-biometric) account on Base that holds USD, sends/receives USDC, and converts R$↔USD through a licensed FX partner; yield on idle dollars is next | **live in production** on Base ([app.slippay.cc/comex](https://app.slippay.cc)) — wallet + send/receive USDC live; **R$→USD buy live via licensed partner 4P** (Pix → USDC settled on Base, verified end-to-end); USD→R$ sell + yield (DeFindex) are phase 2 ([go-live checklist](./docs/comex-go-live-checklist.md)) |
 
 The three surfaces never fork the money path: they all reduce to *build an unsigned
 transfer → the user verifies what they sign → the user signs → submit*. The same
@@ -115,7 +115,7 @@ below is dressed up as live when it isn't.
 | Checkout (atomic fee split) | testnet | `CBO2COBZUTHH4II4JCQRZVO4RKDUIUH4MXZTAWOYVUZIVYI47UIDQCWQ` — client flow now WYSIWYS-gated |
 | ZK proof-of-mandate + proof-of-KYC (Groth16) | **mainnet** | verifier `CBDS2YSL…` live, zero-PII (age + sanctions); circuits open at [slippay-zk](https://github.com/Galmanus/slippay-zk) |
 | Comex treasury — corporate non-custodial wallet (Privy EVM) + USDC send/receive, WYSIWYS-gated | **Base mainnet**, live | in production at `app.slippay.cc/comex` · 74 tests · adversarially reviewed |
-| Comex câmbio R$→USD buy via **4P** (licensed FX partner, settles USDC on Base) | **Base** | quote + Pix charge live; first end-to-end settlement being validated with 4P. USD→R$ sell pending 4P off-ramp endpoint |
+| Comex câmbio R$→USD buy via **4P** (licensed FX partner, settles USDC on Base) | **Base**, live | live & verified end-to-end: Pix on-ramp → USDC settled to the company wallet on Base. USD→R$ sell pending 4P off-ramp endpoint |
 | `@slippay/mcp` (agent MCP server) · `@slippay/attester` (integrity oracle) | npm | v0.2.0 · v0.1.0 |
 | AXL compiler (proof-carrying certs) | — | build/test only, no on-chain artifact |
 
