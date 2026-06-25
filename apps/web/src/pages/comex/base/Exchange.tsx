@@ -588,7 +588,8 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
     }
 
     // Assert receiver matches client-pinned address BEFORE building/signing
-    if (ordData.receiver !== PINNED_4P_RECEIVER) {
+    // (case-insensitive — EVM addresses are checksummed but compare on hex).
+    if (ordData.receiver.toLowerCase() !== (PINNED_4P_RECEIVER ?? "").toLowerCase()) {
       setErr("receiver 4P inesperado — operação bloqueada");
       setStep("form");
       setBusy(false);
