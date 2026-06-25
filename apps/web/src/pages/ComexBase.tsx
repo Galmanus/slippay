@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useComexBaseWallet } from "../lib/comexBase.tsx";
 import ComexBaseDashboard from "./comex/base/Dashboard.tsx";
 
@@ -8,6 +9,7 @@ import ComexBaseDashboard from "./comex/base/Dashboard.tsx";
 
 export default function ComexBase() {
   const { ready, authenticated, login } = useComexBaseWallet();
+  const [loggingIn, setLoggingIn] = useState(false);
 
   // 1. SDK not ready yet
   if (!ready) {
@@ -22,6 +24,12 @@ export default function ComexBase() {
 
   // 2. Not authenticated → landing
   if (!authenticated) {
+    // login() resolves when the Privy modal closes (success or cancel); awaiting
+    // it gives click feedback without leaving the button stuck.
+    const handleLogin = async () => {
+      setLoggingIn(true);
+      try { await login(); } catch { /* user cancelled */ } finally { setLoggingIn(false); }
+    };
     return (
       <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
         <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
@@ -51,11 +59,18 @@ export default function ComexBase() {
               </p>
 
               <button
-                onClick={login}
-                className="bg-[#FDDA24] text-[#0a0a0a] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420]"
+                onClick={handleLogin}
+                disabled={loggingIn}
+                className="bg-[#FDDA24] text-[#0a0a0a] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420] disabled:opacity-50"
               >
-                Entrar
+                {loggingIn ? "Entrando..." : "Entrar"}
               </button>
+              <p className="mt-4 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
+                Acesso por e-mail e verificação em duas etapas
+              </p>
+              <p className="mt-8 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40 max-w-sm leading-relaxed">
+                Carteira da empresa · você assina · câmbio liquidado pela 4P (licenciada) · USDC by Circle
+              </p>
             </div>
           </div>
         </main>

@@ -331,7 +331,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
           <input
             value={cpf}
             onChange={(e) => setCpf(e.target.value)}
-            placeholder="CPF (11 digitos)"
+            placeholder="CPF (11 dígitos)"
             inputMode="numeric"
             className="w-full bg-transparent border border-[#0a0a0a]/20 p-4 text-sm"
           />
@@ -371,7 +371,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             Pague com Pix
           </label>
           <p className="text-sm text-[#0a0a0a]/70">
-            Copie o codigo e pague no seu banco. O {asset} cai na sua carteira na rede Base assim que o Pix confirmar.
+            Copie o código e pague no seu banco. O {asset} cai na sua carteira na rede Base assim que o Pix confirmar.
           </p>
           <div className="border border-[#0a0a0a]/15 p-4 font-mono text-xs break-all text-[#0a0a0a]/80 bg-[#0a0a0a]/3">
             {order.pixCopiaECola ?? "—"}
@@ -380,7 +380,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             onClick={copyPix}
             className="w-full border border-[#0a0a0a] py-4 text-sm uppercase tracking-[0.18em] hover:bg-[#0a0a0a]/5"
           >
-            {copied ? "Copiado" : "Copiar codigo Pix"}
+            {copied ? "Copiado" : "Copiar código Pix"}
           </button>
           <div className="flex items-center gap-2 text-xs text-[#0a0a0a]/55">
             <span className="inline-block h-2 w-2 bg-[#FDDA24] animate-pulse" />
@@ -406,7 +406,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
       )}
 
       <div className="text-[10px] text-[#0a0a0a]/40 border-t border-[#0a0a0a]/10 pt-4">
-        Nao-custodial: a 4P (licenciada) liquida direto na sua carteira na rede Base. A Slippay nao segura seu dinheiro.
+        Não-custodial: a 4P (licenciada) liquida direto na sua carteira na rede Base. A Slippay não segura seu dinheiro.
       </div>
     </div>
   );
@@ -441,12 +441,13 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
   const [txHash, setTxHash] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState("pending");
+  const [sentAt, setSentAt] = useState<number | null>(null);
 
   // ConfirmTxModal wiring
   const [modalSummary, setModalSummary] = useState<TxSummary | null>(null);
   const resolveConfirmRef = useRef<((v: boolean) => void) | null>(null);
 
-  const usdcNum = Number(usdc);
+  const usdcNum = Number(usdc.replace(",", "."));
   const usdcValid = isFinite(usdcNum) && usdcNum > 0;
 
   const receiverConfigured = !!PINNED_4P_RECEIVER;
@@ -465,24 +466,36 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
       })
       .catch((e) => {
         if (!on) return;
-        setQuoteErr(e instanceof Ramp4pError ? e.message : "Erro ao buscar cotacao.");
+        setQuoteErr(e instanceof Ramp4pError ? e.message : "Erro ao buscar cotação.");
       })
       .finally(() => { if (on) setQuoteBusy(false); });
     return () => { on = false; };
   }, [usdc]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Poll order status after on-chain send
+  // Poll order status after on-chain send (self-sustaining interval).
+  // The USDC already left the wallet on-chain; if 4P hasn't confirmed the Pix
+  // within ~90s, surface the recovery panel (order id + basescan hash) instead
+  // of spinning forever. (90s is a placeholder — confirm 4P's real SLA.)
   useEffect(() => {
     if (step !== "sending" || !orderId) return;
-    if (DONE_STATUSES.includes(orderStatus.toLowerCase())) { setStep("done"); return; }
-    const t = setTimeout(async () => {
+    let on = true;
+    const iv = setInterval(async () => {
+      if (!on) return;
+      if (sentAt != null && Date.now() - sentAt > 90_000) {
+        setErr("O Pix está demorando mais que o normal. Seus dólares já saíram on-chain e estão com a 4P (licenciada) — guarde o número da ordem abaixo.");
+        setStep("recovery");
+        return;
+      }
       try {
         const o = await getOfframp4p(orderId);
-        if (o.transactionStatus) setOrderStatus(o.transactionStatus);
+        if (o.transactionStatus) {
+          setOrderStatus(o.transactionStatus);
+          if (DONE_STATUSES.includes(o.transactionStatus.toLowerCase())) setStep("done");
+        }
       } catch { /* keep polling */ }
     }, 4000);
-    return () => clearTimeout(t);
-  }, [step, orderId, orderStatus]);
+    return () => { on = false; clearInterval(iv); };
+  }, [step, orderId, sentAt]);
 
   const openConfirmModal = useCallback(
     (decoded: DecodedTransfer): Promise<boolean> => {
@@ -568,7 +581,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
     try {
       ordData = await createOfframp4p({ usdc: usdcNum, pixKey: pixKey.trim(), sender: address, email: sellEmail, doc });
     } catch (e) {
-      setErr(e instanceof Ramp4pError ? e.message : "Endpoint de venda nao disponivel ainda.");
+      setErr(e instanceof Ramp4pError ? e.message : "Endpoint de venda não disponível ainda.");
       setStep("form");
       setBusy(false);
       return;
@@ -610,6 +623,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
     // Show basescan hash immediately — never false success.
     setOrderId(ordData.id);
     setOrderStatus("pending");
+    setSentAt(Date.now());
     setStep("sending");
     setBusy(false);
   }
@@ -631,7 +645,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
       <div className="space-y-4">
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Vender USDC</div>
         <div className="border border-[#0a0a0a]/15 p-6 text-sm text-[#0a0a0a]/60">
-          Venda em ativacao — endpoint 4P pendente. Disponivel em breve.
+          Venda em ativação — endpoint 4P pendente. Disponível em breve.
         </div>
         <button
           onClick={() => { setUsdc(""); setOffRampPending(false); }}
@@ -665,13 +679,12 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
                 <div className="flex items-baseline gap-2">
                   <span className="text-xl text-[#0a0a0a]/45">$</span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     value={usdc}
-                    onChange={(e) => setUsdc(e.target.value)}
+                    onChange={(e) => setUsdc(e.target.value.replace(/[^\d.,]/g, ""))}
                     disabled={busy}
                     placeholder="0.00"
-                    min="0"
-                    step="0.01"
                     className="w-full bg-transparent outline-none text-4xl tabular-nums disabled:opacity-60"
                   />
                   <span className="text-lg text-[#0a0a0a]/45">USDC</span>
@@ -683,7 +696,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
               {usdcValid && (
                 <div>
                   <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-1 block">
-                    Voce recebe (aprox.)
+                    Você recebe (aprox.)
                   </label>
                   <div className="flex items-baseline gap-2">
                     <span className="text-xl text-[#0a0a0a]/45">R$</span>
@@ -716,7 +729,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
                 value={pixKey}
                 onChange={(e) => setPixKey(e.target.value)}
                 disabled={busy}
-                placeholder="CPF, e-mail, telefone ou chave aleatoria"
+                placeholder="CPF, e-mail, telefone ou chave aleatória"
                 className="w-full bg-transparent border border-[#0a0a0a]/20 p-4 text-sm disabled:opacity-60"
               />
             </div>
@@ -753,7 +766,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
               disabled={busy || !usdcValid || !pixKey.trim() || quoteBusy || quote?.brlOut == null || (!savedDoc && !isValidDoc(docInput.replace(/\D/g, "")))}
               className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-40"
             >
-              {step === "confirming" ? "Aguardando confirmacao..." : "Vender USDC"}
+              {step === "confirming" ? "Aguardando confirmação..." : "Vender USDC"}
             </button>
           </>
         )}
@@ -785,7 +798,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
         {step === "done" && (
           <div className="border-l-2 border-[#FDDA24] pl-4">
             <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Liquidacao confirmada
+              <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Liquidação confirmada
             </div>
             <p className="text-sm text-[#0a0a0a]/70 mt-2">
               O Pix sera enviado para a chave {pixKey}. Status final: {orderStatus}.
@@ -804,28 +817,41 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
         )}
 
         {step === "recovery" && (
-          <div className="border-l-2 border-red-600 pl-4 space-y-2">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-red-700">
-              Enviado, confirmando...
+          <div className="border-l-2 border-[#0a0a0a] pl-4 space-y-3">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]">
+              Enviado · aguardando o Pix
             </div>
             <p className="text-xs text-[#0a0a0a]/70">
-              {err ?? "Transacao enviada. Aguardando confirmacao on-chain."}
+              {err ?? "Seus dólares saíram on-chain e estão com a 4P (licenciada). O Pix pode levar alguns minutos."}
             </p>
+            {orderId && (
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/55 mb-1">
+                  Número da ordem (guarde)
+                </div>
+                <div className="font-mono text-xs break-all text-[#0a0a0a]">{orderId}</div>
+              </div>
+            )}
             {txHash && (
-              <a
-                href={`https://basescan.org/tx/${txHash}`}
-                target="_blank"
-                rel="noreferrer"
-                className="font-mono text-[10px] break-all hover:opacity-60 text-[#0a0a0a]/55 block"
-              >
-                {txHash}
-              </a>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/55 mb-1">
+                  Comprovante on-chain (Base)
+                </div>
+                <a
+                  href={`https://basescan.org/tx/${txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-mono text-[10px] break-all hover:opacity-60 text-[#0a0a0a]/55 block"
+                >
+                  {txHash}
+                </a>
+              </div>
             )}
           </div>
         )}
 
         <div className="text-[10px] text-[#0a0a0a]/40 border-t border-[#0a0a0a]/10 pt-4">
-          USDC enviado on-chain (rede Base) · BRL liquidado via Pix pela 4P (licenciada) · irreversivel
+          USDC enviado on-chain (rede Base) · BRL liquidado via Pix pela 4P (licenciada) · irreversível
         </div>
       </div>
     </>
@@ -848,7 +874,7 @@ export default function BaseExchange() {
   return (
     <div className="md:col-span-9 max-w-xl">
       <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-8 block">
-        Cambio R$&harr;USD
+        Câmbio R$ ↔ USD
       </div>
 
       {/* Direction toggle */}
@@ -872,7 +898,7 @@ export default function BaseExchange() {
       {/* Buy: gate on enabled */}
       {direction === "buy" && rampEnabled === false && (
         <div className="border border-[#0a0a0a]/15 p-6 text-sm text-[#0a0a0a]/60">
-          Cambio em ativacao (aguardando 4P)
+          Câmbio em ativação (aguardando 4P)
         </div>
       )}
 
@@ -882,7 +908,7 @@ export default function BaseExchange() {
 
       {direction === "buy" && rampEnabled !== false && !address && (
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
-          Conta nao disponivel — autentique-se primeiro.
+          Conta não disponível — autentique-se primeiro.
         </div>
       )}
 
@@ -893,7 +919,7 @@ export default function BaseExchange() {
 
       {direction === "sell" && !address && (
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
-          Conta nao disponivel — autentique-se primeiro.
+          Conta não disponível — autentique-se primeiro.
         </div>
       )}
     </div>

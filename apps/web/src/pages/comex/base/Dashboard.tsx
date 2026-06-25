@@ -38,13 +38,13 @@ export default function ComexBaseDashboard() {
 
       {/* Tab nav */}
       <nav className="border-b border-[#0a0a0a]/10">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-12 flex gap-0">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-12 flex gap-0 overflow-x-auto flex-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={[
-                "py-4 px-6 text-[10px] uppercase tracking-[0.18em] border-b-2 transition-colors",
+                "shrink-0 py-5 px-5 text-[10px] uppercase tracking-[0.18em] border-b-2 transition-colors",
                 activeTab === tab
                   ? "border-[#FDDA24] text-[#0a0a0a]"
                   : "border-transparent text-[#0a0a0a]/45 hover:text-[#0a0a0a]/70",
