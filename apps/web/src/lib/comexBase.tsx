@@ -149,7 +149,7 @@ function ComexBaseProviderInner({ children }: { children: ReactNode }) {
           value: `0x${args.value.toString(16)}` as `0x${string}`,
           chainId: _defaultChain.id,
         },
-        { address: evmWallet.address },
+        { sponsor: true, address: evmWallet.address },
       );
       return { hash: hash as `0x${string}` };
     },
