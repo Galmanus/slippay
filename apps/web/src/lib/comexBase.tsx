@@ -27,10 +27,10 @@ import {
   PrivyProvider,
   usePrivy,
   useWallets,
+  useSendTransaction,
   type ConnectedWallet,
   type PrivyClientConfig,
 } from "@privy-io/react-auth";
-import { useSendTransaction } from "@privy-io/react-auth/tempo";
 import { base, baseSepolia } from "viem/chains";
 import { baseNet } from "./chain/base/usdc.ts";
 
@@ -140,17 +140,17 @@ function ComexBaseProviderInner({ children }: { children: ReactNode }) {
       if (!evmWallet) {
         throw new Error("comexBase: EVM wallet not available — authenticate first");
       }
-      // VERIFY-WITH-KEYS: sendTransaction({ transaction, wallet }) → Promise<{ hash: Hex }>
-      // transaction shape = UnsignedTransactionRequest & { chainId: number } (types-sr2FRXdy.d.ts line 2512)
-      const { hash } = await privySendTx({
-        transaction: {
+      // Main useSendTransaction (prompts the user, signs with the embedded
+      // wallet). Flat UnsignedTransactionRequest; `address` targets this wallet.
+      const { hash } = await privySendTx(
+        {
           to: args.to,
           data: args.data,
           value: `0x${args.value.toString(16)}` as `0x${string}`,
           chainId: _defaultChain.id,
         },
-        wallet: evmWallet,
-      });
+        { address: evmWallet.address },
+      );
       return { hash: hash as `0x${string}` };
     },
     [evmWallet, privySendTx],
