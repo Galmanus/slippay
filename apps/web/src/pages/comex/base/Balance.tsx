@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { useComexBaseWallet } from "../../../lib/comexBase.tsx";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
 
@@ -19,6 +20,18 @@ export default function BaseBalance() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
+
+  // QR of the receive address so another wallet (or another Slippay user) can
+  // scan to pay. Bare 0x address = maximally compatible with EVM wallets.
+  useEffect(() => {
+    if (!address) { setQrUrl(null); return; }
+    let on = true;
+    QRCode.toDataURL(address, { margin: 1, width: 320, color: { dark: "#0a0a0a", light: "#f1eee7" } })
+      .then((url) => { if (on) setQrUrl(url); })
+      .catch(() => { if (on) setQrUrl(null); });
+    return () => { on = false; };
+  }, [address]);
 
   useEffect(() => {
     if (!address) return;
@@ -101,6 +114,18 @@ export default function BaseBalance() {
             Receber
           </div>
           <div className="border border-[#0a0a0a]/20 p-6">
+            {qrUrl && (
+              <div className="mb-5 flex flex-col items-center">
+                <img
+                  src={qrUrl}
+                  alt="QR do endereço de recebimento (USDC · Base)"
+                  className="w-44 h-44 border border-[#0a0a0a]/15"
+                />
+                <div className="mt-2 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
+                  Escaneie para pagar
+                </div>
+              </div>
+            )}
             <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-2">
               Endereço da conta
             </div>
