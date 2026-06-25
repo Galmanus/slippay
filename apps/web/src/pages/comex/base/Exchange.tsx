@@ -26,6 +26,7 @@ import {
   Ramp4pError,
   type Ramp4pOrder,
   type Offramp4pQuote,
+  type Quote4p,
 } from "../../../lib/ramp4p.ts";
 
 // ---------------------------------------------------------------------------
@@ -66,7 +67,8 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
   // field reads as "type your value", with the presets as optional shortcuts.
   const [brlInput, setBrlInput] = useState("");
   const brl = Number(brlInput.replace(",", ".")) || 0;
-  const [cryptoOut, setCryptoOut] = useState<number | null>(null);
+  const [q4p, setQ4p] = useState<Quote4p | null>(null);
+  const cryptoOut = q4p?.cryptoOut ?? null;
   const [asset, setAsset] = useState("USDC");
   const [step, setStep] = useState<BuyStep>("amount");
 
@@ -87,9 +89,9 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
 
   useEffect(() => {
     let on = true;
-    if (brl <= 0) { setCryptoOut(null); return; }
+    if (brl <= 0) { setQ4p(null); return; }
     quote4p(brl)
-      .then((q) => on && setCryptoOut(q.cryptoOut))
+      .then((q) => { if (on) setQ4p(q); })
       .catch(() => { /* keep last */ });
     return () => { on = false; };
   }, [brl]);
@@ -138,6 +140,19 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
     }).catch(() => { /* */ });
   }
 
+  // Fee transparency: exact dollar rate (gross 4P), the Slippay fee applied, and
+  // the effective cost per dollar — so the user sees precisely what they pay for.
+  const grossOut = q4p?.grossOut ?? null;
+  const dollarRate = q4p?.dollarRate ?? null;
+  const marginBps = q4p?.marginBps ?? null;
+  const feeUsdc = grossOut != null && cryptoOut != null ? grossOut - cryptoOut : null;
+  const effRate = cryptoOut != null && cryptoOut > 0 ? brl / cryptoOut : null;
+  const marginPct = marginBps != null
+    ? (marginBps / 100).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + "%"
+    : null;
+  const brlFmt = (n: number, d = 2) => n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const usdFmt = (n: number, d = 2) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+
   return (
     <div className="space-y-6">
       {step === "amount" && (
@@ -179,18 +194,52 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             </div>
             <div className="my-5 h-px bg-[#0a0a0a]/10" />
             <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3 block">
-              Você recebe (aprox.)
+              Você recebe
             </label>
             <div className="flex items-baseline gap-2">
               <span className="text-xl text-[#0a0a0a]/45">$</span>
               <span className="text-4xl tabular-nums">
-                {cryptoOut != null
-                  ? cryptoOut.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                  : "—"}
+                {cryptoOut != null ? usdFmt(cryptoOut, 2) : "—"}
               </span>
               <span className="text-lg text-[#0a0a0a]/45">{asset}</span>
             </div>
-            <div className="mt-2 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
+
+            {/* Fee + exact-rate transparency */}
+            {grossOut != null && dollarRate != null && (
+              <div className="mt-4 space-y-1.5 text-[11px] text-[#0a0a0a]/60">
+                <div className="flex justify-between">
+                  <span>Você paga</span>
+                  <span className="tabular-nums">R$ {brlFmt(brl)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Cotação do dólar</span>
+                  <span className="tabular-nums">R$ {brlFmt(dollarRate, 4)} / USD</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Dólares (bruto)</span>
+                  <span className="tabular-nums">$ {usdFmt(grossOut, 4)}</span>
+                </div>
+                {feeUsdc != null && marginPct != null && (
+                  <div className="flex justify-between">
+                    <span>Taxa Slippay ({marginPct})</span>
+                    <span className="tabular-nums">− $ {usdFmt(feeUsdc, 4)}</span>
+                  </div>
+                )}
+                <div className="h-px bg-[#0a0a0a]/10 my-1.5" />
+                <div className="flex justify-between text-[#0a0a0a] font-medium">
+                  <span>Você recebe</span>
+                  <span className="tabular-nums">$ {cryptoOut != null ? usdFmt(cryptoOut, 2) : "—"} {asset}</span>
+                </div>
+                {effRate != null && (
+                  <div className="flex justify-between text-[#0a0a0a]/40">
+                    <span>Custo efetivo</span>
+                    <span className="tabular-nums">R$ {brlFmt(effRate, 4)} / USD</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-3 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
               {asset} na rede Base · valor final fixado no pagamento
             </div>
           </div>
