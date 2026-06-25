@@ -125,15 +125,18 @@ r.post("/quote", async (c) => {
     // rev-share — on a direct-to-user on-ramp the Pix lands at 4P, not Slippay.
     const bps = Number(Deno.env.get("FOURP_MARGIN_BPS"));
     const marginBps = Number.isFinite(bps) && bps >= 0 && bps <= 1000 ? bps : 280;
+    // Capture the gross (4P) price per asset before applying our margin, so the
+    // client can show the user the exact dollar rate AND the fee transparently.
     const map = q.quote ?? {};
+    const gross: Record<string, number> = {};
     for (const k of Object.keys(map)) {
-      const gross = map[k].price;
+      gross[k] = map[k].price;
       map[k] = {
         ...map[k],
-        price: Number((gross * (1 - marginBps / 10_000)).toFixed(8)),
+        price: Number((gross[k] * (1 - marginBps / 10_000)).toFixed(8)),
       };
     }
-    return c.json({ quote: q, marginBps });
+    return c.json({ quote: q, gross, marginBps });
   } catch (e) {
     return fail(c, e);
   }

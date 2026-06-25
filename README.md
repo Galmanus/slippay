@@ -115,7 +115,7 @@ below is dressed up as live when it isn't.
 | Checkout (atomic fee split) | testnet | `CBO2COBZUTHH4II4JCQRZVO4RKDUIUH4MXZTAWOYVUZIVYI47UIDQCWQ` — client flow now WYSIWYS-gated |
 | ZK proof-of-mandate + proof-of-KYC (Groth16) | **mainnet** | verifier `CBDS2YSL…` live, zero-PII (age + sanctions); circuits open at [slippay-zk](https://github.com/Galmanus/slippay-zk) |
 | Comex treasury — corporate non-custodial wallet (Privy EVM) + USDC send/receive, WYSIWYS-gated | **Base mainnet**, live | in production at `app.slippay.cc/comex` · 74 tests · adversarially reviewed |
-| Comex câmbio R$→USD buy via **4P** (licensed FX partner, settles USDC on Base) | **Base**, live | live & verified end-to-end: Pix on-ramp → USDC settled to the company wallet on Base. USD→R$ sell pending 4P off-ramp endpoint |
+| Comex câmbio R$→USD buy via **4P** (licensed FX partner, settles USDC on Base) | **Base**, live | **functional on-chain** — verified end-to-end: a real R$ Pix on-ramp settled USDC to the company wallet on Base, confirmed on-chain. Fees shown transparently (exact dollar rate + Slippay 2.8%). USD→R$ sell pending 4P off-ramp endpoint |
 | `@slippay/mcp` (agent MCP server) · `@slippay/attester` (integrity oracle) | npm | v0.2.0 · v0.1.0 |
 | AXL compiler (proof-carrying certs) | — | build/test only, no on-chain artifact |
 
