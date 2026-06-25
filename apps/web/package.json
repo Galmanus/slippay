@@ -39,6 +39,7 @@
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.26.0",
+    "viem": "^2.53.1",
     "whatamesh": "^0.2.0"
   },
   "devDependencies": {

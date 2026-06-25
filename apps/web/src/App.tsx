@@ -40,8 +40,8 @@ import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
 
 
-import ComexSolana from "./pages/ComexSolana.tsx";
-import { ComexSolanaProvider } from "./lib/comexSolana.tsx";
+import ComexBase from "./pages/ComexBase.tsx";
+import { ComexBaseProvider } from "./lib/comexBase.tsx";
 import BusinessLanding from "./pages/comex/BusinessLanding";
 export default function App() {
   return (
@@ -55,7 +55,7 @@ export default function App() {
       {import.meta.env.VITE_COMEX_ENABLED === "1" && (
         <Route path="/comex" element={
           import.meta.env.VITE_PRIVY_APP_ID
-            ? <ComexSolanaProvider><ComexSolana /></ComexSolanaProvider>
+            ? <ComexBaseProvider><ComexBase /></ComexBaseProvider>
             : <BusinessLanding />
         } />
       )}
