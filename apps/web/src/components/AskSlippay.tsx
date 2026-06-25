@@ -240,14 +240,14 @@ export function AskSlippay() {
           bottom: "6rem",
           right: "1.5rem",
           width: "400px",
-          height: "min(640px, 80vh)",
+          height: "min(600px, calc(100vh - 13rem))",
           border: `1px solid ${INK}1A`,
         }}
         className={`hidden md:flex fixed z-50 rounded-2xl shadow-2xl flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${open ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95 pointer-events-none"}`}
       >
         {/* Header — ink bar */}
         <div
-          className="flex items-center justify-between px-5 py-4 rounded-t-2xl shrink-0"
+          className="flex items-center justify-between px-5 py-4 shrink-0"
           style={{ background: INK }}
         >
           <div className="flex items-center gap-2">
