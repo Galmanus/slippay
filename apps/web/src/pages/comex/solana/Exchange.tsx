@@ -387,7 +387,9 @@ function SellPanel({ address, signTransaction }: {
 
     let ordData: { id: string; receiver: string; amount: string };
     try {
-      ordData = await createOfframp4p({ usdc: usdcNum, pixKey: pixKey.trim(), sender: address });
+      // Solana comex is reference-only (live comex runs on Base); email/doc are
+      // not collected here. Kept compiling against the current off-ramp signature.
+      ordData = await createOfframp4p({ usdc: usdcNum, pixKey: pixKey.trim(), sender: address, email: "", doc: "" });
     } catch (e) {
       setErr(e instanceof Ramp4pError ? e.message : "Endpoint de venda nao disponivel ainda.");
       setStep("form");

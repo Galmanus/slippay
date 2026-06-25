@@ -28,6 +28,7 @@ import {
   type Offramp4pQuote,
   type Quote4p,
 } from "../../../lib/ramp4p.ts";
+import { getCompanyDoc, setCompanyDoc, isValidDoc } from "../../../lib/comexProfile.ts";
 
 // ---------------------------------------------------------------------------
 // Shared
@@ -417,12 +418,17 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
 
 type SellStep = "form" | "confirming" | "sending" | "done" | "recovery";
 
-function SellPanel({ address, sendTransaction }: {
+function SellPanel({ address, email: initialEmail, sendTransaction }: {
   address: string;
+  email: string | null;
   sendTransaction: (tx: { to: `0x${string}`; data: `0x${string}`; value: bigint }) => Promise<{ hash: `0x${string}` }>;
 }) {
   const [usdc, setUsdc] = useState("");
   const [pixKey, setPixKey] = useState("");
+  // Company document: loaded once from storage; only prompted if not yet saved.
+  const [savedDoc, setSavedDoc] = useState("");
+  const [docInput, setDocInput] = useState("");
+  useEffect(() => { setSavedDoc(getCompanyDoc(address)); }, [address]);
   const [quote, setQuote] = useState<Offramp4pQuote | null>(null);
   const [quoteBusy, setQuoteBusy] = useState(false);
   const [quoteErr, setQuoteErr] = useState<string | null>(null);
@@ -518,6 +524,19 @@ function SellPanel({ address, sendTransaction }: {
       setErr("Venda em ativação (receiver não configurado).");
       return;
     }
+    // Company document: required once by 4P, then reused. Resolve + validate.
+    const doc = savedDoc || docInput.replace(/\D/g, "");
+    if (!isValidDoc(doc)) {
+      setErr("Informe o CNPJ da empresa (14 dígitos) ou CPF (11) — só nesta primeira venda.");
+      return;
+    }
+    const sellEmail = (initialEmail ?? "").trim();
+    if (!sellEmail) {
+      setErr("E-mail da conta indisponível — refaça o login.");
+      return;
+    }
+    if (!savedDoc) { setCompanyDoc(address, doc); setSavedDoc(doc); }
+
     setErr(null);
     setBusy(true);
     setStep("confirming");
@@ -547,7 +566,7 @@ function SellPanel({ address, sendTransaction }: {
     // Create off-ramp order with 4P
     let ordData: { id: string; receiver: string; amount: string };
     try {
-      ordData = await createOfframp4p({ usdc: usdcNum, pixKey: pixKey.trim(), sender: address });
+      ordData = await createOfframp4p({ usdc: usdcNum, pixKey: pixKey.trim(), sender: address, email: sellEmail, doc });
     } catch (e) {
       setErr(e instanceof Ramp4pError ? e.message : "Endpoint de venda nao disponivel ainda.");
       setStep("form");
@@ -702,6 +721,27 @@ function SellPanel({ address, sendTransaction }: {
               />
             </div>
 
+            {/* Company document — asked once, then reused on every sell */}
+            {!savedDoc && (
+              <div>
+                <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3 block">
+                  CNPJ da empresa <span className="text-[#0a0a0a]/40 normal-case tracking-normal">(só nesta primeira venda)</span>
+                </label>
+                <input
+                  type="text"
+                  value={docInput}
+                  onChange={(e) => setDocInput(e.target.value)}
+                  disabled={busy}
+                  inputMode="numeric"
+                  placeholder="CNPJ (14 dígitos) ou CPF (11)"
+                  className="w-full bg-transparent border border-[#0a0a0a]/20 p-4 text-sm disabled:opacity-60"
+                />
+                <div className="mt-2 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
+                  Exigido uma vez pela 4P (parceiro de câmbio licenciado) · guardado para as próximas
+                </div>
+              </div>
+            )}
+
             {err && (
               <div className="text-xs uppercase tracking-[0.14em] text-red-700 border-l-2 border-red-700 pl-3">
                 {err}
@@ -710,7 +750,7 @@ function SellPanel({ address, sendTransaction }: {
 
             <button
               onClick={doSell}
-              disabled={busy || !usdcValid || !pixKey.trim() || quoteBusy || quote?.brlOut == null}
+              disabled={busy || !usdcValid || !pixKey.trim() || quoteBusy || quote?.brlOut == null || (!savedDoc && !isValidDoc(docInput.replace(/\D/g, "")))}
               className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-40"
             >
               {step === "confirming" ? "Aguardando confirmacao..." : "Vender USDC"}
@@ -848,7 +888,7 @@ export default function BaseExchange() {
 
       {/* Sell */}
       {direction === "sell" && address && (
-        <SellPanel address={address} sendTransaction={sendTransaction} />
+        <SellPanel address={address} email={email} sendTransaction={sendTransaction} />
       )}
 
       {direction === "sell" && !address && (

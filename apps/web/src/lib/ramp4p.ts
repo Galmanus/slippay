@@ -148,11 +148,14 @@ export async function quoteOfframp4p(usdc: number): Promise<Offramp4pQuote> {
 }
 
 /** Create a USDC off-ramp order; BRL is delivered via Pix to `pixKey`.
+ *  4P requires `person_document` (CPF 11 / CNPJ 14 digits) + email on every sell.
  *  Returns the on-chain receiver address + amount to transfer, and an order id for polling. */
 export async function createOfframp4p(input: {
   usdc: number;
   pixKey: string;
   sender: string;
+  email: string;
+  doc: string; // digits only — 11 (CPF) or 14 (CNPJ)
 }): Promise<{ id: string; receiver: string; amount: string }> {
   const data = await post<{ id: string; receiver: string; amount: string }>(
     "/v1/4p/offramp",
@@ -160,6 +163,8 @@ export async function createOfframp4p(input: {
       amountUsdc: input.usdc,
       pixKey: input.pixKey,
       senderWallet: input.sender,
+      email: input.email,
+      ...(input.doc.length === 14 ? { cnpj: input.doc } : { cpf: input.doc }),
     },
   );
   return data;
