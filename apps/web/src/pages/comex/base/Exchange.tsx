@@ -61,7 +61,11 @@ const BUY_PRESETS = [100, 500, 1000, 5000];
 const onlyDigits = (s: string) => s.replace(/\D/g, "");
 
 function BuyPanel({ address, email: initialEmail }: { address: string; email: string | null }) {
-  const [brl, setBrl] = useState(1000);
+  // Free-entry amount: keep the raw string so the user can type/clear/decimals
+  // freely; derive the number for the quote and the charge. Starts empty so the
+  // field reads as "type your value", with the presets as optional shortcuts.
+  const [brlInput, setBrlInput] = useState("");
+  const brl = Number(brlInput.replace(",", ".")) || 0;
   const [cryptoOut, setCryptoOut] = useState<number | null>(null);
   const [asset, setAsset] = useState("USDC");
   const [step, setStep] = useState<BuyStep>("amount");
@@ -145,18 +149,23 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             <div className="flex items-baseline gap-2">
               <span className="text-xl text-[#0a0a0a]/55">R$</span>
               <input
-                type="number"
-                min={0}
-                value={brl}
-                onChange={(e) => setBrl(Math.max(0, Number(e.target.value)))}
-                className="w-full bg-transparent outline-none text-4xl tabular-nums"
+                type="text"
+                inputMode="decimal"
+                value={brlInput}
+                onChange={(e) => setBrlInput(e.target.value.replace(/[^\d.,]/g, ""))}
+                placeholder="0"
+                autoFocus
+                className="w-full bg-transparent outline-none text-4xl tabular-nums placeholder:text-[#0a0a0a]/25"
               />
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
+              <span className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/35 self-center mr-1">
+                atalhos
+              </span>
               {BUY_PRESETS.map((p) => (
                 <button
                   key={p}
-                  onClick={() => setBrl(p)}
+                  onClick={() => setBrlInput(String(p))}
                   className={[
                     "px-4 py-1.5 text-xs border transition-colors",
                     brl === p
