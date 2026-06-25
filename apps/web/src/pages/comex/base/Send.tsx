@@ -85,7 +85,7 @@ export default function BaseSend() {
 
   const destTrimmed = destination.trim();
   const destValid = destTrimmed.length > 0 && isAddress(destTrimmed);
-  const amtNum = Number(amount);
+  const amtNum = Number(amount.replace(",", "."));
   const amtValid = isFinite(amtNum) && amtNum > 0;
   const canSend = !!address && destValid && amtValid && !busy;
 
@@ -194,16 +194,19 @@ export default function BaseSend() {
           <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3 block">
             Valor (USD)
           </label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            disabled={busy}
-            placeholder="0.00"
-            min="0"
-            step="0.01"
-            className="w-full bg-transparent border border-[#0a0a0a]/20 p-4 text-4xl tabular-nums disabled:opacity-60"
-          />
+          <div className="flex items-baseline gap-2 border border-[#0a0a0a]/20 p-4">
+            <span className="text-xl text-[#0a0a0a]/45">$</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value.replace(/[^\d.,]/g, ""))}
+              disabled={busy}
+              placeholder="0.00"
+              className="w-full bg-transparent outline-none text-4xl tabular-nums disabled:opacity-60"
+            />
+            <span className="text-lg text-[#0a0a0a]/45">USDC</span>
+          </div>
         </div>
 
         {/* Send button */}
