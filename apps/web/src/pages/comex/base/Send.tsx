@@ -4,6 +4,8 @@ import { useComexBaseWallet } from "../../../lib/comexBase.tsx";
 import { authorizeBasePayment } from "../../../lib/baseAuthorize.ts";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
 import ConfirmTxModal from "../../../components/ConfirmTxModal.tsx";
+import { QrScanner } from "../../../components/QrScanner.tsx";
+import { parsePaymentQr } from "../../../lib/parsePaymentQr.ts";
 import type { TxSummary } from "../../../lib/txguard.ts";
 import type { DecodedTransfer } from "../../../lib/baseAuthorize.ts";
 
@@ -26,6 +28,22 @@ export default function BaseSend() {
   const [busy, setBusy] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+
+  // QR scan only PRE-FILLS the form; the WYSIWYS gate still shows the real
+  // destination + amount before any signature, so a hostile QR can't make the
+  // user sign blind.
+  function handleScan(text: string) {
+    setScanning(false);
+    const parsed = parsePaymentQr(text);
+    if (!parsed) {
+      setError("QR não reconhecido. Use um endereço Base (0x…) ou um QR de cobrança USDC.");
+      return;
+    }
+    setError(null);
+    setDestination(parsed.to);
+    if (parsed.amount) setAmount(parsed.amount);
+  }
 
   // ConfirmTxModal wiring
   const [modalSummary, setModalSummary] = useState<TxSummary | null>(null);
@@ -118,6 +136,10 @@ export default function BaseSend() {
 
   return (
     <>
+      {scanning && (
+        <QrScanner onScan={handleScan} onClose={() => setScanning(false)} />
+      )}
+
       {modalSummary && (
         <ConfirmTxModal
           summary={modalSummary}
@@ -134,9 +156,19 @@ export default function BaseSend() {
 
         {/* Destination */}
         <div className="mb-6">
-          <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3 block">
-            Destino
-          </label>
+          <div className="flex items-center justify-between mb-3">
+            <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
+              Destino
+            </label>
+            <button
+              type="button"
+              onClick={() => { setError(null); setScanning(true); }}
+              disabled={busy}
+              className="text-[10px] uppercase tracking-[0.18em] border border-[#0a0a0a]/25 px-3 py-1.5 hover:border-[#0a0a0a]/60 disabled:opacity-40"
+            >
+              Escanear QR
+            </button>
+          </div>
           <input
             type="text"
             value={destination}
