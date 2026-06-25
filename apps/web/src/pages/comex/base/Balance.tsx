@@ -136,8 +136,16 @@ export default function BaseBalance() {
             >
               {copied ? "Copiado" : "Copiar endereço"}
             </button>
-            <div className="mt-4 text-[10px] text-[#0a0a0a]/55 border-l-2 border-[#0a0a0a]/15 pl-3">
-              Envie dólares (USDC, rede Base) para este endereço
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45 border border-[#0a0a0a]/20 px-2 py-1">
+                Rede: Base
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
+                USDC by Circle
+              </span>
+            </div>
+            <div className="mt-3 text-[10px] text-[#0a0a0a]/70 border-l-2 border-[#0a0a0a] pl-3">
+              Aceita apenas USDC na rede Base. Enviar outra moeda ou outra rede resulta em perda permanente.
             </div>
           </div>
         </div>

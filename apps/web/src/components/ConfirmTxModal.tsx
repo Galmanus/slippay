@@ -58,9 +58,14 @@ export default function ConfirmTxModal({ summary, intent, onConfirm, onCancel }:
           <div className="font-mono text-xs break-all text-[#0a0a0a]/70">{summary.source}</div>
         </div>
 
-        {/* Warning */}
-        <div className="mt-6 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/50 border border-[#0a0a0a]/15 px-3 py-2">
-          Verifique os dados antes de confirmar. Esta ação não pode ser desfeita.
+        {/* Reassurance (control) + warning (consequence) */}
+        <div className="mt-6 space-y-2">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/50">
+            Assinado pela carteira da sua empresa · a Slippay não pode mover seus fundos.
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/70 border-l-2 border-[#0a0a0a] pl-3">
+            Confira o destino e o valor. Esta ação não pode ser desfeita.
+          </div>
         </div>
 
         {/* Actions */}
