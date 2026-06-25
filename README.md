@@ -4,6 +4,10 @@
 
 **Non-custodial dollar settlement — for people, for agents, for companies.**
 
+<img src="apps/web/public/wysiwys-liberty.jpg" alt="A blindfolded Statue of Liberty — the industry makes you sign blind" width="440" />
+
+*The industry makes you sign blind. SlipPay takes the blindfold off — **what you see is what you sign.***
+
 USDC payments where the user's own wallet signs funds *directly* to the recipient.
 SlipPay never holds funds and never has signing authority over them. The settlement
 core is one rail; three surfaces sit on top of it.
