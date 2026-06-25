@@ -8,7 +8,7 @@ USDC payments where the user's own wallet signs funds *directly* to the recipien
 SlipPay never holds funds and never has signing authority over them. The settlement
 core is one rail; three surfaces sit on top of it.
 
-`Stellar mainnet` · `Solana (migration)` · `non-custodial` · `Apache-2.0`
+`Stellar mainnet` · `Base · comex live` · `non-custodial` · `Apache-2.0`
 
 [Live](https://app.slippay.cc) · [Docs](./docs/README.md) · [Architecture](./docs/concepts/architecture.md) · [Security model](#security-model)
 
@@ -40,7 +40,7 @@ do, that is a bug worth an issue.
 |---|---|---|---|
 | **Dollar account** | a normal person | receive USDC by QR, verify a payment on-chain, pay with a passkey (Face/Touch ID) — no seed phrase in the user's hands | live on Stellar mainnet |
 | **Agent / builder** | autonomous agents | agent payments bounded by an on-chain spend policy, a fail-closed integrity attestation, and an offline-checkable proof of the spending bound | rail live (mainnet); attested gate on testnet |
-| **Comex treasury** | import/export companies | a corporate (non-biometric, multi-user) account that holds USD, converts R$↔USD through a licensed partner, sends/receives, and earns yield on idle dollars | built, gated; ships with the Solana cutover ([go-live checklist](./docs/comex-go-live-checklist.md)) |
+| **Comex treasury** | import/export companies | a corporate (non-biometric) account on Base that holds USD, sends/receives USDC, and converts R$↔USD through a licensed FX partner; yield on idle dollars is next | **live in production** on Base ([app.slippay.cc/comex](https://app.slippay.cc)) — wallet + send/receive live; R$↔USD via licensed partner **4P** in final activation; yield (DeFindex) is phase 2 ([go-live checklist](./docs/comex-go-live-checklist.md)) |
 
 The three surfaces never fork the money path: they all reduce to *build an unsigned
 transfer → the user verifies what they sign → the user signs → submit*. The same
@@ -73,6 +73,31 @@ written threat model and an adversarial review pass before it ships. See
 
 ---
 
+## Zero-knowledge proofs (Stellar mainnet)
+
+Compliance and spend-limits are enforced **cryptographically**, not by trusting a
+server. Two Groth16 circuits are deployed and verified on Stellar mainnet, both
+**zero-PII**:
+
+- **Proof-of-KYC** — a user proves they are over the age threshold **and** not on a
+  sanctions list while emitting **zero personal data**. No name, no birthdate, no
+  document ever leaves the client; the on-chain verifier learns only that a valid
+  proof exists. The database that would normally hold this PII never exists server-side.
+- **Proof-of-mandate** — an agent (or company) proves a payment satisfies its
+  authorized mandate without revealing the private mandate fields. The policy stays
+  secret; the verifier only learns *"within bound: true."*
+
+The Groth16 verifier is **live on mainnet** (`CBDS2YSL…`) and accepts both circuits.
+The circuits, proving keys, and full deployment are open in the dedicated public repo:
+**[github.com/Galmanus/slippay-zk](https://github.com/Galmanus/slippay-zk)**. Conceptual
+write-up: [`docs/concepts/proof-bounded-settlement.md`](./docs/concepts/proof-bounded-settlement.md).
+
+This is what lets "non-custodial + compliant" coexist: the secrets a regulator
+cares about are proven in zero knowledge, and the secrets an attacker would want
+(the KYC store, the spend policy) are never collected in the first place.
+
+---
+
 ## Status (verified on chain)
 
 Mainnet is Stellar `PUBLIC`. The testnet/mainnet seam is stated explicitly — nothing
@@ -84,8 +109,9 @@ below is dressed up as live when it isn't.
 | Subscription v0.4 (autocharge + attestation gate + 2.97% on-chain platform fee) — the live rail | **mainnet** | `CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U` (wasm `4312612c…`) |
 | Smart wallet (WebAuthn/passkey custom account) | **mainnet** | wasm `8e9b6760…`; per-user instances deployed on demand by the gas-sponsor relayer |
 | Checkout (atomic fee split) | testnet | `CBO2COBZUTHH4II4JCQRZVO4RKDUIUH4MXZTAWOYVUZIVYI47UIDQCWQ` — client flow now WYSIWYS-gated |
-| ZK proof-of-mandate + proof-of-KYC (Groth16) | **mainnet** | verified, zero-PII (age + sanctions); generic verifier live |
-| Comex treasury (Privy non-custodial wallet + 4P câmbio + DeFindex yield) | Solana, gated | built + adversarially reviewed; awaits partner keys + Solana cutover |
+| ZK proof-of-mandate + proof-of-KYC (Groth16) | **mainnet** | verifier `CBDS2YSL…` live, zero-PII (age + sanctions); circuits open at [slippay-zk](https://github.com/Galmanus/slippay-zk) |
+| Comex treasury — corporate non-custodial wallet (Privy EVM) + USDC send/receive, WYSIWYS-gated | **Base mainnet**, live | in production at `app.slippay.cc/comex` · 74 tests · adversarially reviewed |
+| Comex câmbio R$↔USD via **4P** (licensed FX partner, settles USDC on Base) | Base | integrated; partner API key in activation (not yet live) |
 | `@slippay/mcp` (agent MCP server) · `@slippay/attester` (integrity oracle) | npm | v0.2.0 · v0.1.0 |
 | AXL compiler (proof-carrying certs) | — | build/test only, no on-chain artifact |
 
@@ -124,20 +150,21 @@ Full picture: [`docs/concepts/architecture.md`](./docs/concepts/architecture.md)
 
 ## Multi-chain
 
-Stellar is the live settlement chain. Solana is being brought up in parallel,
-non-destructively, behind a chain-agnostic adapter so the live product is never at
-risk during the migration.
+Stellar is the live settlement chain for the consumer + agent rails and all the ZK
+work. Base was added for the comex treasury behind a chain-agnostic adapter, so the
+live Stellar product is never at risk and the same non-custodial core serves both.
 
 - **`ChainAdapter`** (`apps/web/src/lib/chain`) — pages talk to one interface
   (`payOneTime`, `approveRecurring`, address checks); the active chain is chosen by
-  `VITE_CHAIN`. Stellar and Solana adapters implement it side by side.
-- **Comex on Solana** — the corporate treasury surface targets Solana because the
-  licensed câmbio partner (4P) settles there. Wallet = Privy embedded Solana wallet
-  (email + MFA, non-custodial, non-biometric); yield = DeFindex; the WYSIWYS gate is
-  ported to Solana (`apps/web/src/lib/solanaAuthorize.ts`).
+  `VITE_CHAIN`. Stellar and Base adapters implement it side by side.
+- **Comex on Base** — the corporate treasury surface runs on Base because the
+  licensed FX partner (4P) settles USDC there, against Circle's native USDC
+  (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`) — **no contract to deploy**. Wallet =
+  Privy embedded EVM wallet (email + MFA, non-custodial, non-biometric); the WYSIWYS
+  gate is ported to Base with viem (`apps/web/src/lib/baseAuthorize.ts`).
 - **CCTP** — Circle's Cross-Chain Transfer Protocol is live on Stellar mainnet,
-  giving native USDC movement between Stellar and Solana without wrapped-token bridges
-  when cross-chain settlement is needed.
+  giving native USDC movement between Stellar and other chains without wrapped-token
+  bridges when cross-chain settlement is needed.
 
 ---
 
@@ -154,8 +181,9 @@ chokepoint for every signature:
 - `apps/web/src/lib/txguard.ts` (Stellar): decode an XDR, re-derive its hash
   locally, assert a single payment matches `{destination, amount, asset}` (rejects
   NaN, multi-payment smuggling, wrong asset, receiver substitution, amount drift).
-- `apps/web/src/lib/authorizeTx.ts` / `solanaAuthorize.ts`: the orchestrator the UI
-  must call for any signature. Signing is unreachable without an explicit confirm.
+- `apps/web/src/lib/authorizeTx.ts` (Stellar) / `baseAuthorize.ts` (Base, viem ERC-20
+  decode + assert): the orchestrator the UI must call for any signature. Signing is
+  unreachable without an explicit confirm.
 
 **Non-custodial guarantees, enforced:**
 - the client never holds a server-side signing/authorization key (CI-checkable: no
@@ -167,7 +195,7 @@ chokepoint for every signature:
 - a written **threat model** precedes each money path (STRIDE pre-mortem, ranked,
   with concrete mitigations) — see [`docs/superpowers/specs`](./docs/superpowers/specs) and the comex design doc;
 - an **adversarial review** pass attacks each path before it ships; findings are
-  fixed and re-verified (the live checkout's blind-signing gap and the Solana
+  fixed and re-verified (the live checkout's blind-signing gap and the comex
   câmbio's receiver-pinning gap were both caught and closed this way);
 - **edge hardening**: HTTPS-only with HSTS, `X-Frame-Options`, `nosniff`,
   `Referrer-Policy`, `Permissions-Policy`; zero external render-blocking CDN
@@ -241,7 +269,8 @@ Start at [`docs/README.md`](./docs/README.md). Highlights:
 - **Contracts** — [overview](./docs/contracts/README.md) · [subscription](./docs/contracts/subscription.md) · [smart wallet](./docs/contracts/smart-wallet.md) · [checkout](./docs/contracts/checkout.md)
 - **AXL** — [language](./docs/axl/README.md) · [compiler](./docs/axl/compiler.md) · [proofs and limits](./docs/axl/proofs-and-limits.md)
 - **Packages** — [`@slippay/mcp`](./docs/packages/slippay-mcp.md) · [`@slippay/attester`](./docs/packages/slippay-attester.md)
-- **Comex** — [go-live checklist](./docs/comex-go-live-checklist.md) · [4P Solana ramp](./docs/4P_SOLANA_RAMP.md)
+- **Zero-knowledge** — [proof-bounded settlement](./docs/concepts/proof-bounded-settlement.md) · circuits + verifier: [github.com/Galmanus/slippay-zk](https://github.com/Galmanus/slippay-zk)
+- **Comex** — [go-live checklist (Base)](./docs/comex-go-live-checklist.md)
 - **Security** — [key custody](./docs/security/key-custody.md) · audits [001](./docs/security/audit-001.md)–[006](./docs/security/audit-006.md)
 - **API** — [authentication](./docs/api-reference/authentication.md) · [orders](./docs/api-reference/orders.md) · [subscriptions](./docs/api-reference/subscriptions.md) · [merchants](./docs/api-reference/merchants.md) · [webhooks](./docs/api-reference/webhooks.md) · [errors](./docs/api-reference/errors.md) · [OpenAPI](./docs/openapi.yaml)
 - **Ops** — [deploy](./docs/ops/deploy.md)
