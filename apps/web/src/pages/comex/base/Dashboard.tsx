@@ -8,7 +8,7 @@ type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 const TABS: Tab[] = ["Saldo", "Enviar", "Câmbio", "Render"];
 
 export default function ComexBaseDashboard() {
-  const { email, address } = useComexBaseWallet();
+  const { email, address, logout } = useComexBaseWallet();
   const [activeTab, setActiveTab] = useState<Tab>("Saldo");
 
   return (
@@ -27,6 +27,12 @@ export default function ComexBaseDashboard() {
               {address.slice(0, 8)}...{address.slice(-4)}
             </div>
           )}
+          <button
+            onClick={logout}
+            className="ml-auto text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45 hover:text-[#0a0a0a] border border-[#0a0a0a]/20 hover:border-[#0a0a0a]/50 px-3 py-1.5 transition-colors"
+          >
+            Sair
+          </button>
         </div>
       </div>
 
