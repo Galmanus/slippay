@@ -12,7 +12,7 @@ USDC payments where the user's own wallet signs funds *directly* to the recipien
 SlipPay never holds funds and never has signing authority over them. The settlement
 core is one rail; three surfaces sit on top of it.
 
-`Stellar mainnet` · `Base · comex live` · `non-custodial` · `Apache-2.0`
+`Stellar mainnet` · `Base · comex functional on-chain` · `non-custodial` · `Apache-2.0`
 
 [Live](https://app.slippay.cc) · [Docs](./docs/README.md) · [Architecture](./docs/concepts/architecture.md) · [Security model](#security-model)
 
@@ -45,6 +45,12 @@ do, that is a bug worth an issue.
 | **Dollar account** | a normal person | receive USDC by QR, verify a payment on-chain, pay with a passkey (Face/Touch ID) — no seed phrase in the user's hands | live on Stellar mainnet |
 | **Agent / builder** | autonomous agents | agent payments bounded by an on-chain spend policy, a fail-closed integrity attestation, and an offline-checkable proof of the spending bound | rail live (mainnet); attested gate on testnet |
 | **Comex treasury** | import/export companies | a corporate (non-biometric) account on Base that holds USD, sends/receives USDC, and converts R$↔USD through a licensed FX partner; yield on idle dollars is next | **live in production** on Base ([app.slippay.cc/comex](https://app.slippay.cc)) — wallet + send/receive USDC live; **R$→USD buy live via licensed partner 4P** (Pix → USDC settled on Base, verified end-to-end); USD→R$ sell + yield (DeFindex) are phase 2 ([go-live checklist](./docs/comex-go-live-checklist.md)) |
+
+> **The comex treasury is functional on-chain.** On 25 Jun 2026 a real R$ Pix on-ramp
+> settled USDC into a company wallet on Base, confirmed on-chain. The corporate
+> non-custodial wallet, USDC send/receive, and R$→USD buy (via licensed FX partner
+> **4P**) all run in production at [app.slippay.cc/comex](https://app.slippay.cc), with
+> the exact dollar rate and fee shown to the user.
 
 The three surfaces never fork the money path: they all reduce to *build an unsigned
 transfer → the user verifies what they sign → the user signs → submit*. The same
