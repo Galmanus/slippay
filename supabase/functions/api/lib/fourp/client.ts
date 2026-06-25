@@ -142,6 +142,15 @@ export class FourPClient {
     });
   }
 
+  /** Off-ramp quote: how many BRL for `amountUsdc` of the configured asset. */
+  quoteOfframp(amountUsdc: string): Promise<QuoteData> {
+    return this.#req<QuoteData>("POST", "/v1/transaction/price_conversion", {
+      amount: amountUsdc,
+      currency_from_symbol: this.asset,
+      convert: "BRL",
+    });
+  }
+
   /** On-ramp: create a Pix charge that settles crypto to `receiverWallet`. */
   createOnramp(input: {
     cpf?: string;

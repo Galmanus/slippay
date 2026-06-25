@@ -209,4 +209,102 @@ r.get("/onramp/:id", async (c) => {
   }
 });
 
+// ── off-ramp (USDC -> R$ via Pix) ─────────────────────────────────────────────
+// Sell flow: the user signs a USDC transfer to 4P's receiver wallet (returned by
+// createOfframp), and 4P pays out R$ to the destination Pix key. The frontend
+// pins the receiver (VITE_4P_OFFRAMP_RECEIVER) and asserts it before signing.
+r.use("/offramp", originGate, rateLimit({ capacity: 10, refillPerSec: 10 / 60, scope: "4p_offramp" }));
+r.use("/offramp/*", originGate, rateLimit({ capacity: 30, refillPerSec: 30 / 60, scope: "4p_offramp_status" }));
+
+const OfframpQuoteSchema = z.object({ amountUsdc: z.number().positive() });
+
+r.post("/offramp/quote", async (c) => {
+  const cl = client();
+  if (!cl) return c.json({ error: "ramp_disabled" }, 503);
+  let input: z.infer<typeof OfframpQuoteSchema>;
+  try {
+    input = OfframpQuoteSchema.parse(await c.req.json());
+  } catch (e) {
+    return c.json({ error: "validation_error", issues: (e as { issues?: unknown }).issues }, 400);
+  }
+  try {
+    const q = await cl.quoteOfframp(String(input.amountUsdc));
+    const bps = Number(Deno.env.get("FOURP_MARGIN_BPS"));
+    const marginBps = Number.isFinite(bps) && bps >= 0 && bps <= 1000 ? bps : 280;
+    const entry = q.quote ? Object.values(q.quote)[0] : undefined;
+    const brlGross = entry?.price;
+    const brlOut = typeof brlGross === "number"
+      ? Number((brlGross * (1 - marginBps / 10_000)).toFixed(2))
+      : null;
+    return c.json({ brlOut, receiver: Deno.env.get("FOURP_OFFRAMP_RECEIVER")?.trim() || null, asset: cl.asset, marginBps });
+  } catch (e) {
+    return fail(c, e);
+  }
+});
+
+const OfframpSchema = z.object({
+  amountUsdc: z.number().min(0.01),
+  pixKey: z.string().min(1),
+  senderWallet: z.string().min(1),
+  email: z.string().email(),
+  cpf: z.string().optional(),
+  cnpj: z.string().optional(),
+  customId: z.string().min(1).optional(),
+});
+
+r.post("/offramp", async (c) => {
+  const cl = client();
+  if (!cl) return c.json({ error: "ramp_disabled" }, 503);
+  let input: z.infer<typeof OfframpSchema>;
+  try {
+    input = OfframpSchema.parse(await c.req.json());
+  } catch (e) {
+    return c.json({ error: "validation_error", issues: (e as { issues?: unknown }).issues }, 400);
+  }
+  if (!input.cpf && !input.cnpj) {
+    return c.json({ error: "validation_error", message: "cpf or cnpj required" }, 400);
+  }
+  const customId = input.customId ?? `slp-off-${crypto.randomUUID()}`;
+  try {
+    const order = await cl.createOfframp({
+      personDocument: (input.cnpj ?? input.cpf) as string,
+      email: input.email,
+      amountCrypto: input.amountUsdc,
+      senderWallet: input.senderWallet,
+      destinationPixKey: input.pixKey,
+      customId,
+      notificationUrl: `${webhookBase()}/v1/4p/webhook?cid=${encodeURIComponent(customId)}`,
+    });
+    // Security: if a receiver is pinned server-side, reject a mismatch before the
+    // client is ever asked to sign (defense-in-depth alongside the client pin).
+    const pinned = Deno.env.get("FOURP_OFFRAMP_RECEIVER")?.trim();
+    if (pinned && order.receiver_wallet && order.receiver_wallet.toLowerCase() !== pinned.toLowerCase()) {
+      return c.json({ error: "receiver_mismatch", message: "4P receiver did not match the pinned address" }, 502);
+    }
+    await saveRampTx({
+      gatewayId: customId,
+      provider: "4p",
+      transactionId: order.txid,
+      transactionType: "CRYPTO_PIX",
+      transactionStatus: "pending",
+      reaisAmount: order.amount_brl ? Number(order.amount_brl) : undefined,
+      raw: order,
+    });
+    return c.json({ id: customId, receiver: order.receiver_wallet, amount: String(order.amount_crypto) }, 201);
+  } catch (e) {
+    return fail(c, e);
+  }
+});
+
+r.get("/offramp/:id", async (c) => {
+  if (!client()) return c.json({ error: "ramp_disabled" }, 503);
+  try {
+    const rec = await getRampTx(c.req.param("id"));
+    if (!rec) return c.json({ error: "not_found" }, 404);
+    return c.json({ transactionStatus: rec.transactionStatus });
+  } catch (e) {
+    return fail(c, e);
+  }
+});
+
 export default r;
