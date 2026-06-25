@@ -237,10 +237,10 @@ export function AskSlippay() {
         style={{
           background: BONE,
           color: INK,
-          bottom: "6rem",
+          bottom: "5.5rem",
           right: "1.5rem",
           width: "400px",
-          height: "min(600px, calc(100vh - 13rem))",
+          height: "min(580px, calc(100vh - 16rem))",
           border: `1px solid ${INK}1A`,
         }}
         className={`hidden md:flex fixed z-50 rounded-2xl shadow-2xl flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${open ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95 pointer-events-none"}`}
