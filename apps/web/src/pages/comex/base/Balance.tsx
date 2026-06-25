@@ -14,7 +14,9 @@ const ERC20_BALANCE_OF_ABI = [
   },
 ] as const;
 
-export default function BaseBalance() {
+type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
+
+export default function BaseBalance({ onNavigate }: { onNavigate?: (tab: Tab) => void }) {
   const { address } = useComexBaseWallet();
   const [balance, setBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -101,15 +103,31 @@ export default function BaseBalance() {
           </div>
         )}
         {!loading && !error && balance !== null && Number(balance) === 0 && (
-          <div className="mt-4 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/45 border-l-2 border-[#0a0a0a]/15 pl-3">
-            Saldo zero — envie USDC para o endereço abaixo para começar.
+          <div className="mt-6 space-y-3">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
+              Comece por aqui
+            </div>
+            <button
+              onClick={() => onNavigate?.("Câmbio")}
+              className="w-full text-left border border-[#0a0a0a]/20 hover:border-[#0a0a0a]/60 p-5 transition-colors"
+            >
+              <div className="text-sm font-medium">001. Comprar dólares com Pix</div>
+              <div className="text-[11px] text-[#0a0a0a]/55 mt-1">pague em reais, receba USDC na sua conta</div>
+            </button>
+            <a
+              href="#receber"
+              className="block border border-[#0a0a0a]/20 hover:border-[#0a0a0a]/60 p-5 transition-colors"
+            >
+              <div className="text-sm font-medium">002. Receber de outra carteira</div>
+              <div className="text-[11px] text-[#0a0a0a]/55 mt-1">use o endereço ou o QR abaixo (USDC · rede Base)</div>
+            </a>
           </div>
         )}
       </div>
 
       {/* Receive section */}
       {address && (
-        <div>
+        <div id="receber" className="scroll-mt-24">
           <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-4 block">
             Receber
           </div>
