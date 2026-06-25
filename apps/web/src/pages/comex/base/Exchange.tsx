@@ -69,6 +69,8 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
   const brl = Number(brlInput.replace(",", ".")) || 0;
   const [q4p, setQ4p] = useState<Quote4p | null>(null);
   const cryptoOut = q4p?.cryptoOut ?? null;
+  const [quotedAt, setQuotedAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const [asset, setAsset] = useState("USDC");
   const [step, setStep] = useState<BuyStep>("amount");
 
@@ -87,14 +89,30 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
     });
   }, []);
 
+  // Live quote: the dollar rate moves, so re-fetch on amount change AND on a
+  // 20s timer while the user is on the amount screen. The binding amount is only
+  // locked when the Pix charge is created ("valor final fixado no pagamento").
   useEffect(() => {
+    if (step !== "amount" || brl <= 0) {
+      if (brl <= 0) setQ4p(null);
+      return;
+    }
     let on = true;
-    if (brl <= 0) { setQ4p(null); return; }
-    quote4p(brl)
-      .then((q) => { if (on) setQ4p(q); })
-      .catch(() => { /* keep last */ });
-    return () => { on = false; };
-  }, [brl]);
+    const fetchQuote = () =>
+      quote4p(brl)
+        .then((q) => { if (on) { setQ4p(q); setQuotedAt(Date.now()); } })
+        .catch(() => { /* keep last */ });
+    fetchQuote();
+    const iv = setInterval(fetchQuote, 20_000);
+    return () => { on = false; clearInterval(iv); };
+  }, [brl, step]);
+
+  // 1s ticker so the "atualizada há Xs" label counts up between refreshes.
+  useEffect(() => {
+    if (step !== "amount") return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [step]);
 
   // Poll until settled
   useEffect(() => {
@@ -152,6 +170,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
     : null;
   const brlFmt = (n: number, d = 2) => n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
   const usdFmt = (n: number, d = 2) => n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const secsAgo = quotedAt != null ? Math.max(0, Math.floor((now - quotedAt) / 1000)) : null;
 
   return (
     <div className="space-y-6">
@@ -207,6 +226,15 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             {/* Fee + exact-rate transparency */}
             {grossOut != null && dollarRate != null && (
               <div className="mt-4 space-y-1.5 text-[11px] text-[#0a0a0a]/60">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/45 pb-1">
+                  <span className="inline-block h-1.5 w-1.5 bg-[#FDDA24] animate-pulse" />
+                  Cotação ao vivo
+                  {secsAgo != null && (
+                    <span className="text-[#0a0a0a]/35 normal-case tracking-normal">
+                      · atualizada há {secsAgo}s
+                    </span>
+                  )}
+                </div>
                 <div className="flex justify-between">
                   <span>Você paga</span>
                   <span className="tabular-nums">R$ {brlFmt(brl)}</span>
