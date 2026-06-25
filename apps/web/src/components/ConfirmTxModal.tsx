@@ -12,12 +12,12 @@ export default function ConfirmTxModal({ summary, intent, onConfirm, onCancel }:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a0a]/60"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#0a0a0a]/60"
       role="dialog"
       aria-modal="true"
       aria-label="Confirmar transação"
     >
-      <div className="bg-[#f1eee7] text-[#0a0a0a] w-full max-w-md mx-4 p-8 shadow-2xl">
+      <div className="bg-[#f1eee7] text-[#0a0a0a] w-full max-w-md sm:mx-4 p-6 sm:p-8 shadow-2xl max-h-[90dvh] overflow-y-auto">
         {/* Header */}
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-6">
           <span className="inline-block w-2 h-2 bg-[#0a0a0a]/70 mr-2 align-middle" />
@@ -88,14 +88,32 @@ export default function ConfirmTxModal({ summary, intent, onConfirm, onCancel }:
   );
 }
 
+function ChunkedAddress({ value }: { value?: string }) {
+  if (!value) return <div className="font-mono text-sm">—</div>;
+  const groups = value.match(/.{1,4}/g) ?? [value];
+  const head = value.slice(0, 6);
+  const tail = value.slice(-6);
+  return (
+    <div className="space-y-1.5">
+      <div className="font-mono text-xs break-all leading-relaxed text-[#0a0a0a]/70 tracking-wide">
+        {groups.join(" ")}
+      </div>
+      <div className="font-mono text-base">
+        <span className="font-bold">{head}</span>
+        <span className="text-[#0a0a0a]/35">…</span>
+        <span className="font-bold">{tail}</span>
+        <span className="ml-2 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">confira início e fim</span>
+      </div>
+    </div>
+  );
+}
+
 function PaymentRow({ op }: { op: OpSummary }) {
   return (
     <div className="space-y-2">
       <div>
         <Label>Destino</Label>
-        <div className="font-mono text-sm break-all">
-          {op.destination ?? "—"}
-        </div>
+        <ChunkedAddress value={op.destination} />
       </div>
       <div className="flex gap-8">
         <div>
