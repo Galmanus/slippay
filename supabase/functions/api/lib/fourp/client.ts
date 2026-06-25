@@ -29,11 +29,16 @@ export interface FourPConfig {
   asset?: string;
 }
 
-/** Envelope every 4P endpoint returns. */
+/** Envelope every 4P endpoint returns. 4P answers HTTP 200 even on auth/
+ * validation failures and puts the REAL status in `http_code`; errors carry
+ * `details.message`, successes carry the payload under `info.data` (older) or
+ * `details.data`. Parse all of these so the real cause surfaces. */
 interface FourPEnvelope<T> {
   http_code: number;
   success: boolean;
   info?: { result?: string; message?: string; data?: T };
+  details?: { result?: string; message?: string; data?: T };
+  data?: T;
   message?: string;
 }
 
@@ -117,11 +122,15 @@ export class FourPClient {
     } catch {
       throw new FourPError(res.status, `4P non-json response (${res.status})`);
     }
-    if (!res.ok || parsed.success === false) {
-      const msg = parsed.info?.message ?? parsed.message ?? `4P error ${res.status}`;
-      throw new FourPError(res.status || 502, msg);
+    // 4P returns HTTP 200 even on failure; the real status is in `http_code`.
+    const effectiveStatus = parsed.http_code ?? res.status;
+    const failed = !res.ok || parsed.success === false || effectiveStatus >= 400;
+    if (failed) {
+      const msg = parsed.details?.message ?? parsed.info?.message ?? parsed.message ??
+        `4P error ${effectiveStatus}`;
+      throw new FourPError(effectiveStatus || 502, msg);
     }
-    return parsed.info?.data as T;
+    return (parsed.info?.data ?? parsed.details?.data ?? parsed.data) as T;
   }
 
   /** BRL -> crypto quote. Returns the unit price of `convert` per BRL block. */

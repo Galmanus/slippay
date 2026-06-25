@@ -42,10 +42,10 @@ const QUICK_PROMPTS: Array<{ tag: string; prompt: string }> = [
   { tag: "a taxa",     prompt: "Qual é a taxa? Tem pegadinha?" },
 ];
 
-// bluewave design tokens (matching bluewaveai.online)
-const BONE = "#EFE9DD";
-const INK  = "#1A1A17";
-const KLEIN = "#FDDA24";
+// design tokens — on-brand slippay palette
+const BONE = "#f1eee7";
+const INK  = "#0a0a0a";
+const YELLOW = "#FDDA24";
 
 export function AskSlippay() {
   const [open, setOpen] = useState(false);
@@ -180,234 +180,464 @@ export function AskSlippay() {
 
   return (
     <>
-      {/* Floating launcher — bluewave-style chip with safe-area inset for iOS */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            background: INK,
-            color: BONE,
-            bottom: "max(1.25rem, env(safe-area-inset-bottom))",
-            right:  "max(1rem, env(safe-area-inset-right))",
-          }}
-          className="fixed z-50 rounded-full px-4 py-3 flex items-center gap-3 hover:opacity-95 transition-opacity shadow-[0_4px_20px_rgba(26,26,23,0.25)] active:scale-95"
-          aria-label="Ask Slippay"
+      {/* Floating launcher button — bone pill, fixed bottom-right, visible always */}
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Pergunte à IA Slippay"
+        style={{
+          background: BONE,
+          color: INK,
+          border: `1.5px solid ${INK}`,
+          bottom: "max(1.5rem, env(safe-area-inset-bottom, 1.5rem))",
+          right: "max(1.5rem, env(safe-area-inset-right, 1.5rem))",
+          fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+          boxShadow: "0 4px 24px rgba(10,10,10,0.18)",
+          display: open ? "none" : undefined,
+        }}
+        className="fixed z-50 rounded-full px-4 py-3 md:px-5 md:py-3.5 flex items-center gap-2 md:gap-3 transition-all duration-200 active:scale-95 group"
+      >
+        {/* Chat bubble icon */}
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+          <path d="M8 1.5C4.41 1.5 1.5 4.19 1.5 7.5c0 1.25.38 2.42 1.04 3.39L1.5 14.5l3.71-1.01A6.45 6.45 0 0 0 8 13.5c3.59 0 6.5-2.69 6.5-6S11.59 1.5 8 1.5Z" stroke={INK} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="5.5" cy="7.5" r="0.75" fill={INK}/>
+          <circle cx="8" cy="7.5" r="0.75" fill={INK}/>
+          <circle cx="10.5" cy="7.5" r="0.75" fill={INK}/>
+        </svg>
+        <span className="text-[12px] md:text-[13px] font-semibold tracking-tight">
+          Pergunte à IA
+        </span>
+        {/* ⌘K badge — desktop only, on hover */}
+        <span
+          className="hidden md:inline-flex items-center text-[10px] tracking-widest opacity-0 group-hover:opacity-40 transition-opacity duration-200 border border-current/20 rounded px-1.5 py-0.5 ml-1"
+          style={{ fontFamily: "'Space Grotesk', monospace" }}
         >
-          <span style={{ background: KLEIN }} className="inline-block w-1.5 h-1.5" />
-          <span className="text-[10px] uppercase tracking-[0.28em]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            Ask
-          </span>
-          <span className="text-[10px] tracking-[0.18em] hidden md:inline opacity-40 border-l border-current/15 pl-3" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            ⌘K
-          </span>
-        </button>
-      )}
+          ⌘K
+        </span>
+      </button>
 
-      {/* Backdrop */}
+      {/* Mobile backdrop */}
       <div
         onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-        style={{ background: `${INK}99`, backdropFilter: "blur(8px)" }}
+        className={`md:hidden fixed inset-0 z-40 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        style={{ background: `${INK}80`, backdropFilter: "blur(4px)" }}
       />
 
-      {/* Side panel — slides in from right */}
+      {/* Desktop backdrop */}
+      <div
+        onClick={() => setOpen(false)}
+        className={`hidden md:block fixed inset-0 z-40 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        style={{ background: `${INK}40` }}
+      />
+
+      {/* === DESKTOP PANEL (md+): bottom-right corner popup === */}
       <aside
-        style={{ background: BONE, color: INK }}
-        className={`fixed top-0 right-0 bottom-0 z-50 w-full md:w-[560px] md:rounded-l-2xl md:overflow-hidden flex flex-col transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Slippay AI"
+        style={{
+          background: BONE,
+          color: INK,
+          bottom: "5rem",
+          right: "1.5rem",
+          width: "360px",
+          height: "min(480px, calc(100vh - 20rem))",
+          border: `1px solid ${INK}1A`,
+        }}
+        className={`hidden md:flex fixed z-50 rounded-2xl shadow-2xl flex-col overflow-hidden transition-all duration-300 origin-bottom-right ${open ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-95 pointer-events-none"}`}
       >
-        {/* INK header bar */}
-        <div style={{ background: INK, color: BONE }} className="px-7 pt-7 pb-6 flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] opacity-60" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-              <span>slippay</span>
-              <span className="opacity-40">·</span>
-              <span>resposta na hora</span>
-            </div>
-            <h2 className="mt-3 text-[28px] md:text-[34px] leading-none tracking-[-0.02em] font-medium" style={{ fontFamily: "'DM Sans', 'Inter', sans-serif" }}>
-              Fala com o SlipPay
-            </h2>
-            <div className="mt-2 text-[11px] tracking-tight opacity-55 max-w-[42ch]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Te mostro em segundos quanto você economiza e como começar. Pode perguntar em português normal.
-            </div>
+        {/* Header — ink bar */}
+        <div
+          className="flex items-center justify-between px-5 py-4 shrink-0"
+          style={{ background: INK }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: YELLOW }} />
+            <span
+              className="text-[15px] font-semibold tracking-tight text-white"
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+            >
+              Slippay AI
+            </span>
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="text-2xl leading-none opacity-50 hover:opacity-100 transition-opacity"
-            aria-label="Close"
+            aria-label="Fechar chat"
+            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-white/60 hover:text-white text-lg leading-none"
           >
             ×
           </button>
         </div>
 
-        {/* Body */}
-        <div ref={bodyRef} className="flex-1 overflow-y-auto">
+        {/* Message area */}
+        <div ref={bodyRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+          {/* Empty state */}
           {turns.length === 0 && (
-            <div className="px-7 py-8 space-y-8">
-              <div className="space-y-1">
-                <div className="text-[9px] uppercase tracking-[0.30em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  // 001 · suggested
-                </div>
-              </div>
-              <div className="-mx-7">
-                {QUICK_PROMPTS.map(({ tag, prompt }, i) => (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-6 gap-5">
+              <p
+                className="text-[14px] leading-relaxed"
+                style={{ color: `${INK}99`, fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+              >
+                Sou a IA da Slippay — pergunta o que quiser sobre receber dólar, taxas, como começar.
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {QUICK_PROMPTS.map(({ tag, prompt }) => (
                   <button
                     key={prompt}
                     onClick={() => submit(prompt)}
-                    className={`w-full px-7 py-4 text-left hover:bg-black/[0.04] transition-colors group ${i !== 0 ? "border-t" : ""}`}
-                    style={{ borderColor: `${INK}1A` }}
+                    className="px-3 py-1.5 rounded-full text-[11px] font-medium transition-colors duration-150 hover:text-[#0a0a0a]"
+                    style={{
+                      border: `1px solid ${INK}30`,
+                      background: BONE,
+                      color: INK,
+                      fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = YELLOW; e.currentTarget.style.borderColor = YELLOW; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = BONE; e.currentTarget.style.borderColor = `${INK}30`; }}
                   >
-                    <div className="flex items-baseline gap-3 mb-1.5">
-                      <span style={{ background: KLEIN }} className="inline-block w-1 h-1 translate-y-[-2px]" />
-                      <span className="text-[9px] uppercase tracking-[0.26em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        {tag}
-                      </span>
-                    </div>
-                    <div className="text-[14px] leading-[1.45] tracking-tight pl-4 group-hover:opacity-100" style={{ fontFamily: "'Inter', sans-serif" }}>
-                      {prompt}
-                    </div>
+                    {tag}
                   </button>
                 ))}
-                <div className="border-t" style={{ borderColor: `${INK}1A` }} />
-              </div>
-              <div className="text-[10px] opacity-40 tracking-tight" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                ou pergunta do seu jeito ↓
               </div>
             </div>
           )}
 
-          {turns.length > 0 && (
-            <div className="px-7 py-7 space-y-8">
-              {turns.map((t, i) => (
-                <div key={i}>
-                  {t.role === "user" ? (
-                    <div className="space-y-2">
-                      <div className="text-[9px] uppercase tracking-[0.28em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        // you
-                      </div>
-                      <div className="text-[15px] leading-[1.55] tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        {t.content}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-baseline gap-2 text-[9px] uppercase tracking-[0.28em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-                        <span>slippay</span>
-                      </div>
+          {/* Messages */}
+          {turns.length > 0 && turns.map((t, i) => (
+            <div
+              key={i}
+              className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {t.role === "user" ? (
+                <div
+                  className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-tr-sm text-[13px] leading-relaxed"
+                  style={{
+                    background: INK,
+                    color: "#fff",
+                    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                  }}
+                >
+                  {t.content}
+                </div>
+              ) : (
+                <div className="max-w-[90%] flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-1 w-2 h-2 rounded-full shrink-0" style={{ background: YELLOW }} />
+                    <div className="flex flex-col gap-1 flex-1">
                       {streaming && i === turns.length - 1 && !t.content ? (
                         <ThinkingIndicator />
                       ) : (
                         <>
                           <div
-                            className="ask-md text-[15px] leading-[1.65] tracking-tight"
-                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            className="ask-md text-[13px] leading-[1.65] px-3 py-2.5 rounded-2xl rounded-tl-sm"
+                            style={{
+                              background: `${INK}08`,
+                              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                              borderLeft: `2px solid ${YELLOW}`,
+                            }}
                             dangerouslySetInnerHTML={{ __html: renderMarkdown(parseInlineCitations(t.content)) }}
                           />
                           {streaming && i === turns.length - 1 && (
-                            <span style={{ background: INK }} className="inline-block w-[2px] h-[16px] ml-0.5 align-middle animate-pulse" />
+                            <span
+                              className="inline-block w-[2px] h-[14px] ml-3 align-middle animate-pulse"
+                              style={{ background: INK }}
+                            />
                           )}
                         </>
                       )}
-                      {t.citations && t.citations.length > 0 && (
-                        <div className="pt-5 -mx-7">
-                          <div className="px-7 pb-2 text-[9px] uppercase tracking-[0.30em] opacity-50" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                            // sources
-                          </div>
-                          <div className="border-t" style={{ borderColor: `${INK}1A` }}>
-                            {dedupeCitations(t.citations).slice(0, 5).map((c, j) => (
-                              <a
-                                key={j}
-                                href={`${GITHUB_DOCS}/${c.doc_path}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block px-7 py-3 hover:bg-black/[0.04] transition-colors group border-b"
-                                style={{ borderColor: `${INK}1A` }}
-                              >
-                                <div className="flex items-baseline gap-3 mb-1">
-                                  <span className="text-[9px] tabular-nums opacity-40" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                                    {String(j + 1).padStart(2, "0")}
-                                  </span>
-                                  <span className="text-[10px] uppercase tracking-[0.22em] opacity-70 font-medium truncate flex-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                                    {c.doc_path}
-                                  </span>
-                                  <span className="opacity-30 group-hover:opacity-100 transition-opacity text-xs">↗</span>
-                                </div>
-                                <div className="text-[12px] leading-[1.5] opacity-70 line-clamp-2 pl-[26px]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                                  {c.cited_text.slice(0, 160)}{c.cited_text.length > 160 ? "…" : ""}
-                                </div>
-                              </a>
-                            ))}
-                          </div>
+                      {/* Citations */}
+                      {t.citations && t.citations.length > 0 && !streaming && (
+                        <div className="mt-1 flex flex-col gap-1 pl-1">
+                          {dedupeCitations(t.citations).slice(0, 5).map((c, j) => (
+                            <a
+                              key={j}
+                              href={`${GITHUB_DOCS}/${c.doc_path}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 text-[10px] hover:underline"
+                              style={{ color: `${INK}60`, fontFamily: "'Space Grotesk', monospace" }}
+                            >
+                              <span style={{ color: YELLOW }}>↗</span>
+                              <span className="truncate">{c.doc_path}</span>
+                              {c.cited_text && (
+                                <span className="opacity-60 line-clamp-1 flex-1">{c.cited_text.slice(0, 80)}{c.cited_text.length > 80 ? "…" : ""}</span>
+                              )}
+                            </a>
+                          ))}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-              ))}
-
-              {error && (
-                <div className="border px-4 py-3 text-[12px]" style={{ borderColor: "#b91c1c", background: "#fef2f2", color: "#7f1d1d", fontFamily: "'JetBrains Mono', monospace" }}>
-                  <div className="text-[9px] uppercase tracking-[0.22em] mb-1 opacity-70">// error</div>
-                  {error}
+                  </div>
                 </div>
               )}
+            </div>
+          ))}
+
+          {/* Error state */}
+          {error && (
+            <div
+              className="rounded-xl px-4 py-3 text-[12px]"
+              style={{
+                background: "#fef2f2",
+                border: "1px solid #fca5a5",
+                color: "#7f1d1d",
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              }}
+            >
+              Serviço temporariamente indisponível. Tente novamente em instantes.
             </div>
           )}
         </div>
 
-        {/* Input — terminal-style */}
-        <div className="border-t" style={{ borderColor: `${INK}26` }}>
-          <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="px-7 pt-4 pb-2">
-            <div className="flex items-baseline gap-3 text-[9px] uppercase tracking-[0.30em] opacity-50 mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-              <span>// your question</span>
-            </div>
-            <div className="flex items-end gap-3">
-              <div className="flex-1 flex items-start gap-2">
-                <span className="text-[14px] leading-[1.5] pt-[3px] opacity-40 select-none" style={{ fontFamily: "'JetBrains Mono', monospace" }}>›</span>
-                <textarea
-                  ref={inputRef}
-                  rows={1}
-                  value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value);
-                    // auto-grow up to 4 rows
-                    const ta = e.target;
-                    ta.style.height = "auto";
-                    ta.style.height = `${Math.min(ta.scrollHeight, 96)}px`;
-                  }}
-                  onKeyDown={onKey}
-                  disabled={streaming}
-                  placeholder="quanto eu economizo? como começo? funciona na minha loja?"
-                  className="flex-1 bg-transparent border-0 py-1 text-[14px] tracking-tight resize-none focus:outline-none disabled:opacity-50 placeholder:opacity-30"
-                  style={{ fontFamily: "'Inter', sans-serif", minHeight: "26px" }}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={!input.trim() || streaming}
-                style={{ background: INK, color: BONE, fontFamily: "'JetBrains Mono', monospace" }}
-                className="px-5 py-2.5 text-[10px] uppercase tracking-[0.26em] hover:opacity-90 disabled:opacity-25 disabled:cursor-not-allowed flex items-center gap-2 self-end whitespace-nowrap"
-              >
-                {streaming ? (
-                  <>
-                    <span style={{ background: KLEIN }} className="inline-block w-1 h-1 animate-pulse" />
-                    thinking
-                  </>
-                ) : (
-                  <>
-                    <span style={{ background: KLEIN }} className="inline-block w-1 h-1" />
-                    ask  ↵
-                  </>
-                )}
-              </button>
-            </div>
+        {/* Input area */}
+        <div className="shrink-0 border-t p-3" style={{ borderColor: `${INK}15` }}>
+          <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2">
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // auto-grow up to 4 rows
+                const ta = e.target;
+                ta.style.height = "auto";
+                ta.style.height = `${Math.min(ta.scrollHeight, 96)}px`;
+              }}
+              onKeyDown={onKey}
+              disabled={streaming}
+              aria-label="Sua pergunta"
+              placeholder="quanto eu economizo? como começo?"
+              className="flex-1 border rounded-xl px-3 py-2.5 text-[13px] resize-none focus:outline-none disabled:opacity-50 placeholder:opacity-40"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                border: `1px solid ${INK}20`,
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                minHeight: "40px",
+                color: INK,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || streaming}
+              aria-label="Enviar pergunta"
+              className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ background: YELLOW }}
+            >
+              {streaming ? (
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: INK }} />
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 8h12M9 3l5 5-5 5" stroke={INK} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
           </form>
-          <div className="px-7 pb-3 pt-1 flex items-center justify-between text-[9px] uppercase tracking-[0.24em] opacity-35" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-            <span>resposta honesta, sem enrolação</span>
-            <span className="hidden md:inline">↵ enviar · ⇧↵ linha · esc fechar</span>
+          <div
+            className="mt-1.5 text-[10px] text-center opacity-30"
+            style={{ fontFamily: "'Space Grotesk', monospace", color: INK }}
+          >
+            ↵ enviar · ⇧↵ linha · esc fechar
           </div>
+        </div>
+      </aside>
+
+      {/* === MOBILE PANEL (< md): full-screen overlay === */}
+      <aside
+        role="dialog"
+        aria-modal="true"
+        aria-label="Slippay AI"
+        style={{ background: BONE, color: INK }}
+        className={`md:hidden fixed inset-0 z-50 flex flex-col transition-all duration-300 ${open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-full pointer-events-none"}`}
+      >
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4 shrink-0"
+          style={{ background: INK }}
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: YELLOW }} />
+            <span
+              className="text-[16px] font-semibold tracking-tight text-white"
+              style={{ fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+            >
+              Slippay AI
+            </span>
+          </div>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Fechar chat"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-white/60 hover:text-white text-xl leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Message area — flex-1 + pb for safe-area */}
+        <div
+          ref={bodyRef}
+          className="flex-1 overflow-y-auto p-4 flex flex-col gap-3"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
+        >
+          {/* Empty state */}
+          {turns.length === 0 && (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 py-8 gap-6">
+              <p
+                className="text-[15px] leading-relaxed"
+                style={{ color: `${INK}99`, fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+              >
+                Sou a IA da Slippay — pergunta o que quiser sobre receber dólar, taxas, como começar.
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {QUICK_PROMPTS.map(({ tag, prompt }) => (
+                  <button
+                    key={prompt}
+                    onClick={() => submit(prompt)}
+                    className="min-h-[44px] px-4 py-2 rounded-full text-[12px] font-medium border transition-colors duration-150"
+                    style={{
+                      border: `1px solid ${INK}30`,
+                      background: BONE,
+                      color: INK,
+                      fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                    }}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Messages */}
+          {turns.length > 0 && turns.map((t, i) => (
+            <div
+              key={i}
+              className={`flex ${t.role === "user" ? "justify-end" : "justify-start"}`}
+            >
+              {t.role === "user" ? (
+                <div
+                  className="max-w-[80%] px-4 py-3 rounded-2xl rounded-tr-sm text-[14px] leading-relaxed"
+                  style={{
+                    background: INK,
+                    color: "#fff",
+                    fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                  }}
+                >
+                  {t.content}
+                </div>
+              ) : (
+                <div className="max-w-[90%] flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    <span className="mt-2 w-2 h-2 rounded-full shrink-0" style={{ background: YELLOW }} />
+                    <div className="flex flex-col gap-1 flex-1">
+                      {streaming && i === turns.length - 1 && !t.content ? (
+                        <ThinkingIndicator />
+                      ) : (
+                        <>
+                          <div
+                            className="ask-md text-[14px] leading-[1.65] px-4 py-3 rounded-2xl rounded-tl-sm"
+                            style={{
+                              background: `${INK}08`,
+                              fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                              borderLeft: `2px solid ${YELLOW}`,
+                            }}
+                            dangerouslySetInnerHTML={{ __html: renderMarkdown(parseInlineCitations(t.content)) }}
+                          />
+                          {streaming && i === turns.length - 1 && (
+                            <span
+                              className="inline-block w-[2px] h-[16px] ml-4 align-middle animate-pulse"
+                              style={{ background: INK }}
+                            />
+                          )}
+                        </>
+                      )}
+                      {/* Citations */}
+                      {t.citations && t.citations.length > 0 && !streaming && (
+                        <div className="mt-1 flex flex-col gap-1 pl-2">
+                          {dedupeCitations(t.citations).slice(0, 5).map((c, j) => (
+                            <a
+                              key={j}
+                              href={`${GITHUB_DOCS}/${c.doc_path}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 text-[11px] min-h-[44px] hover:underline"
+                              style={{ color: `${INK}60`, fontFamily: "'Space Grotesk', monospace" }}
+                            >
+                              <span style={{ color: YELLOW }}>↗</span>
+                              <span className="truncate">{c.doc_path}</span>
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Error state */}
+          {error && (
+            <div
+              className="rounded-xl px-4 py-3 text-[13px]"
+              style={{
+                background: "#fef2f2",
+                border: "1px solid #fca5a5",
+                color: "#7f1d1d",
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+              }}
+            >
+              Serviço temporariamente indisponível. Tente novamente em instantes.
+            </div>
+          )}
+        </div>
+
+        {/* Input area — sticky bottom, safe-area aware */}
+        <div
+          className="shrink-0 border-t p-3 pt-2"
+          style={{
+            borderColor: `${INK}15`,
+            paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0.75rem))",
+          }}
+        >
+          <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex items-end gap-2">
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                const ta = e.target;
+                ta.style.height = "auto";
+                ta.style.height = `${Math.min(ta.scrollHeight, 96)}px`;
+              }}
+              onKeyDown={onKey}
+              disabled={streaming}
+              aria-label="Sua pergunta"
+              placeholder="quanto eu economizo? como começo?"
+              className="flex-1 border rounded-xl px-3 py-3 text-[14px] resize-none focus:outline-none disabled:opacity-50 placeholder:opacity-40"
+              style={{
+                background: "rgba(255,255,255,0.6)",
+                border: `1px solid ${INK}20`,
+                fontFamily: "'Space Grotesk', 'Inter', sans-serif",
+                minHeight: "48px",
+                color: INK,
+              }}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || streaming}
+              aria-label="Enviar pergunta"
+              className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-150 disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{ background: YELLOW }}
+            >
+              {streaming ? (
+                <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: INK }} />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 8h12M9 3l5 5-5 5" stroke={INK} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </button>
+          </form>
         </div>
       </aside>
     </>
@@ -427,11 +657,10 @@ function dedupeCitations(citations: Citation[]): Citation[] {
 // the user knows something is happening even on a 4-5s cold start.
 function ThinkingIndicator() {
   const phrases = [
-    "loading the docs bundle",
-    "reading the slippay spec",
-    "checking the audit notes",
-    "cross-referencing citations",
-    "drafting a grounded answer",
+    "lendo a documentação",
+    "buscando a resposta certa",
+    "conferindo os detalhes",
+    "montando a resposta",
   ];
   const [idx, setIdx] = useState(0);
   useEffect(() => {
@@ -439,14 +668,20 @@ function ThinkingIndicator() {
     return () => clearInterval(id);
   }, []);
   return (
-    <div className="flex items-center gap-3 py-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-      <div className="flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24]" style={{ animation: "ask-pulse 1.2s ease-in-out infinite" }} />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] opacity-60" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
-        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] opacity-30" style={{ animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
+    <div
+      className="flex items-center gap-2 px-3 py-2.5 rounded-2xl rounded-tl-sm"
+      style={{ background: `${INK}08`, borderLeft: `2px solid ${YELLOW}` }}
+    >
+      <div className="flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full" style={{ background: YELLOW, animation: "ask-pulse 1.2s ease-in-out infinite" }} />
+        <span className="w-1.5 h-1.5 rounded-full opacity-60" style={{ background: YELLOW, animation: "ask-pulse 1.2s ease-in-out infinite 0.2s" }} />
+        <span className="w-1.5 h-1.5 rounded-full opacity-30" style={{ background: YELLOW, animation: "ask-pulse 1.2s ease-in-out infinite 0.4s" }} />
       </div>
-      <span className="text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 tabular-nums">
-        thinking · {phrases[idx]}
+      <span
+        className="text-[11px] italic"
+        style={{ color: `${INK}55`, fontFamily: "'Space Grotesk', 'Inter', sans-serif" }}
+      >
+        {phrases[idx]}…
       </span>
       <style>{`
         @keyframes ask-pulse {

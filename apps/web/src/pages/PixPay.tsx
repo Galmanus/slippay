@@ -3,6 +3,8 @@ import { Logo } from "../components/Logo.tsx";
 import { connectWallet, signTx } from "../lib/wallet.ts";
 import { buildUsdcPaymentTx, fetchSequence, submitSignedTx } from "../lib/stellar.ts";
 import * as pag from "../lib/pagfinance.ts";
+import { decodeTx, assertPaymentMatches, isValidStellarAddress, type TxSummary } from "../lib/txguard.ts";
+import ConfirmTxModal from "../components/ConfirmTxModal.tsx";
 
 type Step = "input" | "validated" | "quoted" | "paying" | "done" | "error";
 
@@ -22,6 +24,11 @@ export default function PixPay() {
   const [quote, setQuote] = useState<pag.PagQuote | null>(null);
   const [wallet, setWallet] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+
+  // WYSIWYS gate state
+  const [pendingXdr, setPendingXdr] = useState<string | null>(null);
+  const [pendingSummary, setPendingSummary] = useState<TxSummary | null>(null);
+  const [pendingQuoteId, setPendingQuoteId] = useState<string | null>(null);
 
   // pull the Stellar USDC asset id from PagFinance once.
   useEffect(() => {
@@ -61,13 +68,26 @@ export default function PixPay() {
     finally { setBusy(false); }
   }
 
+  // Step 1: build XDR and show confirm modal (does NOT sign yet)
   async function doPay() {
     setError(null); setBusy(true); setStep("paying");
     try {
       if (!wallet) throw new Error("connect wallet first");
       if (!quote?.quoteId) throw new Error("no quote");
+      const totalCrypto = String(v?.totalCrypto ?? v?.paymentInCrypto ?? "");
+
       const created = await pag.createPayment({ quoteId: quote.quoteId, sender: wallet });
-      if (!created.receiver || !created.amount) throw new Error("pagfinance did not return receiver/amount");
+      if (!created.receiver || !created.amount) throw new Error("PagFinance não retornou destinatário/valor");
+
+      // Guard 1: validate receiver address before building XDR
+      if (!isValidStellarAddress(created.receiver)) {
+        throw new Error(`guard: endereço Stellar inválido recebido do servidor (${created.receiver})`);
+      }
+
+      // Guard 2: assert server amount matches quoted amount
+      if (totalCrypto && Math.abs(Number(created.amount) - Number(totalCrypto)) > 1e-7) {
+        throw new Error(`guard: valor divergente — cotado ${totalCrypto} USDC, servidor retornou ${created.amount} USDC`);
+      }
 
       const seq = await fetchSequence(NETWORK, wallet);
       const xdr = await buildUsdcPaymentTx({
@@ -78,19 +98,59 @@ export default function PixPay() {
         memoText: created.memo,
         network: NETWORK,
       });
-      const signed = await signTx(xdr);
+
+      // Guard 3: decode the built XDR and machine-assert it matches expectations
+      const summary = decodeTx(xdr, NETWORK);
+      assertPaymentMatches(summary, {
+        destination: created.receiver,
+        amount: created.amount,
+        assetCode: "USDC",
+      });
+
+      // Guard 4: present decoded tx to user for explicit confirmation
+      setPendingXdr(xdr);
+      setPendingSummary(summary);
+      setPendingQuoteId(quote.quoteId);
+      // setBusy(false) so the modal is interactive; step stays "paying"
+    } catch (e) { setError(msg(e)); setStep("error"); }
+    finally { setBusy(false); }
+  }
+
+  // Step 2: user confirmed in modal — now sign and submit
+  async function doConfirmedSign() {
+    if (!pendingXdr || !pendingSummary || !pendingQuoteId || !wallet) return;
+    setPendingXdr(null); setPendingSummary(null);
+    setError(null); setBusy(true);
+    try {
+      const signed = await signTx(pendingXdr);
       const { hash } = await submitSignedTx(NETWORK, signed);
       setTxHash(hash);
 
       // best-effort notify; many flows just track on-chain.
-      try { await pag.submitPayment({ quoteId: quote.quoteId, txHash: hash, sender: wallet }); } catch { /* non-fatal */ }
+      try { await pag.submitPayment({ quoteId: pendingQuoteId, txHash: hash, sender: wallet }); } catch { /* non-fatal */ }
+      setPendingQuoteId(null);
       setStep("done");
     } catch (e) { setError(msg(e)); setStep("error"); }
     finally { setBusy(false); }
   }
 
+  // User cancelled in modal
+  function doCancelSign() {
+    setPendingXdr(null); setPendingSummary(null); setPendingQuoteId(null);
+    setError("Operação cancelada pelo usuário.");
+    setStep("quoted");
+  }
+
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
+      {pendingSummary && (
+        <ConfirmTxModal
+          summary={pendingSummary}
+          intent={`Pagar PIX via USDC Stellar`}
+          onConfirm={doConfirmedSign}
+          onCancel={doCancelSign}
+        />
+      )}
       <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
         <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Pague um PIX com USDC</div>
