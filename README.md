@@ -108,6 +108,38 @@ cares about are proven in zero knowledge, and the secrets an attacker would want
 
 ---
 
+## AXL — agent spend limits as proof-carrying theorems
+
+Most "agent spending limits" are a runtime `if (amount > cap) reject`. You have to
+trust the code ran, trust the server, trust nobody patched the check. **AXL removes
+the trust: the spending bound becomes a machine-checked theorem.**
+
+- You write the policy once in a small DSL — an `agent { }` block describing what the
+  agent may spend and under what conditions.
+- `axl-compiler` compiles that block to an inference contract and **discharges the
+  bound as an SMT proof** (z3): a mathematical proof that the agent *cannot* exceed
+  the limit, not a promise that a check will run.
+- The proof ships as a **proof-carrying certificate** — a portable artifact that
+  **anyone can verify offline, after the fact, without running the agent**, the
+  server, or trusting Slippay. Verification refuses if neither `z3` nor the
+  `z3-solver` package is present, rather than silently passing.
+
+Why it matters: it turns *"the agent stays within budget"* from an operational claim
+into a checkable fact. The bound travels with the agent, so a counterparty, an
+auditor, or a regulator can confirm the limit holds without access to our
+infrastructure. Same posture as proof-carrying code, applied to autonomous money
+movement.
+
+Honest limit: the proof is only as strong as the policy spec — it proves the
+*encoded* bound, not behaviour the spec never described. It is a guarantee about the
+declared policy, not a universal safety claim.
+
+Status: `axl-compiler` builds and tests (Rust → z3); `certify` / `verify-cert` exist.
+No on-chain artifact — the certificate is off-chain and portable **by design**.
+See [AXL language](./docs/axl/README.md) · [compiler](./docs/axl/compiler.md) · [proofs & limits](./docs/axl/proofs-and-limits.md).
+
+---
+
 ## Status (verified on chain)
 
 Mainnet is Stellar `PUBLIC`. The testnet/mainnet seam is stated explicitly — nothing
@@ -123,7 +155,7 @@ below is dressed up as live when it isn't.
 | Comex treasury — corporate non-custodial wallet (Privy EVM) + USDC send/receive, WYSIWYS-gated | **Base mainnet**, live | in production at `app.slippay.cc/comex` · 74 tests · adversarially reviewed |
 | Comex câmbio R$→USD buy via **4P** (licensed FX partner, settles USDC on Base) | **Base**, live | **functional on-chain** — verified end-to-end: a real R$ Pix on-ramp settled USDC to the company wallet on Base, confirmed on-chain. Fees shown transparently (exact dollar rate + Slippay 2.8%). USD→R$ sell pending 4P off-ramp endpoint |
 | `@slippay/mcp` (agent MCP server) · `@slippay/attester` (integrity oracle) | npm | v0.2.0 · v0.1.0 |
-| AXL compiler (proof-carrying certs) | — | build/test only, no on-chain artifact |
+| **AXL** — agent spend bounds as z3-proven, offline-verifiable proof-carrying certificates ([deep dive](#axl--agent-spend-limits-as-proof-carrying-theorems)) | off-chain (portable by design) | Rust → z3; `certify` / `verify-cert`; built + tested |
 
 Live services: `https://app.slippay.cc` (web) · `https://app.slippay.cc/api/health` (api).
 The deployed contracts are **not** third-party audited.
