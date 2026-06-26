@@ -234,11 +234,23 @@ the agent, so a counterparty, an auditor, or a regulator can confirm the limit h
 without access to our infrastructure. Same posture as proof-carrying code, applied to
 autonomous money movement.
 
+**The enforced bound is now on-chain state (proven on testnet).** The contract no
+longer uses a source literal: the multiplier is stored per session
+(`window_cap_multiplier`, pinned to `PROVED_WINDOW_MULTIPLIER` and bound to the
+policy `ssl_hash`) and read by the hot path. On Stellar **testnet**, a session
+installed with the certified `ssl_hash` `0415df30…e35e3be` reads back
+`window_cap_multiplier: 2`, matching `agent_wallet.cert.json` — so an auditor checks
+the on-chain bound against the certificate directly.
+Contract [`CCJXPLDP…RDHN`](https://stellar.expert/explorer/testnet/contract/CCJXPLDPFMHYJIN6PTYQUNCP2ZTS52JK4WVRBKRHLXF2S6JFFVKYRDHN)
+· install [tx](https://stellar.expert/explorer/testnet/tx/6b57021b1be31372348731ab691eda025aa9a10ae75e9ff2c37f2a2dac007ae8).
+
 Honest limits (stated, not hidden): the proof is only as strong as the policy spec —
 it proves the *encoded* bound, not behaviour the spec never described. The contract
-enforces the bound from an in-source constant that the gate binds at **build time**;
-making the contract read the certified bound at **transaction time** is a contract
-change not yet made. The certificate is off-chain by design.
+enforces the stored per-session bound but does not re-run the SMT proof on-chain
+(z3 on-chain is infeasible), so the residual trust is "the installed multiplier equals
+the certified one" — made auditable by the on-chain record + CI gate, not eliminated.
+The **mainnet** wallet still runs the prior literal-`2` contract pending a deliberate
+redeploy. The certificate is off-chain by design.
 
 📄 **Read the paper:** **[AXL: A Standalone Proof-Carrying Compiler for Agent Spending Bounds](https://github.com/Galmanus/slippay/blob/main/docs/paper/axl.pdf)**
 &nbsp;·&nbsp; [LaTeX source](https://github.com/Galmanus/slippay/blob/main/docs/paper/axl.tex)

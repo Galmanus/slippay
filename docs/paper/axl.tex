@@ -569,13 +569,22 @@ the concrete sense in which the proof is now load-bearing under change rather
 than an artifact that happens to agree with the contract today.
 
 \begin{itemize}
-\item \textbf{Residual: the contract reads a constant, not the certificate at
-  runtime.} The enforced multiplier is an in-source literal; the gate binds it
-  to the certified value at \emph{build} time, not at transaction time.
-  \emph{Falsifiable:} a deployment that ships a contract binary whose literal
-  was edited after the gate ran would not be caught on-chain --- closing this
-  fully requires the contract (or the deploy step) to read the certified bound,
-  which is a contract change we did not make autonomously.
+\item \textbf{Closed on testnet: the enforced bound is on-chain state bound to
+  the policy hash.} The contract no longer reads a source literal. The hard
+  ceiling multiplier is stored per session (\texttt{window\_cap\_multiplier},
+  pinned at install to the named constant \texttt{PROVED\_WINDOW\_MULTIPLIER}
+  and bound alongside \texttt{ssl\_hash}) and read back by the hot path, so the
+  enforced bound is on-chain state an auditor re-checks against the certificate.
+  Demonstrated on Stellar testnet: contract
+  \texttt{CCJXPLDP\ldots RDHN}, a session installed with the certified
+  \texttt{ssl\_hash} \texttt{0415df30\ldots e35e3be} reads back
+  \texttt{window\_cap\_multiplier = 2}, matching
+  \texttt{agent\_wallet.cert.json}. \emph{Residual:} the contract enforces the
+  per-session stored value but does not itself re-verify the SMT proof on-chain
+  (z3 on-chain is infeasible); the trust reduces to ``the installed multiplier
+  matches the certified one,'' which the on-chain record plus the CI gate make
+  auditable rather than invisible. The production mainnet wallet still runs the
+  prior literal-\,$2$ contract pending a deliberate redeploy.
 \item \textbf{The policy hash is provenance, not a runtime gate.}
   \texttt{ssl\_hash} is pinned immutably but not interpreted by
   \texttt{\_\_check\_auth}. \emph{Falsifiable:} no individual spend is rejected
