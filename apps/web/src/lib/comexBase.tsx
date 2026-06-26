@@ -27,10 +27,10 @@ import {
   PrivyProvider,
   usePrivy,
   useWallets,
-  useSendTransaction,
   type ConnectedWallet,
   type PrivyClientConfig,
 } from "@privy-io/react-auth";
+import { SmartWalletsProvider, useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { base, baseSepolia } from "viem/chains";
 import { baseNet } from "./chain/base/usdc.ts";
 
@@ -62,7 +62,9 @@ export function ComexBaseProvider({ children }: { children: ReactNode }) {
       appId={import.meta.env.VITE_PRIVY_APP_ID ?? ""}
       config={PRIVY_CONFIG}
     >
-      <ComexBaseProviderInner>{children}</ComexBaseProviderInner>
+      <SmartWalletsProvider>
+        <ComexBaseProviderInner>{children}</ComexBaseProviderInner>
+      </SmartWalletsProvider>
     </PrivyProvider>
   );
 }
@@ -114,11 +116,11 @@ const ComexBaseContext = createContext<ComexBaseCtx>({
 
 function ComexBaseProviderInner({ children }: { children: ReactNode }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  // VERIFY-WITH-KEYS: useWallets from @privy-io/react-auth (index.d.ts line 1331).
-  // Returns ConnectedWallet[] (ethereum wallets when walletChainType not set to solana-only).
+  // Smart wallet (ERC-4337) client — the comex account IS the smart wallet,
+  // controlled by the Privy embedded EOA signer. Gas is paid via the paymaster
+  // configured in the Privy dashboard (USDC), so the company never needs ETH.
+  const { client: smartClient } = useSmartWallets();
   const { wallets } = useWallets();
-  // VERIFY-WITH-KEYS: useSendTransaction from @privy-io/react-auth/tempo (tempo.d.ts line 25).
-  const { sendTransaction: privySendTx } = useSendTransaction();
 
   // Resolve email from linked accounts
   const emailAccount = user?.linkedAccounts?.find((a) => a.type === "email") as
@@ -126,34 +128,35 @@ function ComexBaseProviderInner({ children }: { children: ReactNode }) {
     | undefined;
   const email = emailAccount?.address ?? null;
 
-  // Pick the Privy embedded EVM wallet (walletClientType === "privy", type === "ethereum").
-  const evmWallet: ConnectedWallet | undefined = wallets.find(
-    (w) => w.walletClientType === "privy",
-  ) as ConnectedWallet | undefined;
+  // The embedded EOA (signer). Used as the address fallback so balance/receive/buy
+  // keep working before the smart wallet is provisioned (dashboard not yet set up).
+  const evmWallet = wallets.find((w) => w.walletClientType === "privy") as
+    | ConnectedWallet
+    | undefined;
 
-  const address: `0x${string}` | null = evmWallet?.address
+  // Prefer the smart wallet address once it exists; fall back to the EOA. The UI
+  // upgrades to the smart wallet automatically when Privy provisions it.
+  const address: `0x${string}` | null = smartClient?.account?.address
+    ? (smartClient.account.address as `0x${string}`)
+    : evmWallet?.address
     ? (evmWallet.address as `0x${string}`)
     : null;
 
   const sendTransaction = useCallback(
     async (args: SendTxArgs): Promise<{ hash: `0x${string}` }> => {
-      if (!evmWallet) {
-        throw new Error("comexBase: EVM wallet not available — authenticate first");
+      if (!smartClient) {
+        throw new Error("Carteira inteligente ainda não ativada — configure os smart wallets no Privy para enviar sem ETH.");
       }
-      // Main useSendTransaction (prompts the user, signs with the embedded
-      // wallet). Flat UnsignedTransactionRequest; `address` targets this wallet.
-      const { hash } = await privySendTx(
-        {
-          to: args.to,
-          data: args.data,
-          value: `0x${args.value.toString(16)}` as `0x${string}`,
-          chainId: _defaultChain.id,
-        },
-        { sponsor: true, address: evmWallet.address },
-      );
+      // Smart wallet send: routed as an ERC-4337 UserOp through the bundler +
+      // paymaster (gas in USDC). viem-style params (value as bigint).
+      const hash = await smartClient.sendTransaction({
+        to: args.to,
+        data: args.data,
+        value: args.value,
+      } as Parameters<typeof smartClient.sendTransaction>[0]);
       return { hash: hash as `0x${string}` };
     },
-    [evmWallet, privySendTx],
+    [smartClient],
   );
 
   return (
