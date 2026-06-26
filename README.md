@@ -107,6 +107,17 @@ same monitor → gate → control loop, moved from reasoning to **money**: a pay
 only when an integrity monitor confirms the agent is inside a human-signed mandate.
 → **[docs/paper/slippay.pdf](./docs/paper/slippay.pdf)** · NEAR X brief: **[slippay-nearx-abstract.pdf](./docs/paper/slippay-nearx-abstract.pdf)**
 
+**3 · Formal** — *AXL: A Standalone Proof-Carrying Compiler for Agent Spending Bounds.* A tiny
+policy language + a zero-dependency Rust compiler (`axlc`) that lowers a spending policy to an
+SMT obligation, discharges it by **k-induction**, and emits a **tamper-evident certificate**
+anyone can re-verify offline. Proves a *tight, minimal* bound for the deployed wallet
+(real-time-window outflow ≤ **2× window_cap**), and is candid about scope: it's an offline
+verifier today, not yet a CI-gated production control.
+
+📄 **Read the paper:** **[github.com/Galmanus/slippay/…/axl.pdf](https://github.com/Galmanus/slippay/blob/main/docs/paper/axl.pdf)**
+&nbsp;·&nbsp; [LaTeX source](https://github.com/Galmanus/slippay/blob/main/docs/paper/axl.tex)
+&nbsp;·&nbsp; [compiler source](./axl-compiler)
+
 The through-line: **the gate that governs an agent's reasoning is the same gate that should
 govern its payments.** Slippay is that gate, on-chain.
 
