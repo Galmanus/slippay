@@ -14,7 +14,9 @@ core is one rail; three surfaces sit on top of it.
 
 `Stellar mainnet` · `Base · comex functional on-chain` · `non-custodial` · `Apache-2.0`
 
-[Live](https://app.slippay.cc) · [Docs](./docs/README.md) · [Architecture](./docs/concepts/architecture.md) · [Security model](#security-model)
+[**Read the paper (PDF)**](./docs/paper/slippay.pdf) · [Live](https://app.slippay.cc) · [Docs](./docs/README.md) · [Architecture](./docs/concepts/architecture.md) · [Security model](#security-model)
+
+**Paper:** *Slippay — Metacognitive Governance for Autonomous Agent Payments: Non-Custodial, Integrity-Gated, Proof-Carrying Settlement on Stellar.* → **[docs/paper/slippay.pdf](./docs/paper/slippay.pdf)**
 
 </div>
 
@@ -50,6 +52,8 @@ do, that is a bug worth an issue.
 > - **Mainnet proof:** [tx `34eb71b1…`](https://stellar.expert/explorer/public/tx/34eb71b1c4446bf1b39a1d811370f93c24188e61458d56a126957b13d4eea13b) — USDC on Stellar, content delivered to the paying agent
 > - **Full loop on testnet** (incl. the seller's release): [tx `61db50c6…`](https://stellar.expert/explorer/testnet/tx/61db50c6ec5b6c6890045c4fe09b3c76bf7baa506a54af3c22da491cf81d55f1)
 > - Every payment leaves a **signed registry record**: who paid whom, how much, under which mandate, with the attestation signature.
+
+**Full write-up:** the design, the threat model, the metacognitive framing and the on-chain evidence are in the paper → **[docs/paper/slippay.pdf](./docs/paper/slippay.pdf)**.
 
 **Honest positioning — agent payments are not new.** Coinbase's **x402** (May 2025) has settled
 150M+ transactions; Google's **AP2** defines human-approved "mandates"; Coinbase ships agent
