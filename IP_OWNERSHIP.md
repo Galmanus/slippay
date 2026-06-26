@@ -32,6 +32,10 @@ Non-exhaustive list of original technical works created by the author:
 - **Provably-bounded autonomous-agent payments** — delegated ed25519 agent sessions with on-chain windowed-budget + allowlist + immutable absolute-ceiling enforcement, plus a recipient-redirection guard (consent pinned at charge time).
 - **`axlc`** — a Rust SMT-backed compiler/verifier for agent spending bounds (`bind` / `constrain` / `prove` / `invariant`).
 - **SEP-24 off-ramp integration**, the QR payment-request format, and the browser passkey-pay client library.
+- **Autonomous agent-to-agent (A2A) payment circuit** — a buyer agent that, **with no human in the loop**, settles a seller agent's HTTP-402 charge in USDC, gated by a **non-custodial signed spending mandate** and a **portable ed25519 agent-integrity attestation** (verifiable on-chain *and* offline), recording a **signed audit registry** of every payment (who paid whom, how much, under which mandate). Proven end-to-end on Stellar mainnet (§3).
+- **Agent-integrity attestation (AIA)** — an integrity oracle answering the question payment rails do not ("is this agent still operating inside its committed surface?") as a portable ed25519 verdict the Soroban gate verifies on-chain and any off-chain party verifies too.
+- **Zero-knowledge proofs (Groth16, Stellar mainnet)** — proof-of-mandate and proof-of-KYC (age + sanctions), zero-PII, with an on-chain verifier.
+- **Comex B2B treasury (Base/EVM)** — a non-custodial corporate (non-biometric; email + MFA) dollar account: holds USDC, sends/receives, and buys R$→USD through a licensed FX partner, with the WYSIWYS signing gate ported to EVM (viem), transparent fee disclosure and live exchange-rate quoting.
 - The accompanying **SSL agent specifications** and the cognitive/operational architecture authored by the same individual.
 
 ---
@@ -52,10 +56,11 @@ A seguir, registros **públicos, criptograficamente datados e impossíveis de ad
 | Smart-wallet wasm (mainnet, WebAuthn verifier) | hash `497adb62a98134658ab04edb8a7a4dd9b008432bfa5c0a38f8ec95cc07f5fe83` | 2026-06-01 | — |
 | Real USDC payment (mainnet) | `05ae429b926d94770166e3425c77210260d2db0083fa81053059612775e510be` | 2026-06-01 19:30:44 | 62837330 |
 | **Biometric-authorized payment (mainnet)** | `d9a7d17a18719ece53535d51423b8951f37b163e170a7bea2cb4d9588471ec31` | 2026-06-01 22:05:01 | 62838907 |
+| **Autonomous agent-to-agent payment (mainnet)** | `34eb71b1c4446bf1b39a1d811370f93c24188e61458d56a126957b13d4eea13b` | 2026-06-26 12:16:54 | 63206144 |
 
 Each is independently verifiable at `https://stellar.expert/explorer/public/tx/<hash>` and `https://horizon.stellar.org/transactions/<hash>`.
 
-Supporting testnet records (development authorship trail): biometric pay `5b1d7d0a93cea5ede31ec2209e6e306b1730ac1f219ceae181fa9a292d16ac96`; bounded agent→agent `d845db5b868d108630123d200e499562bbb7ba049757a50b7942b528aede4179`.
+Supporting testnet records (development authorship trail): biometric pay `5b1d7d0a93cea5ede31ec2209e6e306b1730ac1f219ceae181fa9a292d16ac96`; bounded agent→agent `d845db5b868d108630123d200e499562bbb7ba049757a50b7942b528aede4179`; autonomous agent-to-agent x402 **full loop** (charge → autonomous pay → settle → delivery) `61db50c6ec5b6c6890045c4fe09b3c76bf7baa506a54af3c22da491cf81d55f1` (ledger 3291957, 2026-06-26).
 
 ---
 
@@ -75,3 +80,4 @@ Supporting testnet records (development authorship trail): biometric pay `5b1d7d
 ---
 
 *Signed / Assinado:* **Manuel Guilherme Galmanus** — 2026-06-01
+*Updated / Atualizado:* 2026-06-26 — added the comex B2B treasury (Base) and the autonomous agent-to-agent payment circuit, proven on Stellar mainnet (§3).
