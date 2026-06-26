@@ -4,7 +4,7 @@
 
 **Non-custodial dollar settlement — for people, for agents, for companies.**
 
-<img src="apps/web/public/liberty.webp" alt="A blindfolded Statue of Liberty — the industry makes you sign blind" width="600" />
+<img src="apps/web/public/liberty.webp" alt="A blindfolded Statue of Liberty — the industry makes you sign blind" width="900" />
 
 *The industry makes you sign blind. SlipPay takes the blindfold off — **what you see is what you sign.***
 
