@@ -206,31 +206,44 @@ cares about are proven in zero knowledge, and the secrets an attacker would want
 
 Most "agent spending limits" are a runtime `if (amount > cap) reject`. You have to
 trust the code ran, trust the server, trust nobody patched the check. **AXL removes
-the trust: the spending bound becomes a machine-checked theorem.**
+the trust: the spending bound becomes a machine-checked theorem — and CI refuses to
+let that theorem drift from the bound the contract actually enforces.**
 
 - You write the policy once in a small DSL — an `agent { }` block describing what the
   agent may spend and under what conditions.
-- `axl-compiler` compiles that block to an inference contract and **discharges the
-  bound as an SMT proof** (z3): a mathematical proof that the agent *cannot* exceed
-  the limit, not a promise that a check will run.
-- The proof ships as a **proof-carrying certificate** — a portable artifact that
-  **anyone can verify offline, after the fact, without running the agent**, the
-  server, or trusting Slippay. Verification refuses if neither `z3` nor the
-  `z3-solver` package is present, rather than silently passing.
+- `axl-compiler` (zero crate dependencies, std-only Rust) compiles that block and
+  **discharges the bound as an SMT proof by k-induction** (z3): a proof that the agent
+  *cannot* exceed the limit over *any* action sequence, not a promise that a check will
+  run. For the deployed wallet the proved bound is **tight and minimal** — real-time
+  window outflow ≤ **2× window_cap** (the 2× is the epoch-straddle worst case, proven,
+  not slack).
+- The proof ships as a **proof-carrying certificate** — a portable JSON artifact,
+  SHA-256-bound to the exact policy bytes, that **anyone can re-verify offline**
+  without running the agent, the server, or trusting Slippay. Verification refuses if
+  no solver is present, rather than silently passing.
+- **A CI gate keeps it honest.** `axl-gate` re-discharges the proof on every change
+  touching the policy, the compiler, or the contract, and asserts the constant the
+  on-chain contract enforces (`window_cap.saturating_mul(N)`) equals the certified
+  multiplier. Verified to go **red on contract drift, red on certificate tamper**, green
+  clean. Change the deployed bound without re-proving it (or vice-versa) → the build
+  fails.
 
 Why it matters: it turns *"the agent stays within budget"* from an operational claim
-into a checkable fact. The bound travels with the agent, so a counterparty, an
-auditor, or a regulator can confirm the limit holds without access to our
-infrastructure. Same posture as proof-carrying code, applied to autonomous money
-movement.
+into a checkable fact, and then *keeps* it true under change. The bound travels with
+the agent, so a counterparty, an auditor, or a regulator can confirm the limit holds
+without access to our infrastructure. Same posture as proof-carrying code, applied to
+autonomous money movement.
 
-Honest limit: the proof is only as strong as the policy spec — it proves the
-*encoded* bound, not behaviour the spec never described. It is a guarantee about the
-declared policy, not a universal safety claim.
+Honest limits (stated, not hidden): the proof is only as strong as the policy spec —
+it proves the *encoded* bound, not behaviour the spec never described. The contract
+enforces the bound from an in-source constant that the gate binds at **build time**;
+making the contract read the certified bound at **transaction time** is a contract
+change not yet made. The certificate is off-chain by design.
 
-Status: `axl-compiler` builds and tests (Rust → z3); `certify` / `verify-cert` exist.
-No on-chain artifact — the certificate is off-chain and portable **by design**.
-See [AXL language](./docs/axl/README.md) · [compiler](./docs/axl/compiler.md) · [proofs & limits](./docs/axl/proofs-and-limits.md).
+📄 **Read the paper:** **[AXL: A Standalone Proof-Carrying Compiler for Agent Spending Bounds](https://github.com/Galmanus/slippay/blob/main/docs/paper/axl.pdf)**
+&nbsp;·&nbsp; [LaTeX source](https://github.com/Galmanus/slippay/blob/main/docs/paper/axl.tex)
+
+Docs: [AXL language](./docs/axl/README.md) · [compiler](./docs/axl/compiler.md) · [proofs & limits](./docs/axl/proofs-and-limits.md) · [the gate](./.github/workflows/axl-gate.yml).
 
 ---
 
