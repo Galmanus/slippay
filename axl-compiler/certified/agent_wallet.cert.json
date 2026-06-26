@@ -1,0 +1,21 @@
+{
+  "kind": "axl-proof-certificate",
+  "axl_version": "0.1.0",
+  "spec_sha256": "0415df303eb4abf45bc224df6b2d147d1a53933130fccd9889054aff8e35e3be",
+  "agent": "AgentWallet",
+  "invariant": {
+    "family": "sliding_window",
+    "ceiling": 2,
+    "bound": 2
+  },
+  "verdict": "ISSUED",
+  "tight": true,
+  "diagnostic": null,
+  "onchain": {
+    "ssl_hash": "0415df303eb4abf45bc224df6b2d147d1a53933130fccd9889054aff8e35e3be",
+    "window_cap_multiplier": 2,
+    "claim": "real-time window outflow <= 2 * window_cap",
+    "matches_deployed_enforcement": true
+  },
+  "backend": "z3 binary (PATH) — `z3 -in` on stdin"
+}

@@ -142,13 +142,17 @@ $W$ is at most $2\times\text{window\_cap}$ --- the factor of two being a
 provable consequence of epoch-boundary straddling, not a safety margin. We
 describe the language (four orthogonal directives), the SMT lowering, the
 certificate format and its SHA-256 binding, and a browser-side re-verifier
-that regenerates the same obligations without a solver. We are deliberate
-about scope. AXL today is an \emph{offline verifier}, not a deployed control:
-the on-chain contract enforces the same $2\times$ bound by hard-coded logic
-and treats the policy hash as provenance only; no continuous-integration gate
-yet couples proof to deployment. We state these gaps as falsifiable
-conditions, because the contribution is the verifiable artifact and its
-construction, not a claim that it is currently load-bearing in production.
+that regenerates the same obligations without a solver. A
+continuous-integration \emph{gate} couples the proof to the deployment: on every
+change touching the policy, the compiler, or the contract, CI re-discharges the
+proof, verifies that the checked-in certificate reproduces, and asserts that the
+constant the on-chain contract actually enforces equals the certified
+multiplier --- so proof and deployed bound can no longer silently diverge (a
+divergence turns CI red). We remain precise about residual scope: the contract
+still enforces the bound by an in-source constant rather than reading the
+certificate at runtime, and treats the policy hash as provenance; those are
+stated as falsifiable conditions. The contribution is the verifiable artifact,
+its construction, and the forcing function that keeps it honest under change.
 \par\vspace{0.6em}
 \noindent\textbf{Keywords:} proof-carrying code, SMT, $k$-induction, agent
 autonomy, spending bounds, formal verification, smart wallets, AP2/x402.
@@ -186,12 +190,15 @@ move money; it proves a property of the policy that governs an agent that does.
 The contribution is (i) a language whose quantitative directive lowers cleanly
 to a decidable SMT obligation, (ii) a zero-dependency compiler that produces a
 re-verifiable certificate with a tight, machine-checked bound, and (iii) a
-faithful browser re-verifier. The contribution is \emph{not} a deployed control:
-\S\ref{sec:scope} states plainly that the on-chain contract enforces the bound
-by hard-coded arithmetic and consumes no certificate, that no CI gate yet
-couples proof to deployment, and that the underlying SMT model is small enough
-($\approx$40 lines) that the proof itself is not a barrier to entry. We treat
-these as falsifiable gaps to close, not as features to obscure.
+faithful browser re-verifier, and (iv) a CI gate that re-discharges the proof
+and asserts the contract's enforced multiplier equals the certified one on every
+relevant change. We are equally clear about what remains:
+\S\ref{sec:scope} states plainly that the contract still enforces the bound from
+an in-source constant rather than reading the certificate at transaction time,
+that the policy hash is provenance, and that the underlying SMT model is small
+enough ($\approx$40 lines) that the proof alone is not a barrier to entry. We
+treat the remaining items as falsifiable gaps to close, not as features to
+obscure.
 
 \paragraph{Contributions.}
 \begin{itemize}
@@ -540,40 +547,57 @@ dependencies; the certificate's load-bearing projection is $11$ fields.
 
 AXL applies only to \emph{decidable} policy: arithmetic bounds, membership, and
 bounded state. Irreducibly fuzzy judgments (``is this transaction
-suspicious?'') are out of scope and still require a model in the loop. Beyond
-that boundary, we name the gaps between the artifact and a deployed control,
-each as a falsifiable statement.
+suspicious?'') are out of scope and still require a model in the loop. Within
+that boundary, we describe what is now enforced under change and what residual
+gap remains, each as a falsifiable statement.
+
+\subsection{Closed: the proof is gated under change}\label{sec:gate}
+A continuous-integration gate (\texttt{axl-compiler/scripts/axl-gate.sh},
+wired in \texttt{.github/workflows/axl-gate.yml}) runs on every change touching
+the policy, the compiler, or the contract. It (i) re-discharges the invariant
+with z3 and asserts the checked-in certificate reproduces (\texttt{verify-cert},
+exit~2 on drift), and (ii) extracts the multiplier the contract actually
+enforces --- the integer $N$ in \texttt{window\_cap.saturating\_mul(}$N$\texttt{)}
+--- and asserts $N$ equals the certified \texttt{window\_cap\_multiplier}. We
+validated all three failure paths: with the repository clean the gate exits~0;
+mutating the contract literal to $3$ makes it exit~2 (``contract enforces
+$3\times$ \dots\ proof certifies $2\times$''); tampering the certificate's
+multiplier makes \texttt{verify-cert} exit~2. \emph{Falsifiable:} a commit that
+changes the deployed bound without re-proving it, or that re-proves a different
+bound without updating enforcement, cannot reach \texttt{main} green. This is
+the concrete sense in which the proof is now load-bearing under change rather
+than an artifact that happens to agree with the contract today.
 
 \begin{itemize}
-\item \textbf{No CI gate couples proof to deployment.} There is no workflow
-  that runs \texttt{verify-cert} on change. \emph{Falsifiable:} until a
-  required check rejects a merge whose policy and certificate disagree, the
-  proof can silently drift from the deployed contract on any commit.
-\item \textbf{The on-chain constant is hard-coded, not certificate-driven.}
-  The contract enforces $2\times$ as a literal. \emph{Falsifiable:} if AXL
-  proved $K=3$ for a revised policy, the contract would not track it without a
-  manual edit; proof and enforcement are not yet a single source of truth.
-\item \textbf{The policy hash is provenance, not a gate.} \texttt{ssl\_hash}
-  is pinned immutably but never interpreted on-chain. \emph{Falsifiable:} no
-  spend is rejected on the basis of a hash mismatch with a certified policy.
+\item \textbf{Residual: the contract reads a constant, not the certificate at
+  runtime.} The enforced multiplier is an in-source literal; the gate binds it
+  to the certified value at \emph{build} time, not at transaction time.
+  \emph{Falsifiable:} a deployment that ships a contract binary whose literal
+  was edited after the gate ran would not be caught on-chain --- closing this
+  fully requires the contract (or the deploy step) to read the certified bound,
+  which is a contract change we did not make autonomously.
+\item \textbf{The policy hash is provenance, not a runtime gate.}
+  \texttt{ssl\_hash} is pinned immutably but not interpreted by
+  \texttt{\_\_check\_auth}. \emph{Falsifiable:} no individual spend is rejected
+  on the basis of a hash mismatch with a certified policy.
 \item \textbf{The proof is not a moat.} The SMT model is $\approx$40 lines; a
-  competent formal-methods engineer reproduces it in engineer-weeks. The only
-  durable advantage would be \emph{adoption} of the certificate as a
-  required-to-participate artifact (a second prover, an insurer, an on-chain
-  registry), which does not exist today.
+  competent formal-methods engineer reproduces it in engineer-weeks. The
+  durable advantage is the \emph{gate plus adoption}: a certificate that is
+  required-to-participate (a second prover, an insurer, an on-chain registry).
+  The gate now exists; broad adoption does not yet.
 \item \textbf{The solver is a runtime dependency.} \texttt{prove},
   \texttt{certify}, and \texttt{verify-cert} require z3 (binary or Python
-  package). This is intentional and fail-closed --- absence refuses --- but it
-  means a consumer without a solver can check only the binding and the
-  obligation text, not the discharge.
+  package). This is intentional and fail-closed --- absence refuses --- but a
+  consumer without a solver can check only the binding and the obligation text,
+  not the discharge.
 \end{itemize}
 
 \noindent We surface these because the value of a proof-carrying scheme is
 exactly its honesty about what has and has not been checked. The certificate
 machinery --- language, lowering, $k$-induction discharge, SHA-256 binding,
-deterministic re-verification, drift detection --- is real and tested. The
-forcing function that would make it load-bearing in production is the work that
-remains.
+deterministic re-verification, drift detection --- is real, tested, and now
+gated in CI. The remaining work is runtime, not build-time: making the contract
+itself consume the certified bound.
 
 \section{Related Work}
 
@@ -599,14 +623,16 @@ AXL reframes an agent's spending limit from a runtime check that a compromised
 host can skip into a logical obligation that anyone can re-verify offline. The
 compiler is small and dependency-free by construction, the sliding-window
 bound is proved tight and minimal by $k$-induction, and the certificate is
-bound to its policy by a content hash so that drift is detectable. We have been
-explicit that the scheme is, today, an offline verifier rather than a deployed
-control: the on-chain contract enforces the same bound by hard-coded
-arithmetic and consumes no certificate, and no CI gate yet couples proof to
-deployment. Those are the falsifiable conditions whose resolution would turn a
-verifiable artifact into a load-bearing one. The thesis is narrow and, we
-think, correct: for money moving between agents that do not trust each other, a
-bound the counterparty can re-check beats a bound it must take on faith.
+bound to its policy by a content hash so that drift is detectable. A CI gate
+now re-discharges that proof on every relevant change and refuses to let the
+deployed multiplier diverge from the certified one, so the agreement between
+proof and enforcement is checked rather than coincidental. The honest residual
+is runtime, not build-time: the contract still enforces an in-source constant
+rather than reading the certified bound at transaction time, and the policy hash
+remains provenance. That is the falsifiable condition whose resolution would
+make the scheme load-bearing end to end. The thesis is narrow and, we think,
+correct: for money moving between agents that do not trust each other, a bound
+the counterparty can re-check beats a bound it must take on faith.
 
 \begin{thebibliography}{9}
 \small
