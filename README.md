@@ -38,6 +38,47 @@ do, that is a bug worth an issue.
 
 ---
 
+## PROVEN ON MAINNET: an autonomous agent paid another agent — inside a provable mandate
+
+> **Not a slide. A verifiable on-chain transaction.**
+>
+> On **26 Jun 2026**, a Slippay **buyer agent** — with **no human in the loop** — hit a seller
+> agent's HTTP **402**, decided to pay **within a cryptographically-signed spending mandate**,
+> paid **USDC on Stellar mainnet**, and received the goods. The full loop closed end to end:
+> **charge → autonomous decision → on-chain settlement → delivery.**
+>
+> - **Mainnet proof:** [tx `34eb71b1…`](https://stellar.expert/explorer/public/tx/34eb71b1c4446bf1b39a1d811370f93c24188e61458d56a126957b13d4eea13b) — USDC on Stellar, content delivered to the paying agent
+> - **Full loop on testnet** (incl. the seller's release): [tx `61db50c6…`](https://stellar.expert/explorer/testnet/tx/61db50c6ec5b6c6890045c4fe09b3c76bf7baa506a54af3c22da491cf81d55f1)
+> - Every payment leaves a **signed registry record**: who paid whom, how much, under which mandate, with the attestation signature.
+
+**Honest positioning — agent payments are not new.** Coinbase's **x402** (May 2025) has settled
+150M+ transactions; Google's **AP2** defines human-approved "mandates"; Coinbase ships agent
+wallets with spend guardrails. What is different here:
+
+- **Non-custodial.** The agent's *own* wallet signs. No platform holds the funds or the keys — unlike a custodial agent-wallet guardrail.
+- **Portable integrity attestation.** Slippay answers the question the payment rails don't ask — *"is this agent still operating inside the surface it committed to?"* — as an **ed25519 verdict verifiable on-chain AND offline by anyone**, not a guardrail locked inside one platform. ([agent-integrity attestation](./docs/concepts/agent-integrity-attestation.md))
+- **The bound can be a theorem.** The spending limit compiles to a **z3-checked, offline-verifiable proof-carrying certificate** ([AXL](#axl--agent-spend-limits-as-proof-carrying-theorems)).
+
+### Why this is the shape regulators will require
+
+Brazil's Receita Federal **"DeCripto"** (Normative Instruction 2,291 — monthly reporting from
+**July 2026**, aligned with the OECD **CARF** auto-exchange) is the template the world is moving
+toward: it obliges intermediaries to **identify and report** crypto transactions, while
+**explicitly carving out self-custody** — *"operações on-chain em carteiras controladas pelo
+próprio usuário, sem intermediário, ficam fora do escopo."*
+
+Autonomous agents moving money collide head-on with this: **who is the holder of the transaction
+when both sides are agents and no human pressed a button?** No regulator has a closed answer in
+2026. The agent payments that *survive* that question are the ones that are **non-custodial**
+(inside the self-custody carve-out), **provably bounded** (a human-signed mandate at the root, so
+authorization exists even without a per-transaction click), and **auditable** (a signed registry
+that reconstructs every payment). That is exactly this architecture. We don't ask permission to
+occupy the grey zone — we run inside it, with the clean signed trail that defines the standard.
+
+*(Not legal advice. The agent-as-holder classification is an open question we are taking to counsel — see [regulatory](./docs/concepts/regulatory.md).)*
+
+---
+
 ## Three surfaces, one core
 
 | Surface | Who it's for | What it does | State |
