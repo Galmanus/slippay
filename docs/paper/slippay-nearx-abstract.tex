@@ -1,0 +1,113 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{fancyhdr}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\pagestyle{fancy}\fancyhf{}\rhead{\small Slippay --- Governance for the Agent Economy}\lhead{\small Extended Abstract \textbar\ NEAR X}\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.2pt}
+
+\title{\textbf{Slippay: A Portable Governance Layer for the Agent Economy}\\[2pt]
+\large Extended Abstract for NEAR X}
+\author{Manuel Guilherme Galmanus \;\textbar\; Bluewave AI \;\textbar\; \texttt{manuel@bluewaveai.online}}
+\date{June 26, 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+\vspace{-1.2em}
+
+\section*{The thesis in one line}
+Agent \emph{payment} is solved; agent \emph{governance} is not --- and governance is the layer
+NEAR's ``Currency of Agents'' needs to be trusted at scale. Slippay is a working, chain-agnostic
+governance primitive for it, with a transaction hash behind the claim.
+
+\section*{What is already solved (so we don't reinvent it)}
+Over HTTP~402, autonomous agents already pay each other in stablecoins: Coinbase/Cloudflare's
+\textbf{x402} has settled 161M+ machine payments ($\approx$\$43.5M); Google's \textbf{AP2}
+standardizes human-approved spending \emph{mandates}. NEAR itself routes agent goals across
+chains via \textbf{Intents}, matches work in the \textbf{AI Agent Market}, and hardens execution
+in \textbf{TEEs} (IronClaw / Intel~TDX). The rails and the routing exist.
+
+\section*{What is NOT solved --- the governance gap}
+When \emph{both} sides of a transaction are autonomous and no human clicked, three questions stay
+open, and they are the ones that decide whether an agent economy is investable and compliant:
+\begin{enumerate}
+  \item \textbf{Holder / titularity.} Who is the legal holder of the transaction? Multi-agent
+  liability law is openly unsettled (Berkeley Tech.\ Law J., Columbia CLS, 2026).
+  \item \textbf{Integrity.} Is the paying agent still uncompromised, or hijacked into an
+  unauthorized payment (llms.txt / prompt injection)?
+  \item \textbf{Bound provenance.} Is the agent's spending limit \emph{proven}, or just a
+  runtime check a compromised server could skip?
+\end{enumerate}
+These are one problem: the \emph{self-governance} of an autonomous payer.
+
+\section*{Slippay's answer (and why it is proven, not a slide)}
+We treat payment authorization as a \textbf{metacognitive monitor--control loop}: a payment
+settles only when a monitor confirms the agent is inside a human-rooted, signed surface, and that
+verdict is itself a portable, checkable artifact. Three mechanisms, all \textbf{non-custodial}
+(the agent's own wallet signs; no platform holds funds):
+\begin{itemize}
+  \item \textbf{Agent-Integrity Attestation (AIA).} An \mbox{ed25519} verdict ---``is this agent
+  inside its committed surface?''--- bound to the payment, verifiable \emph{on-chain and offline}
+  by anyone, fail-closed. Not a platform-locked guardrail.
+  \item \textbf{AXL proof-carrying bound.} The spending limit compiles to an SMT (z3) certificate
+  anyone can re-verify offline: the agent \emph{cannot} exceed the cap, provably.
+  \item \textbf{Human principal at the root.} One signed mandate is the authorization; consent
+  exists without a per-transaction click (aligned with UETA/E-SIGN deployer-as-principal and
+  AP2's mandate chains).
+\end{itemize}
+
+\textbf{Demonstrated end-to-end on Stellar mainnet} --- a buyer agent paid a seller agent inside
+its mandate, with no human in the loop, and received the good:
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Autonomous A2A payment & Stellar mainnet & \texttt{34eb71b1\ldots ea13b} (ledger 63{,}206{,}144)\\
+Full loop incl.\ delivery & Stellar testnet & \texttt{61db50c6\ldots 1d55f1} (ledger 3{,}291{,}957)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Why this fits NEAR specifically}
+NEAR is building the \emph{cross-chain} agent economy; Slippay's verdict is \textbf{chain-agnostic
+by construction} --- the same signed bytes verify on a Soroban contract and off-chain on any
+stack, so it travels with the agent across the chains NEAR Intents route over.
+\begin{itemize}
+  \item \textbf{Complements NEAR's TEE bet, doesn't compete with it.} TEEs answer ``trust the
+  execution environment.'' Slippay answers ``verify the claim'' --- a portable cryptographic
+  attestation + a proven bound that hold \emph{without} trusting the host. Combined: a TEE
+  attests, Slippay's portable verdict carries that trust cross-chain and gates settlement.
+  \item \textbf{The governance layer the Agent Market needs.} Escrowed, autonomous task-payment
+  becomes safe when each payout is integrity-gated and mandate-bounded --- exactly Slippay's gate.
+  \item \textbf{Regulatory tailwind.} Brazil's DeCripto (IN~2{,}291, Jul~2026) and the OECD CARF
+  (70+ countries) oblige identification + reporting while carving out \emph{self-custody}. A
+  cross-chain agent economy faces this globally; the payments that survive are non-custodial,
+  mandate-bounded and auditable --- Slippay's exact shape.
+\end{itemize}
+
+\section*{The ask}
+A conversation about making this the \textbf{open governance layer for NEAR's agent economy}: a
+pilot wiring the AIA + proof-carrying mandate into a NEAR Intents / Agent-Market flow, and/or an
+ecosystem grant to harden the chain-agnostic attestation across NEAR's cross-chain execution. We
+bring a proven primitive (on-chain, today) and the research behind it; NEAR brings the agent
+economy that needs it.
+
+\medskip\hrule\medskip
+\small
+\textbf{Full paper:} \emph{Slippay --- Metacognitive Governance for Autonomous Agent Payments:
+Non-Custodial, Integrity-Gated, Proof-Carrying Settlement on Stellar.}
+\url{https://github.com/Galmanus/slippay/blob/main/docs/paper/slippay.pdf}\\
+\textbf{Code (open):} \url{https://github.com/Galmanus/slippay} \;\textbar\;
+\textbf{Live:} \url{https://app.slippay.cc}\\
+\textbf{Honest positioning:} agent payment is not novel (x402/AP2 cited); the contribution is the
+integrity-gated, proof-carrying, metacognitive synthesis and a publicly verifiable artifact.
+
+\end{document}
