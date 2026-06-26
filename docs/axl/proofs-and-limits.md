@@ -87,14 +87,20 @@ Three concrete gaps, found in the code:
    drift, on certificate tamper, and to pass clean. The proof can no longer silently drift
    from the deployed bound at build time.
 
-2. **The contract constant is now gate-bound at build time (residual: runtime).**
-   The contract still enforces `window_cap.saturating_mul(2)` as an in-source literal,
-   but `axl-gate.sh` now extracts that `2` and fails CI unless it equals the certified
-   `window_cap_multiplier`. So proof and enforcement are a single *checked* invariant on
-   every change — if AXL proved `K = 3` without the contract following (or vice versa), CI
-   goes red. The remaining gap is runtime: the contract reads a constant, not the
-   certificate at transaction time. Closing that fully requires a contract change
-   (read the certified bound on-chain), which has not been made.
+2. **The enforced bound is now on-chain state bound to ssl_hash (closed on testnet
+   2026-06-26).** The contract no longer uses a source literal. The hard ceiling
+   multiplier is stored per session (`AgentSession.window_cap_multiplier`), pinned at
+   install to the named const `PROVED_WINDOW_MULTIPLIER` and bound alongside `ssl_hash`,
+   and read back by the hot path (`window_cap.saturating_mul(s.window_cap_multiplier)`).
+   `axl-gate.sh` binds the const to the certified `window_cap_multiplier` AND asserts the
+   hot path reads the session field. Demonstrated on Stellar testnet: contract
+   `CCJXPLDPFMHYJIN6PTYQUNCP2ZTS52JK4WVRBKRHLXF2S6JFFVKYRDHN`, a session installed with
+   the certified `ssl_hash 0415df30…e35e3be` reads back `window_cap_multiplier: 2`
+   (install tx `6b57021b…007ae8`). Residual: the contract enforces the stored value but
+   does not re-verify the SMT proof on-chain (z3 on-chain is infeasible); trust reduces to
+   "installed multiplier == certified," made auditable by the on-chain record + the gate.
+   The **mainnet** wallet still runs the prior literal-`2` contract pending a deliberate
+   redeploy.
 
 3. **`ssl_hash` is provenance-only.** The smart-wallet contract pins `ssl_hash`
    immutably but does not interpret it, and the contract crate has no dependency on
