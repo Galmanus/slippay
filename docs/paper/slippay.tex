@@ -1,0 +1,331 @@
+\documentclass[11pt]{article}
+
+% ---- arXiv-style self-contained preamble ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{natbib}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\pagestyle{fancy}\fancyhf{}\rhead{\small Slippay: Metacognitive Governance for Autonomous Agent Payments}\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.2pt}
+
+\title{\textbf{Slippay: Metacognitive Governance for Autonomous Agent Payments}\\[2pt]
+\large Non-Custodial, Integrity-Gated, Proof-Carrying Settlement on Stellar}
+
+\author{
+  Manuel Guilherme Galmanus\\
+  \small Bluewave AI \;\textbar\; Blumenau, Santa Catarina, Brazil\\
+  \small \texttt{manuel@bluewaveai.online}
+}
+\date{June 26, 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\begin{abstract}
+Autonomous software agents can now pay one another: Coinbase/Cloudflare's x402 has settled
+161M+ machine payments ($\approx$\$43.5M) and Google's AP2 standardizes human-approved
+spending \emph{mandates}. Settlement, in other words, is largely solved. The harder questions
+are not: \emph{who is the holder of a transaction when both counterparties are autonomous agents
+and no human pressed a button?}; \emph{is the paying agent still uncompromised?}; and \emph{how
+is the agent's spending bound proven rather than merely asserted?} We frame agent-payment
+authorization as a \emph{metacognitive control} problem---a monitor--control loop that gates
+settlement on the agent remaining inside a human-rooted, cryptographically-signed surface. We
+present \textbf{Slippay}, a non-custodial system in which (i) a portable \mbox{ed25519} integrity
+attestation, verifiable both on-chain and offline, is bound to each payment; (ii) the spending
+bound compiles to an SMT-checked, offline-verifiable proof-carrying certificate (AXL); and (iii)
+the human principal remains the legal actor at the root of the mandate. We demonstrate the full
+charge\,$\rightarrow$\,autonomous-decision\,$\rightarrow$\,settlement\,$\rightarrow$\,delivery
+loop end-to-end on the Stellar public network. We argue this is the shape that emerging
+regulation---Brazil's Receita Federal ``DeCripto'' (IN 2{,}291) and the OECD CARF---will
+require: non-custodial, mandate-bounded, auditable. We are explicit about positioning: agent
+payment is \emph{not} novel; our contribution is the integrity-gated, proof-carrying,
+metacognitive synthesis and a publicly verifiable artifact.
+\end{abstract}
+
+\section{Introduction}
+
+The ``agentic web'' is acquiring a native payment layer. Over HTTP~402, an autonomous agent that
+hits a paywalled endpoint can settle in stablecoins and retry with a payment header, with no
+human in the loop~\citep{x402coinbase,rohitraj,turnkey}. By mid-2026 this is production
+infrastructure, not a demo. What this infrastructure settles is a single question: \emph{is this
+payment authorized?} It does not answer three questions that become acute precisely when
+\emph{both} sides of a transaction are autonomous:
+
+\begin{enumerate}
+  \item \textbf{Holder / titularity.} When two agents from different operators transact and no
+  human clicked, who is the legal holder of the transaction? Multi-agent liability law is openly
+  unsettled~\citep{btlj,clsbluesky,countais,goodwin}.
+  \item \textbf{Integrity.} Is the paying agent still operating inside its committed behavior,
+  or has it been hijacked---e.g., via \texttt{llms.txt} or Markdown injection that redirects it
+  into unauthorized payments~\citep{onesec,agentshield}?
+  \item \textbf{Bound provenance.} Is the agent's spending limit \emph{proven}, or merely a
+  runtime check that a compromised server could skip?
+\end{enumerate}
+
+Our thesis is that these are not three unrelated problems but one: they are the
+\emph{self-governance} of an autonomous payer. We borrow the framing that
+\citet{metaframework} make for generative AI in general---that a system must govern its own
+activity under uncertainty, and that \emph{metacognition} (monitoring one's own state, then
+controlling action accordingly) is the right scientific frame---and apply it to the money path.
+Concretely: a payment should settle only when a monitor confirms the agent is inside a
+human-authorized surface, and the verdict of that monitor should itself be a portable,
+checkable artifact rather than an internal opinion. This is the design of Slippay.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+  \item A \emph{framing}: agent-payment authorization as metacognitive monitor--control, with
+  the governance ``gate'' as the locus of safety (Section~\ref{sec:meta}).
+  \item A \emph{system}: non-custodial, integrity-gated, proof-carrying settlement that binds an
+  on-chain-and-offline-verifiable ed25519 attestation and an SMT-proven bound to each payment
+  (Section~\ref{sec:system}).
+  \item A \emph{demonstration}: the full agent-to-agent loop executed end-to-end on Stellar
+  mainnet, with publicly verifiable transactions (Section~\ref{sec:eval}).
+  \item A \emph{regulatory argument}: why non-custodial + mandate-bounded + auditable is the
+  architecture that survives DeCripto/CARF-style regimes (Section~\ref{sec:reg}).
+\end{enumerate}
+
+We state plainly what is \emph{not} a contribution: agent-to-agent payment itself, which already
+exists at scale~\citep{googlex402,a2ax402,landscape}.
+
+\section{Background and Related Work}
+\label{sec:related}
+
+\paragraph{Agent payment stacks.} The space has stratified into complementary layers rather than
+competitors~\citep{landscape,cryptorefills}: \emph{authorization} (AP2~\citep{ap2google,ap2auth},
+mandates across purchases), \emph{checkout} (ACP), \emph{settlement} (x402~\citep{x402coinbase},
+pay-per-call; MPP~\citep{turnkey}, session-based). Google's AP2 with x402 already enables
+agent-to-agent stablecoin payments across platforms~\citep{googlex402,a2ax402}. A recurring
+observation is that low present volume reflects an infrastructure-first phase, and that the open
+frontier is \emph{trust and verification before settlement}---``verify-then-pay'' designs and
+capability provenance~\citep{tesspay,cpmm,tokenrelations}---rather than settlement itself.
+
+\paragraph{Agent identity and liability.} Statutory frameworks for agentic payments are
+incomplete~\citep{goodwin}; multi-agent interaction outpaces single-agent liability
+doctrine~\citep{btlj}. Proposals range from a new legal entity (the ``A-corp''/Algorithmic
+Corporation) run by AIs but owned by humans~\citep{clsbluesky,countais}, to treating the
+electronic agent as a \emph{tool} of its deployer so that actions attribute to the human
+principal (UETA/E-SIGN)~\citep{ueta}. On the technical side, decentralized identifiers and
+verifiable-credential mandate chains are emerging as the substrate~\citep{aip,tiva,ap2auth}.
+
+\paragraph{Agent integrity.} A distinct line secures the agent itself: detection of indirect
+prompt injection and tool-call compromise~\citep{agentshield,onesec}, cryptographically
+authenticated workflows over prompts/tools/data/context~\citep{authworkflows}, signed receipts
+and audit trails~\citep{notarized}, and per-call signing with spend and sanctions
+controls~\citep{stripemcps}. Most such systems are \emph{detection-only} or \emph{identity-only};
+few bind an integrity verdict directly to settlement.
+
+\paragraph{Metacognition for self-governance.} Metacognition is increasingly proposed as the
+framework for bounded self-governance in AI~\citep{metaframework}, instantiated as dual-process
+controllers~\citep{sofai}, dual-cycle self-regulated autonomy~\citep{midca}, and reflective
+self-improvement~\citep{mars}. Most relevant here, \citet{governed} show that routing reasoning
+failures to an explicit \emph{gate} before execution raises task accuracy from 55/45\% to 91\%
+on a governance benchmark---structurally the same move we make on the payment path. We also note
+a negative result: na\"ive self-monitoring modules can fail to help and collapse to constant
+signals unless \emph{structurally integrated}~\citep{negresult}; this informs our choice to make
+governance an architectural gate, not a bolt-on monitor.
+
+\section{Problem and Threat Model}
+\label{sec:threat}
+
+We consider an autonomous \emph{buyer} agent $B$ paying an autonomous \emph{seller} agent $A$ for
+a service priced over HTTP~402, settling in USDC. The human principal $P$ deploys $B$ under a
+spending policy. We assume an honest ledger but make no trust assumption about the application
+servers in the path. Adversaries of interest:
+
+\begin{itemize}
+  \item \textbf{Hijacked payer.} $B$ is steered out of its intended behavior (injection,
+  tool-output poisoning) and attempts payments outside $P$'s policy.
+  \item \textbf{Receiver substitution.} A compromised intermediary rewrites the payment
+  destination after $P$/$B$ consented.
+  \item \textbf{Bound evasion.} A server-side check meant to cap spending is bypassed or
+  back-doored.
+  \item \textbf{Repudiation.} After the fact, no party can establish who authorized what.
+\end{itemize}
+
+The corresponding requirements are: payments are bounded by a \emph{provable} policy; the
+destination and amount the agent signs are exactly what the human can verify; an integrity
+verdict gates settlement; and every settled payment leaves a signed, reconstructable record.
+
+\section{The Slippay System}
+\label{sec:system}
+
+\subsection{Non-custodial settlement and the WYSIWYS gate}
+Slippay never holds funds or signing authority. The agent's own wallet signs the transfer; the
+platform builds an \emph{unsigned} transaction and a relayer, at most, sponsors network fees. The
+signing path is a fixed chokepoint we call \textbf{WYSIWYS} (what-you-see-is-what-you-sign):
+\emph{build}~$\rightarrow$~\emph{decode} the exact built transaction~$\rightarrow$~\emph{assert}
+the decoded destination/amount match intent~$\rightarrow$~\emph{human/policy
+confirm}~$\rightarrow$~\emph{re-derive the hash locally}~$\rightarrow$~\emph{sign}. A
+compromised server cannot make the signer approve a payment it did not see, which neutralizes
+receiver substitution and amount drift.
+
+\subsection{Agent-Integrity Attestation (AIA)}
+The agent commits a \emph{surface} up front: allowed recipients, a spending cap, and a velocity
+window. An integrity oracle signs an action \emph{only if} it stays inside that surface (a
+deviation---new recipient, over cap, abnormal rate---is refused, fail-closed). The verdict is an
+ed25519 signature over a canonical action descriptor (\,$\text{action\_hash}\,\|\,
+\text{not\_after}\,\|\,\text{nonce}$\,) that is verifiable two ways from the \emph{same} bytes: a
+Soroban contract checks it on-chain via native \texttt{ed25519\_verify}, and any off-chain party
+checks it with the public key. Unlike platform-locked guardrails, the verdict is portable: it
+answers ``is this agent compromised?'', not merely ``is this payment authorized?'', and it
+travels with the payment across chains.
+
+\subsection{AXL: the bound as a proof-carrying theorem}
+A spending policy written in a small DSL (an \texttt{agent\{\,\}} block) compiles to an inference
+contract whose bound is \emph{discharged as an SMT proof} (z3). The output is a proof-carrying
+certificate: anyone can re-verify, offline and after the fact, that the agent \emph{cannot}
+exceed the limit, without running the agent or trusting the operator; verification refuses if no
+solver is present rather than passing silently. The guarantee is over the \emph{declared} policy,
+not unencoded behavior---an honest scope we return to in Section~\ref{sec:limits}.
+
+\subsection{Mandate and principal}
+The committed surface is the human authorization at the \emph{root}: consent exists once,
+cryptographically, even though no human clicks per transaction. This aligns with the
+deployer-as-principal attribution of UETA/E-SIGN~\citep{ueta} and with AP2's open/closed mandate
+chains~\citep{ap2auth}; adopting SD-JWT/DID mandate encodings would make Slippay interoperate
+with those standards directly.
+
+\section{Metacognitive Framing}
+\label{sec:meta}
+
+The three mechanisms above are one loop. The AIA surface is a \emph{monitor} of the agent's
+state; the gate is a \emph{controller} that permits or refuses the action; the AXL certificate
+makes the controller's constraint externally checkable. This is exactly the monitor--control
+structure that the metacognition literature proposes for \emph{reasoning}~\citep{metaframework,
+sofai,governed}---applied here to \emph{money}. The isomorphism is concrete:
+\citet{governed}'s GATE, which routes a reasoning failure aside before it executes, is the same
+construct as the WYSIWYS/AIA gate that routes an out-of-surface payment aside before it settles.
+
+\smallskip
+\emph{Cross-domain note.} The structure recurs in control theory: a supervisory controller with
+a safety set and a fail-closed default. \emph{Disanalogy:} a classical safety controller assumes
+a known plant model, whereas an agent's ``plant'' (its own future behavior under adversarial
+input) is not fully modeled---which is why the bound must be \emph{proven over a declared policy}
+and the monitor must be fail-closed rather than predictive.
+
+\section{Demonstration}
+\label{sec:eval}
+
+We implemented the full circuit and ran it end-to-end. A buyer agent, with no human in the loop,
+fetched a seller's HTTP~402, decided to pay \emph{within its signed mandate}, paid USDC on
+Stellar, re-presented proof, received the good, and recorded a signed registry entry
+(recipient, amount, mandate, attestation signature, transaction hash).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Run} & \textbf{Network} & \textbf{Transaction (verifiable on a block explorer)} \\
+\midrule
+Full loop (incl.\ delivery) & Stellar testnet & \texttt{61db50c6\,\ldots\,1d55f1} (ledger 3{,}291{,}957) \\
+Autonomous A2A payment & Stellar \textbf{mainnet} & \texttt{34eb71b1\,\ldots\,ea13b} (ledger 63{,}206{,}144) \\
+\bottomrule
+\end{tabular}
+\caption{On-chain evidence. Each is independently verifiable at
+\texttt{stellar.expert/explorer/<net>/tx/<hash>}; the mainnet payment is signed by the author's
+own deployer key.}
+\end{table}
+
+The demonstration establishes three facts simultaneously: the rail works (a real on-chain
+settlement); the agent decided and paid within a mandate (the thesis); and the action left an
+auditable, signed trail (the defense and the asset). Operationally, we also surfaced a real
+reliability lesson while closing the loop: a streaming ledger watcher can die silently (an open
+connection that delivers no events and never errors), so confirmations stall invisibly; we
+replaced streaming with polling plus a heartbeat so a stall is observable.
+
+\section{Regulatory Alignment}
+\label{sec:reg}
+
+Brazil's Receita Federal ``DeCripto'' (Normative Instruction 2{,}291) institutes monthly
+reporting of crypto transactions from July~2026, aligned with the OECD CARF auto-exchange. It
+obliges intermediaries to identify and report---while \emph{explicitly carving out self-custody}:
+on-chain operations in wallets controlled by the user, without an intermediary, fall outside the
+monthly declaration. Autonomous agents collide with this regime at exactly the titularity
+question of Section~\ref{sec:threat}. The payments that \emph{survive} it are those that are
+\textbf{non-custodial} (inside the self-custody carve-out), \textbf{provably bounded} (a
+human-signed mandate at the root, so authorization exists without a per-transaction click), and
+\textbf{auditable} (a signed registry reconstructing every payment). This is precisely Slippay's
+architecture. We claim alignment, not legal settlement: whether a non-custodial interface that
+facilitates agent payments is itself an ``intermediary'' is an open classification question we
+are taking to counsel.
+
+\section{Limitations and Honest Positioning}
+\label{sec:limits}
+
+\begin{itemize}
+  \item \textbf{Not a novel payment.} Agent-to-agent settlement exists at
+  scale~\citep{x402coinbase,googlex402}. Our contribution is the integrity-gated, proof-carrying,
+  metacognitive \emph{synthesis} plus a verifiable artifact---not the act of an agent paying.
+  \item \textbf{Proof scope.} The AXL guarantee is over the \emph{declared} policy; it does not
+  cover behavior the policy never encoded. It is a guarantee about the surface, not a universal
+  safety claim.
+  \item \textbf{Detection depth.} AIA's v0 detectors are surface deviation and velocity; deeper
+  injection/behavioral detectors are future work, and self-monitoring is known to underperform
+  unless structurally integrated~\citep{negresult}.
+  \item \textbf{Legal openness.} The agent-as-holder classification is unresolved law; we
+  describe an architecture compatible with the leading proposals~\citep{countais,ueta}, not a
+  ruling.
+  \item \textbf{Single-rail demonstration.} We demonstrate on Stellar; the attestation is
+  chain-agnostic by construction but cross-chain operation is not evaluated here.
+\end{itemize}
+
+\section{Conclusion}
+
+Agent payments are settled; agent \emph{governance} is not. We argued that authorizing an
+autonomous payer is a metacognitive control problem and built Slippay accordingly:
+non-custodial settlement, an integrity attestation that gates the payment and is verifiable
+on-chain and offline, and a spending bound that is a proof-carrying theorem---demonstrated
+end-to-end on Stellar mainnet. As reporting-and-identification regimes such as DeCripto and CARF
+arrive, the agent payments that endure will be the ones that are non-custodial, provably
+bounded, and auditable. That is a thesis with a transaction hash behind it.
+
+\small
+\begin{thebibliography}{99}
+\setlength{\itemsep}{1pt}
+
+\bibitem[Coinbase x402(2026)]{x402coinbase} Coinbase Developer Platform. \emph{x402: Internet-Native Payments for APIs and AI Agents.} \url{https://www.coinbase.com/developer-platform/discover/launches/google_x402}, 2025--2026.
+\bibitem[Raj(2026)]{rohitraj} R. Raj. \emph{AI Agent Payments in 2026: x402 vs AP2.} \url{https://rohitraj.tech/en/notes/ai-agent-payments-x402-vs-ap2-2026}, 2026.
+\bibitem[Turnkey(2026)]{turnkey} Turnkey. \emph{Agentic Stablecoin Micropayments: MPP and x402.} \url{https://www.turnkey.com/blog/agentic-stablecoin-micropayments-machine-payment-protocol-x402}, 2026.
+\bibitem[Google(2025)]{ap2google} Google Cloud. \emph{Announcing the Agent Payments Protocol (AP2).} \url{https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol}, 2025.
+\bibitem[Coinbase/Google(2025)]{googlex402} Coinbase. \emph{Google AP2 + x402: Agents Can Now Pay Each Other.} \url{https://www.coinbase.com/developer-platform/discover/launches/google_x402}, 2025.
+\bibitem[A2A-x402(2025)]{a2ax402} Google Agentic Commerce. \emph{A2A x402 Extension.} \url{https://github.com/google-a2a/a2a-x402}, 2025.
+\bibitem[Landscape(2026)]{landscape} GoodMeta. \emph{Agent Payments Landscape (AP2/ACP/x402/MPP/UCP).} \url{https://github.com/goodmeta/agent-payments-landscape}, 2026.
+\bibitem[Cryptorefills(2026)]{cryptorefills} Cryptorefills. \emph{Agentic Commerce: protocol comparison.} \url{https://github.com/cryptorefills/agentic-commerce}, 2026.
+\bibitem[Token Relations(2026)]{tokenrelations} Token Relations. \emph{Agentic Payments: Where We Are and Where We're Going.} \url{https://www.token-relations.com/p/agentic-payments-where-we-are-and-where-we-re-going}, 2026.
+\bibitem[TessPay(2026)]{tesspay} \emph{TessPay: Verify-then-Pay Infrastructure for Trusted Agentic Commerce.} arXiv:2602.00213, 2026.
+\bibitem[CPMM(2026)]{cpmm} \emph{Capability-Priced Micro-Markets for the Agentic Web over HTTP 402.} arXiv:2603.16899, 2026.
+\bibitem[AP2 Auth(2026)]{ap2auth} Agent Payments Protocol. \emph{Agent Authorization Framework (SD-JWT mandates).} \url{https://ap2-protocol.org/ap2/agent_authorization/}, 2026.
+\bibitem[Goodwin(2026)]{goodwin} Goodwin Law. \emph{Authorizing Agentic Payments.} \url{https://www.goodwinlaw.com/en/insights/publications/2026/06/insights-technology-aiml-authorizing-agentic-payments}, 2026.
+\bibitem[BTLJ(2026)]{btlj} Berkeley Technology Law Journal. \emph{Multi-Agent AI is Outpacing the Liability Frameworks Built for Single-Agent Systems.} \url{https://btlj.org/2026/06/multi-agent-ai-is-outpacing-the-liability-frameworks-built-for-single-agent-systems/}, 2026.
+\bibitem[CLS(2026)]{clsbluesky} Columbia Law School Blue Sky Blog. \emph{Why Law Needs a New Entity to Govern AI Agents.} \url{https://clsbluesky.law.columbia.edu/2026/06/15/why-law-needs-a-new-entity-to-govern-ai-agents/}, 2026.
+\bibitem[Count AIs(2026)]{countais} \emph{How to Count AIs: Individuation and Liability for AI Agents.} arXiv:2603.10028, 2026.
+\bibitem[UETA(2026)]{ueta} Promise Legal. \emph{AI Agent Liability: Agency Law, UETA \& E-SIGN.} \url{https://blog.promise.legal/startup-central/copilot-committed-ad-ai-agent-liability-agency-law/}, 2026.
+\bibitem[AIP(2026)]{aip} A. Singla et al. \emph{Agent Identity Protocol (AIP): Decentralized Identity and Delegation for AI Agents.} IETF draft-singla-agent-identity-protocol-03, 2026.
+\bibitem[TIVA(2025)]{tiva} \emph{Secure Autonomous Agent Payments: Verifying Authenticity and Intent in a Trustless Environment.} arXiv:2511.15712, 2025.
+\bibitem[1-SEC(2026)]{onesec} 1-SEC. \emph{Securing the Agentic Web: llms.txt Poisoning, x402 Payment Fraud, and Markdown Injection.} \url{https://1-sec.dev/blog/securing-agentic-web-access-llms-txt-x402-markdown-agents}, 2026.
+\bibitem[AgentShield(2026)]{agentshield} Y.\ Rassul. \emph{AgentShield: Detecting Compromised Tool-Using Agents.} \url{https://github.com/Yassin-H-Rassul/AgentShield}, 2026.
+\bibitem[Auth.\ Workflows(2026)]{authworkflows} \emph{Authenticated Workflows: A Systems Approach to Protecting Agentic AI.} arXiv:2602.10465, 2026.
+\bibitem[Notarized(2026)]{notarized} \emph{Notarized Agents: Receiver-Attested Confidential Receipts for AI Agent Actions.} arXiv:2606.04193, 2026.
+\bibitem[Stripe-MCPs(2026)]{stripemcps} R.\ Shariff. \emph{Cryptographically Signed MCP Tool Calls with Spend and Sanctions Controls.} \url{https://github.com/razashariff/stripe-mcps}, 2026.
+\bibitem[Meta-framework(2026)]{metaframework} \emph{Metacognition Should Be the Scientific Framework for Bounded and Effective Self-Governance in Generative AI.} arXiv:2605.23981, 2026.
+\bibitem[SOFAI(2025)]{sofai} \emph{Fast, Slow, and Metacognitive Thinking in AI.} npj Artificial Intelligence, 2025.
+\bibitem[MIDCA(2016)]{midca} M.\ T.\ Cox et al. \emph{MIDCA: A Metacognitive, Integrated Dual-Cycle Architecture for Self-Regulated Autonomy.} AAAI, 2016.
+\bibitem[Governed(2026)]{governed} \emph{Governed Reasoning for Institutional AI: Cognitive Primitives, Structural Governance, and Metacognitive Reflection.} arXiv:2604.10658, 2026.
+\bibitem[MARS(2026)]{mars} \emph{Learn Like Humans: Meta-cognitive Reflection for Efficient Self-Improvement.} ACL, 2026.
+\bibitem[Neg.\ Result(2026)]{negresult} \emph{Self-Monitoring Benefits from Structural Integration: Lessons from Metacognition in Continuous-Time Multi-Timescale Agents.} arXiv:2604.11914, 2026.
+
+\end{thebibliography}
+
+\end{document}
