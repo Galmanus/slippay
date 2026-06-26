@@ -83,6 +83,23 @@ const MAX_CAP_MULTIPLIER: i128 = 10;
 /// session key + compromised admin. Mirrors the policy path's N1 guard.
 const MAX_WINDOW_MULTIPLIER: i128 = 100;
 
+/// AXL-PROVED real-time-window multiplier. `axlc prove agent_wallet_m2.axl`
+/// (Z3, k-induction) certifies that the deployed sliding-window policy's
+/// worst-case outflow over ANY real window of length `window_seconds` is bounded
+/// by `PROVED_WINDOW_MULTIPLIER * window_cap` — and that this bound is TIGHT and
+/// MINIMAL (the 2× is the epoch-straddle worst case, not slack; 1× is unsound).
+/// This constant is the SINGLE on-chain source of that bound: it is written into
+/// every `AgentSession` at install (`window_cap_multiplier`, pinned alongside
+/// `ssl_hash`) and read back by the hot path (`try_authorize_agent_transfer`)
+/// to compute the hard ceiling. The `axl-gate` CI workflow asserts this literal
+/// equals the certified `window_cap_multiplier` in
+/// `axl-compiler/certified/agent_wallet.cert.json`, so the deployed enforcement
+/// and its proof cannot silently drift. Must stay within `MAX_CAP_MULTIPLIER`.
+const PROVED_WINDOW_MULTIPLIER: u32 = 2;
+// Compile-time guard: the proved bound must be within the admin-blast-radius cap.
+const _: () = assert!(PROVED_WINDOW_MULTIPLIER as i128 <= MAX_CAP_MULTIPLIER);
+const _: () = assert!(PROVED_WINDOW_MULTIPLIER >= 1);
+
 /// On-chain per-merchant spending policy. The wallet authorizes any
 /// `token.transfer` whose merchant + amount + interval fall inside these
 /// constraints, without consulting the user's passkey again.
@@ -174,6 +191,13 @@ pub struct AgentSession {
     /// off-chain drift detector diffs observed spend against the spec at this
     /// hash; that diff, not the hash, is the compliance evidence.
     pub ssl_hash: BytesN<32>,
+    /// AXL-proved real-time-window multiplier for THIS session, pinned at install
+    /// to `PROVED_WINDOW_MULTIPLIER` and bound to `ssl_hash`. The hot path reads
+    /// this field (not a source literal) to compute the hard ceiling
+    /// `window_cap * window_cap_multiplier`, so every spend made under this
+    /// session is tied on-chain to the exact bound an auditor can re-check
+    /// against the `axlc` certificate for the policy at `ssl_hash`.
+    pub window_cap_multiplier: u32,
 }
 
 /// Agent credential carried in the `__check_auth` signature slot: the agent's
@@ -566,6 +590,9 @@ impl SmartWallet {
             revoked: false,
             allow_recipients,
             ssl_hash: ssl_hash.clone(),
+            // Pin the AXL-proved bound into the session, bound to ssl_hash. Read
+            // back by the hot path; CI binds the constant to the certificate.
+            window_cap_multiplier: PROVED_WINDOW_MULTIPLIER,
         };
         let key = DataKey::AgentSession(session_pubkey.clone());
         env.storage().persistent().set(&key, &session);
@@ -984,17 +1011,23 @@ fn try_authorize_agent_transfer(
     // `window_cap` inside a single real W-length interval. That interval
     // overlaps at most two adjacent epochs, whose combined UN-weighted spend is
     // `prev_spent + cur_spent`. Bounding that sum + this charge to
-    // `2 * window_cap` makes the worst-case real-time-window spend provably
-    // `<= 2 * window_cap`. Saturating/checked i128, fail-closed; redundant with
-    // the weighted check for in-invariant states (prev,cur,amount each
-    // <= window_cap) and load-bearing as a defense-in-depth invariant guard if
-    // any future path lets prev/cur exceed window_cap. Either check rejecting
-    // rejects the transfer.
+    // `window_cap_multiplier * window_cap` makes the worst-case real-time-window
+    // spend provably `<= window_cap_multiplier * window_cap`. The multiplier is
+    // read from the SESSION (pinned at install to the AXL-proved
+    // `PROVED_WINDOW_MULTIPLIER` and bound to `ssl_hash`), NOT a source literal,
+    // so the enforced bound is on-chain state an auditor re-checks against the
+    // certificate. Saturating/checked i128, fail-closed; redundant with the
+    // weighted check for in-invariant states and load-bearing as a
+    // defense-in-depth guard. A corrupt/zero multiplier yields a 0 ceiling that
+    // rejects all positive charges (fail-closed), and the install path + the
+    // `MAX_CAP_MULTIPLIER` compile guard keep the stored value in `[1, 10]`.
     let unweighted = s
         .prev_spent
         .saturating_add(s.cur_spent)
         .saturating_add(amount);
-    let hard_ceiling = s.window_cap.saturating_mul(2);
+    let hard_ceiling = s
+        .window_cap
+        .saturating_mul(s.window_cap_multiplier as i128);
     if unweighted > hard_ceiling {
         return Err(Error::WindowCapExceeded);
     }

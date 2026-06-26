@@ -59,12 +59,20 @@ if ! "$AXLC" verify-cert "$POLICY" --cert "$CERT"; then
 fi
 ok "certificate reproduces from policy (z3 re-discharged)"
 
-# --- 3. contract literal == certified multiplier ------------------------------
-# The contract enforces the hard ceiling as `window_cap.saturating_mul(N)`.
-# Extract N and compare to the certified window_cap_multiplier.
-CONTRACT_MULT="$(grep -oE 'window_cap\.saturating_mul\(([0-9]+)\)' "$CONTRACT" \
-  | grep -oE '[0-9]+' | head -1 || true)"
-[ -n "$CONTRACT_MULT" ] || fail "could not find 'window_cap.saturating_mul(N)' in $(basename "$CONTRACT") — the enforced ceiling moved or was renamed; update this gate to match"
+# --- 3. contract bound == certified multiplier --------------------------------
+# The contract pins the hard-ceiling multiplier into every session from the
+# named constant `PROVED_WINDOW_MULTIPLIER` and reads it back in the hot path
+# (window_cap.saturating_mul(session.window_cap_multiplier)). Extract the
+# constant and compare it to the certified window_cap_multiplier.
+CONTRACT_MULT="$(grep -oE 'PROVED_WINDOW_MULTIPLIER:[[:space:]]*u32[[:space:]]*=[[:space:]]*[0-9]+' "$CONTRACT" \
+  | sed -E 's/.*=[[:space:]]*([0-9]+).*/\1/' | head -1 || true)"
+[ -n "$CONTRACT_MULT" ] || fail "could not find 'const PROVED_WINDOW_MULTIPLIER: u32 = N' in $(basename "$CONTRACT") — the proved bound constant moved or was renamed; update this gate to match"
+
+# Defense-in-depth: the hot path must read the session field, not a bare literal.
+if ! grep -qE 'window_cap\.saturating_mul\(\s*s\.window_cap_multiplier' "$CONTRACT" \
+   && ! grep -qE 'saturating_mul\(s\.window_cap_multiplier as i128\)' "$CONTRACT"; then
+  fail "the hot path no longer reads s.window_cap_multiplier for the hard ceiling in $(basename "$CONTRACT") — a bare literal would decouple enforcement from the certified, per-session bound"
+fi
 
 CERT_MULT="$(grep -oE '"window_cap_multiplier"[[:space:]]*:[[:space:]]*[0-9]+' "$CERT" \
   | grep -oE '[0-9]+' | head -1 || true)"
