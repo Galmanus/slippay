@@ -77,17 +77,24 @@ forcing function, and that adoption does not exist.
 
 Three concrete gaps, found in the code:
 
-1. **The `axlc-gate` CI check is fictional.** A test comment references an
-   `axlc-gate` CI workflow, but no such workflow exists in `.github/workflows`. No
-   CI step runs cargo / axlc / z3 / conformance. The proof can silently drift from
-   the deployed contract on any PR. `verify-cert` makes this gap *closable*, but it
-   is not wired anywhere, so it is not closed.
+1. **The `axl-gate` CI check is real (closed 2026-06-26).** `.github/workflows/axl-gate.yml`
+   runs on every PR/push touching `axl-compiler/**` or `contracts/smart-wallet/src/lib.rs`:
+   it builds `axlc`, runs `cargo test`, then runs `axl-compiler/scripts/axl-gate.sh`, which
+   (a) re-discharges the proof with z3 and asserts the checked-in certificate
+   (`axl-compiler/certified/agent_wallet.cert.json`) reproduces via `verify-cert`, and
+   (b) extracts the integer `N` from `window_cap.saturating_mul(N)` in the contract and
+   asserts it equals the certified `window_cap_multiplier`. Validated to go red on contract
+   drift, on certificate tamper, and to pass clean. The proof can no longer silently drift
+   from the deployed bound at build time.
 
-2. **The conformance bound is hard-coded.** The contract-side conformance test
-   uses `window_cap * 2` as a literal, not a value read from a certificate. If AXL
-   proved `K = 3`, the conformance test would not track it. The proof-to-chain
-   agreement is by human review, not by artifact. The certificate's `onchain`
-   block *enables* reading `K` from the cert, but the test is not rewired to do so.
+2. **The contract constant is now gate-bound at build time (residual: runtime).**
+   The contract still enforces `window_cap.saturating_mul(2)` as an in-source literal,
+   but `axl-gate.sh` now extracts that `2` and fails CI unless it equals the certified
+   `window_cap_multiplier`. So proof and enforcement are a single *checked* invariant on
+   every change — if AXL proved `K = 3` without the contract following (or vice versa), CI
+   goes red. The remaining gap is runtime: the contract reads a constant, not the
+   certificate at transaction time. Closing that fully requires a contract change
+   (read the certified bound on-chain), which has not been made.
 
 3. **`ssl_hash` is provenance-only.** The smart-wallet contract pins `ssl_hash`
    immutably but does not interpret it, and the contract crate has no dependency on
