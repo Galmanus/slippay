@@ -43,3 +43,7 @@ contracts/*/.testnet-deploy.env
 *.err
 *.xdr
 **/_relayer_bringup.mjs
+
+# A2A testnet proof (local, zero-value testnet secrets)
+apps/listener/.a2a-testnet.json
+apps/listener/a2a-registry.jsonl
