@@ -711,6 +711,79 @@ fn install_session_to(env: &Env, wallet: &SmartWalletClient, token: &Address, pe
     wallet.install_agent_session(&agent_pk(env), token, &per_tx, &window_s, &window_cap, &expires_at, allow, &ssl_h(env));
 }
 
+/// The hard real-time-window ceiling is computed from the SESSION's stored
+/// `window_cap_multiplier` (pinned to the AXL-proved `PROVED_WINDOW_MULTIPLIER`
+/// and bound to `ssl_hash`), not from a source literal. This test proves the
+/// enforcement reads that field: it installs normally (multiplier pinned to 2),
+/// confirms a first charge of `window_cap` is admitted, then tampers the STORED
+/// multiplier to 0 on an otherwise-identical session and shows the same charge
+/// is now REJECTED. If the hot path used a literal `2`, the tampered case would
+/// still be admitted and this test would fail — that is exactly what makes the
+/// bound on-chain state rather than a baked-in constant.
+#[test]
+fn hard_ceiling_reads_stored_window_cap_multiplier_not_a_literal() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet) = deploy(&env);
+    let token = Address::generate(&env);
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+
+    // window_cap = 100, per_tx = 100, W = 600s. From a fresh (0,0) state a
+    // charge of 100 passes the weighted check (0+0+100 <= 100) so the hard
+    // ceiling is the ONLY gate that can differ by multiplier.
+    let to = install_session(&env, &wallet, &token, 100, 600, 100, 0);
+
+    // The proved multiplier is pinned into the session and bound to ssl_hash.
+    let s0 = wallet.get_agent_session(&agent_pk(&env));
+    assert_eq!(
+        s0.window_cap_multiplier,
+        super::PROVED_WINDOW_MULTIPLIER,
+        "install must pin the AXL-proved multiplier into the session"
+    );
+
+    // Baseline: under the pinned multiplier (2 → ceiling 200), the 100 charge is
+    // admitted by the hard ceiling.
+    let baseline = env.as_contract(&id, || {
+        super::try_authorize_agent_transfer(&env, &agent_pk(&env), &token, &to, 100)
+    });
+    assert!(
+        matches!(baseline, Ok(true)),
+        "a 100 charge under multiplier 2 (ceiling 200) must be admitted, got {:?}",
+        baseline
+    );
+
+    // Re-install a clean session on a fresh wallet, then TAMPER the stored
+    // multiplier to 0 (ceiling 0). White-box: we write session storage directly
+    // to bypass install validation precisely to prove the runtime reads it.
+    let env2 = Env::default();
+    env2.mock_all_auths();
+    let (id2, wallet2) = deploy(&env2);
+    let token2 = Address::generate(&env2);
+    env2.ledger().with_mut(|li| li.timestamp = 1_000);
+    let to2 = install_session(&env2, &wallet2, &token2, 100, 600, 100, 0);
+
+    env2.as_contract(&id2, || {
+        let key = super::DataKey::AgentSession(agent_pk(&env2));
+        let mut sess: super::AgentSession =
+            env2.storage().persistent().get(&key).expect("session present");
+        sess.window_cap_multiplier = 0; // ceiling becomes 0 → fail-closed
+        env2.storage().persistent().set(&key, &sess);
+    });
+
+    // Same 100 charge, same weighted check (passes), but stored multiplier 0 →
+    // hard ceiling 0 → MUST be rejected. A literal-2 hot path would admit it.
+    let tampered = env2.as_contract(&id2, || {
+        super::try_authorize_agent_transfer(&env2, &agent_pk(&env2), &token2, &to2, 100)
+    });
+    assert!(
+        !matches!(tampered, Ok(true)),
+        "with stored multiplier 0 the hard ceiling is 0 and the charge must be \
+         rejected; admitting it proves the hot path ignored the stored field \
+         (used a literal). verdict={:?}",
+        tampered
+    );
+}
+
 #[test]
 fn agent_authorizes_within_caps_and_tracks_spend() {
     let env = Env::default();
@@ -947,6 +1020,7 @@ fn session_with_allowlist(env: &Env, allow: Vec<Address>) -> super::AgentSession
         revoked: false,
         allow_recipients: allow,
         ssl_hash: ssl_h(env),
+        window_cap_multiplier: super::PROVED_WINDOW_MULTIPLIER,
     }
 }
 
@@ -1239,6 +1313,7 @@ fn agent_sliding_window_hard_ceiling_caps_delayed_straddle() {
         revoked: false,
         allow_recipients: allow2,
         ssl_hash: ssl_h(&env),
+        window_cap_multiplier: super::PROVED_WINDOW_MULTIPLIER,
     };
     env.as_contract(&id, || {
         let key = super::DataKey::AgentSession(agent_pk(&env));
