@@ -98,6 +98,17 @@ Vulnerabilities in Large Language Model Alignment* (41 pp). Formalizes the dual-
 bounded falsification condition), maps a taxonomy of **7 metacognitive attack classes**,
 and proposes **5 metacognitive alignment primitives**.
 
+> **Original work — and potentially industry-defining.** This is an original thesis by
+> Manuel Galmanus, not a repackaging of existing prompt-injection or jailbreak taxonomies.
+> Its contribution is *structural*: it identifies the metacognitive layer as a first-class
+> attack surface and proves — formally, not anecdotally — *why* generative-layer alignment
+> (RLHF, Constitutional AI, DPO) can never be complete on its own. **If the thesis holds, it
+> could reshape how the entire industry secures frontier models** — moving the field from
+> endlessly patching generative-layer coverage to constraining the metacognitive layer
+> itself. The claim is stated as a falsifiable theorem with explicit refutation conditions,
+> so it can be tested rather than merely asserted — which is exactly what makes a
+> potentially field-changing claim credible instead of hype.
+
 📄 **Read the paper:** **[github.com/Galmanus/slippay/…/metacognitive-security-surface.pdf](https://github.com/Galmanus/slippay/blob/main/docs/paper/metacognitive-security-surface.pdf)**
 &nbsp;·&nbsp; [LaTeX source](https://github.com/Galmanus/slippay/blob/main/docs/paper/metacognitive-security-surface.tex)
 &nbsp;·&nbsp; [local PDF](./docs/paper/metacognitive-security-surface.pdf)
