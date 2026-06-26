@@ -1,0 +1,638 @@
+\documentclass[11pt]{article}
+
+% ===== arXiv-style preprint, monochrome =====
+\usepackage[letterpaper,margin=1.1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[round,authoryear]{natbib}
+\usepackage[sc]{mathpazo}          % Palatino text + matching math, real small caps
+\usepackage[scaled=0.88]{helvet}   % Helvetica for headings
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{etoolbox}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% --- spacing / paragraphs ---
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.4em}
+\linespread{1.08}
+\setlength{\emergencystretch}{3em} % absorb long monospace identifiers
+
+% --- hyperref: monochrome ---
+\usepackage[hidelinks,breaklinks=true]{hyperref}
+\usepackage{url}
+\urlstyle{same}
+
+% --- headings: sans, bold ---
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-3.25ex \@plus -1ex \@minus -.2ex}{1.4ex \@plus.2ex}%
+  {\normalfont\sffamily\Large\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-2.6ex\@plus -1ex \@minus -.2ex}{1.0ex \@plus .2ex}%
+  {\normalfont\sffamily\large\bfseries}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-2.2ex\@plus -1ex \@minus -.2ex}{0.8ex \@plus .2ex}%
+  {\normalfont\sffamily\normalsize\bfseries}}
+\makeatother
+\setcounter{secnumdepth}{3}
+
+% --- running header / footer ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[L]{\footnotesize\scshape AXL: Proof-Carrying Agent Spending Bounds}
+\fancyhead[R]{\footnotesize\thepage}
+\fancyfoot[C]{\footnotesize\itshape Preprint --- not peer reviewed}
+\setlength{\headheight}{14pt}
+\fancypagestyle{plain}{\fancyhf{}%
+  \fancyfoot[C]{\footnotesize\itshape Preprint --- not peer reviewed}%
+  \renewcommand{\headrulewidth}{0pt}}
+
+% --- theorem environments ---
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% --- code listings ---
+\lstdefinestyle{axl}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=5pt,
+  xleftmargin=4pt,
+  showstringspaces=false,
+  keepspaces=true,
+}
+\lstset{style=axl}
+
+% --- title block ---
+\makeatletter
+\renewcommand{\maketitle}{%
+  \begin{center}%
+    {\LARGE\bfseries\@title\par}%
+    \vspace{1.4em}%
+    {\large\@author\par}%
+    \vspace{0.35em}%
+    {\normalsize Bluewave AI Research\par}%
+    \vspace{0.15em}%
+    {\normalsize\texttt{manuel@bluewaveai.online}\par}%
+    \vspace{0.9em}%
+    {\normalsize\@date\par}%
+    \vspace{0.6em}%
+    {\footnotesize\itshape
+     Authored solely by Manuel Guilherme Galmanus. The work grew out of the
+     author's agent-payment infrastructure in the Stellar ecosystem (Slippay)
+     and was developed and shared in the context of the NEAR\,X ecosystem.\par}%
+    \vspace{0.4em}%
+  \end{center}%
+  \vspace{0.6em}%
+  \thispagestyle{plain}%
+}
+\makeatother
+
+\renewenvironment{abstract}{%
+  \vspace{0.4em}%
+  \begin{center}\bfseries\normalsize Abstract\end{center}%
+  \nopagebreak\par
+  \begingroup
+  \setlength{\leftskip}{2.2em}\setlength{\rightskip}{2.2em}%
+  \small\noindent\ignorespaces
+}{%
+  \par\endgroup\vspace{1.0em}%
+}
+
+\hypersetup{
+  pdftitle={AXL: A Standalone Proof-Carrying Compiler for Agent Spending Bounds},
+  pdfauthor={Manuel Guilherme Galmanus}}
+
+\title{AXL: A Standalone Proof-Carrying Compiler\\ for Agent Spending Bounds}
+\author{Manuel Guilherme Galmanus}
+\date{Preprint $\cdot$ June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Autonomous agents increasingly hold and move funds. The dominant safety
+mechanism is a runtime check inside the agent's host or wallet --- but a
+runtime check is exactly the thing a compromised host can skip, and a
+counterparty has no way to confirm, before settling, that the check was ever
+run. AXL is a small declarative language and a standalone Rust compiler
+(\texttt{axlc}) that take a different stance: a spending policy is compiled
+to a logical \emph{obligation}, discharged by an SMT solver via $k$-induction,
+and emitted as a tamper-evident \emph{certificate} that any third party can
+re-verify offline against the exact policy bytes. The compiler has zero crate
+dependencies (standard library only; the solver is invoked as a subprocess and
+its absence fails closed). For the deployed sliding-window policy we prove a
+tight, minimal bound: total outflow in \emph{any} real-time window of length
+$W$ is at most $2\times\text{window\_cap}$ --- the factor of two being a
+provable consequence of epoch-boundary straddling, not a safety margin. We
+describe the language (four orthogonal directives), the SMT lowering, the
+certificate format and its SHA-256 binding, and a browser-side re-verifier
+that regenerates the same obligations without a solver. We are deliberate
+about scope. AXL today is an \emph{offline verifier}, not a deployed control:
+the on-chain contract enforces the same $2\times$ bound by hard-coded logic
+and treats the policy hash as provenance only; no continuous-integration gate
+yet couples proof to deployment. We state these gaps as falsifiable
+conditions, because the contribution is the verifiable artifact and its
+construction, not a claim that it is currently load-bearing in production.
+\par\vspace{0.6em}
+\noindent\textbf{Keywords:} proof-carrying code, SMT, $k$-induction, agent
+autonomy, spending bounds, formal verification, smart wallets, AP2/x402.
+\end{abstract}
+
+\section{Introduction}
+
+An autonomous agent that can pay needs a bound it cannot exceed. The standard
+way to impose one is a runtime guard: the wallet or the orchestration host
+checks, on each transaction, that the agent is within budget. This works until
+the host is the adversary. A prompt-injected or compromised agent runtime can
+route around its own guard; a counterparty receiving payment has no way to
+inspect the payer's internal control and confirm, \emph{before} accepting
+settlement, that any bound is in force. The check is real but unverifiable
+from the outside, and unverifiable-from-the-outside is the wrong property for
+money moving between mutually distrusting parties.
+
+The classical answer to ``trust the producer's claim about code it ran'' is
+proof-carrying code~\citep{necula1997}: the producer ships a machine-checkable
+proof that its artifact satisfies a policy, and the consumer checks the proof
+rather than trusting the producer. AXL applies that stance to agent spending.
+A policy is written in a tiny declarative language; the compiler reduces the
+quantitative part of the policy to a logical obligation; an SMT
+solver~\citep{demoura2008} discharges it by $k$-induction~\citep{sheeran2000};
+and the result is a small JSON \emph{certificate} cryptographically bound to
+the exact policy text. Anyone --- a counterparty, an auditor, an insurer ---
+can re-run the verification offline and either confirm the bound or detect that
+the certificate has drifted from the policy.
+
+\paragraph{What this paper claims, and what it does not.}
+Honest positioning is load-bearing here. Agent \emph{payment} is not novel:
+x402 carries machine payments over HTTP~402 and Google's AP2 standardizes
+human-approved spending mandates. AXL is orthogonal to both --- it does not
+move money; it proves a property of the policy that governs an agent that does.
+The contribution is (i) a language whose quantitative directive lowers cleanly
+to a decidable SMT obligation, (ii) a zero-dependency compiler that produces a
+re-verifiable certificate with a tight, machine-checked bound, and (iii) a
+faithful browser re-verifier. The contribution is \emph{not} a deployed control:
+\S\ref{sec:scope} states plainly that the on-chain contract enforces the bound
+by hard-coded arithmetic and consumes no certificate, that no CI gate yet
+couples proof to deployment, and that the underlying SMT model is small enough
+($\approx$40 lines) that the proof itself is not a barrier to entry. We treat
+these as falsifiable gaps to close, not as features to obscure.
+
+\paragraph{Contributions.}
+\begin{itemize}
+\item \textbf{AXL, a four-directive policy language} (\S\ref{sec:language})
+  separating capability scope (\texttt{bind}), output schema
+  (\texttt{constrain}), decidable predicates (\texttt{prove}), and the one
+  SMT-discharged quantitative invariant (\texttt{invariant}). All four are
+  enforced by code or solver, never by a language model.
+\item \textbf{A standalone compiler} (\S\ref{sec:compiler}) with no crate
+  dependencies: hand-rolled lexer, parser, JSON, and SHA-256, lowering the
+  sliding-window invariant to SMT-LIB and discharging it via a subprocess
+  solver, fail-closed when no solver is present.
+\item \textbf{A tight, minimal, machine-checked bound} (\S\ref{sec:semantics}):
+  for $\texttt{sliding\_window(ceiling}=2)$ the real-time-window outflow bound
+  $K=2$ is proved inductive, attainable (tight), and minimal ($K=1$ is not
+  inductive). The deployed wallet enforces exactly this constant.
+\item \textbf{A proof-carrying certificate} (\S\ref{sec:certificate}) bound by
+  SHA-256 to the policy bytes, with a defined load-bearing projection and
+  drift detection, plus a browser re-verifier that regenerates the identical
+  obligations without a solver (\S\ref{sec:verification}).
+\item \textbf{An explicit scope-and-limits section} (\S\ref{sec:scope}) with
+  falsifiable statements about what is and is not in the production path.
+\end{itemize}
+
+\section{The AXL Language}\label{sec:language}
+
+An AXL program is an \texttt{agent} block with up to four orthogonal
+directives. Each addresses a different layer of an agent's action, and each is
+default-deny / fail-closed: an unrecognized construct is a compile error, never
+a silent pass.
+
+\begin{description}
+\item[\texttt{bind -> [tools]}] declares the capability scope. A capability
+  that is not bound has no schema in the action space, so a well-formed tool
+  call for it cannot be emitted. An unknown capability raises
+  \texttt{UnknownCapability} rather than being dropped silently.
+\item[\texttt{constrain -> Schema}] fixes the output schema, compiled to
+  constrained decoding (\texttt{json\_schema} with strict mode). A strict
+  schema must declare \texttt{additionalProperties: false}, or the compiler
+  refuses with \texttt{StrictSchemaNeedsAdditionalPropertiesFalse}.
+\item[\texttt{prove -> <predicate>}] declares a decidable predicate over the
+  output, of the form $\textit{lhs}\ \textit{op}\ \textit{rhs}$ with
+  $\textit{op}\in\{<,\le,>,\ge,=,\ne,\texttt{in}\}$. Predicates are compiled to
+  deterministic checks and evaluated at enforcement time; output violating any
+  predicate is rejected.
+\item[\texttt{invariant -> sliding\_window(ceiling = M) bound K}] is the only
+  directive sent to the SMT solver. It declares a sliding-window spending
+  policy with aggregate ceiling $M\cdot\text{window\_cap}$ and a
+  \emph{claimed} real-time-window bound $K\cdot\text{window\_cap}$. Any other
+  policy family (for example \texttt{token\_bucket}) is rejected with
+  \texttt{UnsupportedPolicy} \emph{before} any solver runs.
+\end{description}
+
+\noindent The separation is deliberate: \texttt{bind} and \texttt{constrain}
+shape what the agent \emph{can} express, \texttt{prove} checks decidable facts
+about a specific output, and \texttt{invariant} is the one place where a
+\emph{quantitative safety property over all possible action sequences} is
+discharged by proof rather than by per-call checking.
+
+\subsection{Worked examples}
+
+The repository ships a matrix of examples exercising every branch of the
+decision procedure. The deployed agent policy is the strict, sub-unity case
+$M=2$:
+
+\begin{lstlisting}
+agent AgentWallet {
+  bind      -> [read_balance, propose_payment]
+  invariant -> sliding_window(ceiling = 2) bound 2
+}
+\end{lstlisting}
+
+\noindent A non-invariant policy uses decidable predicates only:
+
+\begin{lstlisting}
+agent Settlement {
+  bind      -> [read_balance, propose_settlement]
+  constrain -> SettlementDecision
+  prove     -> decision.amount <= account.balance
+  prove     -> decision.recipient in account.allowlist
+}
+\end{lstlisting}
+
+\noindent Table~\ref{tab:examples} summarizes the full matrix and the verdict
+each yields. The two failing cases are first-class: an unbounded policy
+(\texttt{ceiling = none}) and an unsupported family (\texttt{token\_bucket})
+both \emph{refuse}, with distinct exit codes, so a missing or unsupportable
+proof can never be mistaken for a passing one.
+
+\begin{table}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Example & Policy & Verdict & Exit \\
+\midrule
+\texttt{agent\_wallet\_m1} & \texttt{sliding\_window(ceiling=1) bound 1} & ISSUED, $K{=}1$, tight & 0 \\
+\texttt{agent\_wallet\_m2} & \texttt{sliding\_window(ceiling=2) bound 2} & ISSUED, $K{=}2$, tight & 0 \\
+\texttt{agent\_wallet\_m3} & \texttt{sliding\_window(ceiling=3) bound 2} & ISSUED, $K{=}2$, tight + diagnostic & 0 \\
+\texttt{agent\_wallet\_none} & \texttt{sliding\_window(ceiling=none) bound 2} & REFUSED (unbounded) & 2 \\
+\texttt{agent\_wallet\_unsupported} & \texttt{token\_bucket(ceiling=2) bound 2} & REFUSED (unsupported) & 1 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{The example matrix. The $M{=}3$ case is instructive: the weighted
+throughput check binds tighter than the nominal ceiling, so the prover issues
+$K{=}2$ and attaches a diagnostic that the declared ceiling is looser than the
+proved bound.}
+\label{tab:examples}
+\end{table}
+
+\section{The Compiler}\label{sec:compiler}
+
+\texttt{axlc} is a standalone Rust crate (\texttt{axl-compiler} 0.1.0) with
+\emph{no} \texttt{[dependencies]} section --- JSON, parsing, and SHA-256 are
+implemented against the standard library only. The SMT solver is the single
+external requirement, and it is a \emph{runtime} dependency invoked as a
+subprocess, not a linked crate; its absence makes the prover fail closed rather
+than silently pass. This keeps the trusted computing base of the verifier
+small and auditable: a reader can read the entire compiler without chasing
+transitive dependencies.
+
+\subsection{Pipeline}
+
+\begin{enumerate}
+\item \textbf{Parse} ($\texttt{parse.rs}$): \texttt{parse\_agent} produces an
+  \texttt{AgentSpec} with capabilities, schema, predicates, and an optional
+  \texttt{InvariantDecl} (\texttt{family}, \texttt{ceiling}, \texttt{bound}),
+  where the ceiling is a typed \texttt{Multiplier(u64)} or \texttt{None}.
+\item \textbf{Compile} ($\texttt{compile.rs}$): \texttt{compile\_agent}
+  resolves the toolset and schema into an \texttt{InferenceContract} and emits
+  the request configuration (constrained decoding).
+\item \textbf{Predicates} ($\texttt{predicate.rs}$):
+  \texttt{compile\_predicate} parses each \texttt{prove} directive into a
+  \texttt{Predicate}\,$(\textit{lhs},\textit{op},\textit{rhs})$ evaluated with
+  JavaScript-faithful comparison semantics.
+\item \textbf{SMT emission} ($\texttt{smt.rs}$): for an invariant,
+  \texttt{emit} lowers each proof obligation to SMT-LIB text.
+\item \textbf{Discharge} ($\texttt{prove.rs}$): \texttt{detect\_backend}
+  probes for a solver, \texttt{check} runs it, and \texttt{discharge} returns a
+  \texttt{Certificate} (\texttt{Issued}\,/\,\texttt{Refused}).
+\item \textbf{Certify} ($\texttt{certify.rs}$): \texttt{build\_certificate}
+  assembles the JSON artifact and binds it by SHA-256 to the policy bytes;
+  \texttt{verify} re-derives and compares.
+\end{enumerate}
+
+\subsection{Solver dispatch, fail-closed}
+
+\texttt{detect\_backend} probes, in order, a \texttt{z3} binary on
+\texttt{PATH} (fed SMT-LIB on stdin) and a \texttt{python3} interpreter with
+the \texttt{z3-solver} package. Verdict parsing reads the \emph{last}
+\texttt{sat}/\texttt{unsat}/\texttt{unknown} token from solver output, so
+solver warnings cannot corrupt the result. If no backend is found,
+\texttt{discharge} returns \texttt{NoSolver} and the caller refuses: the
+absence of a checker is never a pass.
+
+\section{The Sliding-Window Model and the Safety Property}\label{sec:semantics}
+
+The quantitative core of AXL is a single safety invariant over a two-epoch
+abstraction of a sliding-window rate limiter, discharged by $k$-induction.
+
+\subsection{State and transition}
+
+Let $W$ be the window length (seconds) and let $\text{cap}$ abbreviate
+$\text{window\_cap}$. The state is a pair $(p,c)$ giving outflow in the
+previous and current epoch. A charge of amount $a$ arriving \texttt{elapsed}
+seconds into the current epoch transitions the state as follows
+(\texttt{smt.rs}), writing $\textit{rolled} \equiv (\texttt{elapsed} \ge W)$:
+\begin{align*}
+p_1 &= \textit{rolled} \,?\, (\texttt{elapsed} < 2W \,?\, c : 0) : p
+   &&\text{(carry / drop / keep)}\\
+c_1 &= \textit{rolled} \,?\, 0 : c\\
+\textit{eie} &= \textit{rolled} \,?\, 0 : \texttt{elapsed}
+   &&\text{(elapsed-in-epoch)}\\
+\textit{weighted\_prev} &= \big\lfloor p_1 \cdot (W - \textit{eie}) / W \big\rfloor
+   &&\text{(throughput shaping)}\\
+\textit{accept} &\equiv (\textit{weighted\_prev} + c_1 + a \le \text{cap})
+   \;\wedge\; (p_1 + c_1 + a \le M\cdot\text{cap})\\
+c_2 &= c_1 + a.
+\end{align*}
+The acceptance test combines a \emph{weighted throughput} check (which smooths
+spending across the boundary) with a hard \emph{aggregate ceiling}
+$M\cdot\text{cap}$.
+
+\subsection{The invariant and the obligations}
+
+\begin{definition}[Window invariant]
+For a claimed bound $K$,
+\[
+\textit{inv}_K(p,c) \;\equiv\; 0\le p\le \text{cap}\;\wedge\;0\le c\le \text{cap}\;\wedge\;p+c \le K\cdot\text{cap}.
+\]
+\end{definition}
+
+\noindent The compiler emits up to four obligations and checks each verdict
+against its expected value; any deviation refuses:
+\begin{itemize}
+\item \textbf{Base}: $\neg\,\textit{inv}_K(0,0)$ is \texttt{unsat} (the initial
+  state satisfies the invariant).
+\item \textbf{Inductive}: $\textit{inv}_K(p,c)\wedge \textit{accept}\wedge
+  \neg\,\textit{inv}_K(p_1,c_2)$ is \texttt{unsat} (every accepted charge
+  preserves the invariant).
+\item \textbf{Attainable}: $\textit{inv}_K(p,c)\wedge \textit{accept}\wedge
+  (p_1+c_2 = K\cdot\text{cap})$ is \texttt{sat} (the bound is reachable, hence
+  tight rather than loose).
+\item \textbf{Unbounded} (only for \texttt{ceiling = none}): a witness
+  $n\cdot\text{per\_tx} > 1000\cdot\text{cap}$ is \texttt{sat}, forcing refusal.
+\end{itemize}
+
+\begin{theorem}[Deployed bound]\label{thm:bound}
+For the deployed policy $\texttt{sliding\_window(ceiling}=2)$, the invariant
+$\textit{inv}_2$ is inductive under \textit{accept}: every accepted charge from
+a state satisfying $\textit{inv}_2$ lands in a state satisfying $\textit{inv}_2$.
+Consequently the total outflow in any real-time window of length $W$ is at most
+$2\cdot\text{window\_cap}$. The bound $K=2$ is \emph{tight} (attainable) and
+\emph{minimal} ($\textit{inv}_1$ is not inductive).
+\end{theorem}
+
+\begin{proof}[Proof (machine-discharged)]
+The Base and Inductive obligations for $K=2$ are emitted as SMT-LIB and
+discharged \texttt{unsat} by the solver; \texttt{unsat} on the negated
+inductive step is exactly the statement that no accepted transition can break
+$\textit{inv}_2$. The Attainable obligation is \texttt{sat}, exhibiting a
+charge sequence reaching $p+c = 2\cdot\text{cap}$, so the bound is not loose.
+The corresponding inductive obligation for $K=1$ is \emph{not} \texttt{unsat},
+so $1$ is not a sound bound; hence $2$ is minimal. The real-window consequence
+follows because two epochs of length $W$ overlap any real $W$-length interval
+at most pairwise, so accumulated outflow over such an interval is bounded by
+$p+c$. \end{proof}
+
+\begin{remark}[The factor of two is structural, not slack]
+The $2\times$ is a provable consequence of \emph{epoch-boundary straddling}:
+an adversary spends up to $\text{cap}$ immediately before a boundary and up to
+$\text{cap}$ immediately after, and both charges fall inside one real
+$W$-length interval. The weighted-throughput term shapes \emph{when} spending
+lands but cannot defeat the straddle; $2\cdot\text{cap}$ is therefore the
+honest worst case for a single-window abstraction, and AXL proves it rather
+than assuming a tighter number that does not hold. Disanalogy with a fixed
+calendar-window limiter: there the per-window cap is exactly $\text{cap}$ by
+construction, but it permits a $2\times$ burst across the reset instant
+\emph{without} reporting it; AXL's sliding model surfaces the same $2\times$
+explicitly and certifies it.
+\end{remark}
+
+\section{The Proof-Carrying Certificate}\label{sec:certificate}
+
+\texttt{axlc certify} emits a deterministic JSON certificate that binds the
+verdict to the exact policy bytes. An ISSUED certificate for the deployed
+policy has the shape:
+
+\begin{lstlisting}
+{
+  "kind": "axl-proof-certificate",
+  "axl_version": "0.1.0",
+  "spec_sha256": "<sha256 of the policy bytes>",
+  "agent": "AgentWallet",
+  "invariant": { "family": "sliding_window", "ceiling": 2, "bound": 2 },
+  "verdict": "ISSUED",
+  "tight": true,
+  "diagnostic": null,
+  "onchain": {
+    "ssl_hash": "<= spec_sha256>",
+    "window_cap_multiplier": 2,
+    "claim": "real-time window outflow <= 2 * window_cap",
+    "matches_deployed_enforcement": true
+  },
+  "backend": "z3 binary (PATH)"
+}
+\end{lstlisting}
+
+\noindent The binding is a hand-rolled FIPS\,180-4 SHA-256 of the policy bytes:
+editing the policy invalidates the certificate. A \emph{load-bearing
+projection} --- \texttt{kind}, \texttt{axl\_version}, \texttt{spec\_sha256},
+\texttt{agent}, \texttt{family}, \texttt{ceiling}, \texttt{bound},
+\texttt{verdict}, \texttt{tight}, \texttt{onchain.ssl\_hash}, and
+\texttt{onchain.window\_cap\_multiplier} --- defines exactly which fields are
+compared on re-verification; \texttt{backend} and the free-text \texttt{claim}
+are metadata. A REFUSED certificate carries \texttt{verdict = "REFUSED"}, a
+\texttt{refused\_reason}, and a null \texttt{onchain} block, so a refusal is a
+first-class, signable outcome rather than an absent file.
+
+\paragraph{What is, and is not, carried.}
+The certificate carries the proved bound $K$, the policy SHA-256, and the
+verdict --- not the SMT-LIB text and not the solver's internal proof object.
+``Proof-carrying'' here means the bound claim is \emph{independently
+re-derivable}: \texttt{verify-cert} re-emits the obligations from the
+certificate's $(\textit{family},\textit{ceiling},\textit{bound})$, re-runs the
+solver, and asserts the verdict and projection match. Drift between
+certificate and policy is caught (exit 2); a certificate minted for one policy
+does not verify against another, because the SHA-256 differs.
+
+Disanalogy with classical proof-carrying code~\citep{necula1997}: there the
+proof object itself travels and the consumer checks it directly with a fixed
+proof checker; here the \emph{claim} travels and the consumer re-discharges the
+obligation with its own solver. The trust shifts from ``check this proof'' to
+``re-run this small, fully specified verification'' --- weaker if the consumer
+lacks a solver, but the obligations are tiny and the policy binding is
+cryptographic.
+
+\section{Verification}\label{sec:verification}
+
+\subsection{Offline browser re-verification}
+
+\texttt{axlVerify.ts} re-verifies a certificate client-side with no solver
+dependency. It (i) re-hashes the policy via WebCrypto and asserts it matches
+\texttt{spec\_sha256} (cryptographic tamper-evidence); (ii) checks structural
+coherence (\texttt{kind}, \texttt{verdict}, $\texttt{ssl\_hash} =
+\texttt{spec\_sha256}$, $\texttt{window\_cap\_multiplier} = K$); and (iii)
+\emph{regenerates} the exact SMT-LIB obligations \texttt{axlc} discharged, via
+a TypeScript port of the emitter whose preamble, transition definitions, and
+invariant expressions are byte-for-byte equivalent to \texttt{smt.rs}. The
+browser thus confirms the binding and reproduces the theorems without running a
+solver; discharging them automatically in-browser (e.g.\ via a WASM solver) is
+identified as future work.
+
+\subsection{Relationship to on-chain enforcement}
+
+We state this precisely to avoid overclaiming. The Soroban smart-wallet
+contract enforces the spending policy by \emph{hard-coded} arithmetic --- a
+weighted throughput check and a hard ceiling
+$\textit{prev\_spent} + \textit{cur\_spent} + \textit{amount} \le
+2\cdot\text{window\_cap}$ --- and stores the policy hash (\texttt{ssl\_hash})
+as immutable \emph{provenance only}. The contract does not read or verify any
+certificate. The relationship between AXL and the contract is therefore
+\emph{confirmatory}: AXL independently re-derives and machine-checks the same
+$2\times$ constant the contract already encodes. AXL does not, today, feed the
+bound to the contract, and no spend is cryptographically conditioned on the
+proved policy.
+
+\section{Evaluation}
+
+The compiler is exercised by integration tests (\texttt{invariant\_prove.rs},
+\texttt{certify.rs}) covering: parse-level rejection of malformed and
+unsupported invariants; structural assertions on emitted SMT-LIB; end-to-end
+solver discharge (skipped when no solver is installed); CLI exit codes; and
+certificate round-trip, drift detection, and spec-swap rejection. The asserted
+verdicts are exactly those of Table~\ref{tab:examples}: $M{=}2\to K{=}2$ tight,
+$M{=}1\to K{=}1$ tight, $M{=}3\to K{=}2$ tight with a looser-ceiling
+diagnostic, $\texttt{ceiling=none}\to$ REFUSED, and an overclaimed bound $\to$
+REFUSED. The library is written to return \texttt{Result} on every parse and
+JSON error and never to panic on malformed input. Concrete size: the SMT model
+is on the order of $40$ lines of SMT-LIB; the compiler has $0$ external crate
+dependencies; the certificate's load-bearing projection is $11$ fields.
+
+\section{Scope and Limitations}\label{sec:scope}
+
+AXL applies only to \emph{decidable} policy: arithmetic bounds, membership, and
+bounded state. Irreducibly fuzzy judgments (``is this transaction
+suspicious?'') are out of scope and still require a model in the loop. Beyond
+that boundary, we name the gaps between the artifact and a deployed control,
+each as a falsifiable statement.
+
+\begin{itemize}
+\item \textbf{No CI gate couples proof to deployment.} There is no workflow
+  that runs \texttt{verify-cert} on change. \emph{Falsifiable:} until a
+  required check rejects a merge whose policy and certificate disagree, the
+  proof can silently drift from the deployed contract on any commit.
+\item \textbf{The on-chain constant is hard-coded, not certificate-driven.}
+  The contract enforces $2\times$ as a literal. \emph{Falsifiable:} if AXL
+  proved $K=3$ for a revised policy, the contract would not track it without a
+  manual edit; proof and enforcement are not yet a single source of truth.
+\item \textbf{The policy hash is provenance, not a gate.} \texttt{ssl\_hash}
+  is pinned immutably but never interpreted on-chain. \emph{Falsifiable:} no
+  spend is rejected on the basis of a hash mismatch with a certified policy.
+\item \textbf{The proof is not a moat.} The SMT model is $\approx$40 lines; a
+  competent formal-methods engineer reproduces it in engineer-weeks. The only
+  durable advantage would be \emph{adoption} of the certificate as a
+  required-to-participate artifact (a second prover, an insurer, an on-chain
+  registry), which does not exist today.
+\item \textbf{The solver is a runtime dependency.} \texttt{prove},
+  \texttt{certify}, and \texttt{verify-cert} require z3 (binary or Python
+  package). This is intentional and fail-closed --- absence refuses --- but it
+  means a consumer without a solver can check only the binding and the
+  obligation text, not the discharge.
+\end{itemize}
+
+\noindent We surface these because the value of a proof-carrying scheme is
+exactly its honesty about what has and has not been checked. The certificate
+machinery --- language, lowering, $k$-induction discharge, SHA-256 binding,
+deterministic re-verification, drift detection --- is real and tested. The
+forcing function that would make it load-bearing in production is the work that
+remains.
+
+\section{Related Work}
+
+\textbf{Proof-carrying code}~\citep{necula1997} originates the
+producer-ships-proof, consumer-checks-proof stance; AXL adapts it to a
+re-discharge model bound by a content hash (\S\ref{sec:certificate}).
+\textbf{SMT solving}~\citep{demoura2008} and \textbf{$k$-induction}
+\citep{sheeran2000} are the engine and the proof technique for the
+sliding-window invariant. \textbf{Smart-contract verification} (e.g.\
+specification and model checking of on-chain logic) targets the contract
+itself; AXL instead certifies the \emph{off-chain policy} an agent commits to,
+and (today) only confirms the contract's hard-coded bound rather than
+generating it. \textbf{Agent-payment standards} --- x402 for HTTP-native
+machine payments and Google's AP2 for human-approved mandates --- provide the
+rails and the authorization chain; AXL is orthogonal, proving a quantitative
+property of the governing policy rather than transporting value or capturing
+consent. \textbf{Capability security} informs the \texttt{bind} directive's
+default-deny action-space scoping.
+
+\section{Conclusion}
+
+AXL reframes an agent's spending limit from a runtime check that a compromised
+host can skip into a logical obligation that anyone can re-verify offline. The
+compiler is small and dependency-free by construction, the sliding-window
+bound is proved tight and minimal by $k$-induction, and the certificate is
+bound to its policy by a content hash so that drift is detectable. We have been
+explicit that the scheme is, today, an offline verifier rather than a deployed
+control: the on-chain contract enforces the same bound by hard-coded
+arithmetic and consumes no certificate, and no CI gate yet couples proof to
+deployment. Those are the falsifiable conditions whose resolution would turn a
+verifiable artifact into a load-bearing one. The thesis is narrow and, we
+think, correct: for money moving between agents that do not trust each other, a
+bound the counterparty can re-check beats a bound it must take on faith.
+
+\begin{thebibliography}{9}
+\small
+\bibitem[Necula(1997)]{necula1997}
+Necula, G.~C. (1997). Proof-carrying code. In
+\emph{Proc.\ 24th ACM SIGPLAN-SIGACT Symposium on Principles of Programming
+Languages (POPL)}, 106--119.
+
+\bibitem[de Moura \& Bj\o rner(2008)]{demoura2008}
+de Moura, L., \& Bj\o rner, N. (2008). Z3: An efficient SMT solver. In
+\emph{Tools and Algorithms for the Construction and Analysis of Systems
+(TACAS)}, LNCS 4963, 337--340.
+
+\bibitem[Sheeran et al.(2000)]{sheeran2000}
+Sheeran, M., Singh, S., \& St\aa lmarck, G. (2000). Checking safety properties
+using induction and a SAT-solver. In \emph{Formal Methods in Computer-Aided
+Design (FMCAD)}, LNCS 1954, 127--144.
+\end{thebibliography}
+
+\vspace{1em}
+\noindent\emph{Correspondence: Manuel G. Galmanus, Bluewave AI Research. This
+is a preprint and has not been peer reviewed. All quantitative claims about the
+compiler (verdicts, exit codes, bound, dependency count) are reproducible from
+the open-source \texttt{axl-compiler} crate; the bound in Theorem~1 is
+machine-discharged by an SMT solver and re-verifiable with \texttt{axlc
+verify-cert}. The limitations in Section~\ref{sec:scope} are stated as
+falsifiable conditions.}
+
+\end{document}
