@@ -92,12 +92,15 @@ that layer is both the attack surface and the right place to put the gate. Two p
 both in this repo:
 
 **1 · Foundational** — *Metacognitive Engineering as a Security Surface: Introspective
-Vulnerabilities in Large Language Model Alignment* (35 pp). Formalizes the dual-layer model
+Vulnerabilities in Large Language Model Alignment* (41 pp). Formalizes the dual-layer model
 `y = G(x, M(x, θ))`, proves that generative-layer-only alignment is incomplete
-(**Theorem 1**, under three explicitly stated, empirically grounded assumptions), maps a
-taxonomy of **7 metacognitive attack classes**, and proposes **5 metacognitive alignment
-primitives**.
-→ **[docs/paper/metacognitive-security-surface.pdf](./docs/paper/metacognitive-security-surface.pdf)**
+(**Theorem 1**, under four explicitly stated, empirically grounded assumptions, with a
+bounded falsification condition), maps a taxonomy of **7 metacognitive attack classes**,
+and proposes **5 metacognitive alignment primitives**.
+
+📄 **Read the paper:** **[github.com/Galmanus/slippay/…/metacognitive-security-surface.pdf](https://github.com/Galmanus/slippay/blob/main/docs/paper/metacognitive-security-surface.pdf)**
+&nbsp;·&nbsp; [LaTeX source](https://github.com/Galmanus/slippay/blob/main/docs/paper/metacognitive-security-surface.tex)
+&nbsp;·&nbsp; [local PDF](./docs/paper/metacognitive-security-surface.pdf)
 
 **2 · Applied** — *Slippay — Metacognitive Governance for Autonomous Agent Payments.* The
 same monitor → gate → control loop, moved from reasoning to **money**: a payment settles
