@@ -123,7 +123,7 @@ export default function LandingV2() {
   const h2 = "font-black uppercase tracking-[-0.04em] leading-[0.88] text-center md:text-left mx-auto md:mx-0";
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden" style={display}>
+    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden pb-56" style={display}>
       <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}`}</style>
 
       {/* HEADER — transparent over the hero image, solid bone on scroll */}
