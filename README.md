@@ -140,13 +140,15 @@ govern its payments.** Slippay is that gate, on-chain.
 |---|---|---|---|
 | **Dollar account** | a normal person | receive USDC by QR, verify a payment on-chain, pay with a passkey (Face/Touch ID) — no seed phrase in the user's hands | live on Stellar mainnet |
 | **Agent / builder** | autonomous agents | agent payments bounded by an on-chain spend policy, a fail-closed integrity attestation, and an offline-checkable proof of the spending bound | rail live (mainnet); attested gate on testnet |
-| **Comex treasury** | import/export companies | a corporate (non-biometric) account on Base that holds USD, sends/receives USDC, and converts R$↔USD through a licensed FX partner; yield on idle dollars is next | **live in production** on Base ([app.slippay.cc/comex](https://app.slippay.cc)) — wallet + send/receive USDC live; **R$→USD buy live via licensed partner 4P** (Pix → USDC settled on Base, verified end-to-end); USD→R$ sell + yield (DeFindex) are phase 2 ([go-live checklist](./docs/comex-go-live-checklist.md)) |
+| **Comex treasury** | import/export companies | a corporate (non-biometric) account on Base that holds USD, sends/receives USDC, and converts R$↔USD **both ways** through a licensed FX partner; yield on idle dollars is next | **live in production** on Base ([app.slippay.cc/comex](https://app.slippay.cc)) — wallet + send/receive USDC live; **R$→USD buy (on-ramp) live via licensed partner 4P** (Pix → USDC settled on Base, verified end-to-end); **USD→R$ sell (off-ramp) now live via 4P** — Pix-out quotes working in both directions through the partner (first sell settle pending); yield (DeFindex) is phase 2 ([go-live checklist](./docs/comex-go-live-checklist.md)) |
 
 > **The comex treasury is functional on-chain.** On 25 Jun 2026 a real R$ Pix on-ramp
 > settled USDC into a company wallet on Base, confirmed on-chain. The corporate
 > non-custodial wallet, USDC send/receive, and R$→USD buy (via licensed FX partner
 > **4P**) all run in production at [app.slippay.cc/comex](https://app.slippay.cc), with
-> the exact dollar rate and fee shown to the user.
+> the exact dollar rate and fee shown to the user. The reverse — **USD→R$ sell
+> (off-ramp)** — is now wired through 4P as well: live Pix-out quotes in both
+> directions (e.g. 20 USDC → R$101.62, partner spread shown), first sell settle pending.
 
 > **Agent payments are real on-chain transactions, not slides.** An autonomous agent
 > payment settled on-chain only after an *independent integrity oracle* authorized it
@@ -210,6 +212,61 @@ write-up: [`docs/concepts/proof-bounded-settlement.md`](./docs/concepts/proof-bo
 This is what lets "non-custodial + compliant" coexist: the secrets a regulator
 cares about are proven in zero knowledge, and the secrets an attacker would want
 (the KYC store, the spend policy) are never collected in the first place.
+
+---
+
+## Confidential agent payments (Confidential Tokens · Stellar)
+
+Agents and companies can now move dollars **without revealing the amount** — and do
+it in a way a regulator can still audit. This is **confidential, not anonymous**:
+the amount and the running balance are hidden, while sender and recipient stay
+visible. That distinction is the point — it's the privacy a treasury or an agent
+mesh needs, with the disclosure a compliance desk needs, in the same primitive.
+
+It's built on **[Confidential Tokens](https://stellar.org/blog/developers/developer-preview-confidential-tokens-on-stellar)**,
+the OpenZeppelin contract suite (with a Nethermind UltraHonk verifier) that wraps any
+SEP-41 token. Inside the wrapper, a balance is a **Pedersen commitment** — the network
+sees only commitments and a **zero-knowledge proof** that the arithmetic is honest
+(no overspend, value conserved, correct ownership). Proofs are written in **Noir** and
+verified **on-chain** by the UltraHonk verifier, using the Protocol 25 (X-Ray) host
+functions. Withdraw, and the funds return to the public SEP-41 asset.
+
+**Verified end-to-end on testnet.** We deployed our own wrapper and ran the full flow
+— `register → deposit → confidential_transfer → withdraw` — with every proof accepted
+on-chain:
+
+```
+transfer  alice → bob  400      amount never appears on chain
+          alice spendable = 600   (reconstructed from events, matches the commitment ✓)
+          bob   received  = 400   (decrypted by bob, matches the commitment ✓)
+withdraw  bob  → public 400      on-chain proof OK
+```
+
+Our deployed testnet contracts:
+
+| Contract | ID |
+|----------|----|
+| confidential token | `CBC2X4XHQ6T7ZVZGZMD7PANRBHLZ6GCFGK562IHP5QAUDASD5NVFOH4N` |
+| UltraHonk verifier | `CD7WP6JY26IQ2GQ7VTXTZEXGM2Y5F5QHXBL647DHW4FQSZM33325IXFP` |
+| auditor            | `CARCTVSJ7ZPKBJZWSCFVSZ7TST3SC35DA7HWC4A3SCBJSZHNIEXFD3RY` |
+
+**Two surfaces this unlocks:**
+
+- **Agent ↔ agent confidential settlement** — one agent pays another inside the wrapper;
+  the amount is never public. The counterparties and the proof are; the figure isn't.
+  This is the missing privacy layer for an agent economy where every transfer is
+  otherwise a public number.
+- **Confidential treasury for comex** — a company holds USDC with a hidden balance and
+  pays counterparties with hidden amounts, then **proves a single payment to a single
+  auditor** (selective disclosure) without exposing the rest of its book. A designated
+  **auditor view key** can decrypt the full ledger when mandated; **account-level freeze**
+  cascades from the SAC; a **policy engine** plugs in allow/block-list identity registries.
+
+**Honest scope.** Confidential Tokens are a **Developer Preview** (OpenZeppelin × Stellar);
+the verifier backend and circuits are **unaudited** and **testnet-only** — not approved
+for mainnet, do not use with real value yet. What is real today is the integration above:
+our contracts deployed, our proofs accepted on-chain, the full confidential transfer
+reproduced. Mainnet follows the SDF's audit and approval, not our timeline.
 
 ---
 
