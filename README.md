@@ -156,8 +156,9 @@ govern its payments.** Slippay is that gate, on-chain.
 > verifies that signature on-chain (`autocharge_attested` + native `ed25519_verify`)
 > before a cent moves. No human in the loop. Verifiable (Stellar testnet):
 > [tx `eee0d71f…`](https://stellar.expert/explorer/testnet/tx/eee0d71f2f2100da1b97c971cec98fe367e89758c0b8b91c29ef6d5e84a602ff).
-> The autonomous debit rail (`autocharge`, SEP-41 allowance) is live on **mainnet**;
-> the attested gate shown here is **testnet** (v0.3).
+> The buyer-signed `charge` rail is live on **mainnet** (subscription v0.2, `CBJMQ6ZY…`).
+> The **autonomous** rail (`autocharge`, SEP-41 allowance) and the attested gate shown here
+> are **testnet** — current source, not yet redeployed to mainnet.
 
 The three surfaces never fork the money path: they all reduce to *build an unsigned
 transfer → the user verifies what they sign → the user signs → submit*. The same
@@ -204,7 +205,11 @@ server. Two Groth16 circuits are deployed and verified on Stellar mainnet, both
   authorized mandate without revealing the private mandate fields. The policy stays
   secret; the verifier only learns *"within bound: true."*
 
-The Groth16 verifier is **live on mainnet** (`CBDS2YSL…`) and accepts both circuits.
+The Groth16 verifier is **deployed on mainnet** (`CBDS2YSL…`) and verifies real proofs for
+both circuits. Honest scope: it is a **generic** verifier — the verification key is passed
+per call, so today it attests *proof validity*, not yet a binding to on-chain payment state —
+and the current **trusted setup is single-contributor** (demo-grade, not production trust).
+Roadmap: circuit-pinned key, proof↔payment binding, multi-party setup.
 The circuits, proving keys, and full deployment are open in the dedicated public repo:
 **[github.com/Galmanus/slippay-zk](https://github.com/Galmanus/slippay-zk)**. Conceptual
 write-up: [`docs/concepts/proof-bounded-settlement.md`](./docs/concepts/proof-bounded-settlement.md).
@@ -231,7 +236,8 @@ sees only commitments and a **zero-knowledge proof** that the arithmetic is hone
 verified **on-chain** by the UltraHonk verifier, using the Protocol 25 (X-Ray) host
 functions. Withdraw, and the funds return to the public SEP-41 asset.
 
-**Verified end-to-end on testnet.** We deployed our own wrapper and ran the full flow
+**Verified end-to-end on testnet.** We deployed the confidential-token stack (OpenZeppelin +
+Nethermind UltraHonk, based on the public reference implementation) and ran the full flow
 — `register → deposit → confidential_transfer → withdraw` — with every proof accepted
 on-chain:
 

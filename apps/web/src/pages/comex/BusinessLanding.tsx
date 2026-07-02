@@ -180,7 +180,7 @@ export default function BusinessLanding() {
             {(
               [
                 ["USDC", "moeda de liquidação"],
-                ["Stellar", "rede de liquidação"],
+                ["Base", "rede de liquidação"],
                 ["BCB", "câmbio licenciado"],
               ] as [string, string][]
             ).map(([k, v]) => (
