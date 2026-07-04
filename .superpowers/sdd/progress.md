@@ -16,3 +16,4 @@ BUILD FIX: solana kit override (vite build exit 0)
 FINAL: tsc 0, 36/36 tests, vite build OK. Blocked only on external API keys.
 Deploy: for-business header LIVE 23/06 08:14, bundle index-ALUOoebi.js, /comex=BusinessLanding (sem Privy key), backup dist.bak-20260623-081354
 Solana: foundation(2bbfc67) + shell/saldo/enviar(8e54fcc) + câmbio(d695151). tsc0, build0, 47+ testes. câmbio buy wired / sell plug-ready. yield=fase2.
+Base panels: complete (commit f13aae1) — tsc 0, 74/74 tests, vite build 0. /comex now on Base.

@@ -144,19 +144,38 @@ function ComexBaseProviderInner({ children }: { children: ReactNode }) {
 
   const sendTransaction = useCallback(
     async (args: SendTxArgs): Promise<{ hash: `0x${string}` }> => {
-      if (!smartClient) {
-        throw new Error("Carteira inteligente ainda não ativada — configure os smart wallets no Privy para enviar sem ETH.");
+      // Preferred path: smart wallet (ERC-4337 UserOp, gas in USDC via paymaster)
+      // when the smart wallet is provisioned in the Privy dashboard.
+      if (smartClient) {
+        const hash = await smartClient.sendTransaction({
+          to: args.to,
+          data: args.data,
+          value: args.value,
+        } as Parameters<typeof smartClient.sendTransaction>[0]);
+        return { hash: hash as `0x${string}` };
       }
-      // Smart wallet send: routed as an ERC-4337 UserOp through the bundler +
-      // paymaster (gas in USDC). viem-style params (value as bigint).
-      const hash = await smartClient.sendTransaction({
-        to: args.to,
-        data: args.data,
-        value: args.value,
-      } as Parameters<typeof smartClient.sendTransaction>[0]);
-      return { hash: hash as `0x${string}` };
+      // Fallback: smart wallet not set up → send a normal EVM tx from the Privy
+      // embedded EOA. The EOA pays its own gas in ETH (must hold a little ETH on
+      // Base). Lets sending work without the paymaster while smart wallets are off.
+      if (!evmWallet) {
+        throw new Error("Carteira ainda não pronta — recarregue a página e tente de novo.");
+      }
+      await evmWallet.switchChain(_defaultChain.id);
+      const provider = await evmWallet.getEthereumProvider();
+      const hash = (await provider.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: evmWallet.address,
+            to: args.to,
+            data: args.data,
+            value: args.value ? `0x${args.value.toString(16)}` : "0x0",
+          },
+        ],
+      })) as `0x${string}`;
+      return { hash };
     },
-    [smartClient],
+    [smartClient, evmWallet],
   );
 
   return (
