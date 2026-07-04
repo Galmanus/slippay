@@ -16,6 +16,8 @@ export default function SolanaPayButton({ onConnected }: { onConnected: (addr: s
           setError(null);
           try {
             const info = await w.connect();
+            // Full smart-wallet address, copyable from the browser console.
+            console.log("[slippay] smart wallet:", info.smartWallet);
             onConnected(info.smartWallet);
           } catch (e: unknown) {
             setError(e instanceof Error ? e.message : "wallet error");

@@ -39,7 +39,20 @@ function Binder() {
     }
     return () => bindSolanaWallet(null);
   }, [w.isConnected, addr]); // eslint-disable-line react-hooks/exhaustive-deps
-  return null;
+
+  // Mobile-friendly: surface the FULL smart-wallet address on screen (selectable)
+  // so it can be copied from a phone — no devtools console needed. DEV aid.
+  if (!addr) return null;
+  return (
+    <div style={{
+      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999,
+      background: "#0a0a0a", color: "#FDDA24", padding: "8px 12px",
+      fontFamily: "monospace", fontSize: 11, wordBreak: "break-all",
+      textAlign: "center", userSelect: "all",
+    }}>
+      smart wallet (copie e cole no Claude): {addr}
+    </div>
+  );
 }
 
 export function SolanaWalletBridge({ children }: { children: ReactNode }) {
