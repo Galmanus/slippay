@@ -8,7 +8,7 @@
 import http from "node:http";
 import { createHmac } from "node:crypto";
 import { spawn } from "node:child_process";
-import { rmSync } from "node:fs";
+import { rmSync, readFileSync } from "node:fs";
 
 const SHOPIFY_SECRET = "shpss_test_secret";
 const SLIPPAY_SECRET = "whsec_test_secret";
@@ -50,14 +50,19 @@ const mockShopify = http.createServer(async (req, res) => {
 // tests, then assert markPaid against the mock through a direct call is out of
 // scope here; instead we verify the connector attempted the call by pointing
 // SHOP at localhost via an http-agnostic check below.
+const APP_KEY = "e2e_app_key";
+const APP_SECRET = "e2e_app_secret";
 const child = spawn(process.execPath, ["src/index.mjs"], {
   env: {
     ...process.env,
     PORT: "4101",
+    APP_BASE_URL: "http://localhost:4101/shopify",
     SLIPPAY_API_BASE: "http://localhost:4102",
     SLIPPAY_API_KEY: "sk_test_e2e",
     SLIPPAY_WEBHOOK_SECRET: SLIPPAY_SECRET,
     SHOPIFY_WEBHOOK_SECRET: SHOPIFY_SECRET,
+    SHOPIFY_APP_KEY: APP_KEY,
+    SHOPIFY_APP_SECRET: APP_SECRET,
     STATE_FILE: STATE,
   },
   stdio: ["ignore", "inherit", "inherit"],
@@ -130,6 +135,58 @@ try {
   // 8. health reflects config + persisted state survives restart
   const health = await (await fetch(`${base}/health`)).json();
   ok(health.verifiesShopifyHmac && health.verifiesSlippaySig && health.orders === 1, "health flags + state");
+
+  // --- OAuth app (mode A) ---
+  const queryHmac = (params) => {
+    const msg = [...params.entries()].filter(([k]) => k !== "hmac")
+      .sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join("&");
+    return createHmac("sha256", APP_SECRET).update(msg).digest("hex");
+  };
+
+  // 9. install with no shop → landing page; with shop → 302 to authorize with state nonce
+  r = await fetch(`${base}/shopify/install`, { redirect: "manual" });
+  ok(r.status === 200 && (await r.text()).includes("Instalar"), "install landing page");
+  r = await fetch(`${base}/shopify/install?shop=loja-e2e.myshopify.com`, { redirect: "manual" });
+  const loc = r.headers.get("location") ?? "";
+  ok(r.status === 302 && loc.startsWith("https://loja-e2e.myshopify.com/admin/oauth/authorize?client_id=e2e_app_key")
+    && loc.includes("read_orders") && /state=[0-9a-f]{32}/.test(loc), "install 302 → authorize with nonce");
+
+  // 10. oauth callback rejects bad hmac and bad nonce
+  let cb = new URLSearchParams({ shop: "loja-e2e.myshopify.com", code: "c", state: "deadbeef", hmac: "bogus" });
+  r = await fetch(`${base}/shopify/oauth/callback?${cb}`, { redirect: "manual" });
+  ok(r.status === 401, "callback rejects bad query hmac");
+  cb = new URLSearchParams({ shop: "loja-e2e.myshopify.com", code: "c", state: "deadbeef" });
+  cb.set("hmac", queryHmac(cb));
+  r = await fetch(`${base}/shopify/oauth/callback?${cb}`, { redirect: "manual" });
+  ok(r.status === 401 && (await r.json()).error === "bad state nonce", "callback rejects unknown nonce");
+
+  // 11. orders/create signed with the APP secret + shop header routes multi-tenant
+  raw = JSON.stringify({ id: 333, order_number: 2001, name: "#2001", total_price: "10.00", currency: "BRL", payment_gateway_names: ["SlipPay (USDC)"] });
+  r = await fetch(`${base}/shopify/orders-create`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-shopify-hmac-sha256": createHmac("sha256", APP_SECRET).update(raw).digest("base64"),
+      "x-shopify-shop-domain": "loja-e2e.myshopify.com",
+    },
+    body: raw,
+  });
+  ok((await r.json()).ok === true, "orders/create accepts app-secret hmac + shop header");
+  const st = JSON.parse(readFileSync(STATE, "utf8") ?? "{}");
+  ok(st.orders?.["333"]?.shop === "loja-e2e.myshopify.com", "order records its shop");
+
+  // 12. GDPR endpoints verify hmac and ack
+  raw = JSON.stringify({ shop_domain: "loja-e2e.myshopify.com" });
+  r = await fetch(`${base}/shopify/gdpr/customers-redact`, {
+    method: "POST", headers: { "content-type": "application/json", "x-shopify-hmac-sha256": "bogus" }, body: raw,
+  });
+  ok(r.status === 401, "gdpr rejects bad hmac");
+  r = await fetch(`${base}/shopify/gdpr/shop-redact`, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-shopify-hmac-sha256": createHmac("sha256", APP_SECRET).update(raw).digest("base64") },
+    body: raw,
+  });
+  ok(r.status === 200 && (await r.json()).received === true, "gdpr shop-redact acks");
 } finally {
   child.kill(); mockSlippay.close(); mockShopify.close();
 }
