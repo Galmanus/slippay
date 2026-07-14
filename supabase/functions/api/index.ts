@@ -59,6 +59,27 @@ api.route("/v1/4p", fourp);
 const app = new Hono();
 app.route("/", api);
 
+// Shopify connector (PM2 slippay-shopify on :4001) — reverse-proxied here so
+// it rides api.slippay.cc's TLS without an nginx edit (no root on this box).
+// Raw body bytes pass through untouched: both HMAC verifications (Shopify's
+// x-shopify-hmac-sha256, SlipPay's x-slippay-signature) happen in the
+// connector against the exact bytes.
+const SHOPIFY_CONNECTOR = Deno.env.get("SHOPIFY_CONNECTOR_URL") ?? "http://localhost:4001";
+app.all("/shopify/*", async (c) => {
+  const url = new URL(c.req.url);
+  const target = `${SHOPIFY_CONNECTOR}${url.pathname}${url.search}`;
+  const body = (c.req.method === "GET" || c.req.method === "HEAD")
+    ? undefined
+    : await c.req.arrayBuffer();
+  const r = await fetch(target, {
+    method: c.req.method,
+    headers: c.req.raw.headers,
+    body,
+    redirect: "manual",
+  });
+  return new Response(r.body, { status: r.status, headers: r.headers });
+});
+
 const WEB_DIST = Deno.env.get("WEB_DIST") ??
   new URL("../../../apps/web/dist/", import.meta.url).pathname;
 
