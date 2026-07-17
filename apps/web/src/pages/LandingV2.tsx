@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 import { AccountDemo } from "../components/AccountDemo.tsx";
 import { MandateDemo } from "../components/MandateDemo.tsx";
 import { AskSlippay } from "../components/AskSlippay.tsx";
+import { GoldWaves } from "../components/GoldWaves.tsx";
+import { LiveProof } from "../components/LiveProof.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -17,7 +19,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { security: "Security", pay: "Pay", receive: "Receive", cofrinho: "Cofrinho", login: "Login", tryFree: "Get started", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "stellar mainnet · zk proof · non-custodial", h1: "Your dollars, in Pix.", mark: "dollars", sub: "Buy USDC with a Pix in ~10s. The key is yours, biometrics sign, every payment leaves a ZK proof on Stellar.", cta: "Get started", note: "no card · 2 min · biometrics", liveTag: "live · mainnet", metrics: [["stellar mainnet", "live contract, verify now"], ["zk proof", "no data revealed"], ["~10s", "pix → usdc"]] as [string, string][] },
+    hero: { eyebrow: "stellar mainnet · zk proof · non-custodial", h1: "Your dollars, in Pix.", mark: "dollars", sub: "Send a Pix, get real dollars in about 10 seconds. They sit in your wallet, not a bank's. No one can freeze them.", cta: "Get started", note: "no card · 2 min · biometrics", liveTag: "live · mainnet", metrics: [["stellar mainnet", "live contract, verify now"], ["zk proof", "no data revealed"], ["~10s", "pix → usdc"]] as [string, string][] },
     yours: { n: "001", stamp: "yours", h: "Yours. For real.", items: [
       ["Only your fingerprint opens it", "Your face or fingerprint approves every move. No password, no recovery phrase to memorize. No one else."],
       ["Nobody freezes it", "The money lives in your wallet, never on a bank's balance sheet. It can't be blocked, held, or seized."],
@@ -38,12 +40,12 @@ const COPY = {
       ["Can it really not be frozen?", "Right. Slippay never holds your money, so there's nothing for us, or a bank, to freeze. Only your biometrics move it."],
     ] as [string, string][] },
     mcp: { n: "007", stamp: "for agents", h: "Your AI agent can pay. By itself.", body: "Slippay ships as an MCP server: any AI agent gets the payment rail as tools, pay, set a recurring subscription, and re-verify a spending-bound certificate offline. Non-custodial and backend-free: the agent holds its own wallet key, signs straight to Stellar. Slippay never holds funds, never signs.", cmd: "npx -y @slippay/mcp", cta: "Read the docs →", discover: "live at /.well-known/mcp" },
-    cta: { n: "008", stamp: "start", h: "Start now.", lines: ["From Pix to dollars in seconds.", "Yours, your way."], btn: "Get started", note: "No card · 2 minutes · biometrics",
+    cta: { n: "008", stamp: "start", h: "Start now.", lines: ["From a Pix to dollars in seconds.", "Yours. No one can freeze them."], btn: "Get started", note: "No card · 2 minutes · biometrics",
       footer: "slippay · your money, yours · live, real money" },
   },
   pt: {
     nav: { security: "Segurança", pay: "Pagar", receive: "Receber", cofrinho: "Cofrinho", login: "Entrar", tryFree: "Começar", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "stellar mainnet · prova zk · não-custodial", h1: "Seus dólares, no Pix.", mark: "dólares", sub: "Compre USDC com um Pix em ~10s. A chave é sua, a biometria assina, cada pagamento deixa prova ZK on-chain na Stellar.", cta: "Começar", note: "sem cartão · 2 min · biometria", liveTag: "ao vivo · mainnet", metrics: [["stellar mainnet", "contrato verificável agora"], ["prova zk", "sem revelar nada"], ["~10s", "pix → usdc"]] as [string, string][] },
+    hero: { eyebrow: "stellar mainnet · prova zk · não-custodial", h1: "Seus dólares, no Pix.", mark: "dólares", sub: "Faça um Pix e receba dólar de verdade em ~10s. Fica na sua carteira, não na de um banco. Ninguém congela.", cta: "Começar", note: "sem cartão · 2 min · biometria", liveTag: "ao vivo · mainnet", metrics: [["stellar mainnet", "contrato verificável agora"], ["prova zk", "sem revelar nada"], ["~10s", "pix → usdc"]] as [string, string][] },
     yours: { n: "001", stamp: "é seu", h: "É seu. De verdade.", items: [
       ["Só a sua digital abre", "O seu rosto ou digital aprova cada movimento. Sem senha e sem código pra decorar. Mais ninguém."],
       ["Ninguém congela", "O dinheiro fica na sua carteira, nunca no balanço de um banco. Não dá pra bloquear, segurar ou tomar."],
@@ -64,7 +66,7 @@ const COPY = {
       ["Não congela mesmo?", "Isso. A Slippay nunca segura o seu dinheiro, então não há o que nós, ou um banco, congelar. Só a sua biometria move."],
     ] as [string, string][] },
     mcp: { n: "007", stamp: "para agentes", h: "Seu agente de IA paga. Sozinho.", body: "O Slippay vem como um servidor MCP: qualquer agente de IA ganha o rail de pagamento como ferramentas, pagar, criar uma assinatura recorrente e re-verificar um certificado de limite de gasto offline. Non-custodial e sem backend: o agente segura a própria chave da carteira e assina direto na Stellar. O Slippay nunca segura fundo, nunca assina.", cmd: "npx -y @slippay/mcp", cta: "Ler a documentação →", discover: "no ar em /.well-known/mcp" },
-    cta: { n: "008", stamp: "comece", h: "Comece agora.", lines: ["De Pix a dólar em segundos.", "Seu, do seu jeito."], btn: "Começar", note: "Sem cartão · 2 minutos · biometria",
+    cta: { n: "008", stamp: "comece", h: "Comece agora.", lines: ["De um Pix a dólar em segundos.", "Seu. Ninguém congela."], btn: "Começar", note: "Sem cartão · 2 minutos · biometria",
       footer: "slippay · seu dinheiro, seu · no ar, dinheiro de verdade" },
   },
 } as const;
@@ -156,9 +158,11 @@ export default function LandingV2() {
         )}
       </header>
 
-      {/* HERO — 2-col: text left, phone right. Stellar + ZK leads above the fold. */}
-      <section className="bg-[#f5f3ee] text-[#0a0a0a]">
-        <div className="max-w-[1200px] mx-auto px-6 pt-32 md:pt-40 pb-16 md:pb-24 grid md:grid-cols-[1fr_auto] gap-10 md:gap-20 items-center">
+      {/* HERO — 2-col: text left, phone right. Stellar + ZK leads above the fold.
+          GoldWaves drift behind the content (pointer-events off, z-0); content z-10. */}
+      <section className="relative overflow-hidden bg-[#f5f3ee] text-[#0a0a0a]">
+        <GoldWaves className="pointer-events-none absolute inset-0 z-0 opacity-60" />
+        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pt-32 md:pt-40 pb-16 md:pb-24 grid md:grid-cols-[1fr_auto] gap-10 md:gap-20 items-center">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#FDDA24" }} />{t.hero.eyebrow}
@@ -190,6 +194,10 @@ export default function LandingV2() {
           <div className="mx-auto md:mx-0 max-w-[290px]">
             <AccountDemo lang={lang} />
           </div>
+        </div>
+        {/* Live mainnet pulse — real Horizon data, graceful when offline */}
+        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pb-16 md:pb-24">
+          <LiveProof prominent lang={lang} />
         </div>
       </section>
 

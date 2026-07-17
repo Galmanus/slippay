@@ -1,33 +1,60 @@
 # SlipPay × Shopify connector
 
-Shopify [Payments Apps](https://shopify.dev/docs/apps/build/payments) connector that
-maps Shopify's payment-session flow onto SlipPay's API — **third platform adapter**
-(after WooCommerce + VTEX), same motor (`POST /api/v1/orders` → `checkout_url`).
+Dois caminhos num servidor só (`src/index.mjs`, zero deps, node 18+):
 
-## Flow
-1. Buyer picks **SlipPay** at Shopify checkout → Shopify POSTs a payment session to `/payment_sessions`.
-2. Connector creates a SlipPay order → responds `{ redirect_url: <checkout_url> }`. Shopify sends the buyer there.
-3. Buyer pays → SlipPay webhook hits `/slippay-webhook` → connector calls Shopify `paymentSessionResolve` to finalize.
-4. `refund_sessions` / `capture_sessions` / `void_sessions` — protocol-valid scaffold (non-custodial: settles on-chain at payment time).
+- **Caminho A — usável hoje** (custom app + manual payment, sem aprovação da Shopify)
+- **Caminho B — Payments App oficial** (checkout nativo; gate externo: Partner review da Shopify, acesso restrito)
 
-## Run (zero deps, node 18+)
-```
-SLIPPAY_API_KEY=sk_live_... node src/index.mjs           # connector on :4001
-# for the resolve call (finalize), also set:
-# SHOPIFY_SHOP=my-store.myshopify.com SHOPIFY_ACCESS_TOKEN=<payments-app-token>
-```
-- Credential: per-shop SlipPay API key (from the merchant's SlipPay dashboard → Settings).
-  In Shopify it arrives in `merchant_settings.api_key`; env `SLIPPAY_API_KEY` is the test fallback.
+Deployado em prod: PM2 `slippay-shopify` (:4001), exposto em
+`https://api.slippay.cc/shopify/*` via proxy no API Deno (sem edit de nginx).
 
-## First test
-```
-curl -XPOST localhost:4001/payment_sessions -H 'content-type: application/json' \
-  -d '{"id":"shopify-sess-1","amount":"49.90","currency":"BRL","kind":"sale","test":true}'
-# → { redirect_url: <SlipPay checkout_url>, slippay_order: ... }
-```
+## Caminho A — fluxo
 
-## Scope
-Working connector proving the Shopify↔SlipPay mapping (session→order→checkout_url) live.
-The `paymentSessionResolve` GraphQL call needs a real Shopify Partner app + shop access token
-(post-Rio). **NOT a listed/approved Shopify Payments App yet** — Partner review + homologation
-is post-Rio. The session→checkout mapping is the proof that the adapter pattern holds.
+1. Merchant cria um **custom app** na admin da Shopify (Settings → Apps and sales
+   channels → Develop apps → Create an app; sem review) com scopes Admin API
+   `read_orders, write_orders`, e ativa um **manual payment method** chamado
+   "SlipPay (USDC)" (Settings → Payments → Manual payment methods).
+2. Shopify manda `orders/create` pra `/shopify/orders-create` (HMAC verificado)
+   → conector cria a ordem SlipPay (`external_ref = shopify:<order id>`).
+3. Comprador abre `https://api.slippay.cc/shopify/pay/<nº do pedido>` (link fica
+   nas instruções estáticas do manual payment: "Para pagar, acesse ... seguido
+   do número do seu pedido") → 302 pro checkout SlipPay.
+4. Listener SlipPay confirma o pagamento on-chain → `order.paid` em
+   `/shopify/slippay-webhook` (assinatura `x-slippay-signature` verificada)
+   → conector marca o pedido como pago na Shopify (Admin API transactions;
+   capture com fallback pra sale) e anota o `tx_hash` no pedido.
+
+## Setup por loja (checklist)
+
+1. Custom app criado → copiar **Admin API access token** (`shpat_...`) e
+   **API secret key** (assina os webhooks).
+2. No dashboard SlipPay do merchant: copiar a **API key** (`sk_live_...`) e o
+   **webhook secret**; setar o **webhook URL** do merchant para
+   `https://api.slippay.cc/shopify/slippay-webhook`; setar o **Stellar receive
+   address** (com trustline USDC) — sem ele o checkout não tem alvo.
+3. No servidor, `/opt/slippay-backend/.env.shopify`:
+   ```
+   SLIPPAY_API_KEY=sk_live_...
+   SLIPPAY_WEBHOOK_SECRET=...
+   SHOPIFY_WEBHOOK_SECRET=...          # API secret key do custom app
+   SHOPIFY_SHOP=loja.myshopify.com
+   SHOPIFY_ACCESS_TOKEN=shpat_...
+   ```
+   depois `pm2 restart slippay-shopify`.
+4. Registrar o webhook da loja:
+   `SHOPIFY_SHOP=... SHOPIFY_ACCESS_TOKEN=... node scripts/setup-shop.mjs`
+5. Conferir `https://api.slippay.cc/shopify/health` — todos os flags `true`.
+
+## Teste
+
+`node test/e2e.mjs` (do diretório do app) — 13 asserts cobrindo HMAC dos dois
+lados, dedup de redelivery, redirect do link de pagamento, match do order.paid
+e persistência de estado.
+
+## Limitações honestas
+
+- Single-shop por processo (env por loja). Multi-tenant = tabela de shops, depois.
+- `markShopifyOrderPaid` (capture → fallback sale) ainda não foi exercitado
+  contra uma loja real — verificar no primeiro pedido de teste.
+- Caminho B continua NÃO sendo um Payments App listado; review da Shopify é
+  gate comercial, não código.
