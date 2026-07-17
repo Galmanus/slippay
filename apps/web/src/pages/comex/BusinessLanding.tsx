@@ -4,6 +4,7 @@
 
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { AskSlippay } from "../../components/AskSlippay.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -179,7 +180,7 @@ export default function BusinessLanding() {
             {(
               [
                 ["USDC", "moeda de liquidação"],
-                ["Stellar", "rede de liquidação"],
+                ["Base", "rede de liquidação"],
                 ["BCB", "câmbio licenciado"],
               ] as [string, string][]
             ).map(([k, v]) => (
@@ -241,6 +242,7 @@ export default function BusinessLanding() {
           </div>
         </div>
       </section>
+      <AskSlippay />
     </div>
   );
 }

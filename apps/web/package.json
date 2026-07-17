@@ -24,6 +24,8 @@
     "@lazorkit/wallet": "^1.4",
     "@number-flow/react": "^0.6.0",
     "@privy-io/react-auth": "^3.32.2",
+    "permissionless": "^0.2.47",
+    "viem": "^2.53.1",
     "@slippay/shared": "workspace:*",
     "@solana-program/memo": "^0.11.2",
     "@solana/spl-token": "^0.4",
