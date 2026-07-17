@@ -35,6 +35,7 @@ import Manifesto from "./pages/Manifesto.tsx";
 import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
 import PixPay from "./pages/PixPay.tsx";
+import Vault from "./pages/Vault.tsx";
 import ZkRedirect from "./pages/ZkRedirect.tsx";
 import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
@@ -59,6 +60,7 @@ export default function App() {
             : <BusinessLanding />
         } />
       )}
+      {import.meta.env.VITE_DEFINDEX_ENABLED === "1" && <Route path="/cofre" element={<Vault />} />}
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/b2b" element={<Empresas />} />
       <Route path="/v1" element={<AgentHome />} />
