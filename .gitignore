@@ -43,3 +43,4 @@ contracts/*/.testnet-deploy.env
 *.err
 *.xdr
 **/_relayer_bringup.mjs
+.claude/worktrees/

@@ -10,8 +10,8 @@ const RECIPIENT = "GCEYFLGNHCW4EIEX5LAVYGIGPT2KLHHVB6EOUWKKALA2FT7RMCHI242P";
 type Lang = "pt" | "en";
 
 const T = {
-  en: { live: "live on mainnet", liveBig: "Real money is moving on mainnet", last: "last payment", cheap: "~3% cheaper than cards", cheapBig: "~3% cheaper than cards, every time", see: "see it live ↗", seeBig: "See it live ↗", ago: (s: string) => `${s} ago` },
-  pt: { live: "ao vivo na mainnet", liveBig: "Dinheiro real se movendo na mainnet", last: "último pagamento", cheap: "~3% mais barato que cartão", cheapBig: "~3% mais barato que cartão, sempre", see: "ver ao vivo ↗", seeBig: "Ver ao vivo ↗", ago: (s: string) => `${s} atrás` },
+  en: { live: "live · real money", liveBig: "Real money is moving right now", last: "last payment", cheap: "~3% cheaper than cards", cheapBig: "~3% cheaper than cards, every time", see: "see it live ↗", seeBig: "See it live ↗", ago: (s: string) => `${s} ago` },
+  pt: { live: "ao vivo · dinheiro de verdade", liveBig: "Dinheiro de verdade se movendo agora", last: "último pagamento", cheap: "~3% mais barato que cartão", cheapBig: "~3% mais barato que cartão, sempre", see: "ver ao vivo ↗", seeBig: "Ver ao vivo ↗", ago: (s: string) => `${s} atrás` },
 } as const;
 
 function rel(iso: string, lang: Lang): string {

@@ -12,7 +12,6 @@ const GOLD = "#cabfb0";
 const DARK_BG = "linear-gradient(160deg,#15151a 0%,#0a0a0c 55%,#101013 100%)";
 const WALLET = "CA6K…VSRHP";
 const TO = "GCEY…242P";
-const FROM = "CDPH…MJVL";
 const TX = "5da9741f";
 
 const T = {
@@ -23,10 +22,10 @@ const T = {
     hi: "sua conta", since: "desde 06/06/2026", balLabel: "saldo em dólar",
     add: "Adicionar · Pix → dólar", pay: "Pagar", receive: "Receber", withdraw: "Sacar", live: "Ao vivo",
     confirmL: "confirmar pagamento", to: "para", authorize: "Autorize com um toque", cancel: "Cancelar", authorizing: "Autorizando…",
-    secure: "slippay · seguro", net: "Stellar · mainnet",
-    paid: "Pago.", paidSub: "movido on-chain · só o seu toque autorizou",
-    receipt: "recibo", verified: "✓ verificado on-chain",
-    rAmount: "Valor", rTo: "Para", rFrom: "De", rFromV: "sua carteira · " + FROM, rNet: "Rede", rNetV: "Stellar mainnet",
+    secure: "slippay · seguro", net: "conta em dólar",
+    paid: "Pago.", paidSub: "só o seu toque autorizou",
+    receipt: "comprovante", verified: "✓ comprovante confirmado",
+    rAmount: "Valor", rTo: "Para", rFrom: "De", rFromV: "sua conta", rNet: "Comprovante", rNetV: "nº " + TX,
   },
   en: {
     badge: "your account, live · ~10s",
@@ -35,10 +34,10 @@ const T = {
     hi: "your account", since: "since 06/06/2026", balLabel: "dollar balance",
     add: "Add money · Pix → dollars", pay: "Pay", receive: "Get paid", withdraw: "Withdraw", live: "Live",
     confirmL: "confirm payment", to: "to", authorize: "Authorize with a touch", cancel: "Cancel", authorizing: "Authorizing…",
-    secure: "slippay · secure", net: "Stellar · mainnet",
-    paid: "Paid.", paidSub: "moved on-chain · only your touch authorized it",
-    receipt: "receipt", verified: "✓ verified on-chain",
-    rAmount: "Amount", rTo: "To", rFrom: "From", rFromV: "your wallet · " + FROM, rNet: "Network", rNetV: "Stellar mainnet",
+    secure: "slippay · secure", net: "dollar account",
+    paid: "Paid.", paidSub: "only your touch authorized it",
+    receipt: "receipt", verified: "✓ receipt confirmed",
+    rAmount: "Amount", rTo: "To", rFrom: "From", rFromV: "your account", rNet: "Receipt", rNetV: "no. " + TX,
   },
 } as const;
 

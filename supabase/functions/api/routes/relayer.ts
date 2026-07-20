@@ -43,6 +43,21 @@ const AMOUNT_CAP = BigInt(Deno.env.get("RELAYER_AMOUNT_CAP") ?? "5000000");
 // Max network fee the relayer will pay per tx (stroops). Default 2 XLM.
 const FEE_CAP = BigInt(Deno.env.get("RELAYER_FEE_CAP") ?? "20000000");
 
+// ── Cofrinho (DeFindex yield vault) — DORMANT until a vault is pinned ──────────
+// The gas-sponsor will pay for a passkey wallet's deposit/withdraw ONLY on this
+// exact vault contract. Unset (default) => the whole branch is inert and the
+// trust boundary is unchanged from the transfer-only relayer. Pinning a value
+// here is a conscious production decision: the address MUST be an on-chain-
+// verified DeFindex USDC vault (Manager identity + upgradability checked).
+//
+// SECURITY NOTE: unlike a native `transfer` (where the amount IS the drain and
+// must be capped), a vault `deposit` moves the USER's funds out of the USER's
+// own passkey wallet, authorized ONLY by their on-chain __check_auth (Face ID).
+// The relayer still only pays GAS, bounded by FEE_CAP. So there is no user-fund
+// lever here for the sponsor to be tricked on — worst case remains wasted gas.
+const DEFINDEX_VAULT = (Deno.env.get("RELAYER_DEFINDEX_VAULT") ?? "").trim();
+const DEFINDEX_FNS = new Set(["deposit", "withdraw"]);
+
 const r = new Hono();
 
 // Unauthenticated (the payer side has no API key) → strict per-IP limiter.
@@ -69,6 +84,7 @@ r.get("/info", (c) => {
     rpc: RPC_URL,
     wasm_hash: WASM_HASH_HEX || null,
     amount_cap: AMOUNT_CAP.toString(),
+    defindex_vault: DEFINDEX_VAULT || null,
   });
 });
 
@@ -255,6 +271,30 @@ function validateSponsorable(txXdr: string, sponsorPubkey: string): Verdict {
       return { ok: true };
     } catch (e) {
       return { ok: false, reason: `transfer_parse: ${String((e as Error).message ?? e)}` };
+    }
+  }
+
+  // (c) A `deposit`/`withdraw` on the PINNED DeFindex vault, called by a passkey
+  // wallet (a contract address). Inert unless DEFINDEX_VAULT is configured.
+  if (kind === "hostFunctionTypeInvokeContract" && DEFINDEX_VAULT) {
+    try {
+      const ic = hf.invokeContract();
+      const target = Address.fromScAddress(ic.contractAddress()).toString();
+      if (target !== DEFINDEX_VAULT) return { ok: false, reason: "not_pinned_vault" };
+      const fn = ic.functionName().toString();
+      if (!DEFINDEX_FNS.has(fn)) return { ok: false, reason: "vault_fn_not_allowed" };
+      // The caller must be a CONTRACT address (a passkey wallet) somewhere in the
+      // args — never a classic account. Fail-closed if no contract arg is present.
+      const hasContractCaller = ic.args().some((a) =>
+        a.switch().name === "scvAddress"
+        && a.address().switch().name === "scAddressTypeContract");
+      if (!hasContractCaller) return { ok: false, reason: "no_contract_caller" };
+      // No amount cap here by design (see SECURITY NOTE at DEFINDEX_VAULT): the
+      // amount leaves the user's own wallet under their own Face ID auth; the
+      // sponsor's only exposure is gas, already bounded by FEE_CAP above.
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, reason: `vault_parse: ${String((e as Error).message ?? e)}` };
     }
   }
 

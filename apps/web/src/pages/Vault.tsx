@@ -3,11 +3,16 @@ import { Logo } from "../components/Logo.tsx";
 import { connectWallet, signTx } from "../lib/wallet.ts";
 import { submitSignedTx } from "../lib/stellar.ts";
 import * as vault from "../lib/defindex.ts";
+import { loadAccount, type Account } from "../lib/account.ts";
+import { cofrinhoPasskeyEnabled, moveCofrinho } from "../lib/cofrinho.ts";
+import { hexToBytesSafe } from "../lib/passkeyHex.ts";
 
 type Mode = "deposit" | "withdraw";
 
 const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "PUBLIC").toUpperCase() as "TESTNET" | "PUBLIC";
 const EXPLORER = NETWORK === "PUBLIC" ? "public" : "testnet";
+const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
+  ?? "https://api.slippay.cc/api/v1/relayer";
 
 export default function Vault() {
   const [wallet, setWallet] = useState<string | null>(null);
@@ -18,6 +23,10 @@ export default function Vault() {
   const [pos, setPos] = useState<vault.VaultPosition | null>(null);
   const [apy, setApy] = useState<number | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  // Prefer the passkey account (the "mãe" flow: Face ID, no browser wallet). Only
+  // fall back to an external wallet when there is no passkey account on device.
+  const [acct] = useState<Account | null>(() => loadAccount());
+  const passkeyFlow = Boolean(acct) && cofrinhoPasskeyEnabled();
 
   const refresh = useCallback(async (user: string) => {
     try {
@@ -28,6 +37,8 @@ export default function Vault() {
   }, []);
 
   useEffect(() => { if (wallet) void refresh(wallet); }, [wallet, refresh]);
+  // A passkey account is already "connected" — its wallet id is the account.
+  useEffect(() => { if (passkeyFlow && acct) setWallet(acct.walletId); }, [passkeyFlow, acct]);
 
   async function doConnect() {
     setError(null);
@@ -37,13 +48,24 @@ export default function Vault() {
   async function doSubmit() {
     setError(null); setTxHash(null); setBusy(true);
     try {
-      if (!wallet) throw new Error("conecte a carteira");
+      if (!wallet) throw new Error("abra o cofrinho primeiro");
       if (vault.usdcToStroops(amount) <= 0) throw new Error("informe um valor");
-      const xdr = mode === "deposit"
-        ? await vault.buildDepositTx(wallet, amount)
-        : await vault.buildWithdrawTx(wallet, amount);
-      const signed = await signTx(xdr);
-      const { hash } = await submitSignedTx(NETWORK, signed);
+      let hash: string;
+      if (passkeyFlow && acct) {
+        // Face ID authorizes; the relayer sponsors gas. No seed, no extension.
+        const info = await fetch(`${RELAYER_BASE}/info`).then((r) => r.json()).catch(() => ({}));
+        if (!info.sponsor) throw new Error("Sistema acordando. Tente de novo em instantes.");
+        hash = await moveCofrinho({
+          acct, mode, usdcAmount: amount, relayerBase: RELAYER_BASE, sponsor: info.sponsor,
+          credId: acct.credIdHex ? hexToBytesSafe(acct.credIdHex) : undefined,
+        });
+      } else {
+        const xdr = mode === "deposit"
+          ? await vault.buildDepositTx(wallet, amount)
+          : await vault.buildWithdrawTx(wallet, amount);
+        const signed = await signTx(xdr);
+        ({ hash } = await submitSignedTx(NETWORK, signed));
+      }
       setTxHash(hash);
       setAmount("");
       await refresh(wallet);
@@ -55,27 +77,36 @@ export default function Vault() {
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
       <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
-        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Cofre USDC · autocustódia</div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Cofrinho em dólar</div>
       </header>
 
       <main className="flex-1 flex items-center">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
           <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
             <span className="inline-block w-3 h-3 bg-[#b5e853] mr-2 align-middle" />
-            001. Seus dólares, suas chaves
+            001. Seu dinheiro, só seu
           </div>
 
           <div className="md:col-span-9 max-w-xl">
-            {!wallet ? (
+            {acct && !passkeyFlow ? (
+              // Has a passkey account, but the cofrinho isn't switched on yet.
+              // Honest holding state — never bounce a normal user to a browser wallet.
+              <>
+                <p className="text-sm text-[#0a0a0a]/70 mb-2 leading-relaxed">
+                  Seu dinheiro já está seguro na sua conta. O cofrinho que rende está
+                  chegando: em breve você vai poder guardar e ver render, com um toque.
+                </p>
+                <div className="mt-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">Chegando</div>
+              </>
+            ) : !wallet ? (
               <>
                 <p className="text-sm text-[#0a0a0a]/70 mb-6 leading-relaxed">
-                  Mantenha seus dólares digitais (USDC) em autocustódia — só você assina, só você
-                  saca, a qualquer momento. Você conecta sua própria carteira; a Slippay nunca
-                  guarda suas chaves nem seus fundos.
+                  Um cofrinho em dólar que é só seu. Só você guarda, só você saca, a qualquer
+                  momento. A Slippay nunca segura o seu dinheiro.
                 </p>
                 <button onClick={doConnect}
                   className="w-full border border-[#0a0a0a] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#0a0a0a] hover:text-[#f1eee7]">
-                  Conectar carteira
+                  Abrir meu cofrinho
                 </button>
               </>
             ) : (
@@ -86,7 +117,9 @@ export default function Vault() {
                   {pos ? `$ ${pos.usdc}` : "—"}
                 </div>
                 <div className="mt-3 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-                  Conectado · <span className="font-mono normal-case">{wallet.slice(0,8)}...{wallet.slice(-4)}</span>
+                  {passkeyFlow
+                    ? "Sua conta · aprova com o seu rosto ou digital"
+                    : <>Conectado · <span className="font-mono normal-case">{wallet.slice(0,8)}...{wallet.slice(-4)}</span></>}
                 </div>
 
                 {/* mode toggle */}
@@ -101,27 +134,27 @@ export default function Vault() {
 
                 <input type="text" inputMode="decimal" value={amount}
                   onChange={e => setAmount(e.target.value)} disabled={busy}
-                  placeholder="valor em USDC"
+                  placeholder="valor em dólares"
                   className="mt-4 w-full bg-transparent border-b border-[#0a0a0a]/30 text-4xl tabular-nums py-2 disabled:opacity-60" />
 
                 <button onClick={doSubmit} disabled={busy || !amount.trim()}
                   className="mt-6 w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
-                  {busy ? "Processando..." : mode === "deposit" ? "Depositar USDC" : "Sacar USDC"}
+                  {busy ? "Processando..." : mode === "deposit" ? "Guardar dólares" : "Sacar dólares"}
                 </button>
 
                 {/* honest yield disclosure — describes the asset, never promises a return */}
                 <div className="mt-8 border-l-2 border-[#0a0a0a]/20 pl-4 text-xs text-[#0a0a0a]/60 leading-relaxed space-y-1">
-                  {apy !== null && <div>Taxa on-chain atual: <span className="tabular-nums">{apy}</span> (variável).</div>}
+                  {apy !== null && <div>Rendimento atual: <span className="tabular-nums">{apy}</span> (varia todo dia).</div>}
                   <div>
-                    O rendimento vem de protocolos DeFi de terceiros, é variável e não é garantido.
-                    Seu principal está em risco. Isto não é poupança nem investimento oferecido pela Slippay.
+                    O rendimento varia e não é garantido: pode subir, cair, e dá até pra perder
+                    parte do valor. Não é poupança nem investimento oferecido pela Slippay.
                   </div>
                 </div>
 
                 {txHash && (
                   <div className="mt-6 border-l-2 border-[#b5e853] pl-4">
                     <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-                      <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" /> Confirmado on-chain
+                      <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" /> Confirmado · comprovante público
                     </div>
                     <a className="text-xs font-mono mt-2 block break-all hover:opacity-60"
                        href={`https://stellar.expert/explorer/${EXPLORER}/tx/${txHash}`} target="_blank" rel="noreferrer">
@@ -139,7 +172,7 @@ export default function Vault() {
 
       <footer className="border-t border-[#0a0a0a]/10">
         <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-          Non-custodial · USDC by Circle · yield via DeFindex
+          Seu dinheiro fica com você · todo movimento tem comprovante público
         </div>
       </footer>
     </div>
