@@ -23,7 +23,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   pt: {
-    nav: { cofrinho: "Cofrinho", pay: "Pagar", login: "Entrar", cta: "Conectar meu Pix" },
+    nav: { cofrinho: "Cofre de dólar", pay: "Pagar", login: "Entrar", cta: "Conectar meu Pix" },
     hero: {
       eyebrow: "receberPix · em dólar",
       h1: "Todo Pix que cair vira dólar.",
@@ -74,7 +74,7 @@ const COPY = {
     footer: "slippay · receberPix em dólar · seu dinheiro, seu",
   },
   en: {
-    nav: { cofrinho: "Cofrinho", pay: "Pay", login: "Login", cta: "Connect my Pix" },
+    nav: { cofrinho: "Cofre de dólar", pay: "Pay", login: "Login", cta: "Connect my Pix" },
     hero: {
       eyebrow: "receberPix · in dollars",
       h1: "Every Pix you receive becomes dollars.",

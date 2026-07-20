@@ -106,7 +106,7 @@ export async function moveCofrinho(opts: {
   sponsor: string;
   credId?: Uint8Array;
 }): Promise<string> {
-  if (!cofrinhoPasskeyEnabled()) throw new Error("cofrinho ainda não está disponível");
+  if (!cofrinhoPasskeyEnabled()) throw new Error("cofre de dólar ainda não está disponível");
   const passphrase = opts.acct.network === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
   const server = new rpc.Server(RPC[opts.acct.network]!, { allowHttp: false });
 

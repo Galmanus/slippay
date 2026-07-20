@@ -48,7 +48,7 @@ export default function Vault() {
   async function doSubmit() {
     setError(null); setTxHash(null); setBusy(true);
     try {
-      if (!wallet) throw new Error("abra o cofrinho primeiro");
+      if (!wallet) throw new Error("abra o cofre primeiro");
       if (vault.usdcToStroops(amount) <= 0) throw new Error("informe um valor");
       let hash: string;
       if (passkeyFlow && acct) {
@@ -77,7 +77,7 @@ export default function Vault() {
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
       <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
         <Logo />
-        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Cofrinho em dólar</div>
+        <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">Cofre de dólar</div>
       </header>
 
       <main className="flex-1 flex items-center">
@@ -93,7 +93,7 @@ export default function Vault() {
               // Honest holding state — never bounce a normal user to a browser wallet.
               <>
                 <p className="text-sm text-[#0a0a0a]/70 mb-2 leading-relaxed">
-                  Seu dinheiro já está seguro na sua conta. O cofrinho que rende está
+                  Seu dinheiro já está seguro na sua conta. O cofre de dólar que rende está
                   chegando: em breve você vai poder guardar e ver render, com um toque.
                 </p>
                 <div className="mt-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">Chegando</div>
@@ -101,12 +101,12 @@ export default function Vault() {
             ) : !wallet ? (
               <>
                 <p className="text-sm text-[#0a0a0a]/70 mb-6 leading-relaxed">
-                  Um cofrinho em dólar que é só seu. Só você guarda, só você saca, a qualquer
+                  Um cofre de dólar que é só seu. Só você guarda, só você saca, a qualquer
                   momento. A Slippay nunca segura o seu dinheiro.
                 </p>
                 <button onClick={doConnect}
                   className="w-full border border-[#0a0a0a] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#0a0a0a] hover:text-[#f1eee7]">
-                  Abrir meu cofrinho
+                  Abrir meu cofre
                 </button>
               </>
             ) : (

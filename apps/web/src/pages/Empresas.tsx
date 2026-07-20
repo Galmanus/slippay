@@ -19,7 +19,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   pt: {
-    nav: { cofrinho: "Cofrinho", receive: "Receber", api: "API", login: "Entrar", cta: "Falar com a gente" },
+    nav: { cofrinho: "Cofre de dólar", receive: "Receber", api: "API", login: "Entrar", cta: "Falar com a gente" },
     hero: {
       eyebrow: "para empresas · payout em dólar",
       h1: "Receba e pague em dólar. Em minutos, não dias.",
@@ -74,7 +74,7 @@ const COPY = {
     footer: "slippay · payout em dólar para empresas · non-custodial",
   },
   en: {
-    nav: { cofrinho: "Cofrinho", receive: "Receive", api: "API", login: "Login", cta: "Talk to us" },
+    nav: { cofrinho: "Cofre de dólar", receive: "Receive", api: "API", login: "Login", cta: "Talk to us" },
     hero: {
       eyebrow: "for business · dollar payouts",
       h1: "Receive and pay in dollars. In minutes, not days.",

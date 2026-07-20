@@ -49,7 +49,7 @@ const C = {
     simpleTitle: "Por que é seguro, em palavras simples.",
     simple: [
       ["🔑", "Só o seu dedo abre. A chave é sua, fica no seu aparelho. Nem a gente abre."],
-      ["🏠", "O dinheiro fica no SEU cofrinho, não no nosso banco. A gente não congela, não bloqueia, não move."],
+      ["🏠", "O dinheiro fica no SEU cofre, não no nosso banco. A gente não congela, não bloqueia, não move."],
       ["🛑", "Se um pagamento sair da regra que você definiu, ele trava na hora. Não existe meio pagamento."],
       ["🔎", "Tudo fica registrado num lugar público que qualquer um confere. Você não precisa confiar, pode olhar."],
     ] as [string, string][],
