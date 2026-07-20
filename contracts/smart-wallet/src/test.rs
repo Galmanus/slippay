@@ -1662,3 +1662,252 @@ fn conformance_exhaustive_small_domain_grid() {
     }
     assert_eq!(covered, 16 * (per_tx as usize + 1) * dts.len(), "dense grid must cover every cell");
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Cofrinho (DeFindex vault) auth-context regression. The testnet e2e
+// (scripts/e2e-cofrinho-defindex-testnet.mjs, 20/07/2026) trapped in
+// __check_auth with UnreachableCodeReached when the auth tree was
+// [vault.deposit(Vec<i128>, Vec<i128>, wallet, bool), usdc.transfer(...)].
+// This reproduces that exact context shape through the host's check-auth
+// path with a REAL passkey assertion. Native build surfaces the true panic.
+// ─────────────────────────────────────────────────────────────────────────
+#[test]
+fn passkey_authorizes_vault_deposit_context_tree() {
+    use p256::ecdsa::{signature::Signer, Signature, SigningKey};
+    use sha2::{Digest, Sha256};
+
+    let env = Env::default();
+
+    // Real device passkey.
+    let signing = SigningKey::from_slice(&[0x22u8; 32]).unwrap();
+    let ep = signing.verifying_key().to_encoded_point(false);
+    let pk_arr: [u8; 65] = ep.as_bytes().try_into().unwrap();
+    let pubkey = BytesN::from_array(&env, &pk_arr);
+
+    let admin = Address::generate(&env);
+    let wallet_id = env.register(
+        SmartWallet,
+        (pubkey.clone(), dummy_cred_id(&env), admin, TEST_MAX_ABS),
+    );
+
+    // Payload the host would hand to __check_auth.
+    let payload: BytesN<32> = BytesN::from_array(&env, &[0x5Au8; 32]);
+    let payload_arr: [u8; 32] = payload.to_array();
+
+    // Genuine WebAuthn assertion over that payload (challenge binding + sig).
+    let chal_bytes = crate::base64url_nopad(&env, &payload_arr);
+    let chal_vec: std::vec::Vec<u8> = chal_bytes.iter().collect();
+    let chal_str = std::str::from_utf8(&chal_vec).unwrap();
+    let cdj = std::format!(
+        "{{\"type\":\"webauthn.get\",\"challenge\":\"{}\",\"origin\":\"https://app.slippay.cc\"}}",
+        chal_str
+    );
+    let client_data_json = Bytes::from_slice(&env, cdj.as_bytes());
+    let ad = [0x33u8; 37];
+    let authenticator_data = Bytes::from_array(&env, &ad);
+    let cd_hash = Sha256::digest(cdj.as_bytes());
+    let mut base = std::vec::Vec::new();
+    base.extend_from_slice(&ad);
+    base.extend_from_slice(&cd_hash);
+    let sig: Signature = signing.sign(&base);
+    let sig = sig.normalize_s().unwrap_or(sig);
+    let sig_arr: [u8; 64] = sig.to_bytes().as_slice().try_into().unwrap();
+    let wa = WalletAuth::Passkey(WebAuthnAuth {
+        authenticator_data,
+        client_data_json,
+        signature: BytesN::from_array(&env, &sig_arr),
+    });
+
+    // The exact context tree the DeFindex vault deposit produces.
+    let vault = Address::generate(&env);
+    let usdc = Address::generate(&env);
+    let wallet_addr = wallet_id.clone();
+    let amounts: Vec<i128> = vec![&env, 500_000_000i128];
+    let deposit_ctx = ContractContext {
+        contract: vault.clone(),
+        fn_name: Symbol::new(&env, "deposit"),
+        args: vec![
+            &env,
+            amounts.into_val(&env),
+            vec![&env, 500_000_000i128].into_val(&env),
+            wallet_addr.into_val(&env),
+            true.into_val(&env),
+        ],
+    };
+    let transfer_ctx = make_transfer_ctx(&env, &usdc, &wallet_addr, &vault, 500_000_000);
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(deposit_ctx),
+        Context::Contract(transfer_ctx),
+    ];
+
+    let res = env.try_invoke_contract_check_auth::<Error>(
+        &wallet_id,
+        &payload,
+        wa.into_val(&env),
+        &ctxs,
+    );
+    assert!(res.is_ok(), "vault deposit context tree must be passkey-authorizable: {:?}", res);
+}
+
+/// Bisection probe for the vault-deposit trap: run the two halves of the
+/// Passkey __check_auth path directly (native panics propagate here).
+#[test]
+fn probe_vault_ctx_pull_policy_half() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let wallet_id = env.register(
+        SmartWallet,
+        (dummy_pubkey(&env), dummy_cred_id(&env), admin, TEST_MAX_ABS),
+    );
+    let vault = Address::generate(&env);
+    let usdc = Address::generate(&env);
+    let amounts: Vec<i128> = vec![&env, 500_000_000i128];
+    let deposit_ctx = ContractContext {
+        contract: vault.clone(),
+        fn_name: Symbol::new(&env, "deposit"),
+        args: vec![
+            &env,
+            amounts.into_val(&env),
+            vec![&env, 500_000_000i128].into_val(&env),
+            wallet_id.clone().into_val(&env),
+            true.into_val(&env),
+        ],
+    };
+    let transfer_ctx = make_transfer_ctx(&env, &usdc, &wallet_id, &vault, 500_000_000);
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(deposit_ctx),
+        Context::Contract(transfer_ctx),
+    ];
+    env.as_contract(&wallet_id, || {
+        let r = super::pull_policy_authorizes(&env, &ctxs);
+        std::println!("pull_policy_authorizes -> {:?}", r);
+        assert!(matches!(r, Ok(false)), "expected Ok(false) fallthrough: {:?}", r);
+    });
+}
+
+/// Bisection probe half 2: same assertion construction as the failing
+/// check-auth test, but calling verify_webauthn directly.
+#[test]
+fn probe_vault_ctx_verify_half() {
+    use p256::ecdsa::{signature::Signer, Signature, SigningKey};
+    use sha2::{Digest, Sha256};
+
+    let env = Env::default();
+    let signing = SigningKey::from_slice(&[0x22u8; 32]).unwrap();
+    let ep = signing.verifying_key().to_encoded_point(false);
+    let pk_arr: [u8; 65] = ep.as_bytes().try_into().unwrap();
+    let pubkey = BytesN::from_array(&env, &pk_arr);
+
+    let payload_hash = env.crypto().sha256(&Bytes::from_array(&env, &[0x5Au8; 16]));
+    let payload_arr: [u8; 32] = payload_hash.to_array();
+    let chal_bytes = crate::base64url_nopad(&env, &payload_arr);
+    let chal_vec: std::vec::Vec<u8> = chal_bytes.iter().collect();
+    let chal_str = std::str::from_utf8(&chal_vec).unwrap();
+    let cdj = std::format!(
+        "{{\"type\":\"webauthn.get\",\"challenge\":\"{}\",\"origin\":\"https://app.slippay.cc\"}}",
+        chal_str
+    );
+    let client_data_json = Bytes::from_slice(&env, cdj.as_bytes());
+    let ad = [0x33u8; 37];
+    let authenticator_data = Bytes::from_array(&env, &ad);
+    let cd_hash = Sha256::digest(cdj.as_bytes());
+    let mut base = std::vec::Vec::new();
+    base.extend_from_slice(&ad);
+    base.extend_from_slice(&cd_hash);
+    let sig: Signature = signing.sign(&base);
+    let sig = sig.normalize_s().unwrap_or(sig);
+    let sig_arr: [u8; 64] = sig.to_bytes().as_slice().try_into().unwrap();
+    let wa = WebAuthnAuth {
+        authenticator_data,
+        client_data_json,
+        signature: BytesN::from_array(&env, &sig_arr),
+    };
+    let r = crate::verify_webauthn(&env, &pubkey, &payload_hash, &wa);
+    std::println!("verify_webauthn -> {:?}", r);
+    assert!(r.is_ok());
+}
+
+/// Same vault-deposit check-auth flow, but against the compiled WASM (the
+/// artifact that actually runs on-chain) instead of the native build. The
+/// testnet e2e trapped with UnreachableCodeReached and NO Crypto error event —
+/// a pure wasm panic. If this traps too, the bug is in the wasm build.
+#[test]
+fn passkey_vault_deposit_context_tree_wasm() {
+    use p256::ecdsa::{signature::Signer, Signature, SigningKey};
+    use sha2::{Digest, Sha256};
+
+    // Runs against the locally built wasm artifact (`stellar contract build`
+    // first). Forensic note 20/07/2026: the previously deployed testnet binary
+    // 0e1c8655… (built 01/06, PRE-N2-unwrap-cleanup) TRAPS on this context
+    // tree; the committed source passes. Testnet now has c4ffec0a….
+    const WASM: &[u8] = include_bytes!("../target/wasm32v1-none/release/slippay_smart_wallet.wasm");
+
+    let env = Env::default();
+    let signing = SigningKey::from_slice(&[0x22u8; 32]).unwrap();
+    let ep = signing.verifying_key().to_encoded_point(false);
+    let pk_arr: [u8; 65] = ep.as_bytes().try_into().unwrap();
+    let pubkey = BytesN::from_array(&env, &pk_arr);
+
+    let admin = Address::generate(&env);
+    let wallet_id = env.register(
+        WASM,
+        (pubkey.clone(), dummy_cred_id(&env), admin, TEST_MAX_ABS),
+    );
+
+    let payload = env.crypto().sha256(&Bytes::from_array(&env, &[0x77u8; 16]));
+    let payload_arr: [u8; 32] = payload.to_array();
+    let payload_bytesn: BytesN<32> = BytesN::from_array(&env, &payload_arr);
+
+    let chal_bytes = crate::base64url_nopad(&env, &payload_arr);
+    let chal_vec: std::vec::Vec<u8> = chal_bytes.iter().collect();
+    let chal_str = std::str::from_utf8(&chal_vec).unwrap();
+    let cdj = std::format!(
+        "{{\"type\":\"webauthn.get\",\"challenge\":\"{}\",\"origin\":\"https://app.slippay.cc\"}}",
+        chal_str
+    );
+    let client_data_json = Bytes::from_slice(&env, cdj.as_bytes());
+    let ad = [0x33u8; 37];
+    let authenticator_data = Bytes::from_array(&env, &ad);
+    let cd_hash = Sha256::digest(cdj.as_bytes());
+    let mut base = std::vec::Vec::new();
+    base.extend_from_slice(&ad);
+    base.extend_from_slice(&cd_hash);
+    let sig: Signature = signing.sign(&base);
+    let sig = sig.normalize_s().unwrap_or(sig);
+    let sig_arr: [u8; 64] = sig.to_bytes().as_slice().try_into().unwrap();
+    let wa = WalletAuth::Passkey(WebAuthnAuth {
+        authenticator_data,
+        client_data_json,
+        signature: BytesN::from_array(&env, &sig_arr),
+    });
+
+    let vault = Address::generate(&env);
+    let usdc = Address::generate(&env);
+    let deposit_ctx = ContractContext {
+        contract: vault.clone(),
+        fn_name: Symbol::new(&env, "deposit"),
+        args: vec![
+            &env,
+            vec![&env, 500_000_000i128].into_val(&env),
+            vec![&env, 500_000_000i128].into_val(&env),
+            wallet_id.clone().into_val(&env),
+            true.into_val(&env),
+        ],
+    };
+    let transfer_ctx = make_transfer_ctx(&env, &usdc, &wallet_id, &vault, 500_000_000);
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(deposit_ctx),
+        Context::Contract(transfer_ctx),
+    ];
+
+    let res = env.try_invoke_contract_check_auth::<Error>(
+        &wallet_id,
+        &payload_bytesn,
+        wa.into_val(&env),
+        &ctxs,
+    );
+    assert!(res.is_ok(), "WASM build must authorize vault deposit tree: {:?}", res);
+}
