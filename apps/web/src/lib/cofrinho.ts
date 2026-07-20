@@ -3,27 +3,27 @@
 // by the relayer. This is what makes the yield vault usable by a normal person
 // (the "mãe" flow): no browser extension, no seed phrase, no wallet-connect.
 //
-// HOW IT WORKS (mirrors lib/wallet.ts payViaRelayer, the mainnet-proven pattern):
-//   1. The DeFindex SDK builds the deposit/withdraw invocation (correct footprint
-//      + sub-invocation tree) with the smart wallet as `caller`.
-//   2. We take that invocation, compute the Soroban auth payload hash, and the
-//      device passkey (Face ID) signs it — the ONLY human action.
-//   3. We attach the passkey assertion as the smart wallet's auth entry, set the
-//      tx source to the relayer sponsor, simulate + assemble, and POST to the
-//      relayer, which pays gas only. Funds move solely because the on-chain
-//      __check_auth accepts the Face ID assertion — the relayer cannot move them.
+// HOW IT WORKS (proven on testnet in scripts/e2e-cofrinho-defindex-testnet.mjs):
+//   1. Build the vault deposit/withdraw invocation with the smart wallet as
+//      `from` and RECORD-SIMULATE it (sponsor as source) — the RPC returns the
+//      exact auth entry (nonce + full invocation tree) the wallet must sign.
+//      No DeFindex API on the path: the vault contract is invoked directly.
+//   2. Compute the Soroban auth payload hash for that entry and the device
+//      passkey (Face ID) signs it — the ONLY human action.
+//   3. Re-clothe the wallet's auth entry with the passkey assertion, simulate +
+//      assemble with the relayer sponsor as source, and POST to the relayer,
+//      which pays gas only. Funds move solely because the on-chain __check_auth
+//      accepts the Face ID assertion — the relayer cannot move them.
 //
-// ⚠️ STATUS: NOT YET PROVEN END-TO-END ON A LIVE VAULT. Gated behind a pinned
-// mainnet vault (VITE_DEFINDEX_USDC_VAULT) + relayer allowlist (RELAYER_DEFINDEX_
-// VAULT). Before enabling for real money, run a testnet e2e against a DeFindex
-// testnet USDC vault and confirm settlement, exactly like the payment path was
-// proven (scripts/e2e-passkey-pay-testnet.mjs). Do not flip the env until then.
+// Gated behind a pinned vault (VITE_DEFINDEX_USDC_VAULT + VITE_DEFINDEX_ENABLED)
+// client-side and RELAYER_DEFINDEX_VAULT on the relayer. Fail-closed: no vault
+// pinned → throws before any network call.
 
 import {
   Address, BASE_FEE, hash, Networks, Operation, rpc, TransactionBuilder, xdr,
 } from "@stellar/stellar-sdk";
 import { getAssertion } from "./passkey.ts";
-import { buildDepositTx, buildWithdrawTx } from "./defindex.ts";
+import { depositArgs, withdrawArgs, vaultId } from "./defindex.ts";
 import type { Account } from "./account.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,39 +43,19 @@ export function cofrinhoPasskeyEnabled(): boolean {
     && String(import.meta.env.VITE_DEFINDEX_ENABLED ?? "") === "1";
 }
 
-/** Extract the single invokeHostFunction op + the smart-wallet auth entry from
- *  an SDK-built tx XDR, so we can re-source it to the sponsor and re-sign the
- *  wallet's auth with a passkey. Returns the host function and the auth entry
- *  whose credentials address is `walletId`. */
-function extractInvoke(sdkXdr: string, passphrase: string, walletId: string): {
-  func: xdr.HostFunction;
-  authEntry: xdr.SorobanAuthorizationEntry;
-} {
-  const tx = TransactionBuilder.fromXDR(sdkXdr, passphrase);
-  if ("innerTransaction" in tx) throw new Error("unexpected fee-bump tx from SDK");
-  const ops = tx.operations;
-  if (ops.length !== 1) throw new Error(`expected 1 op, got ${ops.length}`);
-  const op = ops[0] as { type: string; func?: xdr.HostFunction; auth?: xdr.SorobanAuthorizationEntry[] };
-  if (op.type !== "invokeHostFunction" || !op.func) throw new Error("not an invokeHostFunction op");
-  const entries = op.auth ?? [];
-  const authEntry = entries.find((e) => {
-    const c = e.credentials();
-    if (c.switch().name !== "sorobanCredentialsAddress") return false;
-    return Address.fromScAddress(c.address().address()).toString() === walletId;
-  });
-  if (!authEntry) throw new Error("no smart-wallet auth entry found in SDK tx");
-  return { func: op.func, authEntry };
-}
-
 /** Compute the Soroban auth payload hash the passkey must sign for an address-
  *  credentials auth entry (network id + nonce + expiration + root invocation). */
-function authPayload(entry: xdr.SorobanAuthorizationEntry, passphrase: string): Uint8Array {
+function authPayload(
+  entry: xdr.SorobanAuthorizationEntry,
+  passphrase: string,
+  sigExpirationLedger: number,
+): Uint8Array {
   const creds = entry.credentials().address();
   const preimage = xdr.HashIdPreimage.envelopeTypeSorobanAuthorization(
     new xdr.HashIdPreimageSorobanAuthorization({
       networkId: hash(toB(new TextEncoder().encode(passphrase))),
       nonce: creds.nonce(),
-      signatureExpirationLedger: creds.signatureExpirationLedger(),
+      signatureExpirationLedger: sigExpirationLedger,
       invocation: entry.rootInvocation(),
     }),
   );
@@ -95,7 +75,7 @@ function passkeySig(a: { authenticatorData: Uint8Array; clientDataJSON: Uint8Arr
   ]);
 }
 
-/** Deposit or withdraw `usdcAmount` between the passkey wallet and the cofrinho,
+/** Deposit or withdraw `usdcAmount` between the passkey wallet and the cofre,
  *  authorized by Face ID and gas-sponsored by the relayer. Returns the settled
  *  tx hash. Throws (fail-closed) unless the vault is pinned on both sides. */
 export async function moveCofrinho(opts: {
@@ -109,37 +89,54 @@ export async function moveCofrinho(opts: {
   if (!cofrinhoPasskeyEnabled()) throw new Error("cofre de dólar ainda não está disponível");
   const passphrase = opts.acct.network === "PUBLIC" ? Networks.PUBLIC : Networks.TESTNET;
   const server = new rpc.Server(RPC[opts.acct.network]!, { allowHttp: false });
+  const walletId = opts.acct.walletId;
 
-  // 1. SDK builds the correct deposit/withdraw invocation for our smart wallet.
-  const sdkXdr = opts.mode === "deposit"
-    ? await buildDepositTx(opts.acct.walletId, opts.usdcAmount)
-    : await buildWithdrawTx(opts.acct.walletId, opts.usdcAmount);
-
-  const { func, authEntry } = extractInvoke(sdkXdr, passphrase, opts.acct.walletId);
+  // 1. Build the invocation and record-simulate to obtain the wallet's auth
+  //    entry (correct nonce + full sub-invocation tree, straight from the RPC).
+  const args = opts.mode === "deposit"
+    ? depositArgs(walletId, opts.usdcAmount)
+    : await withdrawArgs(walletId, opts.usdcAmount);
+  const op = Operation.invokeContractFunction({ contract: vaultId(), function: opts.mode, args });
+  const src1 = await server.getAccount(opts.sponsor);
+  const recordTx = new TransactionBuilder(src1, { fee: String(Number(BASE_FEE) * 1000), networkPassphrase: passphrase })
+    .addOperation(op).setTimeout(60).build();
+  const recSim = await server.simulateTransaction(recordTx);
+  if (rpc.Api.isSimulationError(recSim)) throw new Error("Não deu pra confirmar. Tente de novo.");
+  const entries = recSim.result?.auth ?? [];
+  const walletEntry = entries.find((e) => {
+    const c = e.credentials();
+    return c.switch().name === "sorobanCredentialsAddress"
+      && Address.fromScAddress(c.address().address()).toString() === walletId;
+  });
+  if (!walletEntry) throw new Error("Não deu pra confirmar. Tente de novo.");
 
   // 2. Face ID signs the auth payload for this exact invocation.
-  const payload = authPayload(authEntry, passphrase);
+  const { sequence } = await server.getLatestLedger();
+  const sigExp = sequence + 200;
+  const payload = authPayload(walletEntry, passphrase, sigExp);
   const a = await getAssertion(payload, opts.credId);
 
   // 3. Re-clothe the wallet's auth entry with the passkey signature.
-  const creds = authEntry.credentials().address();
+  const creds = walletEntry.credentials().address();
   const signedEntry = new xdr.SorobanAuthorizationEntry({
     credentials: xdr.SorobanCredentials.sorobanCredentialsAddress(
       new xdr.SorobanAddressCredentials({
         address: creds.address(),
         nonce: creds.nonce(),
-        signatureExpirationLedger: creds.signatureExpirationLedger(),
+        signatureExpirationLedger: sigExp,
         signature: passkeySig(a),
       }),
     ),
-    rootInvocation: authEntry.rootInvocation(),
+    rootInvocation: walletEntry.rootInvocation(),
   });
 
   // 4. Source = relayer sponsor (pays gas). Simulate + assemble + hand off.
-  const op = Operation.invokeHostFunction({ func, auth: [signedEntry] });
-  const src = await server.getAccount(opts.sponsor);
-  const tx = new TransactionBuilder(src, { fee: String(Number(BASE_FEE) * 1000), networkPassphrase: passphrase })
-    .addOperation(op).setTimeout(60).build();
+  const signedOp = Operation.invokeContractFunction({
+    contract: vaultId(), function: opts.mode, args, auth: [signedEntry],
+  });
+  const src2 = await server.getAccount(opts.sponsor);
+  const tx = new TransactionBuilder(src2, { fee: String(Number(BASE_FEE) * 1000), networkPassphrase: passphrase })
+    .addOperation(signedOp).setTimeout(60).build();
   const sim = await server.simulateTransaction(tx);
   if (rpc.Api.isSimulationError(sim)) throw new Error("Não deu pra confirmar. Tente de novo.");
   const assembled = rpc.assembleTransaction(tx, sim).build();

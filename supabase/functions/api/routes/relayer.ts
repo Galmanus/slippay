@@ -23,7 +23,7 @@ import { rateLimit } from "../middleware/rate_limit.ts";
 import {
   Address, Asset, BASE_FEE, Keypair, Networks, Operation,
   nativeToScVal, rpc as SorobanRpc, TransactionBuilder, xdr,
-} from "npm:@stellar/stellar-sdk@13";
+} from "npm:@stellar/stellar-sdk@15";
 
 const NET = (Deno.env.get("RELAYER_NETWORK") ?? Deno.env.get("STELLAR_NETWORK") ?? "testnet").toLowerCase();
 const IS_MAINNET = NET === "mainnet" || NET === "public";
@@ -90,7 +90,7 @@ r.get("/info", (c) => {
 
 // Demo float the relayer fronts into a freshly-deployed wallet (stroops) + the
 // wallet's constructor absolute per-charge ceiling.
-const FUND_AMOUNT = Deno.env.get("RELAYER_FUND_AMOUNT") ?? "2000000"; // 0.2 XLM
+const FUND_AMOUNT = Deno.env.get("RELAYER_FUND_AMOUNT_V2") ?? "0"; // 0.2 XLM
 const MAX_ABS = Deno.env.get("RELAYER_MAX_ABS") ?? "1000000000";
 
 function hexToBytes(h: string): Uint8Array {
@@ -175,8 +175,18 @@ r.post("/deploy", async (c) => {
   if (!d.ok || !d.returnValue) return c.json({ error: "deploy_failed", reason: d.reason }, 502);
   const walletId = Address.fromScVal(d.returnValue).toString();
 
-  // 2. Front the demo float into the wallet (sponsor → wallet, native SAC).
-  const sac = Asset.native().contractId(PASSPHRASE);
+  // 2. Front a demo float ONLY when explicitly configured (>0). Production = 0:
+  //    the wallet is created EMPTY; the user funds it (receive / on-ramp). We
+  //    sponsor gas, never money. The chain enforces solvency on every payment.
+  if (Number(FUND_AMOUNT) > 0) {
+  // 2. Front the demo float into the wallet in USDC (the "pay in dollars" rail),
+  //    so the demo wallet can settle dollars. Sponsor must hold USDC for this.
+  //    Override the testnet issuer via RELAYER_USDC_ISSUER (self-controlled test
+  //    issuer); mainnet is the Circle issuer, never overridable.
+  const usdcIssuer = IS_MAINNET
+    ? "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN"
+    : (Deno.env.get("RELAYER_USDC_ISSUER") ?? "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5");
+  const sac = new Asset("USDC", usdcIssuer).contractId(PASSPHRASE);
   const fundOp = Operation.invokeHostFunction({
     func: xdr.HostFunction.hostFunctionTypeInvokeContract(new xdr.InvokeContractArgs({
       contractAddress: new Address(sac).toScAddress(),
@@ -195,8 +205,9 @@ r.post("/deploy", async (c) => {
   }).addOperation(fundOp).setTimeout(60).build();
   const f = await signSubmit(server, ftx, kp);
   if (!f.ok) return c.json({ error: "fund_failed", reason: f.reason, wallet_id: walletId }, 502);
+  }
 
-  return c.json({ wallet_id: walletId, funded: FUND_AMOUNT });
+  return c.json({ wallet_id: walletId, funded: Number(FUND_AMOUNT) > 0 ? FUND_AMOUNT : "0" });
 });
 
 interface Verdict { ok: boolean; reason?: string }
@@ -243,11 +254,30 @@ function validateSponsorable(txXdr: string, sponsorPubkey: string): Verdict {
     }
   }
 
-  // (b) A `transfer` FROM a contract (a passkey wallet) on a SAC, amount <= cap.
+  // (b) A `transfer` FROM a contract (a passkey wallet) on a SAC, amount <= cap,
+  // or (c) a `deposit`/`withdraw` on the PINNED DeFindex vault, called by a
+  // passkey wallet. (c) MUST be routed here, inside the single invokeContract
+  // branch — an `if` after this block is dead code (TS2367 caught exactly that).
   if (kind === "hostFunctionTypeInvokeContract") {
     try {
       const ic = hf.invokeContract();
-      if (ic.functionName().toString() !== "transfer") {
+      const fnName = ic.functionName().toString();
+      // (c) Pinned-vault cofre ops. Inert unless RELAYER_DEFINDEX_VAULT is set.
+      if (DEFINDEX_VAULT && DEFINDEX_FNS.has(fnName)) {
+        const target = Address.fromScAddress(ic.contractAddress()).toString();
+        if (target !== DEFINDEX_VAULT) return { ok: false, reason: "not_pinned_vault" };
+        // The caller must be a CONTRACT address (a passkey wallet) somewhere in
+        // the args — never a classic account. Fail-closed if none is present.
+        const hasContractCaller = ic.args().some((arg) =>
+          arg.switch().name === "scvAddress"
+          && arg.address().switch().name === "scAddressTypeContract");
+        if (!hasContractCaller) return { ok: false, reason: "no_contract_caller" };
+        // No amount cap here by design (see SECURITY NOTE at DEFINDEX_VAULT):
+        // the amount leaves the user's own wallet under their own Face ID auth;
+        // the sponsor's only exposure is gas, already bounded by FEE_CAP.
+        return { ok: true };
+      }
+      if (fnName !== "transfer") {
         return { ok: false, reason: "not_transfer" };
       }
       const args = ic.args();
@@ -274,29 +304,6 @@ function validateSponsorable(txXdr: string, sponsorPubkey: string): Verdict {
     }
   }
 
-  // (c) A `deposit`/`withdraw` on the PINNED DeFindex vault, called by a passkey
-  // wallet (a contract address). Inert unless DEFINDEX_VAULT is configured.
-  if (kind === "hostFunctionTypeInvokeContract" && DEFINDEX_VAULT) {
-    try {
-      const ic = hf.invokeContract();
-      const target = Address.fromScAddress(ic.contractAddress()).toString();
-      if (target !== DEFINDEX_VAULT) return { ok: false, reason: "not_pinned_vault" };
-      const fn = ic.functionName().toString();
-      if (!DEFINDEX_FNS.has(fn)) return { ok: false, reason: "vault_fn_not_allowed" };
-      // The caller must be a CONTRACT address (a passkey wallet) somewhere in the
-      // args — never a classic account. Fail-closed if no contract arg is present.
-      const hasContractCaller = ic.args().some((a) =>
-        a.switch().name === "scvAddress"
-        && a.address().switch().name === "scAddressTypeContract");
-      if (!hasContractCaller) return { ok: false, reason: "no_contract_caller" };
-      // No amount cap here by design (see SECURITY NOTE at DEFINDEX_VAULT): the
-      // amount leaves the user's own wallet under their own Face ID auth; the
-      // sponsor's only exposure is gas, already bounded by FEE_CAP above.
-      return { ok: true };
-    } catch (e) {
-      return { ok: false, reason: `vault_parse: ${String((e as Error).message ?? e)}` };
-    }
-  }
 
   return { ok: false, reason: `unsupported_host_function: ${kind}` };
 }

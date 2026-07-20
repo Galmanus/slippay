@@ -9,7 +9,19 @@ Construído nesta madrugada, DORMENTE (não afeta prod até você ligar). Objeti
 - `apps/web/src/pages/Vault.tsx` — detecta conta passkey e usa Face ID (não Freighter). Sem vault fixado, mostra estado honesto "cofrinho chegando", nunca joga a mãe pra uma carteira de navegador.
 - `lib/passkeyHex.ts` + testes. tsc=0, 14 testes passando, build ok. NÃO deployado.
 
-## Portão 1 — fixar um vault USDC mainnet (decisão sua + verificação on-chain)
+## Portão 1 — EXECUTADO (20/07/2026): vault próprio Slippay em mainnet
+
+Vault deployado via factory oficial e LIGADO (web + relayer):
+- **Vault mainnet: `CDB6GLRRBBN3B7MGARZQDFAXDUGFWY74E24MPNGEXMM3M5KZEKE4AMKS`** (tx `d8071ab2…6724`, fee paga pela conta merchant ~1,9 XLM)
+- Verificado on-chain: asset = Circle USDC `CCW67TSZ…` ✓ · strategy = `usdc_blend_autocompound_fixed` `CDB2WMKQ…` ✓ · manager/emergency/rebalance/feeReceiver = `GCEYFLGN…` (Manuel) ✓ · **non-upgradable** (ninguém troca o código embaixo do usuário; bug = novo vault + migração) ✓
+- Fees (em bps DO RENDIMENTO, não do principal — semântica confirmada no source do vault): Slippay 50 (0,5% do yield — ajustável depois pelo manager via `lock_fees`, sem redeploy) · **DeFindex protocolo 5000 = 50% do yield** (herdado do factory mainnet; testnet era 2000). Com Blend a ~8%, usuário vê ~4%. Se quiser negociar/reavaliar, é com a PaltaLabs.
+- Vault testnet gêmeo p/ testes: `CCZGBYTEXS4XQG44RXJHPQIBSXYOE6UQSFEV4SJTP3ILADGVCUUG5PES`
+- Script reproduzível: `scripts/deploy-defindex-vault.mjs`
+- Cliente reescrito **sem api.defindex.io** (403 sem key): `lib/defindex.ts` + `lib/cofrinho.ts` falam com o vault direto via RPC (construção provada no e2e). APY não é exibido (sem indexador) — só a copy honesta "varia".
+- Relayer 165: merge do branch (c) COM as melhorias que estavam só na prod (sdk@15, `RELAYER_FUND_AMOUNT_V2` default 0/carteira-vazia) — a prod estava à frente do git nesse arquivo. Bug real pego pelo typecheck no deploy: o branch (c) original era código morto (o branch de transfer engolia todo invokeContract); corrigido roteando (c) dentro do mesmo branch. `RELAYER_DEFINDEX_VAULT` pinado; `/info` expõe; rejeição `not_pinned_vault` verificada viva em prod.
+- Primeiro depósito do vault queima 1000 shares (defesa inflation-attack): o 1º depositante "perde" 0,0001 USDC. Irrelevante, mas documentado.
+
+## (histórico) Portão 1 — fixar um vault USDC mainnet (decisão sua + verificação on-chain)
 
 Endereços verificados nos docs oficiais (docs.defindex.io/contract-deployments/mainnet-deployment):
 - USDC Circle SAC mainnet: `CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75`
