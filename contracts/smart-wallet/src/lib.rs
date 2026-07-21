@@ -125,6 +125,9 @@ pub struct Policy {
     /// User-set kill switch. Once true, all subsequent merchant pulls fail
     /// authorization until the user re-installs the policy.
     pub revoked: bool,
+    /// KeyEpoch at install. A stale epoch means the grant died at an
+    /// inheritance (`finish_recovery`) — reads treat it as absent.
+    pub epoch: u32,
 }
 
 /// Delegated agent spending session. Unlike `Policy` (a *pull* grant keyed by
@@ -192,6 +195,9 @@ pub struct AgentSession {
     /// off-chain drift detector diffs observed spend against the spec at this
     /// hash; that diff, not the hash, is the compliance evidence.
     pub ssl_hash: BytesN<32>,
+    /// KeyEpoch at install. A stale epoch means the grant died at an
+    /// inheritance (`finish_recovery`) — reads treat it as absent.
+    pub epoch: u32,
 }
 
 /// Agent credential carried in the `__check_auth` signature slot: the agent's
@@ -456,6 +462,7 @@ impl SmartWallet {
         }
 
         let policy = Policy {
+            epoch: key_epoch(&env),
             merchant: merchant.clone(),
             token,
             amount_per_charge,
@@ -598,6 +605,7 @@ impl SmartWallet {
             }
         }
         let session = AgentSession {
+            epoch: key_epoch(&env),
             session_pubkey: session_pubkey.clone(),
             token,
             per_tx_cap,
@@ -1037,6 +1045,12 @@ fn try_match_policy(env: &Env, cc: &ContractContext) -> Result<bool, Error> {
         Some(p) => p,
         None => return Ok(false),
     };
+    // Guardian/inheritance: a grant stamped with an older KeyEpoch died at
+    // finish_recovery. Treat exactly like "no policy" so the heir's passkey
+    // decides (fallthrough to signature), never an inherited autopay.
+    if policy.epoch != key_epoch(env) {
+        return Ok(false);
+    }
     if cc.contract != policy.token {
         return Ok(false);
     }
@@ -1087,6 +1101,11 @@ fn try_authorize_agent_transfer(
         Some(s) => s,
         None => return Ok(false),
     };
+    // Guardian/inheritance: a session stamped with an older KeyEpoch died at
+    // finish_recovery. Treat exactly like "no session".
+    if s.epoch != key_epoch(env) {
+        return Ok(false);
+    }
     // Wrong asset for this session — fall through (a different session or the
     // pull-policy path may still authorize).
     if &s.token != token {

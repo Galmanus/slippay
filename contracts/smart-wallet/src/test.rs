@@ -935,6 +935,7 @@ fn agent_rejects_expired_session() {
 
 fn session_with_allowlist(env: &Env, allow: Vec<Address>) -> super::AgentSession {
     super::AgentSession {
+        epoch: 0,
         session_pubkey: agent_pk(env),
         token: Address::generate(env),
         per_tx_cap: 10,
@@ -1224,6 +1225,7 @@ fn agent_sliding_window_hard_ceiling_caps_delayed_straddle() {
     let (to2, allow2) = one_recipient(&env);
     let token2 = Address::generate(&env);
     let straddled = super::AgentSession {
+        epoch: 0,
         session_pubkey: agent_pk(&env),
         token: token2.clone(),
         per_tx_cap: 12,
@@ -2206,4 +2208,41 @@ fn cancel_without_active_recovery_fails() {
     let env = Env::default();
     let (_id, wallet, _g) = setup_guardian(&env);
     assert!(wallet.try_cancel_recovery(&true).is_err(), "RecoveryNotActive");
+}
+
+// ─── Guardião: key epoch voids grants at inheritance (threat #4) ─────────
+
+#[test]
+fn stale_epoch_policy_and_session_are_dead() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet, _k) = deploy_with_real_passkey(&env);
+    let token = Address::generate(&env);
+    let merchant = Address::generate(&env);
+    let recipient = Address::generate(&env);
+    wallet.install_policy(&merchant, &token, &100, &150, &60, &0);
+    let sk = ed25519_dalek::SigningKey::from_bytes(&[8u8; 32]);
+    let session_pk = BytesN::from_array(&env, &sk.verifying_key().to_bytes());
+    wallet.install_agent_session(
+        &session_pk, &token, &100, &86_400, &1_000, &0,
+        &vec![&env, recipient.clone()], &BytesN::from_array(&env, &[0u8; 32]),
+    );
+    // inheritance happened: epoch bumps
+    env.as_contract(&id, || {
+        env.storage().instance().set(&DataKey::KeyEpoch, &1u32);
+    });
+    // the merchant pull must now FALL THROUGH (Ok(false)), not authorize:
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(make_transfer_ctx(&env, &token, &id, &merchant, 100)),
+    ];
+    env.as_contract(&id, || {
+        let r = super::pull_policy_authorizes(&env, &ctxs);
+        assert!(matches!(r, Ok(false)), "stale-epoch policy must be dead, got {:?}", r);
+    });
+    // and the agent transfer must not authorize either:
+    env.as_contract(&id, || {
+        let r = super::try_authorize_agent_transfer(&env, &session_pk, &token, &recipient, 50);
+        assert!(matches!(r, Ok(false)), "stale-epoch session must be dead, got {:?}", r);
+    });
 }
