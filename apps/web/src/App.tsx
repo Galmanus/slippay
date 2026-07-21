@@ -36,6 +36,7 @@ import Investors from "./pages/Investors.tsx";
 import Conformidade from "./pages/Conformidade.tsx";
 import PixPay from "./pages/PixPay.tsx";
 import Vault from "./pages/Vault.tsx";
+import Familia from "./pages/Familia.tsx";
 import ZkRedirect from "./pages/ZkRedirect.tsx";
 import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
@@ -50,6 +51,7 @@ export default function App() {
       <Route path="/receber" element={<Receber />} />
       {import.meta.env.VITE_PAGFINANCE_ENABLED === "1" && <Route path="/pix-pay" element={<PixPay />} />}
       {import.meta.env.VITE_DEFINDEX_ENABLED === "1" && <Route path="/cofre" element={<Vault />} />}
+      <Route path="/familia" element={<Familia />} />
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/b2b" element={<Empresas />} />
       <Route path="/v1" element={<AgentHome />} />
