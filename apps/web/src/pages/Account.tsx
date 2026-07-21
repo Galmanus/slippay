@@ -8,12 +8,13 @@ import { Link } from "react-router-dom";
 import { createPasskey } from "../lib/passkey";
 import { loadAccount, saveAccount, clearAccount, type Account as Acct } from "../lib/account";
 import { LiveProof } from "../components/LiveProof";
+import { getPosition } from "../lib/defindex";
+import { earnedStroops, getBasis, stroopsToDisplay } from "../lib/cofreYield";
 
 const display = { fontFamily: "'DM Sans', sans-serif" } as const;
 const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
   ?? "https://api.slippay.cc/api/v1/relayer";
 const hex = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
-const short = (s: string, h = 6, t = 6) => (s && s.length > h + t + 1 ? `${s.slice(0, h)}…${s.slice(-t)}` : s);
 const buzz = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* unsupported */ } };
 
 function friendly(e: unknown): string {
@@ -41,6 +42,29 @@ export default function Account() {
     fn().then((ok) => { if (on) setBioOk(ok); }).catch(() => { if (on) setBioOk(false); });
     return () => { on = false; };
   }, []);
+
+  // Copy the FULL account number (the truncation is display-only).
+  const [copied, setCopied] = useState(false);
+  function copyAccount(walletId: string) {
+    navigator.clipboard?.writeText(walletId).then(() => {
+      setCopied(true); buzz(15); setTimeout(() => setCopied(false), 1800);
+    }).catch(() => { /* clipboard blocked */ });
+  }
+
+  // Live cofre position for this account (value + realized earnings), so the
+  // yield shows up on the account home, not only inside /cofre.
+  const [cofre, setCofre] = useState<{ usdc: string; earned: number | null } | null>(null);
+  useEffect(() => {
+    if (!acct) return;
+    let on = true;
+    getPosition(acct.walletId).then((p) => {
+      if (!on) return;
+      const b = getBasis(acct.walletId);
+      const cur = Math.round(Number(p.usdc || "0") * 1e7);
+      setCofre({ usdc: p.usdc, earned: b ? earnedStroops(cur, b.basisStroops) : null });
+    }).catch(() => { if (on) setCofre({ usdc: "0", earned: null }); });
+    return () => { on = false; };
+  }, [acct]);
 
   async function createAccount() {
     setBusy(true); setError(null);
@@ -125,18 +149,42 @@ export default function Account() {
             </h1>
 
             <div className="mt-12 rounded-2xl border border-[#0a0a0a]/12 p-7 max-w-[520px]">
-              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">número da conta</div>
-              <div className="mt-3 font-mono text-sm break-all text-[#0a0a0a]/80">{short(acct.walletId, 10, 8)}</div>
-              <div className="mt-4 flex items-baseline gap-6">
+              <div className="flex items-center justify-between gap-3">
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">número da conta</div>
+                <button onClick={() => copyAccount(acct.walletId)}
+                  className="lift shrink-0 rounded-full px-4 py-1.5 text-[10px] uppercase tracking-[0.18em] bg-[#0a0a0a] text-[#f1eee7]">
+                  {copied ? "copiado ✓" : "copiar"}
+                </button>
+              </div>
+              {/* full address, wrapped and selectable — this IS what they share to receive */}
+              <div className="mt-3 font-mono text-[13px] leading-relaxed break-all select-all text-[#0a0a0a]/85">
+                {acct.walletId}
+              </div>
+              <div className="mt-2 text-[11px] text-[#0a0a0a]/45 leading-relaxed">
+                Esse é o número que você passa pra alguém te mandar dólar.
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-[#0a0a0a]/10 flex items-baseline gap-6">
                 <div>
-                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">saldo inicial</div>
-                  <div className="text-2xl tabular-nums" style={display}>US$ {(Number(acct.funded) / 1e7).toFixed(2)}</div>
+                  <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">no cofre, rendendo</div>
+                  <div className="text-2xl tabular-nums" style={display}>US$ {cofre ? cofre.usdc : "—"}</div>
                 </div>
+                {cofre && cofre.earned !== null && cofre.earned > 0 && (
+                  <div>
+                    <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">já rendeu</div>
+                    <div className="text-lg tabular-nums text-[#2f7d32]" style={display}>+ US$ {stroopsToDisplay(cofre.earned)}</div>
+                  </div>
+                )}
                 <div>
                   <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">desde</div>
                   <div className="text-sm tabular-nums text-[#0a0a0a]/70">{new Date(acct.createdAt).toLocaleDateString()}</div>
                 </div>
               </div>
+              {cofre && Number(cofre.usdc) === 0 && (
+                <Link to="/cofre" className="mt-4 inline-block text-[11px] uppercase tracking-[0.18em] text-[#0a0a0a]/60 border-b border-[#0a0a0a]/30 hover:text-[#0a0a0a]">
+                  Guarde e veja render →
+                </Link>
+              )}
             </div>
 
             <Link
