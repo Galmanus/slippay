@@ -216,6 +216,16 @@ r.post("/deploy", async (c) => {
   if (!f.ok) return c.json({ error: "fund_failed", reason: f.reason, wallet_id: walletId }, 502);
   }
 
+  // Guardian watcher registry: best-effort append; deploy must never fail on
+  // logging. The watcher cron greps this list to follow recovery events.
+  try {
+    await Deno.writeTextFile(
+      "/opt/slippay-backend/wallets.list",
+      `${walletId} ${new Date().toISOString()}\n`,
+      { append: true },
+    );
+  } catch (_e) { /* registry is best-effort */ }
+
   return c.json({ wallet_id: walletId, funded: Number(FUND_AMOUNT) > 0 ? FUND_AMOUNT : "0" });
 });
 
