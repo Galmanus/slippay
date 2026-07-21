@@ -46,7 +46,7 @@ const PRIVY_CONFIG: PrivyClientConfig = {
   loginMethods: ["email"],
   embeddedWallets: {
     ethereum: { createOnLogin: "users-without-wallets" },
-    // solana explicitly omitted — comex B2B is EVM/Base only.
+    // solana explicitly omitted — enterprise B2B is EVM/Base only.
   },
   mfa: {
     // Enforce MFA — corporate treasury requirement.
@@ -56,14 +56,14 @@ const PRIVY_CONFIG: PrivyClientConfig = {
   supportedChains: [_defaultChain],
 };
 
-export function ComexBaseProvider({ children }: { children: ReactNode }) {
+export function EnterpriseBaseProvider({ children }: { children: ReactNode }) {
   return (
     <PrivyProvider
       appId={import.meta.env.VITE_PRIVY_APP_ID ?? ""}
       config={PRIVY_CONFIG}
     >
       <SmartWalletsProvider>
-        <ComexBaseProviderInner>{children}</ComexBaseProviderInner>
+        <EnterpriseBaseProviderInner>{children}</EnterpriseBaseProviderInner>
       </SmartWalletsProvider>
     </PrivyProvider>
   );
@@ -79,7 +79,7 @@ interface SendTxArgs {
   value: bigint;
 }
 
-interface ComexBaseCtx {
+interface EnterpriseBaseCtx {
   ready: boolean;
   authenticated: boolean;
   email: string | null;
@@ -98,7 +98,7 @@ interface ComexBaseCtx {
   sendTransaction: (args: SendTxArgs) => Promise<{ hash: `0x${string}` }>;
 }
 
-const ComexBaseContext = createContext<ComexBaseCtx>({
+const EnterpriseBaseContext = createContext<EnterpriseBaseCtx>({
   ready: false,
   authenticated: false,
   email: null,
@@ -106,7 +106,7 @@ const ComexBaseContext = createContext<ComexBaseCtx>({
   login: () => {},
   logout: async () => {},
   sendTransaction: async () => {
-    throw new Error("comexBase: wallet not ready");
+    throw new Error("enterpriseBase: wallet not ready");
   },
 });
 
@@ -114,9 +114,9 @@ const ComexBaseContext = createContext<ComexBaseCtx>({
 // Inner provider — lives inside PrivyProvider tree
 // ---------------------------------------------------------------------------
 
-function ComexBaseProviderInner({ children }: { children: ReactNode }) {
+function EnterpriseBaseProviderInner({ children }: { children: ReactNode }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  // Smart wallet (ERC-4337) client — the comex account IS the smart wallet,
+  // Smart wallet (ERC-4337) client — the enterprise account IS the smart wallet,
   // controlled by the Privy embedded EOA signer. Gas is paid via the paymaster
   // configured in the Privy dashboard (USDC), so the company never needs ETH.
   const { client: smartClient } = useSmartWallets();
@@ -179,11 +179,11 @@ function ComexBaseProviderInner({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ComexBaseContext.Provider
+    <EnterpriseBaseContext.Provider
       value={{ ready, authenticated, email, address, login, logout, sendTransaction }}
     >
       {children}
-    </ComexBaseContext.Provider>
+    </EnterpriseBaseContext.Provider>
   );
 }
 
@@ -191,6 +191,6 @@ function ComexBaseProviderInner({ children }: { children: ReactNode }) {
 // Public hook
 // ---------------------------------------------------------------------------
 
-export function useComexBaseWallet(): ComexBaseCtx {
-  return useContext(ComexBaseContext);
+export function useEnterpriseBaseWallet(): EnterpriseBaseCtx {
+  return useContext(EnterpriseBaseContext);
 }

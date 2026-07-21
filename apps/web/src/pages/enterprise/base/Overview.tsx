@@ -1,9 +1,9 @@
-// Company treasury overview — the post-login landing for a comex merchant.
+// Company treasury overview — the post-login landing for a enterprise merchant.
 // REAL data: USDC balance + USDC transfers pulled live from Base (Blockscout),
 // filtered to the canonical USDC contract so address-poisoning scam tokens
 // (fake "USDC" lookalikes) never appear. Bone skin, pure-SVG chart.
 import { useEffect, useState } from "react";
-import { useComexBaseWallet } from "../../../lib/comexBase.tsx";
+import { useEnterpriseBaseWallet } from "../../../lib/enterpriseBase.tsx";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
 
 const USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"; // canonical USDC on Base
@@ -27,7 +27,7 @@ const card = "bg-white border border-[#0a0a0a]/10 rounded-2xl p-5";
 const big = "text-[30px] font-extrabold tracking-tight mt-2 tabular-nums";
 
 export default function BaseOverview() {
-  const { address } = useComexBaseWallet();
+  const { address } = useEnterpriseBaseWallet();
   const [txs, setTxs] = useState<Tx[] | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
 

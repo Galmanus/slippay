@@ -1,18 +1,11 @@
 import { useEffect, useState } from "react";
-import { Horizon } from "@stellar/stellar-sdk";
-import { USDC_ASSET_CODE } from "@slippay/shared";
-import { useComexWallet } from "../../lib/comexPrivy.tsx";
-import { usdcIssuer } from "../../lib/stellar.ts";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { useEnterpriseSolanaWallet } from "../../../lib/enterpriseSolana.tsx";
+import { rpcUrl, usdcMint } from "../../../lib/chain/solana/usdc.ts";
 
-const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "PUBLIC").toUpperCase() as "TESTNET" | "PUBLIC";
-
-const HORIZON_URL: Record<"TESTNET" | "PUBLIC", string> = {
-  TESTNET: "https://horizon-testnet.stellar.org",
-  PUBLIC: "https://horizon.stellar.org",
-};
-
-export default function Balance() {
-  const { address } = useComexWallet();
+export default function SolanaBalance() {
+  const { address } = useEnterpriseSolanaWallet();
   const [balance, setBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,23 +15,25 @@ export default function Balance() {
     if (!address) return;
     setLoading(true);
     setError(null);
-    const server = new Horizon.Server(HORIZON_URL[NETWORK]);
-    server
-      .loadAccount(address)
-      .then((acct) => {
-        const issuer = usdcIssuer(NETWORK);
-        const bal = acct.balances.find(
-          (b) =>
-            (b as { asset_code?: string }).asset_code === USDC_ASSET_CODE &&
-            (b as { asset_issuer?: string }).asset_issuer === issuer,
-        );
-        setBalance(bal ? (bal as { balance: string }).balance : "0.0000000");
+
+    const connection = new Connection(rpcUrl());
+    const ownerPubkey = new PublicKey(address);
+
+    getAssociatedTokenAddress(usdcMint(), ownerPubkey)
+      .then((ata) => connection.getTokenAccountBalance(ata))
+      .then((resp) => {
+        setBalance(resp.value.uiAmountString ?? "0");
       })
       .catch((e: unknown) => {
-        const status = (e as { response?: { status?: number } })?.response?.status;
-        const name = (e as { name?: string })?.name;
-        if (status === 404 || name === "NotFoundError") {
-          setBalance("0.0000000");
+        // ATA doesn't exist yet = zero balance (account-not-found error)
+        const msg = (e instanceof Error ? e.message : String(e)).toLowerCase();
+        if (
+          msg.includes("could not find") ||
+          msg.includes("account not found") ||
+          msg.includes("invalid account data") ||
+          msg.includes("failed to get info about account")
+        ) {
+          setBalance("0");
         } else {
           setError("Não foi possível carregar o saldo. Tente novamente.");
         }
@@ -89,7 +84,7 @@ export default function Balance() {
         )}
         {!loading && !error && displayBalance !== null && (
           <div className="mt-3 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
-            USDC · Stellar {NETWORK === "TESTNET" ? "Testnet" : "Mainnet"}
+            USDC · Solana
           </div>
         )}
       </div>
@@ -112,7 +107,7 @@ export default function Balance() {
               {copied ? "Copiado" : "Copiar endereço"}
             </button>
             <div className="mt-4 text-[10px] text-[#0a0a0a]/55 border-l-2 border-[#0a0a0a]/15 pl-3">
-              Envie dólares (USDC Stellar) para este endereço
+              Envie dólares (USDC, rede Solana) para este endereço
             </div>
           </div>
         </div>

@@ -42,9 +42,9 @@ import Receber from "./pages/Receber.tsx";
 import Empresas from "./pages/Empresas.tsx";
 
 
-import ComexBase from "./pages/ComexBase.tsx";
-import { ComexBaseProvider } from "./lib/comexBase.tsx";
-import BusinessLanding from "./pages/comex/BusinessLanding";
+import EnterpriseBase from "./pages/EnterpriseBase.tsx";
+import { EnterpriseBaseProvider } from "./lib/enterpriseBase.tsx";
+import BusinessLanding from "./pages/enterprise/BusinessLanding";
 export default function App() {
   return (
     <Routes>
@@ -54,10 +54,10 @@ export default function App() {
       <Route path="/cofrinho-landing" element={<LandingV2 />} />
       <Route path="/receber" element={<Receber />} />
       {import.meta.env.VITE_PAGFINANCE_ENABLED === "1" && <Route path="/pix-pay" element={<PixPay />} />}
-      {import.meta.env.VITE_COMEX_ENABLED === "1" && (
-        <Route path="/comex" element={
+      {import.meta.env.VITE_ENTERPRISE_ENABLED === "1" && (
+        <Route path="/enterprise" element={
           import.meta.env.VITE_PRIVY_APP_ID
-            ? <ComexBaseProvider><ComexBase /></ComexBaseProvider>
+            ? <EnterpriseBaseProvider><EnterpriseBase /></EnterpriseBaseProvider>
             : <BusinessLanding />
         } />
       )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { useComexBaseWallet } from "../../../lib/comexBase.tsx";
+import { useEnterpriseBaseWallet } from "../../../lib/enterpriseBase.tsx";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
 
 // Minimal ERC-20 balanceOf ABI — only what we need.
@@ -17,7 +17,7 @@ const ERC20_BALANCE_OF_ABI = [
 type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 
 export default function BaseBalance({ onNavigate }: { onNavigate?: (tab: Tab) => void }) {
-  const { address } = useComexBaseWallet();
+  const { address } = useEnterpriseBaseWallet();
   const [balance, setBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

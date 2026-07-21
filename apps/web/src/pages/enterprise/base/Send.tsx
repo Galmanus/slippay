@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { isAddress } from "viem";
-import { useComexBaseWallet } from "../../../lib/comexBase.tsx";
+import { useEnterpriseBaseWallet } from "../../../lib/enterpriseBase.tsx";
 import { authorizeBasePayment } from "../../../lib/baseAuthorize.ts";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
 import ConfirmTxModal from "../../../components/ConfirmTxModal.tsx";
@@ -21,7 +21,7 @@ const ERC20_BALANCE_OF_ABI = [
 ] as const;
 
 export default function BaseSend() {
-  const { address, sendTransaction } = useComexBaseWallet();
+  const { address, sendTransaction } = useEnterpriseBaseWallet();
 
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");

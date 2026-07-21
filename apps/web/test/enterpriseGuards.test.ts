@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { requiresApproval } from "../src/lib/comexGuards.ts";
+import { requiresApproval } from "../src/lib/enterpriseGuards.ts";
 
 describe("requiresApproval", () => {
   it("requires approval at or above the limit", () => {

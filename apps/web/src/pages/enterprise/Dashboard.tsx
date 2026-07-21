@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useComexWallet } from "../../lib/comexPrivy.tsx";
+import { useEnterpriseWallet } from "../../lib/enterprisePrivy.tsx";
 import Balance from "./Balance.tsx";
 import Send from "./Send.tsx";
 import Exchange from "./Exchange.tsx";
@@ -8,8 +8,8 @@ import Yield from "./Yield.tsx";
 type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 const TABS: Tab[] = ["Saldo", "Enviar", "Câmbio", "Render"];
 
-export default function ComexDashboard() {
-  const { email, address } = useComexWallet();
+export default function EnterpriseDashboard() {
+  const { email, address } = useEnterpriseWallet();
   const [activeTab, setActiveTab] = useState<Tab>("Saldo");
 
   return (

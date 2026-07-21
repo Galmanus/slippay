@@ -1,11 +1,11 @@
-import { useComexSolanaWallet } from "../lib/comexSolana.tsx";
-import ComexSolanaDashboard from "./comex/solana/Dashboard.tsx";
+import { useEnterpriseSolanaWallet } from "../lib/enterpriseSolana.tsx";
+import EnterpriseSolanaDashboard from "./enterprise/solana/Dashboard.tsx";
 
 // VERIFY-WITH-KEYS: add MFA gate here when Privy mfaMethods available for Solana embedded wallets
 // (useMfaEnrollment from @privy-io/react-auth, gate on user.mfaMethods?.length > 0)
 
-export default function ComexSolana() {
-  const { ready, authenticated, login } = useComexSolanaWallet();
+export default function EnterpriseSolana() {
+  const { ready, authenticated, login } = useEnterpriseSolanaWallet();
 
   // 1. SDK not ready yet
   if (!ready) {
@@ -33,7 +33,7 @@ export default function ComexSolana() {
           <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
             <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
               <span className="inline-block w-3 h-3 bg-[#0a0a0a] mr-2 align-middle" />
-              001. Comex
+              001. Enterprise
             </div>
 
             <div className="md:col-span-6">
@@ -68,5 +68,5 @@ export default function ComexSolana() {
   }
 
   // 3. Authenticated + wallet ready → dashboard
-  return <ComexSolanaDashboard />;
+  return <EnterpriseSolanaDashboard />;
 }

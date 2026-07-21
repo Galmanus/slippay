@@ -1,4 +1,4 @@
-// BusinessLanding — Slippay Comex · premium on-brand page.
+// BusinessLanding — Slippay Enterprise · premium on-brand page.
 // Design language mirrors LandingV2: bone bg, ink text, #FDDA24 accent,
 // Inter display font, grain texture, monumental uppercase headlines.
 
@@ -89,7 +89,7 @@ export default function BusinessLanding() {
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 pt-24 md:pt-36 pb-20 md:pb-32">
           <div data-reveal className="flex flex-col items-start">
             <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/50 mb-8">
-              SLIPPAY · COMEX
+              SLIPPAY · ENTERPRISE
             </span>
             <h1
               className="font-black uppercase tracking-[-0.04em] leading-[0.88] text-[clamp(2.6rem,9vw,6rem)] max-w-[16ch]"
@@ -102,7 +102,7 @@ export default function BusinessLanding() {
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
               <a
-                href="mailto:comex@slippay.cc?subject=Slippay%20comex%20—%20acesso"
+                href="mailto:enterprise@slippay.cc?subject=Slippay%20enterprise%20—%20acesso"
                 className={btn}
                 onMouseMove={(e) => {
                   const r = e.currentTarget.getBoundingClientRect();
@@ -196,7 +196,7 @@ export default function BusinessLanding() {
             ))}
           </div>
           <a
-            href="mailto:comex@slippay.cc?subject=Slippay%20comex%20—%20acesso"
+            href="mailto:enterprise@slippay.cc?subject=Slippay%20enterprise%20—%20acesso"
             className="mt-12 lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold"
           >
             Solicitar acesso
@@ -219,7 +219,7 @@ export default function BusinessLanding() {
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-6">
             <a
-              href="mailto:comex@slippay.cc?subject=Slippay%20comex%20—%20acesso"
+              href="mailto:enterprise@slippay.cc?subject=Slippay%20enterprise%20—%20acesso"
               className={btn}
               onMouseMove={(e) => {
                 const r = e.currentTarget.getBoundingClientRect();
@@ -232,7 +232,7 @@ export default function BusinessLanding() {
               Solicitar acesso
             </a>
             <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/40">
-              comex@slippay.cc
+              enterprise@slippay.cc
             </span>
           </div>
 

@@ -4,7 +4,7 @@
 // just amount + Pix key. Not a secret — a cadastral field. Phase 1: localStorage
 // keyed by wallet address; phase 2 can move it to account metadata.
 
-const key = (address: string) => `slippay.comex.doc.${address.toLowerCase()}`;
+const key = (address: string) => `slippay.enterprise.doc.${address.toLowerCase()}`;
 
 export function getCompanyDoc(address: string | null | undefined): string {
   if (!address) return "";

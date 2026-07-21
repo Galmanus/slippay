@@ -1,15 +1,14 @@
-import { useState } from "react";
-import { useComexBaseWallet } from "../lib/comexBase.tsx";
-import ComexBaseDashboard from "./comex/base/Dashboard.tsx";
+import { useEnterpriseWallet } from "../lib/enterprisePrivy.tsx";
+import { useMfaEnrollment, usePrivy } from "@privy-io/react-auth";
+import EnterpriseDashboard from "./enterprise/Dashboard.tsx";
 
-// VERIFY-WITH-KEYS: MFA gate — Privy embeds MFA enforcement via PRIVY_CONFIG
-// (mfa.noPromptOnMfaRequired: false in comexBase.tsx). Privy handles the MFA
-// flow before returning authenticated=true. No separate useMfaEnrollment gate
-// needed here unless we want to block unenrolled users manually.
-
-export default function ComexBase() {
-  const { ready, authenticated, login } = useComexBaseWallet();
-  const [loggingIn, setLoggingIn] = useState(false);
+export default function Enterprise() {
+  const { ready, authenticated, login } = useEnterpriseWallet();
+  // useMfaEnrollment: kept at page level so MFA modal is accessible post-auth.
+  // VERIFY-WITH-KEYS: gate is now implemented below. Confirm `user.mfaMethods` shape
+  // matches the live Privy session (type: LinkedMfaAccount[]) before relying on it in prod.
+  const { showMfaEnrollmentModal } = useMfaEnrollment();
+  const { user } = usePrivy();
 
   // 1. SDK not ready yet
   if (!ready) {
@@ -24,12 +23,6 @@ export default function ComexBase() {
 
   // 2. Not authenticated → landing
   if (!authenticated) {
-    // login() resolves when the Privy modal closes (success or cancel); awaiting
-    // it gives click feedback without leaving the button stuck.
-    const handleLogin = async () => {
-      setLoggingIn(true);
-      try { await login(); } catch { /* user cancelled */ } finally { setLoggingIn(false); }
-    };
     return (
       <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] flex flex-col">
         <header className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-8 flex items-center justify-between">
@@ -43,7 +36,7 @@ export default function ComexBase() {
           <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 grid md:grid-cols-12 gap-8 md:gap-16 py-16 md:py-24">
             <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
               <span className="inline-block w-3 h-3 bg-[#0a0a0a] mr-2 align-middle" />
-              001. Comex
+              001. Enterprise
             </div>
 
             <div className="md:col-span-6">
@@ -59,31 +52,44 @@ export default function ComexBase() {
               </p>
 
               <button
-                onClick={handleLogin}
-                disabled={loggingIn}
-                className="bg-[#FDDA24] text-[#0a0a0a] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420] disabled:opacity-50"
+                onClick={login}
+                className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a]"
               >
-                {loggingIn ? "Entrando..." : "Entrar"}
+                Entrar
               </button>
-              <p className="mt-4 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
-                Acesso por e-mail e verificação em duas etapas
-              </p>
-              <p className="mt-8 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40 max-w-sm leading-relaxed">
-                Carteira da empresa · você assina · câmbio liquidado pela 4P (licenciada) · USDC by Circle
-              </p>
             </div>
           </div>
         </main>
 
         <footer className="border-t border-[#0a0a0a]/10">
           <div className="max-w-[1400px] mx-auto px-8 md:px-12 py-6 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">
-            Non-custodial · USDC by Circle · Base · Slippay
+            Non-custodial · USDC by Circle · Slippay
           </div>
         </footer>
       </div>
     );
   }
 
-  // 3. Authenticated + wallet ready → dashboard
-  return <ComexBaseDashboard />;
+  // 3. Authenticated — MFA gate
+  // Block dashboard if no MFA method enrolled. Self-attest via mfaMethods array.
+  if (!user || (user.mfaMethods?.length ?? 0) === 0) {
+    return (
+      <div className="min-h-screen bg-[#f1eee7] flex items-center justify-center">
+        <div className="max-w-sm text-center space-y-6 px-8">
+          <p className="text-sm text-[#0a0a0a]/70">
+            Ative a verificação em duas etapas (2FA) para proteger a conta da empresa
+          </p>
+          <button
+            onClick={showMfaEnrollmentModal}
+            className="bg-[#0a0a0a] text-[#f1eee7] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a]"
+          >
+            Ativar 2FA
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Authenticated + MFA enrolled → dashboard
+  return <EnterpriseDashboard />;
 }

@@ -41,13 +41,13 @@ const PRIVY_CONFIG: PrivyClientConfig = {
   },
 };
 
-export function ComexPrivyProvider({ children }: { children: ReactNode }) {
+export function EnterprisePrivyProvider({ children }: { children: ReactNode }) {
   return (
     <PrivyProvider
       appId={import.meta.env.VITE_PRIVY_APP_ID ?? ""}
       config={PRIVY_CONFIG}
     >
-      <ComexWalletProviderInner>{children}</ComexWalletProviderInner>
+      <EnterpriseWalletProviderInner>{children}</EnterpriseWalletProviderInner>
     </PrivyProvider>
   );
 }
@@ -56,7 +56,7 @@ export function ComexPrivyProvider({ children }: { children: ReactNode }) {
 // Wallet context
 // ---------------------------------------------------------------------------
 
-interface ComexWalletCtx {
+interface EnterpriseWalletCtx {
   ready: boolean;
   authenticated: boolean;
   email: string | null;
@@ -73,7 +73,7 @@ interface ComexWalletCtx {
   signHash: (hash: Buffer) => Promise<Buffer>;
 }
 
-const ComexWalletContext = createContext<ComexWalletCtx>({
+const EnterpriseWalletContext = createContext<EnterpriseWalletCtx>({
   ready: false,
   authenticated: false,
   email: null,
@@ -88,7 +88,7 @@ const ComexWalletContext = createContext<ComexWalletCtx>({
 // Inner provider — lives inside PrivyProvider tree
 // ---------------------------------------------------------------------------
 
-function ComexWalletProviderInner({ children }: { children: ReactNode }) {
+function EnterpriseWalletProviderInner({ children }: { children: ReactNode }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { createWallet } = useCreateWallet();
   const { signRawHash } = useSignRawHash();
@@ -118,7 +118,7 @@ function ComexWalletProviderInner({ children }: { children: ReactNode }) {
     createWallet({ chainType: "stellar" })
       .catch((err: unknown) => {
         // Non-fatal: user can retry; log for debugging
-        console.error("comexPrivy: failed to create Stellar wallet", err);
+        console.error("enterprisePrivy: failed to create Stellar wallet", err);
       })
       .finally(() => {
         creatingRef.current = false;
@@ -127,7 +127,7 @@ function ComexWalletProviderInner({ children }: { children: ReactNode }) {
 
   const signHash = useCallback(
     async (hash: Buffer): Promise<Buffer> => {
-      if (!address) throw new Error("comexPrivy: Stellar wallet not available");
+      if (!address) throw new Error("enterprisePrivy: Stellar wallet not available");
       const hexHash = hash.toString("hex");
       const { signature } = await signRawHash({
         address,
@@ -141,11 +141,11 @@ function ComexWalletProviderInner({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ComexWalletContext.Provider
+    <EnterpriseWalletContext.Provider
       value={{ ready, authenticated, email, address, walletId, login, logout, signHash }}
     >
       {children}
-    </ComexWalletContext.Provider>
+    </EnterpriseWalletContext.Provider>
   );
 }
 
@@ -153,6 +153,6 @@ function ComexWalletProviderInner({ children }: { children: ReactNode }) {
 // Public hook
 // ---------------------------------------------------------------------------
 
-export function useComexWallet(): ComexWalletCtx {
-  return useContext(ComexWalletContext);
+export function useEnterpriseWallet(): EnterpriseWalletCtx {
+  return useContext(EnterpriseWalletContext);
 }

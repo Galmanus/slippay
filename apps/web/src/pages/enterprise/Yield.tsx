@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useComexWallet } from "../../lib/comexPrivy.tsx";
+import { useEnterpriseWallet } from "../../lib/enterprisePrivy.tsx";
 import { getPosition, getApy, buildDepositTx, buildWithdrawTx } from "../../lib/defindex.ts";
 import { authorizeContractCall } from "../../lib/authorizeTx.ts";
 import ConfirmTxModal from "../../components/ConfirmTxModal.tsx";
@@ -16,7 +16,7 @@ function vaultDisplay(): string {
 type ActionPhase = "idle" | "loading" | "done" | "error";
 
 export default function Yield() {
-  const { address, signHash } = useComexWallet();
+  const { address, signHash } = useEnterpriseWallet();
   const [position, setPosition] = useState<{ usdc: string } | null>(null);
   const [apy, setApy] = useState<number | null>(null);
   const [loadingPosition, setLoadingPosition] = useState(false);

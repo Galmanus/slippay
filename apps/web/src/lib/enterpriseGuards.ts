@@ -13,7 +13,7 @@ export interface AuditEntry {
   at: string; actor: string; action: string; amount?: string; destination?: string; txHash?: string;
 }
 
-const AUDIT_KEY = "comex_audit_log";
+const AUDIT_KEY = "enterprise_audit_log";
 
 /** Append an audit entry (local, append-only view). */
 export function logAction(entry: AuditEntry): void {
@@ -30,5 +30,5 @@ export function readAudit(): AuditEntry[] {
 
 /** Configured approval threshold in USD (env, default 5000). */
 export function approvalLimitUsd(): string {
-  return (import.meta.env.VITE_COMEX_APPROVAL_USD as string | undefined) ?? "5000";
+  return (import.meta.env.VITE_ENTERPRISE_APPROVAL_USD as string | undefined) ?? "5000";
 }

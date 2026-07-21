@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useComexSolanaWallet } from "../../../lib/comexSolana.tsx";
+import { useEnterpriseSolanaWallet } from "../../../lib/enterpriseSolana.tsx";
 import SolanaBalance from "./Balance.tsx";
 import SolanaSend from "./Send.tsx";
 import Exchange from "./Exchange.tsx";
@@ -7,8 +7,8 @@ import Exchange from "./Exchange.tsx";
 type Tab = "Saldo" | "Enviar" | "Câmbio" | "Render";
 const TABS: Tab[] = ["Saldo", "Enviar", "Câmbio", "Render"];
 
-export default function ComexSolanaDashboard() {
-  const { email, address } = useComexSolanaWallet();
+export default function EnterpriseSolanaDashboard() {
+  const { email, address } = useEnterpriseSolanaWallet();
   const [activeTab, setActiveTab] = useState<Tab>("Saldo");
 
   return (

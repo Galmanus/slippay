@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useComexBaseWallet } from "../../../lib/comexBase.tsx";
+import { useEnterpriseBaseWallet } from "../../../lib/enterpriseBase.tsx";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
 import BaseBalance from "./Balance.tsx";
 import BaseSend from "./Send.tsx";
@@ -13,8 +13,8 @@ const ERC20_BALANCE_OF_ABI = [
   { name: "balanceOf", type: "function", stateMutability: "view", inputs: [{ name: "account", type: "address" }], outputs: [{ name: "", type: "uint256" }] },
 ] as const;
 
-export default function ComexBaseDashboard() {
-  const { email, address, logout } = useComexBaseWallet();
+export default function EnterpriseBaseDashboard() {
+  const { email, address, logout } = useEnterpriseBaseWallet();
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
   const [stripBalance, setStripBalance] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);

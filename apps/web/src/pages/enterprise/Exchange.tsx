@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
-import { useComexWallet } from "../../lib/comexPrivy.tsx";
+import { useEnterpriseWallet } from "../../lib/enterprisePrivy.tsx";
 import { fetchSequence, buildUsdcPaymentTx } from "../../lib/stellar.ts";
 import { authorizePayment } from "../../lib/authorizeTx.ts";
-import { requiresApproval, approvalLimitUsd, logAction } from "../../lib/comexGuards.ts";
+import { requiresApproval, approvalLimitUsd, logAction } from "../../lib/enterpriseGuards.ts";
 import * as pag from "../../lib/pagfinance.ts";
 import ConfirmTxModal from "../../components/ConfirmTxModal.tsx";
 import type { TxSummary } from "../../lib/txguard.ts";
@@ -12,7 +12,7 @@ const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "PUBLIC").toUpperCase()
 type Phase = "idle" | "quoting" | "quoted" | "pix_waiting" | "signing" | "partner_pending" | "done" | "error";
 
 export default function Exchange() {
-  const { address, signHash } = useComexWallet();
+  const { address, signHash } = useEnterpriseWallet();
 
   // Buy (R$->USD)
   const [buyAmount, setBuyAmount] = useState("");

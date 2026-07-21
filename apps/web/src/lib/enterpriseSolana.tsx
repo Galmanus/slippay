@@ -16,7 +16,7 @@
 //
 // PrivyClientConfig.embeddedWallets.solana.createOnLogin (types-sr2FRXdy.d.ts line 1805-1823):
 //   'all-users' | 'users-without-wallets' | 'off'
-//   comex uses 'all-users': every corporate login gets a Solana wallet automatically.
+//   enterprise uses 'all-users': every corporate login gets a Solana wallet automatically.
 
 import {
   createContext,
@@ -41,7 +41,7 @@ import { Transaction } from "@solana/web3.js";
 
 // ---------------------------------------------------------------------------
 // Provider config — corporate: email + MFA only, NO biometric.
-// LazorKit is the biometric/passkey path for the consumer product; comex B2B
+// LazorKit is the biometric/passkey path for the consumer product; enterprise B2B
 // treasury uses Privy embedded wallet with email auth + MFA enforcement.
 // ---------------------------------------------------------------------------
 
@@ -58,13 +58,13 @@ const PRIVY_CONFIG: PrivyClientConfig = {
   },
 };
 
-export function ComexSolanaProvider({ children }: { children: ReactNode }) {
+export function EnterpriseSolanaProvider({ children }: { children: ReactNode }) {
   return (
     <PrivyProvider
       appId={import.meta.env.VITE_PRIVY_APP_ID ?? ""}
       config={PRIVY_CONFIG}
     >
-      <ComexSolanaProviderInner>{children}</ComexSolanaProviderInner>
+      <EnterpriseSolanaProviderInner>{children}</EnterpriseSolanaProviderInner>
     </PrivyProvider>
   );
 }
@@ -73,7 +73,7 @@ export function ComexSolanaProvider({ children }: { children: ReactNode }) {
 // Wallet context
 // ---------------------------------------------------------------------------
 
-interface ComexSolanaCtx {
+interface EnterpriseSolanaCtx {
   ready: boolean;
   authenticated: boolean;
   email: string | null;
@@ -93,7 +93,7 @@ interface ComexSolanaCtx {
   signTransaction: (tx: Transaction) => Promise<Transaction>;
 }
 
-const ComexSolanaContext = createContext<ComexSolanaCtx>({
+const EnterpriseSolanaContext = createContext<EnterpriseSolanaCtx>({
   ready: false,
   authenticated: false,
   email: null,
@@ -101,7 +101,7 @@ const ComexSolanaContext = createContext<ComexSolanaCtx>({
   login: () => {},
   logout: async () => {},
   signTransaction: async () => {
-    throw new Error("comexSolana: wallet not ready");
+    throw new Error("enterpriseSolana: wallet not ready");
   },
 });
 
@@ -109,7 +109,7 @@ const ComexSolanaContext = createContext<ComexSolanaCtx>({
 // Inner provider — lives inside PrivyProvider tree
 // ---------------------------------------------------------------------------
 
-function ComexSolanaProviderInner({ children }: { children: ReactNode }) {
+function EnterpriseSolanaProviderInner({ children }: { children: ReactNode }) {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { createWallet } = useCreateWallet();
   const { signTransaction: privySignTx } = useSignTransaction();
@@ -139,7 +139,7 @@ function ComexSolanaProviderInner({ children }: { children: ReactNode }) {
     creatingRef.current = true;
     createWallet()
       .catch((err: unknown) => {
-        console.error("comexSolana: failed to create Solana wallet", err);
+        console.error("enterpriseSolana: failed to create Solana wallet", err);
       })
       .finally(() => {
         creatingRef.current = false;
@@ -149,7 +149,7 @@ function ComexSolanaProviderInner({ children }: { children: ReactNode }) {
   const signTransaction = useCallback(
     async (tx: Transaction): Promise<Transaction> => {
       if (!solanaWallet) {
-        throw new Error("comexSolana: Solana wallet not available — authenticate first");
+        throw new Error("enterpriseSolana: Solana wallet not available — authenticate first");
       }
       // Serialize without requiring all signatures (pre-sign state).
       const serialized = tx.serialize({
@@ -169,11 +169,11 @@ function ComexSolanaProviderInner({ children }: { children: ReactNode }) {
   );
 
   return (
-    <ComexSolanaContext.Provider
+    <EnterpriseSolanaContext.Provider
       value={{ ready, authenticated, email, address, login, logout, signTransaction }}
     >
       {children}
-    </ComexSolanaContext.Provider>
+    </EnterpriseSolanaContext.Provider>
   );
 }
 
@@ -181,6 +181,6 @@ function ComexSolanaProviderInner({ children }: { children: ReactNode }) {
 // Public hook
 // ---------------------------------------------------------------------------
 
-export function useComexSolanaWallet(): ComexSolanaCtx {
-  return useContext(ComexSolanaContext);
+export function useEnterpriseSolanaWallet(): EnterpriseSolanaCtx {
+  return useContext(EnterpriseSolanaContext);
 }

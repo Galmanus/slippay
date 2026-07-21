@@ -1,58 +1,39 @@
 import { useState, useRef, useCallback } from "react";
-import { Connection, PublicKey } from "@solana/web3.js";
-import { useComexSolanaWallet } from "../../../lib/comexSolana.tsx";
-import { authorizeSolanaPayment } from "../../../lib/solanaAuthorize.ts";
-import { rpcUrl } from "../../../lib/chain/solana/usdc.ts";
-import ConfirmTxModal from "../../../components/ConfirmTxModal.tsx";
-import type { TxSummary } from "../../../lib/txguard.ts";
+import { useEnterpriseWallet } from "../../lib/enterprisePrivy.tsx";
+import {
+  isValidStellarAddress,
+  fetchSequence,
+  buildUsdcPaymentTx,
+} from "../../lib/stellar.ts";
+import { authorizePayment } from "../../lib/authorizeTx.ts";
+import { requiresApproval, approvalLimitUsd, logAction } from "../../lib/enterpriseGuards.ts";
+import ConfirmTxModal from "../../components/ConfirmTxModal.tsx";
+import type { TxSummary } from "../../lib/txguard.ts";
 
-function isValidSolanaAddress(addr: string): boolean {
-  try {
-    new PublicKey(addr);
-    return true;
-  } catch {
-    return false;
-  }
-}
+const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "PUBLIC").toUpperCase() as "TESTNET" | "PUBLIC";
+const EXPLORER = NETWORK === "PUBLIC" ? "public" : "testnet";
 
-export default function SolanaSend() {
-  const { address, signTransaction } = useComexSolanaWallet();
+export default function Send() {
+  const { address, signHash } = useEnterpriseWallet();
 
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
-  const [txSig, setTxSig] = useState<string | null>(null);
-  /** true = confirmed on-chain, false = sent but confirmation pending/timed out */
-  const [txConfirmed, setTxConfirmed] = useState<boolean>(true);
+  const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [needsSecondApproval, setNeedsSecondApproval] = useState(false);
+  const [secondApprovalConfirmed, setSecondApprovalConfirmed] = useState(false);
 
-  // ConfirmTxModal state — we synthesize a TxSummary for the modal
+  // ConfirmTxModal state
   const [modalSummary, setModalSummary] = useState<TxSummary | null>(null);
   const resolveConfirmRef = useRef<((v: boolean) => void) | null>(null);
 
-  const openConfirmModal = useCallback(
-    (decoded: { to: string; amount: string; ownerAddress: string }): Promise<boolean> => {
-      return new Promise((resolve) => {
-        resolveConfirmRef.current = resolve;
-        // [I-2] Show the owner address (base58) the user recognizes, not the ATA.
-        const summary: TxSummary = {
-          source: address ?? "",
-          fee: "~0.000005 SOL",
-          operations: [
-            {
-              type: "payment",
-              // ownerAddress is what the human can verify; ATA is internal
-              destination: decoded.ownerAddress,
-              amount: decoded.amount,
-              assetCode: "USDC",
-            },
-          ],
-        };
-        setModalSummary(summary);
-      });
-    },
-    [address],
-  );
+  const openConfirmModal = useCallback((summary: TxSummary): Promise<boolean> => {
+    return new Promise((resolve) => {
+      resolveConfirmRef.current = resolve;
+      setModalSummary(summary);
+    });
+  }, []);
 
   function handleConfirm() {
     setModalSummary(null);
@@ -66,7 +47,7 @@ export default function SolanaSend() {
     resolveConfirmRef.current = null;
   }
 
-  const destValid = destination.length > 0 && isValidSolanaAddress(destination);
+  const destValid = isValidStellarAddress(destination);
   const amtNum = Number(amount);
   const amtValid = isFinite(amtNum) && amtNum > 0;
   const canSend = !!address && destValid && amtValid && !busy;
@@ -74,25 +55,45 @@ export default function SolanaSend() {
   async function doSend() {
     if (!address || !canSend) return;
     setError(null);
-    setTxSig(null);
-    setTxConfirmed(true);
+    setTxHash(null);
+
+    const needsApproval = requiresApproval(amount, approvalLimitUsd());
+    if (needsApproval && !secondApprovalConfirmed) {
+      setNeedsSecondApproval(true);
+      return;
+    }
+
     setBusy(true);
     try {
-      const connection = new Connection(rpcUrl());
-      const result = await authorizeSolanaPayment({
-        connection,
-        from: new PublicKey(address),
-        to: new PublicKey(destination.trim()),
-        usdcAmount: amtNum.toFixed(6),
-        signTransaction,
-        confirm: (decoded) => openConfirmModal(decoded),
+      const seq = await fetchSequence(NETWORK, address);
+      const xdr = await buildUsdcPaymentTx({
+        sourcePublicKey: address,
+        sourceSequence: seq,
+        destination: destination.trim(),
+        amount: amtNum.toFixed(7),
+        network: NETWORK,
       });
-      setTxSig(result.signature);
-      setTxConfirmed(result.confirmed);
-      if (result.confirmed) {
-        setDestination("");
-        setAmount("");
-      }
+      const result = await authorizePayment({
+        xdr,
+        network: NETWORK,
+        publicKey: address,
+        signHash,
+        confirm: (summary) => openConfirmModal(summary),
+        expect: { destination: destination.trim(), amount: amtNum.toFixed(7), assetCode: "USDC" },
+      });
+      setTxHash(result.hash);
+      logAction({
+        at: new Date().toISOString(),
+        actor: address,
+        action: "send",
+        amount: amount,
+        destination: destination.trim(),
+        txHash: result.hash,
+      });
+      setDestination("");
+      setAmount("");
+      setSecondApprovalConfirmed(false);
+      setNeedsSecondApproval(false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "erro desconhecido");
     } finally {
@@ -105,7 +106,6 @@ export default function SolanaSend() {
       {modalSummary && (
         <ConfirmTxModal
           summary={modalSummary}
-          intent={`Enviar ${amount} USDC para ${destination.trim().slice(0, 8)}...${destination.trim().slice(-4)}`}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
         />
@@ -126,7 +126,7 @@ export default function SolanaSend() {
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
             disabled={busy}
-            placeholder="Endereço Solana (base58)"
+            placeholder="G... endereço Stellar"
             className={[
               "w-full bg-transparent border p-4 font-mono text-sm disabled:opacity-60",
               destination && !destValid
@@ -158,49 +158,46 @@ export default function SolanaSend() {
           />
         </div>
 
+        {/* Second approver gate */}
+        {needsSecondApproval && !secondApprovalConfirmed && (
+          <div className="border-l-2 border-yellow-500 pl-4 py-4 mb-6 space-y-4">
+            <p className="text-[10px] uppercase tracking-[0.14em] text-yellow-700">
+              Confirmação adicional (acima de US$ {approvalLimitUsd()}). Controle dual real com 2º responsável chega na fase 2.
+            </p>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={secondApprovalConfirmed}
+                onChange={(e) => setSecondApprovalConfirmed(e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="text-xs text-[#0a0a0a]/70">Confirmo que esta transferência foi aprovada</span>
+            </label>
+          </div>
+        )}
+
         {/* Send button */}
         <button
           onClick={doSend}
-          disabled={!canSend}
+          disabled={!canSend || (needsSecondApproval && !secondApprovalConfirmed)}
           className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-40"
         >
           {busy ? "Processando..." : "Enviar"}
         </button>
 
-        {/* Success — confirmed */}
-        {txSig && txConfirmed && (
-          <div className="mt-8 border-l-2 border-[#FDDA24] pl-4">
+        {/* Success */}
+        {txHash && (
+          <div className="mt-8 border-l-2 border-[#b5e853] pl-4">
             <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Transferência enviada
+              <span className="inline-block w-1.5 h-1.5 bg-[#b5e853]" /> Transferência enviada
             </div>
             <a
               className="text-xs font-mono mt-2 block break-all hover:opacity-60"
-              href={`https://solscan.io/tx/${txSig}`}
+              href={`https://stellar.expert/explorer/${EXPLORER}/tx/${txHash}`}
               target="_blank"
               rel="noreferrer"
             >
-              {txSig}
-            </a>
-          </div>
-        )}
-
-        {/* Pending confirmation — sent but not yet confirmed */}
-        {txSig && !txConfirmed && (
-          <div className="mt-8 border-l-2 border-[#0a0a0a]/40 pl-4">
-            <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-[#0a0a0a]/40 animate-pulse" />
-              Enviado, confirmando...
-            </div>
-            <p className="text-xs text-[#0a0a0a]/60 mt-1">
-              A transação foi enviada à rede. Verifique o status no Solscan.
-            </p>
-            <a
-              className="text-xs font-mono mt-2 block break-all hover:opacity-60 text-[#0a0a0a]/70"
-              href={`https://solscan.io/tx/${txSig}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {txSig}
+              {txHash}
             </a>
           </div>
         )}
@@ -220,7 +217,7 @@ export default function SolanaSend() {
 
         {/* Fine print */}
         <div className="mt-10 text-[10px] text-[#0a0a0a]/40 border-t border-[#0a0a0a]/10 pt-4">
-          Transferência via USDC na rede Solana · non-custodial · irreversível
+          Transferência via USDC na rede Stellar · non-custodial · irreversível
         </div>
       </div>
     </>
