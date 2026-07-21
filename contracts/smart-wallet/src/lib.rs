@@ -72,6 +72,24 @@ use soroban_sdk::{
 const TTL_THRESHOLD_LEDGERS: u32 = 17_280;   // ~1 day at 5s/ledger
 const TTL_TARGET_LEDGERS: u32 = 535_000;     // ~31 days at 5s/ledger (clamped)
 
+// ── Guardian (recovery + inheritance) floors ─────────────────────────────────
+// Compile-time floors (threat #7: an owner fat-fingering tiny values must not
+// create an instantly-recoverable account). The `test-floors` feature lowers
+// them to SECONDS strictly for the testnet e2e wasm; production builds never
+// carry the feature and the relayer pins the production hash.
+#[cfg(not(feature = "test-floors"))]
+pub const MIN_INACTIVITY_SECS: u64 = 90 * 24 * 60 * 60; // 90d
+#[cfg(not(feature = "test-floors"))]
+pub const MIN_CONTEST_SECS: u64 = 30 * 24 * 60 * 60; // 30d
+#[cfg(not(feature = "test-floors"))]
+pub const RECOVERY_RESTART_COOLDOWN_SECS: u64 = 30 * 24 * 60 * 60; // threat #5
+#[cfg(feature = "test-floors")]
+pub const MIN_INACTIVITY_SECS: u64 = 5;
+#[cfg(feature = "test-floors")]
+pub const MIN_CONTEST_SECS: u64 = 5;
+#[cfg(feature = "test-floors")]
+pub const RECOVERY_RESTART_COOLDOWN_SECS: u64 = 10;
+
 /// SECURITY_AUDIT N1 · maximum cap multiplier. `max_per_charge` may be at
 /// most `amount_per_charge * MAX_CAP_MULTIPLIER`. Limits blast radius of
 /// admin compromise (see DEPLOYED.md gap C3).
@@ -244,6 +262,23 @@ pub enum DataKey {
     /// this value, so a fully compromised admin cannot drain more than this in a
     /// single charge regardless of the ratio guards (N1 / A2.3).
     MaxAbsolutePerCharge,
+    /// Recovery guardian (G or C address). Absent = feature off for this wallet.
+    Guardian,
+    /// Ledger timestamp of the last verified PASSKEY authorization (a real
+    /// Face ID tap). Pull-policy and Agent paths never write this — autopay
+    /// must not keep a dead account "alive" (guardian spec, decision 2).
+    LastAlive,
+    /// Owner-chosen inactivity threshold (>= MIN_INACTIVITY_SECS).
+    InactivitySecs,
+    /// Owner-chosen contest window (>= MIN_CONTEST_SECS).
+    ContestSecs,
+    /// Ledger timestamp `start_recovery` was accepted. Absent = none active.
+    RecoveryStartedAt,
+    /// Guardian may not restart a recovery before this timestamp (anti-grief).
+    RecoveryCooldownUntil,
+    /// Key epoch: bumped by `finish_recovery`; policies/agent sessions stamped
+    /// with an older epoch are dead (O(1) mass revocation at inheritance).
+    KeyEpoch,
 }
 
 #[contracterror]
@@ -272,6 +307,15 @@ pub enum Error {
     /// `__constructor`). Caps the per-charge drain independent of the ratio
     /// guards, even with a fully compromised admin.
     ExceedsAbsoluteCeiling = 18,
+    // ── Guardian (recovery + inheritance) ───────────────────────────────
+    GuardianNotSet = 19,
+    InvalidGuardian = 20,
+    ParamsBelowFloor = 21,
+    InactivityNotMet = 22,
+    RecoveryNotActive = 23,
+    ContestNotElapsed = 24,
+    RecoveryCooldown = 25,
+    Overflow = 26,
 }
 
 #[contract]
@@ -750,6 +794,12 @@ pub(crate) fn base64url_nopad(env: &Env, input: &[u8; 32]) -> Bytes {
         out.push_back(A[((n >> 12) & 63) as usize]);
     }
     out
+}
+
+/// Current key epoch. Grants (policies / agent sessions) stamped with an
+/// older epoch died at an inheritance (`finish_recovery` bumps this).
+fn key_epoch(env: &Env) -> u32 {
+    env.storage().instance().get(&DataKey::KeyEpoch).unwrap_or(0u32)
 }
 
 /// Naive substring search over `Bytes` (no allocator-friendly std available).

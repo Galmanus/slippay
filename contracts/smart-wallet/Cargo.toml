@@ -30,3 +30,10 @@ lto = true
 [profile.release-with-logs]
 inherits = "release"
 debug-assertions = true
+
+[features]
+# e2e-only: compiles guardian time floors in SECONDS so a testnet run can
+# exercise the full lifecycle. NEVER enabled for the production wasm — the
+# relayer pins the production hash, so a test-floors wasm cannot reach
+# mainnet without changing the 165 env on purpose.
+test-floors = []
