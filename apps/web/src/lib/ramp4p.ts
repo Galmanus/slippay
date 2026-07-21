@@ -55,15 +55,29 @@ export async function status4p(): Promise<Ramp4pStatus> {
   catch { return { enabled: false }; }
 }
 
-/** Returns the approximate crypto amount received for `brl` (asset per 4P). */
-export async function quote4p(brl: number): Promise<{ cryptoOut: number | null; asset: string | null }> {
-  const { quote } = await post<{ quote: { quote?: Record<string, { price: number }> } }>(
-    "/v1/4p/quote", { amountBrl: brl },
-  );
+/** Quote breakdown for `brl`: net crypto out (after Slippay margin), the gross
+ *  4P amount, the margin in bps, and the exact dollar rate (gross). All so the UI
+ *  can show the user the exact rate and the fee applied, transparently. */
+export interface Quote4p {
+  cryptoOut: number | null;   // net USDC the user receives (margin applied)
+  grossOut: number | null;    // USDC at the raw 4P rate, before Slippay margin
+  marginBps: number | null;   // Slippay fee in basis points (e.g. 280 = 2.8%)
+  asset: string | null;
+  dollarRate: number | null;  // exact gross rate: R$ per 1 USD (brl / grossOut)
+}
+
+export async function quote4p(brl: number): Promise<Quote4p> {
+  const { quote, gross, marginBps } = await post<{
+    quote: { quote?: Record<string, { price: number }> };
+    gross?: Record<string, number>;
+    marginBps?: number;
+  }>("/v1/4p/quote", { amountBrl: brl });
   const map = quote?.quote ?? {};
   const asset = Object.keys(map)[0] ?? null;
-  const entry = asset ? map[asset] : undefined;
-  return { cryptoOut: entry ? entry.price : null, asset };
+  const net = asset ? map[asset]?.price ?? null : null;
+  const grossOut = asset && gross ? gross[asset] ?? null : null;
+  const dollarRate = grossOut && grossOut > 0 ? brl / grossOut : null;
+  return { cryptoOut: net, grossOut, marginBps: marginBps ?? null, asset, dollarRate };
 }
 
 export type Ramp4pStatusValue =
@@ -99,4 +113,67 @@ export async function getOnramp4p(id: string): Promise<{ transactionStatus?: str
     `/v1/4p/onramp/${encodeURIComponent(id)}`,
   );
   return order;
+}
+
+// ---------------------------------------------------------------------------
+// Off-ramp (USD -> R$)
+// ---------------------------------------------------------------------------
+
+/** Quote for selling USDC and receiving BRL via Pix. */
+export interface Offramp4pQuote {
+  brlOut: number | null;
+  receiver: string | null;
+  asset: string | null;
+}
+
+/** Returns approximate BRL to be received for `usdc` USDC.
+ *  If the endpoint returns 503/404 (not live yet), returns null fields gracefully. */
+export async function quoteOfframp4p(usdc: number): Promise<Offramp4pQuote> {
+  try {
+    const data = await post<{ brlOut?: number; receiver?: string; asset?: string }>(
+      "/v1/4p/offramp/quote",
+      { amountUsdc: usdc },
+    );
+    return {
+      brlOut: data.brlOut ?? null,
+      receiver: data.receiver ?? null,
+      asset: data.asset ?? null,
+    };
+  } catch (e) {
+    if (e instanceof Ramp4pError && (e.status === 503 || e.status === 404)) {
+      return { brlOut: null, receiver: null, asset: null };
+    }
+    throw e;
+  }
+}
+
+/** Create a USDC off-ramp order; BRL is delivered via Pix to `pixKey`.
+ *  4P requires `person_document` (CPF 11 / CNPJ 14 digits) + email on every sell.
+ *  Returns the on-chain receiver address + amount to transfer, and an order id for polling. */
+export async function createOfframp4p(input: {
+  usdc: number;
+  pixKey: string;
+  sender: string;
+  email: string;
+  doc: string; // digits only — 11 (CPF) or 14 (CNPJ)
+}): Promise<{ id: string; receiver: string; amount: string }> {
+  const data = await post<{ id: string; receiver: string; amount: string }>(
+    "/v1/4p/offramp",
+    {
+      amountUsdc: input.usdc,
+      pixKey: input.pixKey,
+      senderWallet: input.sender,
+      email: input.email,
+      ...(input.doc.length === 14 ? { cnpj: input.doc } : { cpf: input.doc }),
+    },
+  );
+  return data;
+}
+
+/** Poll an off-ramp order's status. */
+export async function getOfframp4p(id: string): Promise<{ transactionStatus?: string }> {
+  const data = await get<{ transactionStatus?: string }>(
+    `/v1/4p/offramp/${encodeURIComponent(id)}`,
+  );
+  return data;
 }

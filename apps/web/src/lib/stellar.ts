@@ -43,6 +43,10 @@ const PASSPHRASES: Record<string, string> = {
   PUBLIC:  Networks.PUBLIC,
 };
 
+export function usdcIssuer(network: "TESTNET" | "PUBLIC"): string {
+  return ISSUERS[network]!;
+}
+
 /** True iff `address` is a well-formed Stellar Ed25519 public key (G..., 56
  *  chars, base32 with a valid checksum). Pure/offline — no network. */
 export function isValidStellarAddress(address: string): boolean {

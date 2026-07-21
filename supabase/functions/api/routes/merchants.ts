@@ -4,6 +4,7 @@ import { CreateMerchantInputSchema, PatchMerchantInputSchema, type Merchant } fr
 import { requireJwt } from "../middleware/auth_jwt.ts";
 import { generateApiKey, hashApiKey, prefixOf } from "../lib/apikey.ts";
 import { mapDbError } from "../lib/db-error.ts";
+import { StrKey } from "npm:@stellar/stellar-sdk";
 
 // Hono v4 requires Variables typed on the instance for c.get/c.set.
 // Using a typed Hono instance avoids `c.get("key")` returning `never`.
@@ -21,6 +22,9 @@ r.post("/", requireJwt, async (c) => {
   const prefix = prefixOf(apiKey.plain);
   const webhookSecret = Array.from(crypto.getRandomValues(new Uint8Array(32)))
     .map(b => b.toString(16).padStart(2, "0")).join("");
+  if (input.stellar_address != null && !StrKey.isValidEd25519PublicKey(input.stellar_address)) {
+    return c.json({ error: "invalid_stellar_address" }, 400);
+  }
   const { data, error } = await sb
     .from("merchants")
     .insert({
@@ -55,6 +59,10 @@ r.patch("/me", requireJwt, async (c) => {
   const user = c.get("user");
   const sb = c.get("supabase");
   const input = PatchMerchantInputSchema.parse(await c.req.json());
+  if ((input as { stellar_address?: string }).stellar_address != null &&
+      !StrKey.isValidEd25519PublicKey((input as { stellar_address?: string }).stellar_address!)) {
+    return c.json({ error: "invalid_stellar_address" }, 400);
+  }
   const { data, error } = await sb
     .from("merchants")
     .update(input)

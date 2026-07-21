@@ -1,0 +1,32 @@
+# SlipPay public OAuth app — config of record. Released via `shopify app deploy`.
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "f37679ca4a65c0859b878026208ee801"
+application_url = "https://api.slippay.cc/shopify/app"
+embedded = false
+name = "SlipPay Pilot"
+
+[webhooks]
+api_version = "2026-10"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request"]
+  uri = "https://api.slippay.cc/shopify/gdpr/customers-data-request"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/redact"]
+  uri = "https://api.slippay.cc/shopify/gdpr/customers-redact"
+
+  [[webhooks.subscriptions]]
+  compliance_topics = ["shop/redact"]
+  uri = "https://api.slippay.cc/shopify/gdpr/shop-redact"
+
+[access_scopes]
+scopes = "read_orders,write_orders"
+# Classic authorization-code OAuth (the connector implements /install + /oauth/callback).
+use_legacy_install_flow = true
+
+[auth]
+redirect_urls = [ "https://api.slippay.cc/shopify/oauth/callback" ]
+
+[build]

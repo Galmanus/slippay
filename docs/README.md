@@ -1,16 +1,21 @@
 # SlipPay Documentation
 
-Non-custodial USDC payments and agent-payment integrity on Stellar. Two surfaces
-over one settlement core: a human "dollar account" (receive, verify, pay with a
-passkey) and an agent/builder surface (autonomous payments bounded by on-chain
-policy, a fail-closed integrity attestation, and an offline-checkable proof).
+Non-custodial dollar settlement over one core, with three surfaces: a human
+"dollar account" (receive, verify, pay with a passkey), an agent/builder surface
+(autonomous payments bounded by on-chain policy, a fail-closed integrity
+attestation, and an offline-checkable proof), and a comex B2B treasury (a
+corporate account that holds USD, converts R$↔USD via a licensed partner, and
+earns yield on idle dollars). Every money path is protected by the same
+[**what-you-see-is-what-you-sign** gate](#security--threat-models).
 
-> **Status (verified on chain, 2026-06-05).** Mainnet (`PUBLIC`):
-> subscription v0.1 `CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN`
-> and v0.2 autocharge `CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP`.
-> The v0.3 attestation gate, the smart wallet, and the checkout contract are
-> **testnet only**. AXL is build/test only (no on-chain artifact). No traction or
-> GMV claims; the deployed contracts have no third-party audit.
+> **Status.** Mainnet (`PUBLIC`): subscription v0.2 autocharge
+> `CAQZECYTKQGUJETQRRBONGQA2DJBNQVYCSKBYCKXOVQOEEOMHKBTJZEP` and v0.4 (attested
+> gate + 2.97% on-chain fee) `CD2RFNOLMIKZN4EETDCGULGMD4ANS56IIUDIBLOE24P4JRZM2GCVFV2U`;
+> smart wallet (passkey) live via the relayer; ZK proof-of-KYC/mandate verified on
+> mainnet (zero-PII). The **comex treasury** (Solana: Privy non-custodial wallet +
+> 4P câmbio + DeFindex yield) is **built, adversarially reviewed, and gated** —
+> ships with the Solana cutover. AXL is build/test only. No traction or GMV claims;
+> the deployed contracts have no third-party audit.
 
 ## Start here
 
@@ -46,6 +51,15 @@ policy, a fail-closed integrity attestation, and an offline-checkable proof).
 | [Language](./axl/README.md) | The agent-block DSL: bind / constrain / prove / invariant. |
 | [Compiler](./axl/compiler.md) | The `axlc` CLI, the z3 discharge, the certificate. |
 | [Proofs and limits](./axl/proofs-and-limits.md) | What is proved, and the honest gaps. |
+
+## Comex (B2B treasury · Solana)
+
+| | |
+|---|---|
+| [Design spec](./superpowers/specs) | Corporate treasury phase-1 design: Privy non-custodial wallet, câmbio, yield. |
+| [Go-live checklist](./comex-go-live-checklist.md) | Exact env vars + ordered steps to flip it live when the keys land. |
+| [4P Solana ramp](./4P_SOLANA_RAMP.md) | The licensed R$↔USD partner integration (Solana). |
+| [Solana frontend port](./SOLANA_FRONTEND_PORT.md) | The `ChainAdapter` and the Stellar→Solana migration. |
 
 ## Packages
 
@@ -85,13 +99,27 @@ policy, a fail-closed integrity attestation, and an offline-checkable proof).
 | [x402 protocol](./integrations/x402.md) | Pay-per-call resources gated by Stellar USDC. |
 | [MoneyGram](./integrations/moneygram.md) | Cash-out plan (not shipped). |
 
-## Operations & security
+## Security & threat models
+
+The signing moment is the threat surface; it is hardened the same way on every
+money path — `decode → assert → human confirm → re-derive hash locally → sign`.
+
+| | |
+|---|---|
+| [Key custody](./security/key-custody.md) | Deployer and platform-fee key custody; what is and isn't held. |
+| [WYSIWYS signing gate](../apps/web/src/lib/txguard.ts) | `txguard.ts` (Stellar) / `solanaAuthorize.ts` (Solana): decode + assert + confirm before any signature. |
+| [Threat models & plans](./superpowers) | Pre-code STRIDE threat models and the implementation plans they gate. |
+| [Audits 001–006](./security/audit-001.md) | WooCommerce plugin security audits (historical). |
+
+Edge hardening: HTTPS-only (HSTS), `X-Frame-Options`, `nosniff`, `Referrer-Policy`,
+`Permissions-Policy`; zero render-blocking external CDN dependencies (fonts
+self-hosted) so a CDN outage can never blank the app.
+
+## Operations
 
 | | |
 |---|---|
 | [Deploy](./ops/deploy.md) | The real deploy mechanism (VPS + PM2 + nginx + rsync). |
-| [Key custody](./security/key-custody.md) | Deployer and platform-fee key custody. |
-| [Audits 001–006](./security/audit-001.md) | WooCommerce plugin security audits (historical). |
 
 ## Stay close to the runtime
 
