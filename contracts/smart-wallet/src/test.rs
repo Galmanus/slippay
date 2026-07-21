@@ -2132,3 +2132,78 @@ fn set_or_remove_guardian_cancels_active_recovery() {
     assert_eq!(wallet.get_recovery(), None, "remove_guardian must cancel active recovery");
     assert_eq!(wallet.get_guardian(), None);
 }
+
+// ─── Guardião: start/cancel recovery ─────────────────────────────────────
+
+fn setup_guardian(env: &Env) -> (Address, SmartWalletClient<'_>, Address) {
+    env.mock_all_auths();
+    let (id, wallet, _k) = deploy_with_real_passkey(env);
+    let g = Address::generate(env);
+    env.ledger().with_mut(|li| li.timestamp = 10_000);
+    wallet.set_guardian(&g, &MIN_INACTIVITY_SECS, &MIN_CONTEST_SECS);
+    (id, wallet, g)
+}
+
+#[test]
+fn start_recovery_requires_guardian_and_inactivity() {
+    let env = Env::default();
+    // no guardian at all:
+    env.mock_all_auths();
+    let (_i, w0, _k) = deploy_with_real_passkey(&env);
+    assert!(w0.try_start_recovery().is_err(), "GuardianNotSet");
+    // with guardian, owner just acted (t=10_000):
+    let (_id, wallet, _g) = setup_guardian(&env);
+    assert!(wallet.try_start_recovery().is_err(), "InactivityNotMet");
+    // warp past the inactivity threshold:
+    env.ledger().with_mut(|li| li.timestamp = 10_000 + MIN_INACTIVITY_SECS + 1);
+    wallet.start_recovery();
+    assert_eq!(wallet.get_recovery(), Some(10_000 + MIN_INACTIVITY_SECS + 1));
+}
+
+#[test]
+fn owner_cancel_bumps_alive_and_sets_cooldown_then_blocks_restart() {
+    let env = Env::default();
+    let (id, wallet, _g) = setup_guardian(&env);
+    let t1 = 10_000 + MIN_INACTIVITY_SECS + 1;
+    env.ledger().with_mut(|li| li.timestamp = t1);
+    wallet.start_recovery();
+    wallet.cancel_recovery(&true);
+    assert_eq!(wallet.get_recovery(), None);
+    assert_eq!(last_alive(&env, &id), t1, "owner cancel proves alive");
+    env.as_contract(&id, || {
+        let cd: u64 = env.storage().instance().get(&DataKey::RecoveryCooldownUntil).unwrap();
+        assert_eq!(cd, t1 + RECOVERY_RESTART_COOLDOWN_SECS);
+    });
+    // inactivity satisfied again but inside cooldown => rejected (threat #5)
+    let t2 = t1 + MIN_INACTIVITY_SECS + 1;
+    assert!(t2 < t1 + RECOVERY_RESTART_COOLDOWN_SECS || MIN_INACTIVITY_SECS >= RECOVERY_RESTART_COOLDOWN_SECS,
+        "test setup: cooldown must still be active at t2");
+    env.ledger().with_mut(|li| li.timestamp = t2.min(t1 + RECOVERY_RESTART_COOLDOWN_SECS - 1));
+    let r = wallet.try_start_recovery();
+    if MIN_INACTIVITY_SECS < RECOVERY_RESTART_COOLDOWN_SECS {
+        assert!(r.is_err(), "RecoveryCooldown must block restart");
+    }
+}
+
+#[test]
+fn guardian_cancel_clears_without_cooldown_or_alive_bump() {
+    let env = Env::default();
+    let (id, wallet, _g) = setup_guardian(&env);
+    let t1 = 10_000 + MIN_INACTIVITY_SECS + 1;
+    env.ledger().with_mut(|li| li.timestamp = t1);
+    wallet.start_recovery();
+    wallet.cancel_recovery(&false);
+    assert_eq!(wallet.get_recovery(), None);
+    assert_eq!(last_alive(&env, &id), 10_000, "guardian cancel must NOT fake owner liveness");
+    env.as_contract(&id, || {
+        assert!(!env.storage().instance().has(&DataKey::RecoveryCooldownUntil),
+            "guardian cancel must not arm the cooldown");
+    });
+}
+
+#[test]
+fn cancel_without_active_recovery_fails() {
+    let env = Env::default();
+    let (_id, wallet, _g) = setup_guardian(&env);
+    assert!(wallet.try_cancel_recovery(&true).is_err(), "RecoveryNotActive");
+}

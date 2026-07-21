@@ -684,6 +684,71 @@ impl SmartWallet {
         Ok(())
     }
 
+    /// Guardian opens a recovery after provable inactivity. Only starts the
+    /// contest clock — nothing else changes. The emitted event is the
+    /// watcher's cue to page the owner (threats #2/#3).
+    pub fn start_recovery(env: Env) -> Result<(), Error> {
+        let guardian: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Guardian)
+            .ok_or(Error::GuardianNotSet)?;
+        guardian.require_auth();
+        let now = env.ledger().timestamp();
+        let last: u64 = env.storage().instance().get(&DataKey::LastAlive).unwrap_or(0);
+        let inact: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::InactivitySecs)
+            .ok_or(Error::GuardianNotSet)?;
+        if now < last.saturating_add(inact) {
+            return Err(Error::InactivityNotMet);
+        }
+        let cooldown: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::RecoveryCooldownUntil)
+            .unwrap_or(0);
+        if now < cooldown {
+            return Err(Error::RecoveryCooldown);
+        }
+        env.storage().instance().set(&DataKey::RecoveryStartedAt, &now);
+        env.events().publish((Symbol::new(&env, "recovery_started"), guardian), now);
+        Ok(())
+    }
+
+    /// Cancel an active recovery. `by_owner = true` authorizes via the owner's
+    /// passkey (a live tap ⇒ bump LastAlive + arm the anti-grief cooldown,
+    /// threat #5); `false` authorizes via the guardian (graceful withdraw, no
+    /// cooldown and NO liveness bump — a guardian must not fake owner life).
+    pub fn cancel_recovery(env: Env, by_owner: bool) -> Result<(), Error> {
+        if by_owner {
+            env.current_contract_address().require_auth();
+        } else {
+            let guardian: Address = env
+                .storage()
+                .instance()
+                .get(&DataKey::Guardian)
+                .ok_or(Error::GuardianNotSet)?;
+            guardian.require_auth();
+        }
+        if !env.storage().instance().has(&DataKey::RecoveryStartedAt) {
+            return Err(Error::RecoveryNotActive);
+        }
+        let now = env.ledger().timestamp();
+        env.storage().instance().remove(&DataKey::RecoveryStartedAt);
+        if by_owner {
+            let s = env.storage().instance();
+            s.set(&DataKey::LastAlive, &now);
+            s.set(
+                &DataKey::RecoveryCooldownUntil,
+                &now.saturating_add(RECOVERY_RESTART_COOLDOWN_SECS),
+            );
+        }
+        env.events().publish((Symbol::new(&env, "recovery_cancelled"), by_owner), now);
+        Ok(())
+    }
+
     pub fn get_guardian(env: Env) -> Option<Address> {
         env.storage().instance().get(&DataKey::Guardian)
     }
