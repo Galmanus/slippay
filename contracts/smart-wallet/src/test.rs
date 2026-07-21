@@ -2065,3 +2065,70 @@ fn agent_path_does_not_bump_last_alive() {
     assert!(r.is_ok(), "agent transfer within budget must authorize: {:?}", r);
     assert_eq!(last_alive(&env, &id), 0, "agent path must NOT write LastAlive");
 }
+
+// ─── Guardião: set/remove ────────────────────────────────────────────────
+
+#[test]
+fn set_guardian_stores_config_and_bumps_last_alive() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet, _k) = deploy_with_real_passkey(&env);
+    env.ledger().with_mut(|li| li.timestamp = 7_000);
+    let g = Address::generate(&env);
+    wallet.set_guardian(&g, &MIN_INACTIVITY_SECS, &MIN_CONTEST_SECS);
+    assert_eq!(wallet.get_guardian(), Some(g));
+    assert_eq!(last_alive(&env, &id), 7_000, "owner acted => alive");
+    env.as_contract(&id, || {
+        let i: u64 = env.storage().instance().get(&DataKey::InactivitySecs).unwrap();
+        let c: u64 = env.storage().instance().get(&DataKey::ContestSecs).unwrap();
+        assert_eq!((i, c), (MIN_INACTIVITY_SECS, MIN_CONTEST_SECS));
+    });
+}
+
+#[test]
+fn set_guardian_rejects_below_floor_params() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (_id, wallet, _k) = deploy_with_real_passkey(&env);
+    let g = Address::generate(&env);
+    assert!(wallet.try_set_guardian(&g, &(MIN_INACTIVITY_SECS - 1), &MIN_CONTEST_SECS).is_err());
+    assert!(wallet.try_set_guardian(&g, &MIN_INACTIVITY_SECS, &(MIN_CONTEST_SECS - 1)).is_err());
+}
+
+#[test]
+fn set_guardian_rejects_self_and_admin() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let admin = Address::generate(&env);
+    use p256::elliptic_curve::sec1::ToEncodedPoint as _;
+    let signing = p256::ecdsa::SigningKey::from_slice(&[0x43u8; 32]).unwrap();
+    let ep = signing.verifying_key().to_encoded_point(false);
+    let pk: [u8; 65] = ep.as_bytes().try_into().unwrap();
+    let id = env.register(
+        SmartWallet,
+        (BytesN::from_array(&env, &pk), dummy_cred_id(&env), admin.clone(), TEST_MAX_ABS),
+    );
+    let wallet = SmartWalletClient::new(&env, &id);
+    assert!(wallet.try_set_guardian(&id, &MIN_INACTIVITY_SECS, &MIN_CONTEST_SECS).is_err(), "self");
+    assert!(wallet.try_set_guardian(&admin, &MIN_INACTIVITY_SECS, &MIN_CONTEST_SECS).is_err(), "admin");
+}
+
+#[test]
+fn set_or_remove_guardian_cancels_active_recovery() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet, _k) = deploy_with_real_passkey(&env);
+    let g = Address::generate(&env);
+    wallet.set_guardian(&g, &MIN_INACTIVITY_SECS, &MIN_CONTEST_SECS);
+    env.as_contract(&id, || {
+        env.storage().instance().set(&DataKey::RecoveryStartedAt, &123u64);
+    });
+    wallet.set_guardian(&g, &MIN_INACTIVITY_SECS, &MIN_CONTEST_SECS);
+    assert_eq!(wallet.get_recovery(), None, "set_guardian must cancel active recovery");
+    env.as_contract(&id, || {
+        env.storage().instance().set(&DataKey::RecoveryStartedAt, &456u64);
+    });
+    wallet.remove_guardian();
+    assert_eq!(wallet.get_recovery(), None, "remove_guardian must cancel active recovery");
+    assert_eq!(wallet.get_guardian(), None);
+}

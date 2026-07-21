@@ -636,6 +636,62 @@ impl SmartWallet {
         env.events().publish((Symbol::new(&env, "heartbeat"),), now);
     }
 
+    /// Owner (passkey) designates a recovery guardian. Floors are contract
+    /// constants (fat-finger defense, threat #7). Admin is deliberately NOT a
+    /// party (spec decision 4). Owner action ⇒ alive ⇒ any active recovery is
+    /// cancelled and LastAlive bumps.
+    pub fn set_guardian(
+        env: Env,
+        guardian: Address,
+        inactivity_secs: u64,
+        contest_secs: u64,
+    ) -> Result<(), Error> {
+        env.current_contract_address().require_auth();
+        if inactivity_secs < MIN_INACTIVITY_SECS || contest_secs < MIN_CONTEST_SECS {
+            return Err(Error::ParamsBelowFloor);
+        }
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Admin)
+            .ok_or(Error::NotInitialized)?;
+        if guardian == env.current_contract_address() || guardian == admin {
+            return Err(Error::InvalidGuardian);
+        }
+        let now = env.ledger().timestamp();
+        let s = env.storage().instance();
+        s.set(&DataKey::Guardian, &guardian);
+        s.set(&DataKey::InactivitySecs, &inactivity_secs);
+        s.set(&DataKey::ContestSecs, &contest_secs);
+        s.remove(&DataKey::RecoveryStartedAt); // owner acted => cancel
+        s.set(&DataKey::LastAlive, &now);
+        env.events().publish(
+            (Symbol::new(&env, "guardian_set"), guardian),
+            (inactivity_secs, contest_secs),
+        );
+        Ok(())
+    }
+
+    /// Owner removes the guardian entirely (and any active recovery with it).
+    pub fn remove_guardian(env: Env) -> Result<(), Error> {
+        env.current_contract_address().require_auth();
+        let now = env.ledger().timestamp();
+        let s = env.storage().instance();
+        s.remove(&DataKey::Guardian);
+        s.remove(&DataKey::RecoveryStartedAt);
+        s.set(&DataKey::LastAlive, &now);
+        env.events().publish((Symbol::new(&env, "guardian_removed"),), now);
+        Ok(())
+    }
+
+    pub fn get_guardian(env: Env) -> Option<Address> {
+        env.storage().instance().get(&DataKey::Guardian)
+    }
+
+    pub fn get_recovery(env: Env) -> Option<u64> {
+        env.storage().instance().get(&DataKey::RecoveryStartedAt)
+    }
+
     pub fn get_agent_session(env: Env, session_pubkey: BytesN<32>) -> AgentSession {
         let key = DataKey::AgentSession(session_pubkey);
         env.storage().persistent().get(&key)
