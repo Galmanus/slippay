@@ -625,6 +625,17 @@ impl SmartWallet {
     }
 
     /// Read-only accessor for a delegated agent session.
+    /// No-op whose only effect is proving the owner is alive (bumps
+    /// `LastAlive`). Sponsored by the relayer; the app calls it when the owner
+    /// nears the inactivity threshold. Owner-passkey auth only (self-auth →
+    /// `__check_auth` → WebAuthn), same pattern as install_policy v0.2.
+    pub fn heartbeat(env: Env) {
+        env.current_contract_address().require_auth();
+        let now = env.ledger().timestamp();
+        env.storage().instance().set(&DataKey::LastAlive, &now);
+        env.events().publish((Symbol::new(&env, "heartbeat"),), now);
+    }
+
     pub fn get_agent_session(env: Env, session_pubkey: BytesN<32>) -> AgentSession {
         let key = DataKey::AgentSession(session_pubkey);
         env.storage().persistent().get(&key)
@@ -733,6 +744,13 @@ impl SmartWallet {
                     .get(&DataKey::PasskeyPubkey)
                     .ok_or(Error::NotInitialized)?;
                 verify_webauthn(&env, &pubkey, &signature_payload, &wa)?;
+                // Liveness (guardian spec, decision 2 / threat #1): a VERIFIED
+                // Face ID tap — and only that — proves the owner is alive. The
+                // pull-policy early-return above and the Agent arm never write
+                // this key, so an autopay cannot keep a dead account "alive".
+                env.storage()
+                    .instance()
+                    .set(&DataKey::LastAlive, &env.ledger().timestamp());
                 Ok(())
             }
         }

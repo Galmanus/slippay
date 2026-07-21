@@ -1911,3 +1911,157 @@ fn passkey_vault_deposit_context_tree_wasm() {
     );
     assert!(res.is_ok(), "WASM build must authorize vault deposit tree: {:?}", res);
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Guardião — liveness (LastAlive) semantics. Spec decision 2 / threat #1:
+// only a VERIFIED passkey tap proves the owner is alive. A merchant pull
+// (policy path) or an agent session must never write LastAlive — an autopay
+// would keep a dead account "alive" forever and inheritance would never fire.
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Build a real WalletAuth::Passkey assertion over `payload_arr` with `signing`.
+fn make_passkey_assertion(
+    env: &Env,
+    signing: &p256::ecdsa::SigningKey,
+    payload_arr: [u8; 32],
+) -> WalletAuth {
+    use p256::ecdsa::{signature::Signer, Signature};
+    use sha2::{Digest, Sha256};
+    let chal_bytes = crate::base64url_nopad(env, &payload_arr);
+    let chal_vec: std::vec::Vec<u8> = chal_bytes.iter().collect();
+    let chal_str = std::str::from_utf8(&chal_vec).unwrap();
+    let cdj = std::format!(
+        "{{\"type\":\"webauthn.get\",\"challenge\":\"{}\",\"origin\":\"https://app.slippay.cc\"}}",
+        chal_str
+    );
+    let ad = [0x33u8; 37];
+    let cd_hash = Sha256::digest(cdj.as_bytes());
+    let mut base = std::vec::Vec::new();
+    base.extend_from_slice(&ad);
+    base.extend_from_slice(&cd_hash);
+    let sig: Signature = signing.sign(&base);
+    let sig = sig.normalize_s().unwrap_or(sig);
+    let sig_arr: [u8; 64] = sig.to_bytes().as_slice().try_into().unwrap();
+    WalletAuth::Passkey(WebAuthnAuth {
+        authenticator_data: Bytes::from_array(env, &ad),
+        client_data_json: Bytes::from_slice(env, cdj.as_bytes()),
+        signature: BytesN::from_array(env, &sig_arr),
+    })
+}
+
+/// Deploy a wallet bound to a real p256 key; returns (wallet_id, client, key).
+fn deploy_with_real_passkey(env: &Env) -> (Address, SmartWalletClient<'_>, p256::ecdsa::SigningKey) {
+    use p256::elliptic_curve::sec1::ToEncodedPoint as _;
+    let signing = p256::ecdsa::SigningKey::from_slice(&[0x42u8; 32]).unwrap();
+    let ep = signing.verifying_key().to_encoded_point(false);
+    let pk: [u8; 65] = ep.as_bytes().try_into().unwrap();
+    let id = env.register(
+        SmartWallet,
+        (BytesN::from_array(env, &pk), dummy_cred_id(env), Address::generate(env), TEST_MAX_ABS),
+    );
+    let client = SmartWalletClient::new(env, &id);
+    (id, client, signing)
+}
+
+fn last_alive(env: &Env, wallet: &Address) -> u64 {
+    env.as_contract(wallet, || {
+        env.storage().instance().get(&DataKey::LastAlive).unwrap_or(0u64)
+    })
+}
+
+#[test]
+fn passkey_auth_bumps_last_alive_pull_policy_does_not() {
+    let env = Env::default();
+    let (id, wallet, signing) = deploy_with_real_passkey(&env);
+    let token = Address::generate(&env);
+    let merchant = Address::generate(&env);
+
+    // 1) verified passkey tap at t=1_000 bumps LastAlive
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    let payload = env.crypto().sha256(&Bytes::from_array(&env, &[1u8; 16]));
+    let payload_arr: [u8; 32] = payload.to_array();
+    let auth = make_passkey_assertion(&env, &signing, payload_arr);
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(make_transfer_ctx(&env, &token, &id, &merchant, 50)),
+    ];
+    let r = env.try_invoke_contract_check_auth::<Error>(
+        &id, &BytesN::from_array(&env, &payload_arr), auth.into_val(&env), &ctxs,
+    );
+    assert!(r.is_ok(), "signature path must authorize: {:?}", r);
+    assert_eq!(last_alive(&env, &id), 1_000, "verified tap must bump LastAlive");
+
+    // 2) merchant pull under an installed policy at t=2_000 must NOT bump
+    env.mock_all_auths();
+    wallet.install_policy(&merchant, &token, &100, &150, &60, &0);
+    env.ledger().with_mut(|li| li.timestamp = 2_000);
+    let payload2 = env.crypto().sha256(&Bytes::from_array(&env, &[2u8; 16]));
+    let payload2_arr: [u8; 32] = payload2.to_array();
+    // assertion over the WRONG payload on purpose: if the pull path ever
+    // consults the signature (it must not), this fails loudly.
+    let bogus = make_passkey_assertion(&env, &signing, [9u8; 32]);
+    let ctxs2: Vec<Context> = vec![
+        &env,
+        Context::Contract(make_transfer_ctx(&env, &token, &id, &merchant, 100)),
+    ];
+    let r2 = env.try_invoke_contract_check_auth::<Error>(
+        &id, &BytesN::from_array(&env, &payload2_arr), bogus.into_val(&env), &ctxs2,
+    );
+    assert!(r2.is_ok(), "pull path must authorize without signature: {:?}", r2);
+    assert_eq!(last_alive(&env, &id), 1_000, "autopay must NOT fake liveness");
+}
+
+#[test]
+fn heartbeat_bumps_last_alive_and_needs_owner_auth() {
+    let env = Env::default();
+    env.mock_all_auths();
+    let (id, wallet, _signing) = deploy_with_real_passkey(&env);
+    env.ledger().with_mut(|li| li.timestamp = 5_000);
+    wallet.heartbeat();
+    assert_eq!(last_alive(&env, &id), 5_000);
+}
+
+#[test]
+fn heartbeat_without_auth_fails() {
+    // no mock_all_auths: the wallet self-auth (→ __check_auth → passkey) is
+    // unsatisfiable here, so the call must be rejected by the host.
+    let env = Env::default();
+    let (_id, wallet, _signing) = deploy_with_real_passkey(&env);
+    assert!(wallet.try_heartbeat().is_err(), "heartbeat must require owner auth");
+}
+
+#[test]
+fn agent_path_does_not_bump_last_alive() {
+    let env = Env::default();
+    let (id, wallet, _signing) = deploy_with_real_passkey(&env);
+    let token = Address::generate(&env);
+    let recipient = Address::generate(&env);
+    env.mock_all_auths();
+    env.ledger().with_mut(|li| li.timestamp = 1_000);
+    // real ed25519 session key
+    let sk = ed25519_dalek::SigningKey::from_bytes(&[7u8; 32]);
+    let vk_bytes: [u8; 32] = sk.verifying_key().to_bytes();
+    let session_pk = BytesN::from_array(&env, &vk_bytes);
+    wallet.install_agent_session(
+        &session_pk, &token, &100, &86_400, &1_000, &0,
+        &vec![&env, recipient.clone()], &BytesN::from_array(&env, &[0u8; 32]),
+    );
+    env.ledger().with_mut(|li| li.timestamp = 2_000);
+    let payload = env.crypto().sha256(&Bytes::from_array(&env, &[3u8; 16]));
+    let payload_arr: [u8; 32] = payload.to_array();
+    use ed25519_dalek::Signer as _;
+    let sig = sk.sign(&payload_arr);
+    let auth = WalletAuth::Agent(AgentAuth {
+        session_pubkey: session_pk.clone(),
+        signature: BytesN::from_array(&env, &sig.to_bytes()),
+    });
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(make_transfer_ctx(&env, &token, &id, &recipient, 50)),
+    ];
+    let r = env.try_invoke_contract_check_auth::<Error>(
+        &id, &BytesN::from_array(&env, &payload_arr), auth.into_val(&env), &ctxs,
+    );
+    assert!(r.is_ok(), "agent transfer within budget must authorize: {:?}", r);
+    assert_eq!(last_alive(&env, &id), 0, "agent path must NOT write LastAlive");
+}
