@@ -2246,3 +2246,86 @@ fn stale_epoch_policy_and_session_are_dead() {
         assert!(matches!(r, Ok(false)), "stale-epoch session must be dead, got {:?}", r);
     });
 }
+
+// ─── Guardião: finish_recovery (a herança) ───────────────────────────────
+
+#[test]
+fn finish_before_contest_or_without_recovery_fails() {
+    let env = Env::default();
+    let (_id, wallet, _g) = setup_guardian(&env);
+    let new_pk = BytesN::from_array(&env, &[4u8; 65]);
+    let new_cred = BytesN::from_array(&env, &[5u8; 32]);
+    // no active recovery:
+    assert!(wallet.try_finish_recovery(&new_pk, &new_cred).is_err(), "RecoveryNotActive");
+    // active but contest not elapsed:
+    let t1 = 10_000 + MIN_INACTIVITY_SECS + 1;
+    env.ledger().with_mut(|li| li.timestamp = t1);
+    wallet.start_recovery();
+    env.ledger().with_mut(|li| li.timestamp = t1 + MIN_CONTEST_SECS - 1);
+    assert!(wallet.try_finish_recovery(&new_pk, &new_cred).is_err(), "ContestNotElapsed");
+}
+
+#[test]
+fn finish_rotates_key_bumps_epoch_and_heir_signs() {
+    use p256::elliptic_curve::sec1::ToEncodedPoint as _;
+    let env = Env::default();
+    let (id, wallet, _old_key) = setup_guardian(&env);
+    let token = Address::generate(&env);
+    let merchant = Address::generate(&env);
+    wallet.install_policy(&merchant, &token, &100, &150, &60, &0);
+
+    // heir's device key
+    let heir = p256::ecdsa::SigningKey::from_slice(&[0x66u8; 32]).unwrap();
+    let heir_pk: [u8; 65] = heir.verifying_key().to_encoded_point(false).as_bytes().try_into().unwrap();
+    let new_pk = BytesN::from_array(&env, &heir_pk);
+    let new_cred = BytesN::from_array(&env, &[5u8; 32]);
+
+    let t1 = 10_000 + MIN_INACTIVITY_SECS + 1;
+    env.ledger().with_mut(|li| li.timestamp = t1);
+    wallet.start_recovery();
+    let t2 = t1 + MIN_CONTEST_SECS + 1;
+    env.ledger().with_mut(|li| li.timestamp = t2);
+    wallet.finish_recovery(&new_pk, &new_cred);
+
+    env.as_contract(&id, || {
+        let pk: BytesN<65> = env.storage().instance().get(&DataKey::PasskeyPubkey).unwrap();
+        let cred: BytesN<32> = env.storage().instance().get(&DataKey::PasskeyCredId).unwrap();
+        let epoch: u32 = env.storage().instance().get(&DataKey::KeyEpoch).unwrap();
+        assert_eq!(pk, BytesN::from_array(&env, &heir_pk));
+        assert_eq!(cred, BytesN::from_array(&env, &[5u8; 32]));
+        assert_eq!(epoch, 1);
+        assert!(!env.storage().instance().has(&DataKey::RecoveryStartedAt));
+        assert!(!env.storage().instance().has(&DataKey::RecoveryCooldownUntil));
+    });
+    assert_eq!(last_alive(&env, &id), t2);
+
+    // the HEIR's assertion authorizes:
+    let payload = env.crypto().sha256(&Bytes::from_array(&env, &[7u8; 16]));
+    let payload_arr: [u8; 32] = payload.to_array();
+    let good = make_passkey_assertion(&env, &heir, payload_arr);
+    let ctxs: Vec<Context> = vec![
+        &env,
+        Context::Contract(make_transfer_ctx(&env, &token, &id, &merchant, 10)),
+    ];
+    let r = env.try_invoke_contract_check_auth::<Error>(
+        &id, &BytesN::from_array(&env, &payload_arr), good.into_val(&env), &ctxs,
+    );
+    assert!(r.is_ok(), "heir passkey must authorize: {:?}", r);
+
+    // the OLD owner's key is rejected:
+    let old = p256::ecdsa::SigningKey::from_slice(&[0x42u8; 32]).unwrap(); // deploy_with_real_passkey seed
+    let payload2 = env.crypto().sha256(&Bytes::from_array(&env, &[8u8; 16]));
+    let payload2_arr: [u8; 32] = payload2.to_array();
+    let stale = make_passkey_assertion(&env, &old, payload2_arr);
+    let r2 = env.try_invoke_contract_check_auth::<Error>(
+        &id, &BytesN::from_array(&env, &payload2_arr), stale.into_val(&env), &ctxs,
+    );
+    assert!(r2.is_err(), "pre-inheritance key must be dead");
+
+    // and the pre-inheritance policy no longer authorizes a merchant pull
+    // (falls through to the signature; a garbage assertion must fail):
+    env.as_contract(&id, || {
+        let r = super::pull_policy_authorizes(&env, &ctxs);
+        assert!(matches!(r, Ok(false)), "old policy must be void after inheritance: {:?}", r);
+    });
+}

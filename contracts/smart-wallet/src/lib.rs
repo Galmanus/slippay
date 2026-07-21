@@ -757,6 +757,48 @@ impl SmartWallet {
         Ok(())
     }
 
+    /// Inheritance. After the contest window, the guardian rotates the passkey
+    /// to the heir's device. Funds NEVER move (spec decision 1) — the account
+    /// itself (balance, cofre shares, history) changes hands. Atomically voids
+    /// every policy/agent session via KeyEpoch (threat #4) BEFORE handing the
+    /// key over, so the heir starts clean.
+    pub fn finish_recovery(
+        env: Env,
+        new_pubkey: BytesN<65>,
+        new_cred_id: BytesN<32>,
+    ) -> Result<(), Error> {
+        let guardian: Address = env
+            .storage()
+            .instance()
+            .get(&DataKey::Guardian)
+            .ok_or(Error::GuardianNotSet)?;
+        guardian.require_auth();
+        let started: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::RecoveryStartedAt)
+            .ok_or(Error::RecoveryNotActive)?;
+        let contest: u64 = env
+            .storage()
+            .instance()
+            .get(&DataKey::ContestSecs)
+            .ok_or(Error::GuardianNotSet)?;
+        let now = env.ledger().timestamp();
+        if now < started.saturating_add(contest) {
+            return Err(Error::ContestNotElapsed);
+        }
+        let epoch = key_epoch(&env).checked_add(1).ok_or(Error::Overflow)?;
+        let s = env.storage().instance();
+        s.set(&DataKey::KeyEpoch, &epoch); // void all grants first…
+        s.set(&DataKey::PasskeyPubkey, &new_pubkey); // …then hand over the key
+        s.set(&DataKey::PasskeyCredId, &new_cred_id);
+        s.remove(&DataKey::RecoveryStartedAt);
+        s.remove(&DataKey::RecoveryCooldownUntil);
+        s.set(&DataKey::LastAlive, &now);
+        env.events().publish((Symbol::new(&env, "recovery_finished"), guardian), epoch);
+        Ok(())
+    }
+
     pub fn get_guardian(env: Env) -> Option<Address> {
         env.storage().instance().get(&DataKey::Guardian)
     }
