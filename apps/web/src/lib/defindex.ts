@@ -160,9 +160,19 @@ export async function getPosition(user: string): Promise<VaultPosition> {
   return { shares: Number(shares), usdc: stroopsToUsdc(Number(values[0] ?? 0n)) };
 }
 
-/** APY is not available over plain RPC (it needs the DeFindex indexer). The
- *  Vault page treats a rejection as "no number" and shows only the honest
- *  "varia, não é garantido" copy — never promise a rate we cannot source. */
-export async function getApy(): Promise<number> {
-  throw new Error("APY indisponível sem o indexador DeFindex");
+/** Forward APY estimate from the DeFindex indexer, proxied by our backend so
+ *  the secret key stays server-side (GET /api/v1/cofre/apy). Returns null when
+ *  the vault has no yield history yet (fresh vault) — the page then shows only
+ *  the concrete on-chain earnings, never an invented rate. Shown as an estimate
+ *  that varies, never a promise. */
+export async function getApy(): Promise<number | null> {
+  const base = (import.meta.env.VITE_API_BASE as string | undefined) ?? "https://app.slippay.cc/api";
+  try {
+    const r = await fetch(`${base}/v1/cofre/apy`);
+    if (!r.ok) return null;
+    const j = await r.json().catch(() => ({}));
+    return typeof j.apy === "number" ? j.apy : null;
+  } catch {
+    return null;
+  }
 }

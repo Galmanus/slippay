@@ -6,6 +6,9 @@ import * as vault from "../lib/defindex.ts";
 import { loadAccount, type Account } from "../lib/account.ts";
 import { cofrinhoPasskeyEnabled, moveCofrinho } from "../lib/cofrinho.ts";
 import { hexToBytesSafe } from "../lib/passkeyHex.ts";
+import {
+  earnedStroops, getBasis, recordDeposit, recordWithdraw, stroopsToDisplay,
+} from "../lib/cofreYield.ts";
 
 type Mode = "deposit" | "withdraw";
 
@@ -22,6 +25,13 @@ export default function Vault() {
   const [amount, setAmount] = useState("");
   const [pos, setPos] = useState<vault.VaultPosition | null>(null);
   const [apy, setApy] = useState<number | null>(null);
+  // Concrete earnings, computed from on-chain value vs a locally-tracked basis.
+  // usdcToStroops throws on "0" (rejects <= 0), and a throw in render crashes
+  // the component — parse safely here.
+  const basis = wallet ? getBasis(wallet) : null;
+  const currentStroops = Math.round(Number(pos?.usdc ?? "0") * 10_000_000);
+  const earned = basis && Number.isFinite(currentStroops)
+    ? earnedStroops(currentStroops, basis.basisStroops) : null;
   const [txHash, setTxHash] = useState<string | null>(null);
   // Prefer the passkey account (the "mãe" flow: Face ID, no browser wallet). Only
   // fall back to an external wallet when there is no passkey account on device.
@@ -55,10 +65,16 @@ export default function Vault() {
         // Face ID authorizes; the relayer sponsors gas. No seed, no extension.
         const info = await fetch(`${RELAYER_BASE}/info`).then((r) => r.json()).catch(() => ({}));
         if (!info.sponsor) throw new Error("Sistema acordando. Tente de novo em instantes.");
+        // Snapshot the position value before a withdrawal so we can reduce the
+        // basis proportionally (keeps "rendeu" honest across partial withdraws).
+        const valueBefore = Math.round(Number(pos?.usdc ?? "0") * 10_000_000);
         hash = await moveCofrinho({
           acct, mode, usdcAmount: amount, relayerBase: RELAYER_BASE, sponsor: info.sponsor,
           credId: acct.credIdHex ? hexToBytesSafe(acct.credIdHex) : undefined,
         });
+        const amtStroops = vault.usdcToStroops(amount);
+        if (mode === "deposit") recordDeposit(wallet, amtStroops, Date.now());
+        else recordWithdraw(wallet, valueBefore, amtStroops);
       } else {
         const xdr = mode === "deposit"
           ? await vault.buildDepositTx(wallet, amount)
@@ -112,10 +128,25 @@ export default function Vault() {
             ) : (
               <>
                 {/* position */}
-                <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-2">Seu saldo no cofre</div>
+                <div className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-2">Seu dinheiro no cofre</div>
                 <div className="text-6xl md:text-7xl font-medium tabular-nums tracking-[-0.04em] leading-[0.9]">
                   {pos ? `$ ${pos.usdc}` : "—"}
                 </div>
+                {/* concrete earnings — the tangible "está rendendo", on-chain truth */}
+                {earned !== null && basis && basis.basisStroops > 0 && (
+                  <div className="mt-4 flex items-baseline gap-6 text-sm">
+                    <div>
+                      <span className="text-[#0a0a0a]/50">Você guardou </span>
+                      <span className="tabular-nums">$ {stroopsToDisplay(basis.basisStroops)}</span>
+                    </div>
+                    <div>
+                      <span className="text-[#0a0a0a]/50">Rendeu </span>
+                      <span className={`tabular-nums ${earned > 0 ? "text-[#2f7d32]" : ""}`}>
+                        + $ {stroopsToDisplay(earned)}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="mt-3 text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55">
                   {passkeyFlow
                     ? "Sua conta · aprova com o seu rosto ou digital"
@@ -144,7 +175,16 @@ export default function Vault() {
 
                 {/* honest yield disclosure — describes the asset, never promises a return */}
                 <div className="mt-8 border-l-2 border-[#0a0a0a]/20 pl-4 text-xs text-[#0a0a0a]/60 leading-relaxed space-y-1">
-                  {apy !== null && <div>Rendimento atual: <span className="tabular-nums">{apy}</span> (varia todo dia).</div>}
+                  {(() => {
+                    // The indexer may report apy as a fraction (0.04) or as
+                    // percentage points (4). Normalize, then refuse to display
+                    // anything outside a sane USDC-lending band — a format
+                    // surprise must never show "400%" to a normal person.
+                    if (apy === null || apy <= 0) return null;
+                    const pct = apy <= 1 ? apy * 100 : apy;
+                    if (pct <= 0 || pct > 30) return null;
+                    return <div>Rende cerca de <span className="tabular-nums">{pct.toFixed(1)}%</span> ao ano (estimativa, varia todo dia).</div>;
+                  })()}
                   <div>
                     O rendimento varia e não é garantido: pode subir, cair, e dá até pra perder
                     parte do valor. Não é poupança nem investimento oferecido pela Slippay.

@@ -10,6 +10,7 @@ import x402 from "./routes/x402.ts";
 import billing from "./routes/billing.ts";
 import metrics from "./routes/metrics.ts";
 import relayer from "./routes/relayer.ts";
+import cofre from "./routes/cofre.ts";
 import ramp from "./routes/ramp.ts";
 import offramp from "./routes/offramp.ts";
 import fourp from "./routes/fourp.ts";
@@ -49,6 +50,8 @@ api.route("/v1/x402", x402);
 // Gas-sponsor relayer for the biometric payment flow (pays network fees only;
 // user funds stay in the Face-ID-controlled passkey wallet — see relayer.ts).
 api.route("/v1/relayer", relayer);
+// Cofre yield: server-side DeFindex APY proxy (keeps the sk_ key off the client).
+api.route("/v1/cofre", cofre);
 // Ramp provider webhooks (CriptoPix status -> ramp_transactions store).
 api.route("/v1/ramp", ramp);
 // On/off-ramp surface (quote, on-ramp, off-ramp, status) — provider-agnostic.
