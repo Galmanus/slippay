@@ -58,6 +58,15 @@ const FEE_CAP = BigInt(Deno.env.get("RELAYER_FEE_CAP") ?? "20000000");
 const DEFINDEX_VAULT = (Deno.env.get("RELAYER_DEFINDEX_VAULT") ?? "").trim();
 const DEFINDEX_FNS = new Set(["deposit", "withdraw"]);
 
+// Guardian lifecycle fns the sponsor pays gas for (branch (d) below). The
+// target is each user's own wallet CONTRACT — one address per user, so no
+// single pin is possible. Exposure = gas only (FEE_CAP); the wallet's own
+// __check_auth / guardian require_auth is the real gate.
+const GUARDIAN_FNS = new Set([
+  "heartbeat", "start_recovery", "cancel_recovery",
+  "finish_recovery", "set_guardian", "remove_guardian",
+]);
+
 const r = new Hono();
 
 // Unauthenticated (the payer side has no API key) → strict per-IP limiter.
@@ -275,6 +284,14 @@ function validateSponsorable(txXdr: string, sponsorPubkey: string): Verdict {
         // No amount cap here by design (see SECURITY NOTE at DEFINDEX_VAULT):
         // the amount leaves the user's own wallet under their own Face ID auth;
         // the sponsor's only exposure is gas, already bounded by FEE_CAP.
+        return { ok: true };
+      }
+      // (d) Guardian lifecycle on a user's passkey wallet (routed HERE, inside
+      // the single invokeContract branch — an if after this block is dead code,
+      // the TS2367 lesson from branch (c)).
+      if (GUARDIAN_FNS.has(fnName)) {
+        const target = Address.fromScAddress(ic.contractAddress()).toString();
+        if (!target.startsWith("C")) return { ok: false, reason: "guardian_target_not_contract" };
         return { ok: true };
       }
       if (fnName !== "transfer") {
