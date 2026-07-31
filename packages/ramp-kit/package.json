@@ -1,0 +1,29 @@
+{
+  "name": "@slippay/ramp-kit",
+  "version": "0.1.0",
+  "description": "LATAM fiat on/off-ramp kit for Stellar: one Anchor interface, multiple providers (Etherfuse TESOURO/CETES via Pix/SPEI, CriptoPix), and a multi-anchor router with live quote fan-out.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Manuel Galmanus <manuel@bluewaveai.online>",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
+  "files": ["dist/src", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test \"dist/test/*.test.js\"",
+    "demo": "node examples/pix-tesouro-demo.mjs"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^15.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}
