@@ -125,11 +125,11 @@ export default function LandingV2() {
   const h2 = "font-black uppercase tracking-[-0.04em] leading-[0.88] text-center md:text-left mx-auto md:mx-0";
 
   return (
-    <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden" style={display}>
+    <div className="min-h-screen bg-white text-[#0a0a0a] overflow-x-hidden" style={display}>
       <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}`}</style>
 
       {/* HEADER — transparent over the hero image, solid bone on scroll */}
-      <header className={"fixed top-0 left-0 right-0 z-40 px-6 md:px-12 py-4 flex items-center justify-between transition-colors duration-300 " + (scrolled ? "backdrop-blur-md bg-[#f1eee7]/85 border-b border-[#0a0a0a]/8" : "bg-transparent")}>
+      <header className={"fixed top-0 left-0 right-0 z-40 px-6 md:px-12 py-4 flex items-center justify-between transition-colors duration-300 " + (scrolled ? "backdrop-blur-md bg-white/85 border-b border-[#0a0a0a]/8" : "bg-transparent")}>
         <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline transition-opacity hover:opacity-70">{label}</Link>)}
@@ -142,7 +142,7 @@ export default function LandingV2() {
           </button>
         </nav>
         {menuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-[#f1eee7] border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
+          <div className="md:hidden absolute top-full left-0 right-0 z-50 bg-white border-y border-[#0a0a0a]/10 px-6 py-4 flex flex-col gap-1 text-[12px] uppercase tracking-[0.18em]">
             {NAV.map(([label, href]) => <Link key={href} to={href} onClick={() => setMenuOpen(false)} className="py-3 border-b border-[#0a0a0a]/8">{label}</Link>)}
             <div className="py-3 border-b border-[#0a0a0a]/8"><LangToggle /></div>
             <Link to="/account" onClick={() => setMenuOpen(false)} className="mt-2 inline-flex items-center justify-center rounded-full px-5 py-3 bg-[#FDDA24] text-[#0a0a0a] font-semibold">{t.nav.tryFree}</Link>
@@ -152,8 +152,8 @@ export default function LandingV2() {
 
       {/* HERO — 2-col: text left, phone right. Plain bank register, zero tech words.
           GoldWaves drift behind the content (pointer-events off, z-0); content z-10. */}
-      <section className="relative overflow-hidden bg-[#f5f3ee] text-[#0a0a0a]">
-        <GoldWaves className="pointer-events-none absolute inset-0 z-0 opacity-60" />
+      <section className="relative overflow-hidden bg-white text-[#0a0a0a]">
+        <GoldWaves className="pointer-events-none absolute inset-0 z-0 opacity-40" />
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 pt-32 md:pt-40 pb-16 md:pb-24 grid md:grid-cols-[1fr_auto] gap-10 md:gap-20 items-center">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
@@ -161,11 +161,11 @@ export default function LandingV2() {
             </span>
             <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,9vw,6rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
             <p className="mt-6 text-lg md:text-xl text-[#0a0a0a]/70 max-w-[44ch] leading-relaxed">{t.hero.sub}</p>
-            <div className="mt-8 grid grid-cols-3 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-xl overflow-hidden w-full max-w-[420px]">
-              {t.hero.metrics.map(([k, v]) => (
-                <div key={k} className="bg-[#f5f3ee] px-2 py-3 text-center">
-                  <div className="font-mono text-[13px] tracking-[0.04em] font-bold text-[#0a0a0a]">{k}</div>
-                  <div className="mt-0.5 text-[10px] text-[#0a0a0a]/50 leading-tight">{v}</div>
+            <div className="mt-9 grid grid-cols-3 border-y-[1.5px] border-[#0a0a0a] w-full max-w-[440px]">
+              {t.hero.metrics.map(([k, v], i) => (
+                <div key={k} className={"px-3 md:px-4 py-4 text-center md:text-left " + (i > 0 ? "border-l border-[#0a0a0a]/12" : "")}>
+                  <div className="font-black text-[22px] md:text-[27px] tracking-[-0.03em] leading-none text-[#0a0a0a]" style={display}>{k}</div>
+                  <div className="mt-2 text-[10px] leading-tight text-[#0a0a0a]/50">{v}</div>
                 </div>
               ))}
             </div>
@@ -213,7 +213,7 @@ export default function LandingV2() {
         <h2 className={`mt-10 ${h2} text-[clamp(2.5rem,9vw,6rem)]`} style={display}>{t.how.h}</h2>
         <div className="mt-14 grid md:grid-cols-3 gap-px bg-[#0a0a0a]/12 border border-[#0a0a0a]/12 rounded-2xl overflow-hidden">
           {t.how.steps.map(([h, b], i) => (
-            <div key={i} className="bg-[#f1eee7] p-7 md:p-9">
+            <div key={i} className="bg-white p-7 md:p-9">
               <span className="font-mono text-[12px]" style={{ color: GRAY }}>{String(i + 1).padStart(2, "0")}</span>
               <div className="mt-4 text-2xl md:text-3xl font-bold tracking-[-0.02em]" style={display}>{h}</div>
               <p className="mt-2 text-[15px] text-[#0a0a0a]/60">{b}</p>
