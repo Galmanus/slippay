@@ -18,7 +18,7 @@ type Lang = "pt" | "en";
 
 const COPY = {
   en: {
-    nav: { pay: "Pay", receive: "Receive", login: "Sign in", tryFree: "Open your account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
+    nav: { pay: "Pay", receive: "Receive", enterprise: "Enterprise", login: "Sign in", tryFree: "Open your account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
     hero: { eyebrow: "dollar account · open today", h1: "Your dollars, in Pix.", sub: "Send a Pix, get real dollars in seconds. The money stays with you, not with a bank. No one can freeze it.", cta: "Open your account", note: "no card · 2 minutes · just your fingerprint", metrics: [["~10s", "from Pix to dollars"], ["~1.9%", "total cost · banks charge ~5%"], ["R$ 0", "monthly fee"]] as [string, string][] },
     yours: { n: "001", stamp: "yours", h: "Yours. For real.", items: [
       ["Only your fingerprint opens it", "Your face or fingerprint approves every move. No password, no codes to memorize. No one else."],
@@ -44,7 +44,7 @@ const COPY = {
       footer: "slippay · your money, yours" },
   },
   pt: {
-    nav: { pay: "Pagar", receive: "Receber", login: "Entrar", tryFree: "Abrir conta", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
+    nav: { pay: "Pagar", receive: "Receber", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
     hero: { eyebrow: "conta em dólar · abra hoje", h1: "Seus dólares, no Pix.", sub: "Faça um Pix e receba dólar de verdade em segundos. O dinheiro fica com você, não com um banco. Ninguém congela.", cta: "Abrir conta", note: "sem cartão · 2 minutos · só a sua digital", metrics: [["~10s", "do Pix ao dólar"], ["~1,9%", "custo total · banco cobra ~5%"], ["R$ 0", "de mensalidade"]] as [string, string][] },
     yours: { n: "001", stamp: "é seu", h: "É seu. De verdade.", items: [
       ["Só a sua digital abre", "O seu rosto ou digital aprova cada movimento. Sem senha e sem código pra decorar. Mais ninguém."],
@@ -98,7 +98,7 @@ export default function LandingV2() {
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
 
-  const NAV: [string, string][] = [[t.nav.receive, "/receber"], [t.nav.pay, "/pay"], [t.nav.login, "/account"]];
+  const NAV: [string, string][] = [[t.nav.receive, "/receber"], [t.nav.pay, "/pay"], [t.nav.enterprise, "/enterprise"], [t.nav.login, "/account"]];
   const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"], [t.nav.builders, "/builders"]];
 
   useEffect(() => {
