@@ -3,6 +3,10 @@
 // CSS-only effects (no 3D). Self-contained: all styles scoped via a <style> block,
 // no dependency on the bone/gold design system. Adult copy, no mascot.
 
+import "@fontsource/space-grotesk/400.css";
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/600.css";
+import "@fontsource/space-grotesk/700.css";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { PayFlowDemo } from "../components/PayFlowDemo.tsx";

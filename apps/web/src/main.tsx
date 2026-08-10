@@ -4,19 +4,11 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import { AuthProvider } from "./lib/auth.tsx";
 import { ChainProvider } from "./components/ChainProvider.tsx";
-import "@fontsource/space-grotesk/400.css";
-import "@fontsource/space-grotesk/500.css";
-import "@fontsource/space-grotesk/600.css";
-import "@fontsource/space-grotesk/700.css";
+// Space Grotesk is only used by LandingV3 — imported there, not here, so it
+// stays out of the entry CSS.
 import "@fontsource/space-mono/400.css";
 import "@fontsource/space-mono/700.css";
-// Inter Tight (weights + italic used by app)
-import "@fontsource/inter-tight/300.css";
-import "@fontsource/inter-tight/400.css";
-import "@fontsource/inter-tight/500.css";
-import "@fontsource/inter-tight/600.css";
-import "@fontsource/inter-tight/700.css";
-import "@fontsource/inter-tight/400-italic.css";
+// Inter Tight dropped: no font-family in src references it (checked 10/08).
 // Inter
 import "@fontsource/inter/300.css";
 import "@fontsource/inter/400.css";

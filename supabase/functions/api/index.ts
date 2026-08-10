@@ -100,8 +100,14 @@ const MIME: Record<string, string> = {
   woff2: "font/woff2",
   txt: "text/plain; charset=utf-8",
   webp: "image/webp",
+  pdf: "application/pdf",
   xml: "application/xml; charset=utf-8",
 };
+
+// Extensions worth serving from build-time precompressed siblings (.br/.gz).
+// Deno.serve's automatic compression is fast-level gzip (~40% larger than
+// gzip -9 on our entry chunk); precompressed files are brotli -q11 / gzip -9.
+const PRECOMPRESSIBLE = new Set(["js", "css", "svg", "json", "xml", "txt"]);
 
 // Canonical hostnames:
 //   - app.slippay.cc  → landing + SPA (static files from apps/web/dist)
@@ -145,13 +151,30 @@ app.get("*", async (c) => {
 
   // app.slippay.cc (and any other host alias) — serve static + SPA fallback.
   try {
+    const baseHeaders: Record<string, string> = {
+      "content-type": MIME[ext] ?? "application/octet-stream",
+      "cache-control": ext === "html" ? "no-cache" : "public, max-age=31536000",
+    };
+    if (PRECOMPRESSIBLE.has(ext)) {
+      const accept = (c.req.header("accept-encoding") ?? "").toLowerCase();
+      for (const [enc, suffix] of [["br", ".br"], ["gzip", ".gz"]] as const) {
+        if (!accept.includes(enc)) continue;
+        try {
+          const compressed = await Deno.readFile(`${WEB_DIST}${path}${suffix}`);
+          return new Response(compressed, {
+            headers: {
+              ...baseHeaders,
+              "content-encoding": enc,
+              "vary": "Accept-Encoding",
+            },
+          });
+        } catch {
+          // no precompressed sibling for this encoding — try the next one
+        }
+      }
+    }
     const file = await Deno.readFile(`${WEB_DIST}${path}`);
-    return new Response(file, {
-      headers: {
-        "content-type": MIME[ext] ?? "application/octet-stream",
-        "cache-control": ext === "html" ? "no-cache" : "public, max-age=31536000",
-      },
-    });
+    return new Response(file, { headers: baseHeaders });
   } catch {
     // SPA fallback — serve index.html for client-side routes
     const file = await Deno.readFile(`${WEB_DIST}/index.html`);
