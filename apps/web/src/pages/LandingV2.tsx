@@ -132,7 +132,7 @@ export default function LandingV2() {
       <header className={"fixed top-0 left-0 right-0 z-40 px-6 md:px-12 py-4 flex items-center justify-between transition-colors duration-300 " + (scrolled ? "backdrop-blur-md bg-white/85 border-b border-[#0a0a0a]/8" : "bg-transparent")}>
         <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span className="text-[#FDDA24]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
-          {NAV.map(([label, href]) => <Link key={href} to={href} className="hidden md:inline transition-opacity hover:opacity-70">{label}</Link>)}
+          {NAV.map(([label, href]) => <Link key={href} to={href} className={(href === "/enterprise" ? "inline" : "hidden md:inline") + " transition-opacity hover:opacity-70"}>{label}</Link>)}
           <span className="hidden md:inline"><LangToggle /></span>
           <Link to="/account" className="hidden md:inline-flex items-center rounded-full px-5 py-2.5 bg-[#FDDA24] text-[#0a0a0a] font-semibold hover:opacity-90">{t.nav.tryFree}</Link>
           <button onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" className="md:hidden flex flex-col gap-[5px] p-1">
