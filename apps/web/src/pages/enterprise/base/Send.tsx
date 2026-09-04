@@ -6,6 +6,7 @@ import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/bas
 import ConfirmTxModal from "../../../components/ConfirmTxModal.tsx";
 import { QrScanner } from "../../../components/QrScanner.tsx";
 import { parsePaymentQr } from "../../../lib/parsePaymentQr.ts";
+import { saveTxLabel } from "../../../lib/txLabels.ts";
 import type { TxSummary } from "../../../lib/txguard.ts";
 import type { DecodedTransfer } from "../../../lib/baseAuthorize.ts";
 
@@ -25,6 +26,7 @@ export default function BaseSend() {
 
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
+  const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,9 +121,11 @@ export default function BaseSend() {
         confirm: (decoded) => openConfirmModal(decoded),
       });
 
+      saveTxLabel(address, result.hash, label);
       setTxHash(result.hash);
       setDestination("");
       setAmount("");
+      setLabel("");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "erro desconhecido";
       if (msg === "cancelado") {
@@ -143,7 +147,7 @@ export default function BaseSend() {
       {modalSummary && (
         <ConfirmTxModal
           summary={modalSummary}
-          intent={`Enviar ${amount} USDC para ${destTrimmed.slice(0, 8)}...${destTrimmed.slice(-4)}`}
+          intent={`Enviar ${amount} USDC para ${destTrimmed.slice(0, 8)}...${destTrimmed.slice(-4)}${label.trim() ? ` · "${label.trim()}"` : ""}`}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
         />
@@ -206,6 +210,25 @@ export default function BaseSend() {
               className="w-full bg-transparent outline-none text-4xl tabular-nums disabled:opacity-60"
             />
             <span className="text-lg text-[#0a0a0a]/45">USDC</span>
+          </div>
+        </div>
+
+        {/* Payment name — off-chain bookkeeping metadata, shown in the extract */}
+        <div className="mb-8">
+          <label className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3 block">
+            Nome do pagamento <span className="text-[#0a0a0a]/35 normal-case tracking-normal">(opcional)</span>
+          </label>
+          <input
+            type="text"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            disabled={busy}
+            maxLength={120}
+            placeholder="Ex.: NF 1042 — Fornecedor ABC"
+            className="w-full bg-transparent border border-[#0a0a0a]/20 p-4 text-sm disabled:opacity-60"
+          />
+          <div className="mt-2 text-[10px] text-[#0a0a0a]/40">
+            Aparece no seu extrato. Não vai pra blockchain nem pro destinatário.
           </div>
         </div>
 

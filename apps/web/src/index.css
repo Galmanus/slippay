@@ -270,6 +270,8 @@ h1 .mask-up { display: inline-block; }
 /* Ambient yellow glow behind the piggy, slow pulse. */
 @keyframes glow-pulse { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.14); opacity: 0.8; } }
 .hero-glow { animation: glow-pulse 6s ease-in-out infinite; will-change: transform, opacity; }
-/* Living grain — barely-there shimmer over the dot texture. */
-@keyframes grain-drift { 0%, 100% { background-position: 0 0; } 50% { background-position: 1.5px 1.5px; } }
-.grain { animation: grain-drift 8s ease-in-out infinite; }
+/* `.grain` is a legacy hook still present on ~22 page roots. It used to animate
+   background-position (a non-composited property) on a full-page element whose
+   only background is a flat color: zero visible effect, but Chrome re-rasterized
+   the entire viewport every frame (~11s of raster work per 6s window on /pay),
+   which froze the UI on weaker devices. Intentionally no rules here. */

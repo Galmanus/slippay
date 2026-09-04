@@ -94,7 +94,7 @@ export function LivePaymentCard() {
       <style>{`
         @keyframes lpcBlink { 0%,100%{opacity:1} 50%{opacity:.25} }
         @keyframes lpcSpin { to { transform: rotate(360deg) } }
-        .lpc-dot { animation: lpcBlink 1.4s ease-in-out infinite; }
+        /* .lpc-dot is static: blinking it inside the 3D card cost ~0.5s/5s of compositor time */
         .lpc-spin { animation: lpcSpin .8s linear infinite; }
       `}</style>
       <div className="absolute -inset-3 rounded-[30px] bg-[#cabfb0]/12 blur-3xl opacity-60" aria-hidden />

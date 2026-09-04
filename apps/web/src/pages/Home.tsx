@@ -293,7 +293,7 @@ export default function Home() {
       {/* HERO TEXT — centered, monumental, single CTA */}
       <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-10 md:pt-24 pb-20 md:pb-32 relative">
         {/* ambient lime aurora — slow drift behind the hero, editorial not gaudy */}
-        <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(253,218,36,0.22), transparent 70%)", filter: "blur(6px)" }} />
+        <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[90%] h-[130%] -z-0" style={{ background: "radial-gradient(45% 45% at 50% 30%, rgba(253,218,36,0.22), transparent 70%)", filter: "blur(6px)" }} />
         <div className="relative flex flex-col items-center text-center">
           <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-6">
             <span className="flex items-center gap-2 normal-case tracking-tight">

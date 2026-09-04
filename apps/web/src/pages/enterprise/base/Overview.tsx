@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import { useEnterpriseBaseWallet } from "../../../lib/enterpriseBase.tsx";
 import { publicClient, usdcAddress, fromBaseUnits } from "../../../lib/chain/base/usdc.ts";
+import { getTxLabels } from "../../../lib/txLabels.ts";
 
 const USDC = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"; // canonical USDC on Base
 const SCAN = "https://base.blockscout.com";
@@ -55,6 +56,7 @@ export default function BaseOverview() {
     return () => { on = false; };
   }, [address]);
 
+  const labels = getTxLabels(address);
   const received = (txs || []).filter((t) => t.dir === "in").reduce((a, t) => a + t.amount, 0);
   const sent = (txs || []).filter((t) => t.dir === "out").reduce((a, t) => a + t.amount, 0);
   const count = (txs || []).length;
@@ -121,14 +123,15 @@ export default function BaseOverview() {
       <div className={card}>
         <div className="flex justify-between items-center mb-1"><div className={lbl}>Recent transactions</div><span className="text-[#0a0a0a]/50 text-[11px]">USDC · Base · real</span></div>
         <div className="overflow-x-auto -mx-1 px-1">
-        <table className="w-full min-w-[560px] text-[12.5px]">
-          <thead><tr>{["Direction", "Counterparty", "Amount", "Status", "Time", "Tx"].map((h) => <th key={h} className="text-left text-[#0a0a0a]/50 text-[10px] uppercase tracking-[0.12em] font-semibold pb-3 px-2">{h}</th>)}</tr></thead>
+        <table className="w-full min-w-[680px] text-[12.5px]">
+          <thead><tr>{["Direction", "Name", "Counterparty", "Amount", "Status", "Time", "Tx"].map((h) => <th key={h} className="text-left text-[#0a0a0a]/50 text-[10px] uppercase tracking-[0.12em] font-semibold pb-3 px-2">{h}</th>)}</tr></thead>
           <tbody>
-            {txs === null && <tr><td className="py-4 px-2 text-[#0a0a0a]/40" colSpan={6}>Loading from chain…</td></tr>}
-            {txs && txs.length === 0 && <tr><td className="py-4 px-2 text-[#0a0a0a]/40" colSpan={6}>No USDC transactions yet.</td></tr>}
+            {txs === null && <tr><td className="py-4 px-2 text-[#0a0a0a]/40" colSpan={7}>Loading from chain…</td></tr>}
+            {txs && txs.length === 0 && <tr><td className="py-4 px-2 text-[#0a0a0a]/40" colSpan={7}>No USDC transactions yet.</td></tr>}
             {(txs || []).map((t) => (
               <tr key={t.hash} className="border-t border-[#0a0a0a]/10">
                 <td className="py-3 px-2"><span className={["text-[10px] font-extrabold rounded-full px-2.5 py-1", t.dir === "in" ? "text-[#2f8f3e] border border-[#2f8f3e]/40 bg-[#b5e853]/25" : "text-[#0a0a0a] border border-[#0a0a0a]/20 bg-[#0a0a0a]/5"].join(" ")}>{t.dir === "in" ? "↓ received" : "↑ sent"}</span></td>
+                <td className="py-3 px-2 max-w-[180px] truncate" title={labels[t.hash.toLowerCase()] ?? ""}>{labels[t.hash.toLowerCase()] ?? <span className="text-[#0a0a0a]/30">—</span>}</td>
                 <td className="py-3 px-2 font-mono text-[#0a0a0a]/55">{t.counter.slice(0, 8)}…{t.counter.slice(-4)}</td>
                 <td className="py-3 px-2 font-extrabold font-mono">${usd(t.amount)}<small className="block text-[#0a0a0a]/50 font-semibold text-[10px]">{t.amount.toFixed(2)} USDC</small></td>
                 <td className="py-3 px-2"><span className="text-[10px] font-extrabold text-[#2f8f3e]">✓ confirmed</span></td>

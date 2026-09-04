@@ -1,5 +1,5 @@
 // V3Ribbon — the shared "skin" background for SlipPay public pages.
-// A fixed, full-bleed bone canvas + the animated gold silk ribbon
+// A fixed, full-bleed bone canvas + the gold silk ribbon
 // (24 displaced strands) extracted from the approved LandingV3 hero.
 // Sits at z-index:-1 behind all page content, so a page opts in by rendering
 // <V3Ribbon /> once and making its own root background transparent.
@@ -13,13 +13,12 @@ const V3RB_CSS = `
   background-size:64px 64px;mask-image:radial-gradient(100% 50% at 50% 0%,#000 20%,transparent 75%);opacity:.4;}
 .v3rb-ribbon{position:absolute;top:46%;left:0;width:100%;height:52vh;}
 .v3rb-ribbon svg{width:100%;height:100%;display:block;}
-.v3rb-g1{animation:v3rb1 11s ease-in-out infinite;}
-.v3rb-g2{animation:v3rb2 14s ease-in-out infinite;}
-.v3rb-g3{animation:v3rb1 16s ease-in-out infinite reverse;}
-@keyframes v3rb1{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(-58px,16px) skewX(-3deg);}}
-@keyframes v3rb2{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(52px,-20px) skewX(3deg);}}
-@media(max-width:768px){.v3rb-ribbon{height:34vh;top:48%;}.v3rb-g1,.v3rb-g2,.v3rb-g3{animation:none;}}
-@media(prefers-reduced-motion:reduce){.v3rb-g1,.v3rb-g2,.v3rb-g3{animation:none;}}
+/* The strand groups are static on purpose. They carry an feTurbulence +
+   feDisplacementMap filter, and a CSS transform on an SVG <g> is not
+   composited: animating it re-ran the filter over the whole ribbon every
+   frame (~4.5s main thread + ~9s raster per 5s window on /builders), which
+   froze every page that mounts this component. Mobile already shipped static. */
+@media(max-width:768px){.v3rb-ribbon{height:34vh;top:48%;}}
 `;
 
 export function V3Ribbon() {

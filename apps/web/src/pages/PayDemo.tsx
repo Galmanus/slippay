@@ -7,9 +7,10 @@
 // errors are friendly, never raw.
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { QrScanner } from "../components/QrScanner";
 import { decodeRequest, stroopsToXlm, type PayRequest } from "../lib/slippayqr";
+import { parseBrCode } from "../lib/brcode";
 import { createPasskey, payViaRelayer, type PasskeyHandle } from "../lib/passkey";
 import { FaceScan } from "../components/FaceScan";
 import { LiveProof } from "../components/LiveProof";
@@ -36,6 +37,7 @@ function friendly(e: unknown): string {
 }
 
 export default function PayDemo() {
+  const navigate = useNavigate();
   const [handle, setHandle] = useState<PasskeyHandle | null>(null);
   const [wallet, setWallet] = useState<string | null>(null);
   const [sponsor, setSponsor] = useState<string | null>(null);
@@ -123,8 +125,20 @@ export default function PayDemo() {
 
   function onScanned(text: string) {
     setScanning(false);
-    try { setReq(decodeRequest(text)); setError(null); }
-    catch (e) { setError("That QR isn't a SlipPay request. Scan another."); }
+    // one scanner, two rails: a slippay: request stays here; a Pix BR Code
+    // (the QR on any Brazilian counter) routes to the USDC->Pix flow.
+    try { setReq(decodeRequest(text)); setError(null); return; }
+    catch { /* not a slippay QR — try Pix */ }
+    const pix = parseBrCode(text);
+    if (pix) {
+      if (import.meta.env.VITE_PAGFINANCE_ENABLED === "1") {
+        navigate("/pix-pay", { state: { scannedCode: pix.raw } });
+      } else {
+        setError("Esse é um QR Pix. O pagamento de Pix com dólar está sendo ligado — volte em breve.");
+      }
+      return;
+    }
+    setError("That QR isn't a SlipPay request. Scan another.");
   }
 
   async function onPayReq() {

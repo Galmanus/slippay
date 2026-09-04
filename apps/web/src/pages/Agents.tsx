@@ -49,7 +49,7 @@ export default function Agents() {
 
       {/* HERO — agent payments, built on Stellar's passkey primitive, honest stage */}
       <Reveal as="section" className="max-w-[1400px] mx-auto px-5 md:px-12 pt-16 md:pt-28 pb-14 md:pb-20 relative">
-        <div aria-hidden className="pointer-events-none absolute -top-10 left-0 w-[70%] h-[120%] -z-0 animate-[aurora-drift_11s_ease-in-out_infinite]"
+        <div aria-hidden className="pointer-events-none absolute -top-10 left-0 w-[70%] h-[120%] -z-0"
           style={{ background: "radial-gradient(45% 45% at 30% 30%, rgba(253,218,36,0.18), transparent 70%)", filter: "blur(6px)" }} />
         <div className="relative">
           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55 font-mono mb-6">

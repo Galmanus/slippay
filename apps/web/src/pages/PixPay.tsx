@@ -1,20 +1,34 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Logo } from "../components/Logo.tsx";
+import { QrScanner } from "../components/QrScanner.tsx";
 import { connectWallet, signTx } from "../lib/wallet.ts";
 import { buildUsdcPaymentTx, fetchSequence, submitSignedTx } from "../lib/stellar.ts";
+import { payViaRelayer } from "../lib/passkey.ts";
+import { loadAccount, type Account } from "../lib/account.ts";
 import * as pag from "../lib/pagfinance.ts";
 
 type Step = "input" | "validated" | "quoted" | "paying" | "done" | "error";
 
 const NETWORK = (import.meta.env.VITE_STELLAR_NETWORK ?? "PUBLIC").toUpperCase() as "TESTNET" | "PUBLIC";
 const EXPLORER = NETWORK === "PUBLIC" ? "public" : "testnet";
+const RELAYER_BASE = (import.meta.env.VITE_RELAYER_BASE as string | undefined)
+  ?? "https://api.slippay.cc/api/v1/relayer";
+
+function hexToBytes(h: string): Uint8Array {
+  const out = new Uint8Array(h.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(h.slice(i * 2, i * 2 + 2), 16);
+  return out;
+}
 
 export default function PixPay() {
+  const location = useLocation();
   const [step, setStep] = useState<Step>("input");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [code, setCode] = useState("");
+  const [scanning, setScanning] = useState(false);
   const [manualAmount, setManualAmount] = useState("");
   const [transfer, setTransfer] = useState<pag.PagTransfer | null>(null);
 
@@ -23,22 +37,44 @@ export default function PixPay() {
   const [wallet, setWallet] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
 
+  // the returning user's biometric wallet (funded on /comprar). When present,
+  // it is the payer: no extension wallet, Face ID authorizes via the relayer.
+  const [acct] = useState<Account | null>(() => loadAccount());
+
   // pull the Stellar USDC asset id from PagFinance once.
   useEffect(() => {
     pag.stellarUsdcAssetId().then(setAssetId).catch(e => setError(e.message));
   }, []);
 
+  // adopt the passkey wallet as the connected wallet automatically.
+  useEffect(() => {
+    if (acct?.walletId) setWallet(acct.walletId);
+  }, [acct]);
+
+  // a QR scanned on /pay lands here with the raw BR Code — validate straight away.
+  useEffect(() => {
+    const scanned = (location.state as { scannedCode?: string } | null)?.scannedCode;
+    if (scanned) { setCode(scanned); void doValidate(scanned); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const amountBRL = transfer ? (transfer.amount > 0 ? transfer.amount : Number(manualAmount || 0)) : 0;
   const v = quote?.valuesAndFees;
 
-  async function doValidate() {
+  async function doValidate(codeArg?: string) {
     setError(null); setBusy(true);
     try {
-      const t = await pag.validateCode(code.trim());
+      const t = await pag.validateCode((codeArg ?? code).trim());
       setTransfer(t);
       setStep("validated");
     } catch (e) { setError(msg(e)); }
     finally { setBusy(false); }
+  }
+
+  function onScanned(text: string) {
+    setScanning(false);
+    setCode(text.trim());
+    void doValidate(text);
   }
 
   async function doQuote() {
@@ -69,17 +105,36 @@ export default function PixPay() {
       const created = await pag.createPayment({ quoteId: quote.quoteId, sender: wallet });
       if (!created.receiver || !created.amount) throw new Error("pagfinance did not return receiver/amount");
 
-      const seq = await fetchSequence(NETWORK, wallet);
-      const xdr = await buildUsdcPaymentTx({
-        sourcePublicKey: wallet,
-        sourceSequence: seq,
-        destination: created.receiver,
-        amount: created.amount,
-        memoText: created.memo,
-        network: NETWORK,
-      });
-      const signed = await signTx(xdr);
-      const { hash } = await submitSignedTx(NETWORK, signed);
+      let hash: string;
+      if (acct?.walletId && acct.credIdHex) {
+        // biometric wallet: SAC transfer authorized by Face ID, fees fronted by
+        // the relayer. A contract invocation carries no classic memo, so
+        // attribution relies on submitPayment(txHash) below — confirm with
+        // PagFinance that they credit by txHash/sender for C… wallets.
+        hash = await payViaRelayer({
+          network: acct.network,
+          relayerBase: RELAYER_BASE,
+          sponsor: await relayerSponsor(),
+          walletId: acct.walletId,
+          recipient: created.receiver,
+          amount: String(Math.round(Number(created.amount) * 1e7)), // USDC -> stroops
+          asset: "USDC",
+          credId: hexToBytes(acct.credIdHex),
+        });
+      } else {
+        // extension wallet (Freighter etc.): classic payment with memo.
+        const seq = await fetchSequence(NETWORK, wallet);
+        const xdr = await buildUsdcPaymentTx({
+          sourcePublicKey: wallet,
+          sourceSequence: seq,
+          destination: created.receiver,
+          amount: created.amount,
+          memoText: created.memo,
+          network: NETWORK,
+        });
+        const signed = await signTx(xdr);
+        ({ hash } = await submitSignedTx(NETWORK, signed));
+      }
       setTxHash(hash);
 
       // best-effort notify; many flows just track on-chain.
@@ -87,6 +142,12 @@ export default function PixPay() {
       setStep("done");
     } catch (e) { setError(msg(e)); setStep("error"); }
     finally { setBusy(false); }
+  }
+
+  async function relayerSponsor(): Promise<string> {
+    const info = await fetch(`${RELAYER_BASE}/info`).then((r) => r.json());
+    if (!info.sponsor) throw new Error("relayer indisponível");
+    return info.sponsor as string;
   }
 
   return (
@@ -115,11 +176,18 @@ export default function PixPay() {
               className="w-full bg-transparent border border-[#0a0a0a]/20 p-4 font-mono text-sm break-all disabled:opacity-60"
             />
             {step === "input" && (
-              <button onClick={doValidate} disabled={busy || !code.trim()}
-                className="mt-4 w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
-                {busy ? "Validando..." : "Validar código"}
-              </button>
+              <>
+                <button onClick={() => setScanning(true)} disabled={busy}
+                  className="mt-4 w-full border border-[#0a0a0a] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#0a0a0a] hover:text-[#f1eee7] disabled:opacity-50">
+                  Escanear QR da loja
+                </button>
+                <button onClick={() => doValidate()} disabled={busy || !code.trim()}
+                  className="mt-3 w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
+                  {busy ? "Validando..." : "Validar código"}
+                </button>
+              </>
             )}
+            {scanning && <QrScanner onScan={onScanned} onClose={() => setScanning(false)} />}
 
             {/* step: validated -> show payee, amount, quote */}
             {transfer && step !== "input" && (
@@ -159,7 +227,7 @@ export default function PixPay() {
                 ) : (
                   <>
                     <div className="text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 mb-3">
-                      Conectado · <span className="font-mono normal-case">{wallet.slice(0,8)}...{wallet.slice(-4)}</span>
+                      {acct?.walletId === wallet ? "Sua carteira (Face ID)" : "Conectado"} · <span className="font-mono normal-case">{wallet.slice(0,8)}...{wallet.slice(-4)}</span>
                     </div>
                     <button onClick={doQuote} disabled={busy || amountBRL <= 0}
                       className="w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
@@ -174,7 +242,7 @@ export default function PixPay() {
             {(step === "quoted" || step === "paying") && (
               <button onClick={doPay} disabled={busy}
                 className="mt-8 w-full bg-[#0a0a0a] text-[#f1eee7] py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#1a1a1a] disabled:opacity-50">
-                {step === "paying" ? "Processando..." : "Pagar PIX"}
+                {step === "paying" ? "Processando..." : (acct?.walletId ? "Pagar com Face ID" : "Pagar PIX")}
               </button>
             )}
 

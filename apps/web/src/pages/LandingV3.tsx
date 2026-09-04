@@ -321,13 +321,9 @@ const V3_CSS = `
 /* handhold-accent silk ribbon — defined SVG bezier bands, blue->gold, no WebGL */
 .v3-ribbon{position:absolute;top:52%;left:0;width:100%;height:52vh;z-index:0;pointer-events:none;opacity:.92;}
 .v3-ribbon svg{width:100%;height:100%;display:block;}
-.v3-ribbon-g1{animation:v3rib1 11s ease-in-out infinite;}
-.v3-ribbon-g2{animation:v3rib2 14s ease-in-out infinite;}
-.v3-ribbon-g3{animation:v3rib1 16s ease-in-out infinite reverse;}
-@keyframes v3rib1{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(-58px,16px) skewX(-3deg);}}
-@keyframes v3rib2{0%,100%{transform:translate(0,0) skewX(0deg);}50%{transform:translate(52px,-20px) skewX(3deg);}}
-@media(max-width:768px){.v3-ribbon{height:34vh;top:50%;}.v3-ribbon-g1,.v3-ribbon-g2,.v3-ribbon-g3{animation:none;}}
-@media(prefers-reduced-motion:reduce){.v3-ribbon-g1,.v3-ribbon-g2,.v3-ribbon-g3{animation:none;}}
+/* Static strands: see V3Ribbon.tsx — animating transform on filtered SVG <g>
+   re-runs the displacement filter every frame and freezes the page. */
+@media(max-width:768px){.v3-ribbon{height:34vh;top:50%;}}
 
 /* infinity-stolen proof ticker */
 .v3-marquee{position:relative;z-index:1;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:16px 0;

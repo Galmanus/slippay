@@ -65,11 +65,7 @@
   /* V3 skin: silk ribbon background */
   .zkrib{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:radial-gradient(120% 80% at 50% -10%,#faf8f3 0%,#f1eee7 60%)}
   .zkrib svg{position:absolute;top:46%;left:0;width:100%;height:52vh;display:block}
-  .zkrib-g1{animation:zkrb1 11s ease-in-out infinite}
-  .zkrib-g2{animation:zkrb2 14s ease-in-out infinite}
-  .zkrib-g3{animation:zkrb1 16s ease-in-out infinite reverse}
-  @keyframes zkrb1{0%,100%{transform:translate(0,0) skewX(0deg)}50%{transform:translate(-58px,16px) skewX(-3deg)}}
-  @keyframes zkrb2{0%,100%{transform:translate(0,0) skewX(0deg)}50%{transform:translate(52px,-20px) skewX(3deg)}}
+  /* strands static: animating transform on filtered SVG <g> re-runs the filter every frame */
   @media(max-width:768px){.zkrib svg{height:34vh;top:48%}.zkrib-g1,.zkrib-g2,.zkrib-g3{animation:none}}
   @media(prefers-reduced-motion:reduce){.zkrib-g1,.zkrib-g2,.zkrib-g3{animation:none}}
 
