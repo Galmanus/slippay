@@ -17,6 +17,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { reverifyCert } from "./verify.ts";
 import * as chain from "./chain.ts";
+import { arcFromEnv, arcPay, formatUsdc, remainingWindowBudget } from "./arc.ts";
 
 const server = new McpServer({ name: "slippay", version: "0.2.0" });
 
@@ -175,6 +176,64 @@ server.registerTool(
     inputSchema: { hash: z.string().describe("Stellar transaction hash.") },
   },
   async ({ hash }) => run(() => chain.txStatus(hash)),
+);
+
+// ── Arc rail (Circle L1). The vault, not this process, enforces the bound: per-tx cap, sliding
+// window, allowlist, expiry, revocation; SLH-DSA (post-quantum) above the session's threshold.
+// A bounded spend is membrane-safe, so the AGENT role gets it (unlike the raw slippay_pay). ──
+server.registerTool(
+  "slippay_arc_session",
+  {
+    title: "Read this agent's AgentVault session on Arc",
+    description:
+      "Read-only: the on-chain limits this agent spends under on Arc — per-transaction cap, window cap and " +
+      "remaining budget, post-quantum threshold, expiry, revocation, ERC-8004 agent id, next nonce. " +
+      "Check it before paying to know what the vault will accept.",
+    inputSchema: {},
+  },
+  async () =>
+    run(async () => {
+      const { deps, cfg, network } = arcFromEnv();
+      const s = await deps.readSession(cfg.vault, cfg.account.address);
+      return {
+        network,
+        vault: cfg.vault,
+        agent: cfg.account.address,
+        active: s.exists && !s.revoked && (s.expiresAt === 0n || BigInt(deps.now()) < s.expiresAt),
+        agentId: s.agentId.toString(),
+        perTxCapUsdc: formatUsdc(s.perTxCap),
+        windowCapUsdc: formatUsdc(s.windowCap),
+        windowHours: Number(s.windowSeconds) / 3600,
+        remainingWindowUsdc: formatUsdc(remainingWindowBudget(s, deps.now())),
+        postQuantumAboveUsdc: formatUsdc(s.pqThreshold),
+        slhKeyLoaded: Boolean(cfg.slhSecretKey),
+        expiresAt: s.expiresAt === 0n ? null : new Date(Number(s.expiresAt) * 1000).toISOString(),
+        revoked: s.revoked,
+        nonce: s.nonce.toString(),
+      };
+    }),
+);
+
+server.registerTool(
+  "slippay_arc_pay",
+  {
+    title: "Pay in USDC on Arc from the agent's AgentVault",
+    description:
+      "Spend USDC on Arc inside the limits the vault enforces on-chain. Signs locally (ECDSA; plus a " +
+      "post-quantum SLH-DSA signature, ~3 s, when the amount is above the session's threshold) and sends " +
+      "the signed intent to the SlipPay relayer, which only pays gas. Refuses locally — before signing — " +
+      "anything the vault would reject. Settles with sub-second finality.",
+    inputSchema: {
+      to: z.string().regex(/^0x[0-9a-fA-F]{40}$/).describe("Recipient (must be on the session allowlist)."),
+      amount: z.string().describe('USDC amount as a decimal string, e.g. "12.50".'),
+      orderId: z.string().optional().describe("Your order/invoice reference; emitted on-chain (hashed) for reconciliation."),
+    },
+  },
+  async ({ to, amount, orderId }) =>
+    run(async () => {
+      const { deps, cfg } = arcFromEnv();
+      return arcPay(deps, cfg, { to: to as `0x${string}`, amount, orderId });
+    }),
 );
 
 async function main() {
