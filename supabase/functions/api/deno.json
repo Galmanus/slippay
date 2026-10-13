@@ -4,13 +4,20 @@
     "hono/cors": "npm:hono@4.6.5/cors",
     "zod": "npm:zod@3.23.8",
     "supabase": "npm:@supabase/supabase-js@2.45.4",
-    "@slippay/shared": "../../../packages/shared/src/index.ts"
+    "@slippay/shared": "../../../packages/shared/src/index.ts",
+    "viem": "npm:viem@2.55.2",
+    "viem/": "npm:/viem@2.55.2/",
+    "@noble/post-quantum/": "npm:/@noble/post-quantum@0.7.1/",
+    "@slippay/arc-agent": "../../../packages/arc-agent/src/index.ts"
   },
   "tasks": {
     "test": "deno test --allow-all test/"
   },
   "compilerOptions": {
-    "lib": ["deno.window", "deno.unstable"],
+    "lib": [
+      "deno.window",
+      "deno.unstable"
+    ],
     "strict": true
   }
 }

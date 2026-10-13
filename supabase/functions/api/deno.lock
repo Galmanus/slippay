@@ -1,21 +1,74 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@noble/post-quantum@0.7.1": "0.7.1",
+    "npm:@stellar/stellar-sdk@*": "15.1.0",
     "npm:@stellar/stellar-sdk@13": "13.3.0",
     "npm:@stellar/stellar-sdk@15": "15.1.0",
     "npm:@supabase/supabase-js@2.45.4": "2.45.4",
     "npm:hono@4.6.5": "4.6.5",
+    "npm:viem@2.55.2": "2.55.2_zod@3.23.8",
     "npm:zod@3.23.8": "3.23.8"
   },
   "npm": {
+    "@adraffy/ens-normalize@1.11.1": {
+      "integrity": "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="
+    },
+    "@noble/ciphers@1.3.0": {
+      "integrity": "sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw=="
+    },
+    "@noble/ciphers@2.4.0": {
+      "integrity": "sha512-AnjFn0Jv92laAkvMrghlFZq4qQCIN/4DxFV/eooqtC2YTjB7kBeLMS2T9KJX4Dn+ZVXLOwK0lSgqDtx9gvxtiw=="
+    },
+    "@noble/curves@1.9.1": {
+      "integrity": "sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==",
+      "dependencies": [
+        "@noble/hashes@1.8.0"
+      ]
+    },
     "@noble/curves@1.9.7": {
       "integrity": "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==",
       "dependencies": [
-        "@noble/hashes"
+        "@noble/hashes@1.8.0"
+      ]
+    },
+    "@noble/curves@2.4.0": {
+      "integrity": "sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==",
+      "dependencies": [
+        "@noble/hashes@2.4.0"
       ]
     },
     "@noble/hashes@1.8.0": {
       "integrity": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="
+    },
+    "@noble/hashes@2.4.0": {
+      "integrity": "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA=="
+    },
+    "@noble/post-quantum@0.7.1": {
+      "integrity": "sha512-+P9981IiAnVh+rmcubozzVwrEy3XsN/tMhTnvsjV9VDaYpOnNCqWqKo2FLWxbu92YHfjGIlE5XnW175UK+ln+Q==",
+      "dependencies": [
+        "@noble/ciphers@2.4.0",
+        "@noble/curves@2.4.0",
+        "@noble/hashes@2.4.0"
+      ]
+    },
+    "@scure/base@1.2.6": {
+      "integrity": "sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg=="
+    },
+    "@scure/bip32@1.7.0": {
+      "integrity": "sha512-E4FFX/N3f4B80AKWp5dP6ow+flD1LQZo/w8UnLGYZO674jS6YnYeepycOOksv+vLPSpgN35wgKgy+ybfTb2SMw==",
+      "dependencies": [
+        "@noble/curves@1.9.7",
+        "@noble/hashes@1.8.0",
+        "@scure/base"
+      ]
+    },
+    "@scure/bip39@1.6.0": {
+      "integrity": "sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==",
+      "dependencies": [
+        "@noble/hashes@1.8.0",
+        "@scure/base"
+      ]
     },
     "@stellar/js-xdr@3.1.2": {
       "integrity": "sha512-VVolPL5goVEIsvuGqDc5uiKxV03lzfWdvYg1KikvwheDmTBO68CKDji3bAZ/kppZrx5iTA8z3Ld5yuytcvhvOQ=="
@@ -35,18 +88,20 @@
       ],
       "optionalDependencies": [
         "sodium-native"
-      ]
+      ],
+      "deprecated": true
     },
     "@stellar/stellar-base@15.0.0": {
       "integrity": "sha512-XQhxUr9BYiEcFcgc4oWcCMR9QJCny/GmmGsuwPKf/ieIcOeb5149KLHYx9mJCA0ea8QbucR2/GzV58QbXOTxQA==",
       "dependencies": [
-        "@noble/curves",
+        "@noble/curves@1.9.7",
         "@stellar/js-xdr@4.0.0",
         "base32.js",
         "bignumber.js",
         "buffer",
         "sha.js"
-      ]
+      ],
+      "deprecated": true
     },
     "@stellar/stellar-sdk@13.3.0": {
       "integrity": "sha512-8+GHcZLp+mdin8gSjcgfb/Lb6sSMYRX6Nf/0LcSJxvjLQR0XHpjGzOiRbYb2jSXo51EnA6kAV5j+4Pzh5OUKUg==",
@@ -139,6 +194,15 @@
       "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
       "dependencies": [
         "@types/node"
+      ]
+    },
+    "abitype@1.2.3_zod@3.23.8": {
+      "integrity": "sha512-Ofer5QUnuUdTFsBRwARMoWKOH1ND5ehwYhJ3OJ/BQO+StkwQjHw0XyVh4vDttzHB7QOFhPHa/o413PJ82gU/Tg==",
+      "dependencies": [
+        "zod"
+      ],
+      "optionalPeers": [
+        "zod"
       ]
     },
     "asynckit@0.4.0": {
@@ -262,6 +326,9 @@
         "hasown"
       ]
     },
+    "eventemitter3@5.0.1": {
+      "integrity": "sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA=="
+    },
     "eventsource@2.0.2": {
       "integrity": "sha512-IzUmBGPR3+oUG9dUeXynyNmf91/3zUSJg1lCktzKw47OXuhco54U3r9B7O4XX+Rb1Itm9OZ2b0RkTs10bICOxA=="
     },
@@ -363,6 +430,12 @@
     "isarray@2.0.5": {
       "integrity": "sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw=="
     },
+    "isows@1.0.7_ws@8.21.0": {
+      "integrity": "sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg==",
+      "dependencies": [
+        "ws"
+      ]
+    },
     "math-intrinsics@1.1.0": {
       "integrity": "sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g=="
     },
@@ -373,6 +446,19 @@
       "integrity": "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==",
       "dependencies": [
         "mime-db"
+      ]
+    },
+    "ox@0.14.30_zod@3.23.8": {
+      "integrity": "sha512-LI11uu+8iiM1B3CLckgd++YF1a0A2k5wDoM9ZeQMiL21BOzQs6L//BLS6hb1HSEKCyycdDIQLsVQx9MjpcC0hA==",
+      "dependencies": [
+        "@adraffy/ens-normalize",
+        "@noble/ciphers@1.3.0",
+        "@noble/curves@1.9.1",
+        "@noble/hashes@1.8.0",
+        "@scure/bip32",
+        "@scure/bip39",
+        "abitype",
+        "eventemitter3"
       ]
     },
     "possible-typed-array-names@1.1.0": {
@@ -453,6 +539,19 @@
     "urijs@1.19.11": {
       "integrity": "sha512-HXgFDgDommxn5/bIv0cnQZsPhHDA90NPHD6+c/v21U5+Sx5hoP8+dP9IZXBU1gIfvdRfhG8cel9QNPeionfcCQ=="
     },
+    "viem@2.55.2_zod@3.23.8": {
+      "integrity": "sha512-XlJeyNAZ96dQfOHlxLTK1FKgtWw/TtxENKNMBSBgxqALjiWiBWrFmSSzwwMivryKnBwkbt5E+90jSCLnVEilLA==",
+      "dependencies": [
+        "@noble/curves@1.9.1",
+        "@noble/hashes@1.8.0",
+        "@scure/bip32",
+        "@scure/bip39",
+        "abitype",
+        "isows",
+        "ox",
+        "ws"
+      ]
+    },
     "webidl-conversions@3.0.1": {
       "integrity": "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="
     },
@@ -475,8 +574,8 @@
         "has-tostringtag"
       ]
     },
-    "ws@8.20.0": {
-      "integrity": "sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA=="
+    "ws@8.21.0": {
+      "integrity": "sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g=="
     },
     "zod@3.23.8": {
       "integrity": "sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g=="
@@ -519,8 +618,10 @@
   },
   "workspace": {
     "dependencies": [
+      "npm:@noble/post-quantum@0.7.1",
       "npm:@supabase/supabase-js@2.45.4",
       "npm:hono@4.6.5",
+      "npm:viem@2.55.2",
       "npm:zod@3.23.8"
     ]
   }

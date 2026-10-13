@@ -14,6 +14,7 @@ import cofre from "./routes/cofre.ts";
 import ramp from "./routes/ramp.ts";
 import offramp from "./routes/offramp.ts";
 import fourp from "./routes/fourp.ts";
+import arc from "./routes/arc.ts";
 
 const api = new Hono().basePath("/api");
 api.use("*", errorMiddleware);
@@ -58,6 +59,8 @@ api.route("/v1/ramp", ramp);
 api.route("/v1/offramp", offramp);
 // 4P Finance ramp (on-ramp Pix->wallet; dormant until FOURP_API_KEY set).
 api.route("/v1/4p", fourp);
+// Arc (Circle L1): gas-sponsored relay of agent-signed AgentVault spends.
+api.route("/v1/arc", arc);
 
 const app = new Hono();
 app.route("/", api);
