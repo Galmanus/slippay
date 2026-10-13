@@ -51,7 +51,10 @@ contract AgentVaultTest is Test {
             expiresAt: 0,
             pqThreshold: 50e6,
             policyHash: keccak256("policy.ssl"),
-            allowRecipients: allow
+            allowRecipients: allow,
+            attesterX: bytes32(0),
+            attesterY: bytes32(0),
+            attestThreshold: type(uint128).max
         });
     }
 
@@ -88,7 +91,7 @@ contract AgentVaultTest is Test {
         bytes32 orderId = keccak256(abi.encode("order", nonce));
         bytes32 d = _digest(merchant, amount, nonce, deadline, orderId);
         bytes memory slh = withPq ? pq.fakeSign(abi.encodePacked(slhVk), abi.encodePacked(d)) : bytes("");
-        vault.spend(agent, merchant, amount, deadline, orderId, _ecdsa(agentPk, d), slh);
+        vault.spend(AgentVault.SpendRequest(agent, merchant, amount, deadline, orderId, _ecdsa(agentPk, d), slh, ""));
     }
 
     // ---------- constructor ----------
@@ -246,9 +249,9 @@ contract AgentVaultTest is Test {
         bytes32 orderId = keccak256("order-1");
         bytes32 d = _digest(merchant, 20e6, 0, deadline, orderId);
         vm.expectEmit(true, true, true, true, address(vault));
-        emit AgentVault.AgentSpend(agent, AGENT_ID, merchant, 20e6, orderId, 0, false);
+        emit AgentVault.AgentSpend(agent, AGENT_ID, merchant, 20e6, orderId, 0, false, false);
         vm.prank(stranger); // anyone can relay
-        vault.spend(agent, merchant, 20e6, deadline, orderId, _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 20e6, deadline, orderId, _ecdsa(agentPk, d), "", ""));
         assertEq(usdc.balanceOf(merchant), 20e6);
         assertEq(vault.getSession(agent).nonce, 1);
         assertEq(vault.getSession(agent).curSpent, 20e6);
@@ -259,7 +262,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 20e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.BadSignature.selector);
-        vault.spend(agent, merchant, 20e6, deadline, bytes32(0), _ecdsa(0xBAD, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 20e6, deadline, bytes32(0), _ecdsa(0xBAD, d), "", ""));
     }
 
     function test_spend_rejectsReplay() public {
@@ -267,9 +270,9 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 20e6, 0, deadline, bytes32(0));
         bytes memory sig = _ecdsa(agentPk, d);
-        vault.spend(agent, merchant, 20e6, deadline, bytes32(0), sig, "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 20e6, deadline, bytes32(0), sig, "", ""));
         vm.expectRevert(AgentVault.BadSignature.selector);
-        vault.spend(agent, merchant, 20e6, deadline, bytes32(0), sig, "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 20e6, deadline, bytes32(0), sig, "", ""));
     }
 
     function test_spend_rejectsHighS() public {
@@ -280,7 +283,7 @@ contract AgentVaultTest is Test {
         uint256 n = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141;
         bytes memory malleated = abi.encodePacked(r, bytes32(n - uint256(s)), v == 27 ? uint8(28) : uint8(27));
         vm.expectRevert(AgentVault.BadSignature.selector);
-        vault.spend(agent, merchant, 20e6, deadline, bytes32(0), malleated, "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 20e6, deadline, bytes32(0), malleated, "", ""));
     }
 
     function test_spend_rejectsExpiredDeadline() public {
@@ -288,7 +291,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp - 1);
         bytes32 d = _digest(merchant, 20e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.Expired.selector);
-        vault.spend(agent, merchant, 20e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 20e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_rejectsRecipientNotAllowlisted() public {
@@ -296,7 +299,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(stranger, 20e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.RecipientNotAllowed.selector);
-        vault.spend(agent, stranger, 20e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, stranger, 20e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_rejectsAbovePerTxCap() public {
@@ -305,7 +308,7 @@ contract AgentVaultTest is Test {
         bytes32 d = _digest(merchant, 100e6 + 1, 0, deadline, bytes32(0));
         bytes memory slh = pq.fakeSign(abi.encodePacked(slhVk), abi.encodePacked(d));
         vm.expectRevert(AgentVault.AmountExceedsCap.selector);
-        vault.spend(agent, merchant, 100e6 + 1, deadline, bytes32(0), _ecdsa(agentPk, d), slh);
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 100e6 + 1, deadline, bytes32(0), _ecdsa(agentPk, d), slh, ""));
     }
 
     function test_spend_rejectsZeroAmount() public {
@@ -313,14 +316,14 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 0, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.InvalidConfig.selector);
-        vault.spend(agent, merchant, 0, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 0, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_rejectsUnknownSession() public {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.NoSession.selector);
-        vault.spend(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_rejectsRevoked() public {
@@ -330,7 +333,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.SessionIsRevoked.selector);
-        vault.spend(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_rejectsExpiredSession() public {
@@ -342,7 +345,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.SessionExpired.selector);
-        vault.spend(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_blocklistedRecipientReverts() public {
@@ -351,7 +354,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1e6, 0, deadline, bytes32(0));
         vm.expectRevert(bytes("blocklisted"));
-        vault.spend(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
         assertEq(vault.getSession(agent).nonce, 0); // whole tx reverted, nonce not burned
     }
 
@@ -362,7 +365,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 60e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.BadPqSignature.selector);
-        vault.spend(agent, merchant, 60e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 60e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_spend_aboveThreshold_rejectsWrongPq() public {
@@ -371,7 +374,7 @@ contract AgentVaultTest is Test {
         bytes32 d = _digest(merchant, 60e6, 0, deadline, bytes32(0));
         bytes memory wrong = pq.fakeSign(abi.encodePacked(slhVk), abi.encodePacked(keccak256("other")));
         vm.expectRevert(AgentVault.BadPqSignature.selector);
-        vault.spend(agent, merchant, 60e6, deadline, bytes32(0), _ecdsa(agentPk, d), wrong);
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 60e6, deadline, bytes32(0), _ecdsa(agentPk, d), wrong, ""));
     }
 
     function test_spend_aboveThreshold_hybridPasses() public {
@@ -381,8 +384,8 @@ contract AgentVaultTest is Test {
         bytes32 d = _digest(merchant, 60e6, 0, deadline, orderId);
         bytes memory slh = pq.fakeSign(abi.encodePacked(slhVk), abi.encodePacked(d));
         vm.expectEmit(true, true, true, true, address(vault));
-        emit AgentVault.AgentSpend(agent, AGENT_ID, merchant, 60e6, orderId, 0, true);
-        vault.spend(agent, merchant, 60e6, deadline, orderId, _ecdsa(agentPk, d), slh);
+        emit AgentVault.AgentSpend(agent, AGENT_ID, merchant, 60e6, orderId, 0, true, false);
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 60e6, deadline, orderId, _ecdsa(agentPk, d), slh, ""));
         assertEq(usdc.balanceOf(merchant), 60e6);
     }
 
@@ -392,7 +395,7 @@ contract AgentVaultTest is Test {
         bytes32 d = _digest(merchant, 60e6, 0, deadline, bytes32(0));
         bytes memory slh = pq.fakeSign(abi.encodePacked(slhVk), abi.encodePacked(d));
         vm.expectRevert(AgentVault.BadSignature.selector);
-        vault.spend(agent, merchant, 60e6, deadline, bytes32(0), _ecdsa(0xBAD, d), slh);
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 60e6, deadline, bytes32(0), _ecdsa(0xBAD, d), slh, ""));
     }
 
     function test_spend_pqThresholdZero_everySpendIsPq() public {
@@ -403,7 +406,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.BadPqSignature.selector);
-        vault.spend(agent, merchant, 1, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     // ---------- spending window ----------
@@ -416,7 +419,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1e6, 3, deadline, bytes32(0));
         vm.expectRevert(AgentVault.WindowCapExceeded.selector);
-        vault.spend(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_window_previousEpochDecaysLinearly() public {
@@ -430,7 +433,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 1, 4, deadline, bytes32(0));
         vm.expectRevert(AgentVault.WindowCapExceeded.selector); // 300 + 0.000001 > 300
-        vault.spend(agent, merchant, 1, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 1, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     function test_window_fullyDecaysAfterTwoWindows() public {
@@ -462,7 +465,7 @@ contract AgentVaultTest is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 d = _digest(merchant, 10e6, 0, deadline, bytes32(0));
         vm.expectRevert(AgentVault.WindowCapExceeded.selector); // 600 + 0 + 10 > 2 * 300
-        vault.spend(agent, merchant, 10e6, deadline, bytes32(0), _ecdsa(agentPk, d), "");
+        vault.spend(AgentVault.SpendRequest(agent, merchant, 10e6, deadline, bytes32(0), _ecdsa(agentPk, d), "", ""));
     }
 
     /// Property (N-A3 port): whatever the timing and amounts, spend inside ANY real
@@ -481,7 +484,7 @@ contract AgentVaultTest is Test {
             uint64 deadline = uint64(block.timestamp + 300);
             bytes32 d = _digest(merchant, amount, nonce, deadline, bytes32(0));
             bytes memory slh = pq.fakeSign(abi.encodePacked(slhVk), abi.encodePacked(d));
-            try vault.spend(agent, merchant, amount, deadline, bytes32(0), _ecdsa(agentPk, d), slh) {
+            try vault.spend(AgentVault.SpendRequest(agent, merchant, amount, deadline, bytes32(0), _ecdsa(agentPk, d), slh, "")) {
                 ts[k] = block.timestamp;
                 paid[k] = amount;
                 k++;
@@ -495,6 +498,103 @@ contract AgentVaultTest is Test {
             }
             assertLe(sum, 2 * 300e6);
         }
+    }
+
+    // ---------- integrity attester (AIA, P-256) ----------
+
+    uint256 constant ATTESTER_PK = 0xA77E5;
+
+    function _cfgAttested() internal view returns (AgentVault.SessionConfig memory c) {
+        c = _cfg();
+        (uint256 x, uint256 y) = vm.publicKeyP256(ATTESTER_PK);
+        c.attesterX = bytes32(x);
+        c.attesterY = bytes32(y);
+        c.attestThreshold = 10e6; // spends above 10 USDC need a fresh attestation
+    }
+
+    function _aiaHash(bytes32 digest) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(keccak256("SlippayAIA.arc.v1"), digest));
+    }
+
+    function _attest(uint256 pk, bytes32 digest) internal pure returns (bytes memory) {
+        (bytes32 r, bytes32 s) = vm.signP256(pk, _aiaHash(digest));
+        return abi.encodePacked(r, s);
+    }
+
+    function _spendAttested(uint256 amount, bytes memory attestation) internal {
+        uint64 deadline = uint64(block.timestamp + 300);
+        bytes32 d = _digest(merchant, amount, 0, deadline, keccak256("aia"));
+        vault.spend(
+            AgentVault.SpendRequest(agent, merchant, amount, deadline, keccak256("aia"), _ecdsa(agentPk, d), "", attestation)
+        );
+    }
+
+    function test_attestationHash_isDomainSeparatedDigest() public view {
+        bytes32 d = keccak256("some spend digest");
+        assertEq(vault.attestationHash(d), _aiaHash(d));
+    }
+
+    function test_install_rejectsGateWithoutAttesterKey() public {
+        AgentVault.SessionConfig memory c = _cfgAttested();
+        c.attesterX = bytes32(0);
+        _expectInstallRevert(c, AgentVault.InvalidConfig.selector);
+    }
+
+    function test_install_emitsAttesterBound() public {
+        AgentVault.SessionConfig memory c = _cfgAttested();
+        vm.expectEmit(true, false, false, true, address(vault));
+        emit AgentVault.AttesterBound(agent, c.attesterX, c.attesterY, 10e6);
+        vm.prank(owner);
+        vault.installSession(agent, c);
+    }
+
+    function test_attest_requiredAboveThreshold() public {
+        vm.prank(owner);
+        vault.installSession(agent, _cfgAttested());
+        vm.expectRevert(AgentVault.BadAttestation.selector);
+        _spendAttested(20e6, "");
+    }
+
+    function test_attest_rejectsSignatureOverAnotherSpend() public {
+        vm.prank(owner);
+        vault.installSession(agent, _cfgAttested());
+        bytes memory other = _attest(ATTESTER_PK, keccak256("a different spend"));
+        vm.expectRevert(AgentVault.BadAttestation.selector);
+        _spendAttested(20e6, other);
+    }
+
+    function test_attest_rejectsSignatureFromAnotherKey() public {
+        vm.prank(owner);
+        vault.installSession(agent, _cfgAttested());
+        uint64 deadline = uint64(block.timestamp + 300);
+        bytes32 d = _digest(merchant, 20e6, 0, deadline, keccak256("aia"));
+        vm.expectRevert(AgentVault.BadAttestation.selector);
+        _spendAttested(20e6, _attest(0xBAD5, d));
+    }
+
+    function test_attest_rejectsMalformedLength() public {
+        vm.prank(owner);
+        vault.installSession(agent, _cfgAttested());
+        vm.expectRevert(AgentVault.BadAttestation.selector);
+        _spendAttested(20e6, hex"1234");
+    }
+
+    function test_attest_validAttestationSettlesAndIsFlagged() public {
+        vm.prank(owner);
+        vault.installSession(agent, _cfgAttested());
+        uint64 deadline = uint64(block.timestamp + 300);
+        bytes32 d = _digest(merchant, 20e6, 0, deadline, keccak256("aia"));
+        vm.expectEmit(true, true, true, true, address(vault));
+        emit AgentVault.AgentSpend(agent, AGENT_ID, merchant, 20e6, keccak256("aia"), 0, false, true);
+        _spendAttested(20e6, _attest(ATTESTER_PK, d));
+        assertEq(usdc.balanceOf(merchant), 20e6);
+    }
+
+    function test_attest_notNeededAtOrBelowThreshold() public {
+        vm.prank(owner);
+        vault.installSession(agent, _cfgAttested());
+        _spendAttested(10e6, "");
+        assertEq(usdc.balanceOf(merchant), 10e6);
     }
 
     // ---------- owner ops ----------

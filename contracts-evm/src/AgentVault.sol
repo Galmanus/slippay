@@ -25,6 +25,11 @@ contract AgentVault {
         uint128 pqThreshold;
         bytes32 policyHash;
         address[] allowRecipients;
+        /// P-256 public key of the integrity attester (AIA). Required when attestThreshold < max.
+        bytes32 attesterX;
+        bytes32 attesterY;
+        /// Spends above this need a fresh attester signature. type(uint128).max = never.
+        uint128 attestThreshold;
     }
 
     struct Session {
@@ -42,6 +47,9 @@ contract AgentVault {
         uint64 nonce;
         bool revoked;
         bool exists;
+        bytes32 attesterX;
+        bytes32 attesterY;
+        uint128 attestThreshold;
     }
 
     error NotOwner();
@@ -59,6 +67,7 @@ contract AgentVault {
     error WindowCapExceeded();
     error BadSignature();
     error BadPqSignature();
+    error BadAttestation();
     error TransferFailed();
 
     event SessionInstalled(
@@ -80,12 +89,18 @@ contract AgentVault {
         uint256 amount,
         bytes32 orderId,
         uint64 nonce,
-        bool pq
+        bool pq,
+        bool attested
     );
+    event AttesterBound(address indexed agentSigner, bytes32 attesterX, bytes32 attesterY, uint128 attestThreshold);
     event Withdrawn(address indexed to, uint256 amount);
 
     /// Arc PQ precompile (SLH-DSA-SHA2-128s verify), live on mainnet and testnet.
     address public constant PQ_PRECOMPILE = 0x1800000000000000000000000000000000000004;
+    /// P-256 verify precompile (EIP-7951, Osaka) — used for integrity-attester signatures.
+    address public constant P256_PRECOMPILE = 0x0000000000000000000000000000000000000100;
+    /// Domain tag so an attester signature can only ever mean "this AgentVault spend is clean".
+    bytes32 public constant AIA_DOMAIN = keccak256("SlippayAIA.arc.v1");
     /// window_cap <= per_tx_cap * 100 (Soroban SECURITY_AUDIT A2.3).
     uint256 public constant MAX_WINDOW_MULTIPLIER = 100;
     uint64 public constant MIN_WINDOW_SECONDS = 60;
@@ -141,6 +156,8 @@ contract AgentVault {
         if (c.windowSeconds < MIN_WINDOW_SECONDS) revert InvalidConfig();
         if (c.expiresAt != 0 && c.expiresAt <= block.timestamp) revert InvalidConfig();
         if (c.pqThreshold != type(uint128).max && c.slhVk == bytes32(0)) revert InvalidConfig();
+        bool gated = c.attestThreshold != type(uint128).max;
+        if (gated && (c.attesterX == bytes32(0) || c.attesterY == bytes32(0))) revert InvalidConfig();
         if (c.allowRecipients.length == 0) revert EmptyAllowlist();
 
         if (address(identity) != address(0)) {
@@ -171,7 +188,10 @@ contract AgentVault {
             epochStart: uint64(block.timestamp),
             nonce: 0,
             revoked: false,
-            exists: true
+            exists: true,
+            attesterX: c.attesterX,
+            attesterY: c.attesterY,
+            attestThreshold: c.attestThreshold
         });
 
         emit SessionInstalled(
@@ -185,6 +205,7 @@ contract AgentVault {
             c.pqThreshold,
             c.policyHash
         );
+        if (gated) emit AttesterBound(agentSigner, c.attesterX, c.attesterY, c.attestThreshold);
     }
 
     function revokeSession(address agentSigner) external onlyOwner {
@@ -201,40 +222,52 @@ contract AgentVault {
 
     // ------------------------------------------------------------------ agent
 
+    /// One agent-signed spend. ecdsaSig: 65-byte secp256k1 signature by agentSigner over
+    /// spendDigest(...). slhSig: 7856-byte SLH-DSA-SHA2-128s signature over the same digest, required
+    /// only when amount > pqThreshold. attestation: 64-byte P-256 (r,s) by the session's integrity
+    /// attester over attestationHash(digest), required only when amount > attestThreshold.
+    struct SpendRequest {
+        address agentSigner;
+        address to;
+        uint256 amount;
+        uint64 deadline;
+        bytes32 orderId;
+        bytes ecdsaSig;
+        bytes slhSig;
+        bytes attestation;
+    }
+
     /// @notice Execute an agent-signed spend. Callable by anyone (relayer pays gas).
-    /// @param ecdsaSig 65-byte secp256k1 signature by `agentSigner` over spendDigest(...).
-    /// @param slhSig   7856-byte SLH-DSA-SHA2-128s signature over the same digest; required only
-    ///                 when amount > the session's pqThreshold, ignored otherwise.
-    function spend(
-        address agentSigner,
-        address to,
-        uint256 amount,
-        uint64 deadline,
-        bytes32 orderId,
-        bytes calldata ecdsaSig,
-        bytes calldata slhSig
-    ) external {
-        Session storage s = sessions[agentSigner];
+    function spend(SpendRequest calldata r) external {
+        Session storage s = sessions[r.agentSigner];
+        (uint64 nonce, bool pq, bool attested) = _authorize(s, r);
+        _consumeWindow(s, r.amount);
+        s.nonce = nonce + 1;
+        emit AgentSpend(r.agentSigner, s.agentId, r.to, r.amount, r.orderId, nonce, pq, attested);
+        _pay(r.to, r.amount);
+    }
+
+    function _authorize(Session storage s, SpendRequest calldata r)
+        internal
+        view
+        returns (uint64 nonce, bool pq, bool attested)
+    {
         if (!s.exists) revert NoSession();
         if (s.revoked) revert SessionIsRevoked();
         if (s.expiresAt != 0 && block.timestamp >= s.expiresAt) revert SessionExpired();
-        if (block.timestamp > deadline) revert Expired();
-        if (amount == 0) revert InvalidConfig();
-        if (amount > s.perTxCap) revert AmountExceedsCap();
-        if (!allowed[agentSigner][to]) revert RecipientNotAllowed();
+        if (block.timestamp > r.deadline) revert Expired();
+        if (r.amount == 0) revert InvalidConfig();
+        if (r.amount > s.perTxCap) revert AmountExceedsCap();
+        if (!allowed[r.agentSigner][r.to]) revert RecipientNotAllowed();
 
-        uint64 nonce = s.nonce;
-        bytes32 digest = spendDigest(agentSigner, to, amount, nonce, deadline, orderId);
-        if (_recover(digest, ecdsaSig) != agentSigner) revert BadSignature();
+        nonce = s.nonce;
+        bytes32 digest = spendDigest(r.agentSigner, r.to, r.amount, nonce, r.deadline, r.orderId);
+        if (_recover(digest, r.ecdsaSig) != r.agentSigner) revert BadSignature();
 
-        bool pq = amount > s.pqThreshold;
-        if (pq && !_verifySlh(s.slhVk, digest, slhSig)) revert BadPqSignature();
-
-        _consumeWindow(s, amount);
-        s.nonce = nonce + 1;
-
-        emit AgentSpend(agentSigner, s.agentId, to, amount, orderId, nonce, pq);
-        _pay(to, amount);
+        pq = r.amount > s.pqThreshold;
+        if (pq && !_verifySlh(s.slhVk, digest, r.slhSig)) revert BadPqSignature();
+        attested = r.amount > s.attestThreshold;
+        if (attested && !_verifyAttestation(s.attesterX, s.attesterY, digest, r.attestation)) revert BadAttestation();
     }
 
     // ------------------------------------------------------------------ views
@@ -249,6 +282,13 @@ contract AgentVault {
     ) public view returns (bytes32) {
         bytes32 structHash = keccak256(abi.encode(SPEND_TYPEHASH, agentSigner, to, amount, nonce, deadline, orderId));
         return keccak256(abi.encodePacked("\x19\x01", domainSeparator(), structHash));
+    }
+
+    /// What the integrity attester signs (P-256) to clear one specific spend. The spend digest
+    /// already binds vault, chain, recipient, amount, nonce and deadline, so an attestation is
+    /// single-use and expires with the intent.
+    function attestationHash(bytes32 digest) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(AIA_DOMAIN, digest));
     }
 
     function domainSeparator() public view returns (bytes32) {
@@ -305,6 +345,17 @@ contract AgentVault {
             abi.encodeCall(IArcPQ.verifySlhDsaSha2128s, (abi.encodePacked(vk), abi.encodePacked(digest), sig))
         );
         return ok && ret.length == 32 && abi.decode(ret, (bool));
+    }
+
+    function _verifyAttestation(bytes32 x, bytes32 y, bytes32 digest, bytes calldata sig)
+        internal
+        view
+        returns (bool)
+    {
+        if (sig.length != 64) return false;
+        (bool ok, bytes memory ret) =
+            P256_PRECOMPILE.staticcall(abi.encodePacked(attestationHash(digest), sig[0:32], sig[32:64], x, y));
+        return ok && ret.length == 32 && uint256(bytes32(ret)) == 1;
     }
 
     function _pay(address to, uint256 amount) internal {

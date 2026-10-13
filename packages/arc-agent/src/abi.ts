@@ -2,6 +2,19 @@
 export const agentVaultAbi = [
   {
     "type": "function",
+    "name": "AIA_DOMAIN",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "MAX_WINDOW_MULTIPLIER",
     "inputs": [],
     "outputs": [
@@ -22,6 +35,19 @@ export const agentVaultAbi = [
         "name": "",
         "type": "uint64",
         "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "P256_PRECOMPILE",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "view"
@@ -51,6 +77,25 @@ export const agentVaultAbi = [
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "attestationHash",
+    "inputs": [
+      {
+        "name": "digest",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "pure"
   },
   {
     "type": "function",
@@ -150,6 +195,21 @@ export const agentVaultAbi = [
             "name": "exists",
             "type": "bool",
             "internalType": "bool"
+          },
+          {
+            "name": "attesterX",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "attesterY",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "attestThreshold",
+            "type": "uint128",
+            "internalType": "uint128"
           }
         ]
       }
@@ -227,6 +287,21 @@ export const agentVaultAbi = [
             "name": "allowRecipients",
             "type": "address[]",
             "internalType": "address[]"
+          },
+          {
+            "name": "attesterX",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "attesterY",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "attestThreshold",
+            "type": "uint128",
+            "internalType": "uint128"
           }
         ]
       }
@@ -302,39 +377,51 @@ export const agentVaultAbi = [
     "name": "spend",
     "inputs": [
       {
-        "name": "agentSigner",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "to",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "amount",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "deadline",
-        "type": "uint64",
-        "internalType": "uint64"
-      },
-      {
-        "name": "orderId",
-        "type": "bytes32",
-        "internalType": "bytes32"
-      },
-      {
-        "name": "ecdsaSig",
-        "type": "bytes",
-        "internalType": "bytes"
-      },
-      {
-        "name": "slhSig",
-        "type": "bytes",
-        "internalType": "bytes"
+        "name": "r",
+        "type": "tuple",
+        "internalType": "struct AgentVault.SpendRequest",
+        "components": [
+          {
+            "name": "agentSigner",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "to",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "amount",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "deadline",
+            "type": "uint64",
+            "internalType": "uint64"
+          },
+          {
+            "name": "orderId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "ecdsaSig",
+            "type": "bytes",
+            "internalType": "bytes"
+          },
+          {
+            "name": "slhSig",
+            "type": "bytes",
+            "internalType": "bytes"
+          },
+          {
+            "name": "attestation",
+            "type": "bytes",
+            "internalType": "bytes"
+          }
+        ]
       }
     ],
     "outputs": [],
@@ -460,6 +547,43 @@ export const agentVaultAbi = [
         "type": "bool",
         "indexed": false,
         "internalType": "bool"
+      },
+      {
+        "name": "attested",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AttesterBound",
+    "inputs": [
+      {
+        "name": "agentSigner",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "attesterX",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "attesterY",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "attestThreshold",
+        "type": "uint128",
+        "indexed": false,
+        "internalType": "uint128"
       }
     ],
     "anonymous": false
@@ -560,6 +684,11 @@ export const agentVaultAbi = [
   {
     "type": "error",
     "name": "AmountExceedsCap",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "BadAttestation",
     "inputs": []
   },
   {

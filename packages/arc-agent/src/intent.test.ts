@@ -3,7 +3,7 @@ import { decodeFunctionData, keccak256, recoverAddress, stringToHex, type Addres
 import { privateKeyToAccount } from "viem/accounts";
 import { slh_dsa_sha2_128s } from "@noble/post-quantum/slh-dsa.js";
 import { agentVaultAbi } from "./abi.ts";
-import { encodeSpendCall, signSpend, slhKeygen, spendDigest, type SpendIntent } from "./intent.ts";
+import { attestationHash, encodeSpendCall, signSpend, slhKeygen, spendDigest, type SpendIntent } from "./intent.ts";
 
 // Same inputs as contracts-evm/test/DigestVector.t.sol — the Solidity contract is the source of truth.
 const VAULT: Address = "0x0000000000000000000000000000000000a6E57a";
@@ -67,19 +67,34 @@ describe("signSpend", () => {
   }, 30_000);
 });
 
+describe("attestationHash", () => {
+  it("matches AgentVault.attestationHash for the shared vector", () => {
+    expect(attestationHash(CONTRACT_DIGEST)).toBe("0xbf14908c0ed47b67620581006a48130915e3776e33c006d45552abce5d4a7254");
+  });
+});
+
 describe("encodeSpendCall", () => {
-  it("encodes AgentVault.spend with the intent and signatures", () => {
-    const data = encodeSpendCall(VECTOR, { ecdsaSig: "0x1234", slhSig: "0x" });
+  it("encodes AgentVault.spend(SpendRequest) with signatures and attestation", () => {
+    const data = encodeSpendCall(VECTOR, { ecdsaSig: "0x1234", slhSig: "0x", attestation: "0xabcd" });
     const decoded = decodeFunctionData({ abi: agentVaultAbi, data });
     expect(decoded.functionName).toBe("spend");
     expect(decoded.args).toEqual([
-      VECTOR.agentSigner,
-      VECTOR.to,
-      VECTOR.amount,
-      VECTOR.deadline,
-      VECTOR.orderId,
-      "0x1234",
-      "0x",
+      {
+        agentSigner: VECTOR.agentSigner,
+        to: VECTOR.to,
+        amount: VECTOR.amount,
+        deadline: VECTOR.deadline,
+        orderId: VECTOR.orderId,
+        ecdsaSig: "0x1234",
+        slhSig: "0x",
+        attestation: "0xabcd",
+      },
     ]);
+  });
+
+  it("defaults to an empty attestation", () => {
+    const data = encodeSpendCall(VECTOR, { ecdsaSig: "0x1234", slhSig: "0x" });
+    const decoded = decodeFunctionData({ abi: agentVaultAbi, data });
+    expect((decoded.args![0] as { attestation: string }).attestation).toBe("0x");
   });
 });

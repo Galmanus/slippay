@@ -117,7 +117,7 @@ function velocityDeviation(action, surface, now) {
   if (hits.length >= max) return `velocity: ${hits.length} charges in ${win}s exceeds committed ${max} — possible runaway/compromised agent`;
   return null;
 }
-function noteCharge(agentId, now) {
+export function noteCharge(agentId, now) {
   const arr = (recent.get(agentId) ?? []).filter((t) => now - t < 86400);
   arr.push(now); recent.set(agentId, arr);
 }

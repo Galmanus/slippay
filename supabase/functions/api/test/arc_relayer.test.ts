@@ -58,7 +58,7 @@ Deno.test("arc relayer: rejects a vault that is not pinned", async () => {
 
 Deno.test("arc relayer: rejects malformed signatures and addresses", async () => {
   const { rpc } = fakeRpc();
-  for (const bad of [{ ecdsaSig: "0x1234" }, { slhSig: "0x" + "00".repeat(100) }, { to: "0xnope" }, { amount: "-1" }, { orderId: "0x12" }]) {
+  for (const bad of [{ ecdsaSig: "0x1234" }, { slhSig: "0x" + "00".repeat(100) }, { to: "0xnope" }, { amount: "-1" }, { orderId: "0x12" }, { attestation: "0x" + "00".repeat(10) }]) {
     const e = await assertRejects(() => relaySpend(body(bad), { rpc, ...policy }), RelayError);
     assertEquals(e.code, "invalid_request");
   }
@@ -68,6 +68,20 @@ Deno.test("arc relayer: accepts a 7856-byte SLH-DSA signature", async () => {
   const { rpc, sent } = fakeRpc();
   await relaySpend(body({ slhSig: "0x" + "ee".repeat(7856) }), { rpc, ...policy });
   assertEquals(sent.length, 1);
+});
+
+Deno.test("arc relayer: forwards a 64-byte P-256 integrity attestation into the calldata", async () => {
+  const { rpc, sent } = fakeRpc();
+  const attestation = `0x${"aa".repeat(64)}` as Hex;
+  const b = body({ attestation });
+  await relaySpend(b, { rpc, ...policy });
+  assertEquals(
+    sent[0]!.data,
+    encodeSpendCall(
+      { agentSigner: AGENT, to: TO, amount: 1_000_000n, nonce: 0n, deadline: BigInt(b.deadline as string), orderId: ORDER },
+      { ecdsaSig: ECDSA, slhSig: "0x", attestation },
+    ),
+  );
 });
 
 Deno.test("arc relayer: rejects an expired deadline without touching the chain", async () => {

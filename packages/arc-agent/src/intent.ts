@@ -1,4 +1,7 @@
-import { encodeFunctionData, hashTypedData, hexToBytes, toHex, type Address, type Hex, type LocalAccount } from "viem";
+import {
+  concatHex, encodeFunctionData, hashTypedData, hexToBytes, keccak256, stringToHex, toHex,
+  type Address, type Hex, type LocalAccount,
+} from "viem";
 import { slh_dsa_sha2_128s } from "@noble/post-quantum/slh-dsa.js";
 import { agentVaultAbi } from "./abi.ts";
 
@@ -77,11 +80,32 @@ export async function signSpend(p: {
   return { digest, ecdsaSig, slhSig, pq };
 }
 
-/** Calldata for AgentVault.spend — submit from any relayer EOA (gas is paid in USDC on Arc). */
-export function encodeSpendCall(intent: SpendIntent, sigs: { ecdsaSig: Hex; slhSig: Hex }): Hex {
+const AIA_DOMAIN = keccak256(stringToHex("SlippayAIA.arc.v1"));
+
+/** What the integrity attester signs with P-256 to clear one spend (AgentVault.attestationHash). */
+export function attestationHash(digest: Hex): Hex {
+  return keccak256(concatHex([AIA_DOMAIN, digest]));
+}
+
+/** Calldata for AgentVault.spend(SpendRequest) — submit from any relayer EOA (gas is paid in USDC on Arc). */
+export function encodeSpendCall(
+  intent: SpendIntent,
+  sigs: { ecdsaSig: Hex; slhSig: Hex; attestation?: Hex },
+): Hex {
   return encodeFunctionData({
     abi: agentVaultAbi,
     functionName: "spend",
-    args: [intent.agentSigner, intent.to, intent.amount, intent.deadline, intent.orderId, sigs.ecdsaSig, sigs.slhSig],
+    args: [
+      {
+        agentSigner: intent.agentSigner,
+        to: intent.to,
+        amount: intent.amount,
+        deadline: intent.deadline,
+        orderId: intent.orderId,
+        ecdsaSig: sigs.ecdsaSig,
+        slhSig: sigs.slhSig,
+        attestation: sigs.attestation ?? "0x",
+      },
+    ],
   });
 }

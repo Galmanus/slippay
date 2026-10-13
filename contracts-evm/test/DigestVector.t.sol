@@ -11,6 +11,8 @@ contract DigestVectorTest is Test {
     address constant TO = 0x000000000000000000000000000000000000bEEF;
     uint256 constant AGENT_PK = 0xA11CE;
     bytes32 constant EXPECTED = 0xf450939119bd18f8cbd5790121d3b1eb191e0bf0d97be1cb5d1e8a96ec37c9a8;
+    /// keccak256(keccak256("SlippayAIA.arc.v1") || EXPECTED) — what the P-256 attester signs.
+    bytes32 constant EXPECTED_AIA = 0xbf14908c0ed47b67620581006a48130915e3776e33c006d45552abce5d4a7254;
 
     function test_vector_arcTestnet() public {
         vm.chainId(5042002);
@@ -25,5 +27,6 @@ contract DigestVectorTest is Test {
         console2.log("agent", vm.addr(AGENT_PK));
         console2.logBytes32(d);
         assertEq(d, EXPECTED);
+        assertEq(AgentVault(payable(VAULT)).attestationHash(d), EXPECTED_AIA);
     }
 }

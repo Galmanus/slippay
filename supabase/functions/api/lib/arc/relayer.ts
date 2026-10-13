@@ -50,6 +50,8 @@ const SpendRequest = z.object({
   orderId: hexBytes(32),
   ecdsaSig: hexBytes(65),
   slhSig: z.union([z.literal("0x"), hexBytes(SLH_SIG_BYTES)]),
+  /** P-256 (r‖s) integrity attestation; required by the vault above the session's attestThreshold. */
+  attestation: z.union([z.literal("0x"), hexBytes(64)]).default("0x"),
 });
 
 export async function relaySpend(body: unknown, p: RelayPolicy): Promise<RelayResult> {
@@ -72,7 +74,7 @@ export async function relaySpend(body: unknown, p: RelayPolicy): Promise<RelayRe
       deadline: r.deadline,
       orderId: r.orderId as Hex,
     },
-    { ecdsaSig: r.ecdsaSig as Hex, slhSig: r.slhSig as Hex },
+    { ecdsaSig: r.ecdsaSig as Hex, slhSig: r.slhSig as Hex, attestation: r.attestation as Hex },
   );
 
   try {

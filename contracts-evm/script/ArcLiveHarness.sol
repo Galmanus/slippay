@@ -67,7 +67,7 @@ contract ArcLiveHarness {
         uint256 before = IERC20Min(USDC).balanceOf(input.merchant);
 
         uint256 g = gasleft();
-        v.spend(input.agentSigner, input.merchant, SMALL, input.deadline, ORDER_SMALL, input.ecdsaSmall, "");
+        v.spend(AgentVault.SpendRequest(input.agentSigner, input.merchant, SMALL, input.deadline, ORDER_SMALL, input.ecdsaSmall, "", ""));
         r.gasClassicalSpend = g - gasleft();
 
         r.pqMissingRejected = _rejectedWithBadPq(v, input, "");
@@ -76,7 +76,7 @@ contract ArcLiveHarness {
         r.pqTamperedRejected = _rejectedWithBadPq(v, input, tampered);
 
         g = gasleft();
-        try v.spend(input.agentSigner, input.merchant, BIG, input.deadline, ORDER_BIG, input.ecdsaBig, input.slhBig) {
+        try v.spend(AgentVault.SpendRequest(input.agentSigner, input.merchant, BIG, input.deadline, ORDER_BIG, input.ecdsaBig, input.slhBig, "")) {
             r.pqValidAccepted = true;
         } catch {}
         r.gasPqSpend = g - gasleft();
@@ -99,7 +99,10 @@ contract ArcLiveHarness {
                 expiresAt: 0,
                 pqThreshold: 5e6,
                 policyHash: keccak256("live-check"),
-                allowRecipients: allow
+                allowRecipients: allow,
+                attesterX: bytes32(0),
+                attesterY: bytes32(0),
+                attestThreshold: type(uint128).max
             })
         );
     }
@@ -108,7 +111,7 @@ contract ArcLiveHarness {
         internal
         returns (bool)
     {
-        try v.spend(input.agentSigner, input.merchant, BIG, input.deadline, ORDER_BIG, input.ecdsaBig, slhSig) {
+        try v.spend(AgentVault.SpendRequest(input.agentSigner, input.merchant, BIG, input.deadline, ORDER_BIG, input.ecdsaBig, slhSig, "")) {
             return false;
         } catch (bytes memory err) {
             return bytes4(err) == AgentVault.BadPqSignature.selector;
