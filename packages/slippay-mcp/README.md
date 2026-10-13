@@ -63,6 +63,18 @@ hatch and no setup verbs.
 | `slippay_approve` | no | yes | Approve the contract as a SEP-41 spender up to a capped, expiring allowance. Arms autonomous debit. |
 | `slippay_autocharge` | no | yes | Trigger an autonomous charge via the standing allowance, no attestation. Submittable by any relayer. |
 | `slippay_arm_gate` | no | yes | Bind an ed25519 attester public key to a subscription (`set_attester`). |
+| `slippay_arc_session` | yes | yes | Arc: read this agent's AgentVault session — caps, remaining window budget, post-quantum threshold, expiry, ERC-8004 agent id. No transaction. |
+| `slippay_arc_pay` | yes | yes | Arc: pay USDC from the AgentVault inside its on-chain bounds. Signs locally (ECDSA, plus SLH-DSA above the PQ threshold) and sends the intent to the SlipPay relayer, which pays gas only. |
+
+### Arc rail
+
+`contracts-evm/src/AgentVault.sol` enforces the bound on Arc (Circle's L1): per-tx cap, sliding
+window, recipient allowlist, expiry, revocation, and an SLH-DSA-SHA2-128s signature (Arc
+precompile) above the session's threshold. Env: `SLIPPAY_ARC_VAULT`, `SLIPPAY_ARC_AGENT_KEY`,
+`SLIPPAY_ARC_SLH_SECRET` (needed only above the threshold), `SLIPPAY_ARC_NETWORK`
+(`testnet`|`mainnet`), `SLIPPAY_ARC_RELAYER_URL`, `SLIPPAY_ARC_RPC_URL`.
+`scripts/arc-e2e-testnet.mjs` runs the whole flow (deploy, ERC-8004 identity, fund, session,
+classical + post-quantum spend) from one funded testnet key.
 
 The membrane is a surface restriction enforced by this server process, not a
 chain-level guarantee. The hard guarantee for attested charges is the contract's
