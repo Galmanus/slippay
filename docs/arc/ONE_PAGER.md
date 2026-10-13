@@ -1,7 +1,10 @@
 # Slippay on Arc — one-pager
 
 **Arc Acceleration Season · Deliverable 1 · 2026-10-13**
-Founder: Manuel Guilherme Galmanus · Repository: https://github.com/Galmanus/slippay (Arc work on branch `feat/arc-agent-vault`)
+
+Team: Manuel Guilherme (founder, engineering) · Mário Ferreira (commercial)
+
+Repository: https://github.com/Galmanus/slippay (Arc work on branch `feat/arc-agent-vault`)
 
 ## What Slippay is
 
