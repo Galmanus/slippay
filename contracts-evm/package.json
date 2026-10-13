@@ -1,0 +1,13 @@
+{
+  "name": "@slippay/contracts-evm",
+  "private": true,
+  "type": "module",
+  "description": "Slippay EVM contracts for Arc (AgentVault: bounded agent spending, hybrid ECDSA + SLH-DSA)",
+  "scripts": {
+    "test": "forge test",
+    "live-check": "forge build && node script/live-check.mjs"
+  },
+  "dependencies": {
+    "@noble/post-quantum": "0.7.1"
+  }
+}
