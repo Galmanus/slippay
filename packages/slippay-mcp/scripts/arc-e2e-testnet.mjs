@@ -14,7 +14,7 @@
 import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import {
-  createPublicClient, createWalletClient, decodeEventLog, formatUnits, http, parseAbi, toHex,
+  createPublicClient, createWalletClient, decodeErrorResult, decodeEventLog, formatUnits, http, parseAbi, toHex,
 } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { arcTestnet } from "viem/chains";
@@ -85,6 +85,8 @@ await mined(
     args: [agent.address, {
       agentId, slhVk: slh.publicKey, perTxCap: 2_000_000n, windowCap: 4_000_000n, windowSeconds: 86_400n,
       expiresAt: 0n, pqThreshold: 1_000_000n, policyHash: toHex(randomBytes(32)), allowRecipients: [merchant],
+      // integrity-attester gate off for this demo (threshold = max); see AgentVault.attestThreshold
+      attesterX: `0x${"00".repeat(32)}`, attesterY: `0x${"00".repeat(32)}`, attestThreshold: (1n << 128n) - 1n,
     }],
     ...fees,
   }),
@@ -125,3 +127,31 @@ const merchantBal = await pub.readContract({
   functionName: "balanceOf", args: [merchant],
 });
 console.log(`merchant ${merchant} received ${formatUnits(merchantBal, 6)} USDC (expected 2.5)`);
+
+// 6. the agent misbehaves: each attempt is SIGNED by the agent and sent straight to the vault
+//    (bypassing arcPay's own pre-sign refusals), so the refusal shown is the on-chain one.
+const { signSpend, encodeSpendCall } = await import("@slippay/arc-agent");
+const vaultErrors = artifact.abi.filter((x) => x.type === "error");
+async function attempt(label, to, amount, nonceOffset = 0n) {
+  const s = await pub.readContract({ address: vault, abi: agentVaultAbi, functionName: "getSession", args: [agent.address] });
+  const intent = {
+    agentSigner: agent.address, to, amount, nonce: s.nonce + nonceOffset,
+    deadline: BigInt(Math.floor(Date.now() / 1000) + 600), orderId: toHex(randomBytes(32)),
+  };
+  const sig = await signSpend({ account: agent, vault, chainId: NET.chainId, intent, pqThreshold: s.pqThreshold, slhSecretKey: slh.secretKey });
+  const data = encodeSpendCall(intent, { ecdsaSig: sig.ecdsaSig, slhSig: sig.slhSig });
+  try {
+    await pub.call({ account: funded.address, to: vault, data });
+    console.log(`  ${label}: ACCEPTED (unexpected)`);
+  } catch (e) {
+    const raw = e?.cause?.data ?? e?.data ?? e?.walk?.()?.data;
+    let name = "reverted";
+    try { name = decodeErrorResult({ abi: vaultErrors, data: raw }).errorName; } catch { /* keep generic */ }
+    console.log(`  ${label}: REFUSED on-chain → ${name}`);
+  }
+}
+console.log("agent misbehaves (signed, sent directly to the vault):");
+await attempt("pay 3 USDC (per-payment cap is 2)", merchant, 3_000_000n);
+await attempt("pay 0.1 USDC to an address you never approved", toHex(randomBytes(20)), 100_000n);
+await attempt("replay an already-used order (stale nonce)", merchant, 100_000n, -1n);
+await attempt("pay 1.6 USDC (would push today's total past the 4 USDC window)", merchant, 1_600_000n);
