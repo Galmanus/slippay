@@ -48,7 +48,7 @@ if (balance < 8n * 10n ** 18n) throw new Error("need >= 8 testnet USDC (5 to the
 // 1. deploy
 const artifact = JSON.parse(readFileSync(new URL("../../../contracts-evm/out/AgentVault.sol/AgentVault.json", import.meta.url), "utf8"));
 const deployHash = await wallet.deployContract({
-  abi: agentVaultAbi,
+  abi: artifact.abi, // full artifact ABI: the SDK's agentVaultAbi omits the constructor
   bytecode: artifact.bytecode.object,
   args: [funded.address, "0x3600000000000000000000000000000000000000", NET.identityRegistry, 100_000_000n],
   ...fees,
