@@ -102,7 +102,7 @@ export default function Sub() {
       <main className="flex-1 flex items-center">
         <div className="max-w-[1080px] w-full mx-auto px-5 md:px-10 py-16 grid md:grid-cols-12 gap-8 md:gap-16">
           <div className="md:col-span-4 font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-            <span className="inline-block w-2.5 h-2.5 bg-[#FDDA24] mr-2 align-middle" />
+            <span className="inline-block w-2.5 h-2.5 bg-[#002FA7] mr-2 align-middle" />
             recurring · settled on Stellar mainnet
           </div>
 
@@ -130,7 +130,7 @@ export default function Sub() {
                     <button
                       disabled={state === "signing" || state === "submitting" || state === "done"}
                       onClick={authorizeRecurring}
-                      className="w-full bg-[#FDDA24] text-[#0a0a0a] py-5 text-sm uppercase tracking-[0.18em] hover:opacity-90 disabled:opacity-50"
+                      className="w-full bg-[#002FA7] text-white py-5 text-sm uppercase tracking-[0.18em] hover:opacity-90 disabled:opacity-50"
                     >
                       Authorize recurring · 1 signature
                     </button>
@@ -146,7 +146,7 @@ export default function Sub() {
                     </button>
 
                     {hash && (
-                      <div className={`mt-6 border-l-2 pl-4 ${state === "done" ? "border-[#FDDA24]" : "border-amber-500"}`}>
+                      <div className={`mt-6 border-l-2 pl-4 ${state === "done" ? "border-[#002FA7]" : "border-amber-500"}`}>
                         <div className="text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/70">
                           {state === "done" ? "Charged on mainnet" : "Tx submitted"}
                         </div>

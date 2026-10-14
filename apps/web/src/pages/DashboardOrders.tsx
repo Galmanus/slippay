@@ -20,7 +20,7 @@ interface OrderRow {
 
 const STATUS_DOT: Record<string, string> = {
   pending: "bg-amber-500",
-  paid: "bg-[#FDDA24]",
+  paid: "bg-[#002FA7]",
   underpaid: "bg-orange-500",
   expired: "bg-[#0a0a0a]/25",
   cancelled: "bg-[#0a0a0a]/25",
@@ -46,7 +46,7 @@ export default function DashboardOrders() {
   if (orders === null) {
     return (
       <div className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> loading…
+        <span className="w-1.5 h-1.5 rounded-full bg-[#002FA7] animate-pulse" /> loading…
       </div>
     );
   }

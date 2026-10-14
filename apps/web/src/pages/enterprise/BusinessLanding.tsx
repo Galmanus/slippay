@@ -1,5 +1,5 @@
 // BusinessLanding — Slippay Enterprise · premium on-brand page.
-// Design language mirrors LandingV2: bone bg, ink text, #FDDA24 accent,
+// Design language mirrors LandingV2: bone bg, ink text, #002FA7 accent,
 // Inter display font, grain texture, monumental uppercase headlines.
 
 import { Link } from "react-router-dom";
@@ -10,7 +10,7 @@ const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } 
 const GRAY = "#6f6862";
 
 const btn =
-  "lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold";
+  "lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white font-semibold";
 const sec = "border-t border-[#0a0a0a]/12";
 
 const PROPS: [string, string, string][] = [
@@ -60,7 +60,7 @@ export default function BusinessLanding() {
       className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden"
       style={display}
     >
-      <style>{`html{scroll-behavior:smooth}::selection{background:#FDDA24;color:#0a0a0a}`}</style>
+      <style>{`html{scroll-behavior:smooth}::selection{background:#002FA7;color:#0a0a0a}`}</style>
 
       {/* HEADER */}
       <header className="px-6 md:px-12 py-4 flex items-center justify-between border-b border-[#0a0a0a]/8 bg-[#f1eee7] grain sticky top-0 z-40">
@@ -69,10 +69,10 @@ export default function BusinessLanding() {
           className="text-2xl md:text-3xl lowercase text-[#0a0a0a]"
           style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}
         >
-          slippay<span className="text-[#FDDA24]">.</span>
+          slippay<span className="text-[#002FA7]">.</span>
         </Link>
         <div className="flex items-center gap-4">
-          <span className="font-mono text-[9px] uppercase tracking-[0.24em] bg-[#FDDA24] text-[#0a0a0a] px-3 py-1.5 font-semibold">
+          <span className="font-mono text-[9px] uppercase tracking-[0.24em] bg-[#002FA7] text-white px-3 py-1.5 font-semibold">
             EM PILOTO PRIVADO
           </span>
           <Link
@@ -138,7 +138,7 @@ export default function BusinessLanding() {
           <div className="mt-16 grid md:grid-cols-2 gap-px bg-[#0a0a0a]/10 border border-[#0a0a0a]/10 rounded-2xl overflow-hidden">
             {PROPS.map(([n, title, sub]) => (
               <div key={n} className="bg-[#f1eee7] p-8 md:p-10 flex flex-col gap-3">
-                <span className="font-mono text-[13px] font-semibold" style={{ color: "#FDDA24" }}>
+                <span className="font-mono text-[13px] font-semibold" style={{ color: "#002FA7" }}>
                   {n}
                 </span>
                 <div
@@ -161,7 +161,7 @@ export default function BusinessLanding() {
           className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-24 md:py-36"
         >
           <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#f1eee7]/40">
-            <span className="text-[#FDDA24]">002</span>
+            <span className="text-[#5B82FF]">002</span>
             <span className="h-px w-8 bg-[#f1eee7]/30" />
             <span>arquitetura</span>
           </div>
@@ -187,7 +187,7 @@ export default function BusinessLanding() {
               <div key={k} className="bg-[#0a0a0a] px-4 py-5 text-center">
                 <div
                   className="font-mono text-[10px] uppercase tracking-[0.14em] font-semibold"
-                  style={{ color: "#FDDA24" }}
+                  style={{ color: "#5B82FF" }}
                 >
                   {k}
                 </div>
@@ -197,7 +197,7 @@ export default function BusinessLanding() {
           </div>
           <a
             href="mailto:enterprise@slippay.cc?subject=Slippay%20enterprise%20—%20acesso"
-            className="mt-12 lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold"
+            className="mt-12 lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white font-semibold"
           >
             Solicitar acesso
           </a>

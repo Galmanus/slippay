@@ -273,7 +273,7 @@ export default function Comprovante() {
       <main className="flex-1 w-full max-w-[560px] mx-auto px-5 py-9 md:py-14">
         {r.level === "loading" && (
           <div className="text-center py-24 font-mono text-[11px] uppercase tracking-[0.22em] text-[#0a0a0a]/55">
-            <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24] animate-pulse mr-2" />{t.verifying}
+            <span className="inline-block w-1.5 h-1.5 bg-[#002FA7] animate-pulse mr-2" />{t.verifying}
           </div>
         )}
         {r.level === "notfound" && (
@@ -291,7 +291,7 @@ export default function Comprovante() {
               <div className="font-mono text-[10px] uppercase tracking-[0.24em] opacity-70">{t.receipt} · slippay · {t.net(net)}</div>
               <div className="mx-auto mt-5 w-[56px] h-[56px] flex items-center justify-center" style={{ background: r.level === "green" ? "#0a0a0a" : "transparent", border: r.level === "green" ? "none" : `2px solid ${fg}`, borderRadius: r.level === "green" ? 0 : 999 }}>
                 {r.level === "green"
-                  ? <svg width="30" height="30" viewBox="0 0 44 44" fill="none"><path d="M11 23l8 8 14-16" stroke="#FDDA24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  ? <svg width="30" height="30" viewBox="0 0 44 44" fill="none"><path d="M11 23l8 8 14-16" stroke="#002FA7" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   : r.level === "red"
                     ? <svg width="26" height="26" viewBox="0 0 44 44" fill="none"><path d="M14 14l16 16M30 14L14 30" stroke={fg} strokeWidth="4" strokeLinecap="round" /></svg>
                     : <svg width="26" height="26" viewBox="0 0 44 44" fill="none"><path d="M22 12v16M22 32v.5" stroke={fg} strokeWidth="4" strokeLinecap="round" /></svg>}
@@ -300,7 +300,7 @@ export default function Comprovante() {
               <p className="mt-3 text-sm leading-relaxed opacity-85 max-w-[42ch] mx-auto">{sub}</p>
               {/* trust badge — strong vs weak, stated explicitly */}
               <div className="mt-4 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] px-2.5 py-1 border" style={{ borderColor: "rgba(241,238,231,0.3)" }}>
-                <span className="inline-block w-1.5 h-1.5" style={{ background: isObl ? "#FDDA24" : fg }} />
+                <span className="inline-block w-1.5 h-1.5" style={{ background: isObl ? "#002FA7" : fg }} />
                 {isObl ? t.badgeObl : t.badgeClaim}
               </div>
               {label && <div className="mt-3 text-xs opacity-70">{label}</div>}
@@ -364,7 +364,7 @@ export default function Comprovante() {
             {/* RITUAL — verify yourself, don't trust a screenshot */}
             <div className="px-7 md:px-9 py-7 bg-[#0a0a0a] text-[#f1eee7]">
               <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#6f6862] mb-3">
-                <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" />{t.ritualTitle}
+                <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" />{t.ritualTitle}
               </div>
               <div className="flex gap-5 items-center">
                 {qr && <img src={qr} alt="" className="w-[88px] h-[88px] shrink-0 bg-[#f1eee7] p-1.5" />}
@@ -396,7 +396,7 @@ export default function Comprovante() {
           <div className="text-lg font-medium tracking-[-0.01em]">Pay or get paid with one touch.</div>
           <p className="mt-2 text-sm text-[#0a0a0a]/55">No app, no seed phrase. Real dollars — and you verify everything yourself.</p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/pay" className="rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Pay with a touch →</Link>
+            <Link to="/pay" className="rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.2em] bg-[#002FA7] text-white font-medium">Pay with a touch →</Link>
             <Link to="/cobrar" className="text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a]/55 hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">Get paid →</Link>
           </div>
           <div className="mt-8"><LiveProof /></div>

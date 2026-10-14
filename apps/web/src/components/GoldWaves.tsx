@@ -5,7 +5,7 @@
 import { useEffect, useRef } from "react";
 
 const N = 14;                 // number of thread lines
-const GOLD = "253,218,36";    // brand gold rgb
+const GOLD = "0,47,167";    // brand gold rgb
 
 export function GoldWaves({ className = "" }: { className?: string }) {
   const ref = useRef<HTMLCanvasElement | null>(null);

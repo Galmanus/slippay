@@ -3,8 +3,9 @@
 // looping each cycle, accumulating against a limit — and STOPPING when the limit
 // is reached (the safety, shown not told). Plain language, bilingual. Honors
 // reduced-motion (renders the finished state, no animation). The link at the
-// bottom is the actual mainnet tx (0.05 USDC); the cycling above illustrates the
-// mechanism — labelled "demo" so it's never mistaken for live settlement.
+// bottom is a real AgentVault spend on Arc testnet (0.5 USDC, 112,671 gas, inside
+// the session limit); the cycling above illustrates the mechanism — labelled
+// "demo" so it's never mistaken for live settlement.
 
 import { useEffect, useState } from "react";
 
@@ -14,22 +15,22 @@ const T = {
   pt: {
     tag: "pagamento que se repete · demo", atCap: "no limite", active: "ativo", running: "rodando…",
     spent: "gasto no período", reached: "limite atingido, não tira nem mais um centavo ✓",
-    cycle: (n: number) => `ciclo ${n} · dentro do limite`, real: "cobrança real · concluída · $0,05", replay: "clique pra repetir",
+    cycle: (n: number) => `ciclo ${n} · dentro do limite`, real: "pagamento real de agente · rede de teste · $0,50", replay: "clique pra repetir",
     steps: [
       ["Aprove com um toque", "uma vez · sem senha · você define o limite"],
       ["Ele cobra sozinho", "tira $0,05 · sem te pedir de novo"],
-      ["Cai na hora", "~5s · taxa menor que 1 centavo"],
+      ["Cai na hora", "menos de 1s · taxa menor que 1 centavo"],
       ["Prova pública", "qualquer um pode conferir"],
     ] as [string, string][],
   },
   en: {
     tag: "recurring payment · demo", atCap: "at limit", active: "active", running: "running…",
     spent: "spent this period", reached: "limit reached, won't pull another cent ✓",
-    cycle: (n: number) => `cycle ${n} · within limit`, real: "real charge · settled · $0.05", replay: "click to replay",
+    cycle: (n: number) => `cycle ${n} · within limit`, real: "real agent payment · test network · $0.50", replay: "click to replay",
     steps: [
       ["Approve with one touch", "once · no password · you set the limit"],
       ["It charges itself", "pulls $0.05 · never asks again"],
-      ["Settles instantly", "~5s · fee under 1 cent"],
+      ["Settles instantly", "under 1s · fee under 1 cent"],
       ["Public proof", "anyone can verify it"],
     ] as [string, string][],
   },
@@ -37,7 +38,7 @@ const T = {
 
 const CAP = 0.2;
 const CHARGE = 0.05;
-const TX = "https://stellar.expert/explorer/public/tx/5da9741f554294a196376088ebd8f753f466a03cf657e67248533d78e0e3edf6";
+const TX = "https://explorer.testnet.arc.io/tx/0x8cb9df02fc39a4733f861ae30c22a2cc783806a6e2de44832d1fe50427aa5bbb";
 const GOLD = "#6f6862";
 
 const reduceMotion = () =>
@@ -144,7 +145,7 @@ export function MandateDemo({ lang = "pt" }: { lang?: Lang }) {
         className="mt-5 flex items-center justify-between border-t border-[#0a0a0a]/10 pt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
       >
         <span>{t.real}</span>
-        <span>tx 5da9741f ↗</span>
+        <span>tx 0x8cb9df02 ↗</span>
       </span>
 
       <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.18em] text-[#0a0a0a]/30">{t.replay}</div>

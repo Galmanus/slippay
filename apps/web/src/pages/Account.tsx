@@ -93,7 +93,7 @@ export default function Account() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#002FA7]">.</span></Link>
         <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
       </header>
 
@@ -122,14 +122,14 @@ export default function Account() {
             )}
 
             <button onClick={createAccount} disabled={busy || bioOk === false}
-              className="lift mt-8 w-full max-w-[400px] px-7 py-5 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[12px] uppercase tracking-[0.22em] disabled:opacity-40">
+              className="lift mt-8 w-full max-w-[400px] px-7 py-5 rounded-full bg-[#002FA7] text-white text-[12px] uppercase tracking-[0.22em] disabled:opacity-40">
               {busy ? (step || "…") : bioOk === false ? "Abra no seu celular pra criar" : "Criar minha conta (um toque)"}
             </button>
 
             {error && (
               <div className="mt-6 max-w-[400px]">
                 <div className="text-[#0a0a0a]">{error}</div>
-                <button onClick={createAccount} className="lift mt-3 inline-flex rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Tentar de novo</button>
+                <button onClick={createAccount} className="lift mt-3 inline-flex rounded-full px-6 py-3 text-[10px] uppercase tracking-[0.2em] bg-[#002FA7] text-white">Tentar de novo</button>
               </div>
             )}
 
@@ -189,13 +189,13 @@ export default function Account() {
 
             <Link
               to="/buy"
-              className="lift mt-6 inline-flex w-full max-w-[520px] items-center justify-center px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[12px] uppercase tracking-[0.22em] font-medium">
+              className="lift mt-6 inline-flex w-full max-w-[520px] items-center justify-center px-7 py-4 rounded-full bg-[#002FA7] text-white text-[12px] uppercase tracking-[0.22em] font-medium">
               Adicionar dinheiro · Pix vira dólar
             </Link>
 
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[520px]">
-              <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Pagar</Link>
-              <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Receber</Link>
+              <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#002FA7] text-white">Pagar</Link>
+              <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#002FA7] text-white font-medium">Receber</Link>
               <Link to="/withdraw-demo" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Sacar</Link>
             </div>
 

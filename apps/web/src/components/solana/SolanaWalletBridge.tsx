@@ -46,7 +46,7 @@ function Binder() {
   return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9999,
-      background: "#0a0a0a", color: "#FDDA24", padding: "8px 12px",
+      background: "#0a0a0a", color: "#5B82FF", padding: "8px 12px",
       fontFamily: "monospace", fontSize: 11, wordBreak: "break-all",
       textAlign: "center", userSelect: "all",
     }}>

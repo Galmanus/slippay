@@ -61,7 +61,7 @@ export default function EnterpriseBase() {
               <button
                 onClick={handleLogin}
                 disabled={loggingIn}
-                className="bg-[#FDDA24] text-[#0a0a0a] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420] disabled:opacity-50"
+                className="bg-[#002FA7] text-white px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420] disabled:opacity-50"
               >
                 {loggingIn ? "Entrando..." : "Entrar"}
               </button>

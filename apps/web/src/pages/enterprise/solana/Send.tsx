@@ -169,9 +169,9 @@ export default function SolanaSend() {
 
         {/* Success — confirmed */}
         {txSig && txConfirmed && (
-          <div className="mt-8 border-l-2 border-[#FDDA24] pl-4">
+          <div className="mt-8 border-l-2 border-[#002FA7] pl-4">
             <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Transferência enviada
+              <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" /> Transferência enviada
             </div>
             <a
               className="text-xs font-mono mt-2 block break-all hover:opacity-60"

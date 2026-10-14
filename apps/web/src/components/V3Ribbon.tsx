@@ -30,7 +30,7 @@ export function V3Ribbon() {
         <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
           <defs>
             <linearGradient id="v3rbg" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#fde68a" /><stop offset="30%" stopColor="#fcd34d" /><stop offset="52%" stopColor="#FDDA24" /><stop offset="70%" stopColor="#fbbf24" /><stop offset="88%" stopColor="#f5b942" /><stop offset="100%" stopColor="#eaa520" />
+              <stop offset="0%" stopColor="#c7d5ff" /><stop offset="30%" stopColor="#8fa8ff" /><stop offset="52%" stopColor="#002FA7" /><stop offset="70%" stopColor="#1f4fd8" /><stop offset="88%" stopColor="#0a2a8f" /><stop offset="100%" stopColor="#001f70" />
             </linearGradient>
             <filter id="v3rbwarp" x="-20%" y="-70%" width="140%" height="240%">
               <feTurbulence type="fractalNoise" baseFrequency="0.008 0.013" numOctaves="2" seed="7" result="n" />

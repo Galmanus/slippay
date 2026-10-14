@@ -53,7 +53,7 @@ export default function EnterpriseBaseDashboard() {
               className={[
                 "shrink-0 md:w-full text-left px-3 py-2 md:py-2.5 rounded-lg text-[11px] md:text-[12px] uppercase tracking-[0.13em] md:mb-1 transition-colors flex items-center gap-2",
                 activeTab === tab
-                  ? "bg-[#FDDA24] text-[#0a0a0a] font-bold"
+                  ? "bg-[#002FA7] text-white font-bold"
                   : "text-[#f1eee7]/60 hover:bg-[#f1eee7]/10 hover:text-[#f1eee7]",
               ].join(" ")}
             >
@@ -101,7 +101,7 @@ export default function EnterpriseBaseDashboard() {
           <div className="w-full px-4 md:px-12 py-6 md:py-10 grid md:grid-cols-12 gap-6 md:gap-12">
             {activeTab !== "Overview" && (
             <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-              <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
+              <span className="inline-block w-3 h-3 bg-[#002FA7] mr-2 align-middle" />
               {activeTab === "Saldo" && "001. Saldo"}
               {activeTab === "Enviar" && "002. Enviar"}
               {activeTab === "Câmbio" && "003. Câmbio"}

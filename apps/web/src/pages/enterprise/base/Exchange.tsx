@@ -269,7 +269,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             {grossOut != null && dollarRate != null && (
               <div className="mt-4 space-y-1.5 text-[11px] text-[#0a0a0a]/60">
                 <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/45 pb-1">
-                  <span className="inline-block h-1.5 w-1.5 bg-[#FDDA24] animate-pulse" />
+                  <span className="inline-block h-1.5 w-1.5 bg-[#002FA7] animate-pulse" />
                   Cotação ao vivo
                   {secsAgo != null && (
                     <span className="text-[#0a0a0a]/35 normal-case tracking-normal">
@@ -383,7 +383,7 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             {copied ? "Copiado" : "Copiar código Pix"}
           </button>
           <div className="flex items-center gap-2 text-xs text-[#0a0a0a]/55">
-            <span className="inline-block h-2 w-2 bg-[#FDDA24] animate-pulse" />
+            <span className="inline-block h-2 w-2 bg-[#002FA7] animate-pulse" />
             Aguardando pagamento... ({orderStatus})
           </div>
           <div className="text-[10px] uppercase tracking-[0.14em] text-[#0a0a0a]/40">
@@ -393,9 +393,9 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
       )}
 
       {step === "done" && (
-        <div className="border-l-2 border-[#FDDA24] pl-4">
+        <div className="border-l-2 border-[#002FA7] pl-4">
           <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-            <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Pagamento confirmado
+            <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" /> Pagamento confirmado
           </div>
           <p className="text-sm text-[#0a0a0a]/70 mt-2">
             {receivedUsdc != null
@@ -775,7 +775,7 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
         {step === "sending" && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-xs text-[#0a0a0a]/55">
-              <span className="inline-block h-2 w-2 bg-[#FDDA24] animate-pulse" />
+              <span className="inline-block h-2 w-2 bg-[#002FA7] animate-pulse" />
               Confirmando com a 4P... ({orderStatus})
             </div>
             {txHash && (
@@ -797,9 +797,9 @@ function SellPanel({ address, email: initialEmail, sendTransaction }: {
         )}
 
         {step === "done" && (
-          <div className="border-l-2 border-[#FDDA24] pl-4">
+          <div className="border-l-2 border-[#002FA7] pl-4">
             <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Liquidação confirmada
+              <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" /> Liquidação confirmada
             </div>
             <p className="text-sm text-[#0a0a0a]/70 mt-2">
               O Pix sera enviado para a chave {pixKey}. Status final: {orderStatus}.

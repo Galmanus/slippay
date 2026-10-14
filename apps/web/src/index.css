@@ -81,7 +81,7 @@ html { scroll-behavior: smooth; }
               background-color 180ms ease, color 180ms ease, opacity 180ms ease;
   will-change: transform;
 }
-.lift:hover { transform: translateY(-3px) scale(1.015); box-shadow: 0 14px 30px -10px rgba(253, 218, 36, 0.30); }
+.lift:hover { transform: translateY(-3px) scale(1.015); box-shadow: 0 14px 30px -10px rgba(0, 47, 167, 0.30); }
 .lift:active { transform: translateY(-1px) scale(0.985); transition-duration: 90ms; }
 
 /* Bar fill — dramatize "it grows" with scaleX (transform, never width).
@@ -95,7 +95,7 @@ html { scroll-behavior: smooth; }
 .spotlight { position: relative; }
 .spotlight::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(253, 218, 36, 0.07), transparent 45%);
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(0, 47, 167, 0.07), transparent 45%);
   opacity: 0; transition: opacity 300ms ease;
 }
 .spotlight:hover::before { opacity: 1; }

@@ -50,7 +50,7 @@ export default function EnterpriseSolana() {
 
               <button
                 onClick={login}
-                className="bg-[#FDDA24] text-[#0a0a0a] px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420]"
+                className="bg-[#002FA7] text-white px-10 py-5 text-sm uppercase tracking-[0.18em] hover:bg-[#e5c420]"
               >
                 Entrar
               </button>

@@ -37,12 +37,12 @@ export function RuleSandbox() {
       <div className="mt-6">
         <div className="flex items-baseline justify-between">
           <span className="text-[13px] text-[#f1eee7]/65">Limit per payment</span>
-          <span className="text-2xl font-semibold tabular-nums text-[#FDDA24]">{fmt(cap)}</span>
+          <span className="text-2xl font-semibold tabular-nums text-[#5B82FF]">{fmt(cap)}</span>
         </div>
         <input
           type="range" min={1000} max={50000} step={1000} value={cap}
           onChange={(e) => setCap(Number(e.target.value))}
-          className="mt-3 w-full accent-[#FDDA24] cursor-pointer"
+          className="mt-3 w-full accent-[#002FA7] cursor-pointer"
           aria-label="limit per payment"
         />
         <div className="flex justify-between font-mono text-[10px] text-[#f1eee7]/35 mt-1">
@@ -58,7 +58,7 @@ export function RuleSandbox() {
             <button
               key={a.who}
               onClick={() => tryPay(a)}
-              className="rounded-full px-4 py-2.5 text-[12px] border border-[#f1eee7]/20 hover:border-[#FDDA24] hover:text-[#FDDA24] transition-colors text-left"
+              className="rounded-full px-4 py-2.5 text-[12px] border border-[#f1eee7]/20 hover:border-[#5B82FF] hover:text-[#5B82FF] transition-colors text-left"
             >
               {a.who} · <span className="tabular-nums">{fmt(a.amount)}</span>
             </button>
@@ -73,23 +73,23 @@ export function RuleSandbox() {
             key={verdict.n}
             className="verdict rounded-xl px-5 py-4 border"
             style={{
-              borderColor: verdict.ok ? "rgba(253,218,36,.35)" : "rgba(248,113,113,.4)",
-              background: verdict.ok ? "rgba(253,218,36,.08)" : "rgba(248,113,113,.08)",
+              borderColor: verdict.ok ? "rgba(0,47,167,.35)" : "rgba(248,113,113,.4)",
+              background: verdict.ok ? "rgba(0,47,167,.08)" : "rgba(248,113,113,.08)",
             }}
           >
             <div className="flex items-center gap-3">
               <span
                 className="grid place-items-center w-7 h-7 rounded-full text-[15px] font-bold"
                 style={{
-                  background: verdict.ok ? "#FDDA24" : "#f87171",
-                  color: "#0a0a0a",
+                  background: verdict.ok ? "#002FA7" : "#f87171",
+                  color: verdict.ok ? "#ffffff" : "#0a0a0a",
                 }}
               >
                 {verdict.ok ? "✓" : "✕"}
               </span>
               <span
                 className="font-semibold tracking-[-0.01em] text-lg"
-                style={{ color: verdict.ok ? "#FDDA24" : "#f87171" }}
+                style={{ color: verdict.ok ? "#5B82FF" : "#f87171" }}
               >
                 {verdict.ok ? "PAID" : "BLOCKED"}
               </span>

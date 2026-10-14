@@ -183,7 +183,7 @@ export default function DashboardSettings() {
             Save changes
           </button>
           {saved && <span className="text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/70 flex items-center gap-2">
-            <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Saved
+            <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" /> Saved
           </span>}
           {err && <span className="text-xs uppercase tracking-[0.18em] text-red-700">{err}</span>}
         </div>

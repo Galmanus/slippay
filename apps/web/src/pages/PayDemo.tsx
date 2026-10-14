@@ -163,7 +163,7 @@ export default function PayDemo() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-lg font-semibold tracking-[-0.04em]" style={display}>slippay<span className="text-[#002FA7]">.</span></Link>
         <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Home</Link>
       </header>
 
@@ -188,11 +188,11 @@ export default function PayDemo() {
 
         <div className="mt-12 flex flex-col gap-3 max-w-[400px]">
           <button onClick={onCreateAccount} disabled={busy}
-            className="lift px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
+            className="lift px-7 py-4 rounded-full bg-[#002FA7] text-white text-[11px] uppercase tracking-[0.22em] disabled:opacity-40">
             {accountReady ? "Wallet ready ✓" : "1 · Create my wallet"}
           </button>
           <button onClick={() => setScanning(true)} disabled={busy || !accountReady}
-            className="lift px-7 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
+            className="lift px-7 py-4 rounded-full bg-[#002FA7] text-white text-[11px] uppercase tracking-[0.22em] font-medium disabled:opacity-40">
             2 · Pay a request (QR)
           </button>
         </div>
@@ -205,12 +205,12 @@ export default function PayDemo() {
             <div className="text-xs font-mono text-[#0a0a0a]/55 mt-2 break-all">to {short(req.to, 8, 8)}</div>
             {wallet ? (
               <button onClick={onPayReq}
-                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium">
+                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#002FA7] text-white text-[11px] uppercase tracking-[0.22em] font-medium">
                 Authorize with a touch
               </button>
             ) : (
               <button onClick={onCreateAccount}
-                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[11px] uppercase tracking-[0.22em] font-medium">
+                className="lift mt-5 w-full px-6 py-4 rounded-full bg-[#002FA7] text-white text-[11px] uppercase tracking-[0.22em] font-medium">
                 Create wallet to pay (a touch)
               </button>
             )}
@@ -235,7 +235,7 @@ export default function PayDemo() {
             <div className="px-7 py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-[#f1eee7]/55">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" />
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#002FA7] animate-pulse" />
                   slippay · secure
                 </div>
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#f1eee7]/40">Stellar · {network === "PUBLIC" ? "mainnet" : "testnet"}</span>
@@ -326,7 +326,7 @@ export default function PayDemo() {
                             color: done ? "#0a0a0a" : "#f1eee7",
                             border: done ? "none" : "1px solid rgba(241,238,231,.25)",
                           }}>
-                          {done ? "✓" : active ? <span className="w-2 h-2 rounded-full bg-[#FDDA24] animate-pulse" /> : i + 1}
+                          {done ? "✓" : active ? <span className="w-2 h-2 rounded-full bg-[#002FA7] animate-pulse" /> : i + 1}
                         </span>
                         <span className={`text-[15px] ${active ? "text-[#f1eee7]" : "text-[#f1eee7]/75"}`}>{label}</span>
                       </div>

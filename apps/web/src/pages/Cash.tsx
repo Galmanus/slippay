@@ -111,13 +111,13 @@ export default function Cash() {
   }
 
   const yellowBtn =
-    "lift w-full max-w-[420px] px-7 py-5 rounded-full bg-[#FDDA24] text-[#0a0a0a] text-[12px] uppercase tracking-[0.22em] disabled:opacity-40";
+    "lift w-full max-w-[420px] px-7 py-5 rounded-full bg-[#002FA7] text-white text-[12px] uppercase tracking-[0.22em] disabled:opacity-40";
 
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] grain overflow-x-hidden">
-      <style>{`::selection{background:#FDDA24;color:#0a0a0a}`}</style>
+      <style>{`::selection{background:#002FA7;color:#0a0a0a}`}</style>
       <header className="px-6 md:px-12 py-7 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#002FA7]">.</span></Link>
         <Link to="/" className="text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]">Início</Link>
       </header>
 
@@ -208,7 +208,7 @@ export default function Cash() {
                 </div>
                 <button onClick={copyPix} className={`mt-5 ${yellowBtn}`}>{copied ? "Copiado ✓" : "Copiar código Pix"}</button>
                 <div className="mt-6 flex items-center gap-2 text-[13px] text-[#0a0a0a]/55">
-                  <span className="inline-block h-2 w-2 rounded-full bg-[#FDDA24] animate-pulse" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#002FA7] animate-pulse" />
                   Aguardando pagamento… ({status})
                 </div>
               </div>
@@ -226,7 +226,7 @@ export default function Cash() {
         )}
 
         <p className="mt-6 text-[13px] text-[#0a0a0a]/55 max-w-[46ch] flex items-start gap-2">
-          <span className="text-[#FDDA24] mt-0.5">✓</span>
+          <span className="text-[#002FA7] mt-0.5">✓</span>
           <span>Não-custodial: a 4P (licenciada) liquida direto na sua carteira. A Slippay nunca segura seu dinheiro.</span>
         </p>
       </main>

@@ -72,7 +72,7 @@ export default function DashboardOverview() {
         <div className="rounded-2xl border border-[#0a0a0a]/12 p-7">
           <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">
             <span>autopilot</span>
-            <span className="flex items-center gap-1.5 text-[#6f6862]"><span className="w-1.5 h-1.5 rounded-full bg-[#FDDA24] animate-pulse" /> integrity gate</span>
+            <span className="flex items-center gap-1.5 text-[#6f6862]"><span className="w-1.5 h-1.5 rounded-full bg-[#002FA7] animate-pulse" /> integrity gate</span>
           </div>
           <p className="mt-4 text-lg leading-snug tracking-[-0.01em]" style={display}>
             {subs ? `${subs} mandate${subs === 1 ? "" : "s"} running within your rules.` : "No autopilot mandates yet."}
@@ -87,8 +87,8 @@ export default function DashboardOverview() {
         <div className="rounded-2xl border border-[#0a0a0a]/12 p-7">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#0a0a0a]/45">quick actions</div>
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a]">Pay</Link>
-            <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#FDDA24] text-[#0a0a0a] font-medium">Get paid</Link>
+            <Link to="/pay" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#002FA7] text-white">Pay</Link>
+            <Link to="/cobrar" className="lift rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] bg-[#002FA7] text-white font-medium">Get paid</Link>
             <Link to="/withdraw-demo" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">Withdraw</Link>
             <Link to="/dashboard/settings" className="rounded-full px-5 py-3.5 text-center text-[11px] uppercase tracking-[0.2em] border border-[#0a0a0a]/25 hover:border-[#0a0a0a]/60">API key</Link>
           </div>

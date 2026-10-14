@@ -42,7 +42,7 @@ export function LivePaymentCard() {
     el.style.transform = `perspective(1100px) rotateX(${(-py * 9).toFixed(2)}deg) rotateY(${(px * 11).toFixed(2)}deg) scale(1.012)`;
     if (glareRef.current) {
       glareRef.current.style.opacity = "1";
-      glareRef.current.style.background = `radial-gradient(380px circle at ${((px + 0.5) * 100).toFixed(0)}% ${((py + 0.5) * 100).toFixed(0)}%, rgba(253,218,36,.16), transparent 60%)`;
+      glareRef.current.style.background = `radial-gradient(380px circle at ${((px + 0.5) * 100).toFixed(0)}% ${((py + 0.5) * 100).toFixed(0)}%, rgba(0,47,167,.16), transparent 60%)`;
     }
   }
   function onLeave() {
@@ -114,7 +114,7 @@ export function LivePaymentCard() {
 
         <div className="relative flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#FDDA24] shadow-[0_0_10px_#FDDA24]" />
+            <span className="lpc-dot inline-block w-2 h-2 rounded-full bg-[#002FA7] shadow-[0_0_10px_#002FA7]" />
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f1eee7]/55 whitespace-nowrap">agent · active</span>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#f1eee7]/40 whitespace-nowrap">Stellar · mainnet</span>
@@ -123,7 +123,7 @@ export function LivePaymentCard() {
         <div className="relative mt-7">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f1eee7]/40 mb-1.5">amount paid</div>
           <div className="text-5xl md:text-[56px] leading-none font-semibold tabular-nums tracking-[-0.03em]"
-            style={{ color: "#cabfb0", textShadow: "0 0 30px rgba(253,218,36,.18)" }}>{fmt(amount)}</div>
+            style={{ color: "#cabfb0", textShadow: "0 0 30px rgba(0,47,167,.18)" }}>{fmt(amount)}</div>
           <div className="font-mono text-[11px] text-[#f1eee7]/45 mt-2.5">in dollars · non-custodial · final</div>
         </div>
 
@@ -151,12 +151,12 @@ export function LivePaymentCard() {
         <div className="relative mt-6 h-[52px]">
           <div className="absolute inset-0 flex items-center justify-center gap-2.5 rounded-xl transition-opacity duration-300"
             style={{ opacity: phase === "verify" ? 1 : 0, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.08)" }}>
-            <span className="lpc-spin inline-block w-3.5 h-3.5 rounded-full border-2 border-[#FDDA24]/30 border-t-[#FDDA24]" />
+            <span className="lpc-spin inline-block w-3.5 h-3.5 rounded-full border-2 border-[#002FA7]/30 border-t-[#002FA7]" />
             <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#f1eee7]/60">verifying on-chain…</span>
           </div>
           <a href={txUrl} target="_blank" rel="noreferrer"
             className="absolute inset-0 flex items-center justify-between gap-3 rounded-xl px-4 transition-all duration-500 group"
-            style={{ opacity: phase === "done" ? 1 : 0, pointerEvents: phase === "done" ? "auto" : "none", background: "rgba(253,218,36,.08)", border: "1px solid rgba(253,218,36,.24)" }}>
+            style={{ opacity: phase === "done" ? 1 : 0, pointerEvents: phase === "done" ? "auto" : "none", background: "rgba(0,47,167,.08)", border: "1px solid rgba(0,47,167,.24)" }}>
             <span className="font-mono text-[11px] text-[#f1eee7]/70">tx <span className="text-[#cabfb0]">{txHash.slice(0, 10)}…</span></span>
             <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#cabfb0] group-hover:underline underline-offset-4">verify on-chain ↗</span>
           </a>

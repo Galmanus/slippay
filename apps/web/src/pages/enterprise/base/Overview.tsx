@@ -84,11 +84,11 @@ export default function BaseOverview() {
           </div>
           <div className="text-[11px] text-[#0a0a0a]/50 mt-1.5">USDC on Base · live from chain {txs === null ? "· loading…" : ""}</div>
         </div>
-        <a href={`${SCAN}/address/${address}`} target="_blank" rel="noreferrer" className="bg-[#FDDA24] text-[#0a0a0a] font-extrabold text-[12px] rounded-lg px-3.5 py-2 no-underline">View on explorer ↗</a>
+        <a href={`${SCAN}/address/${address}`} target="_blank" rel="noreferrer" className="bg-[#002FA7] text-white font-extrabold text-[12px] rounded-lg px-3.5 py-2 no-underline">View on explorer ↗</a>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <div className={[card, "ring-2 ring-[#FDDA24]"].join(" ")}><div className={lbl}>USDC balance</div><div className={big}>{balance === null ? "—" : `$${usd(balance)}`}</div><div className="text-[11px] mt-1.5 text-[#0a0a0a]/50">on Base · non-custodial</div></div>
+        <div className={[card, "ring-2 ring-[#002FA7]"].join(" ")}><div className={lbl}>USDC balance</div><div className={big}>{balance === null ? "—" : `$${usd(balance)}`}</div><div className="text-[11px] mt-1.5 text-[#0a0a0a]/50">on Base · non-custodial</div></div>
         <div className={card}><div className={lbl}>Total received</div><div className={big}>{txs === null ? "—" : `$${usd(received)}`}</div><div className="text-[11px] mt-1.5 text-[#0a0a0a]/50">inflows · USDC</div></div>
         <div className={card}><div className={lbl}>Total sent</div><div className={big}>{txs === null ? "—" : `$${usd(sent)}`}</div><div className="text-[11px] mt-1.5 text-[#0a0a0a]/50">outflows · USDC</div></div>
         <div className={card}><div className={lbl}>Transactions</div><div className={big}>{txs === null ? "—" : count}</div><div className="text-[11px] mt-1.5 text-[#0a0a0a]/50">on-chain · scam-filtered</div></div>

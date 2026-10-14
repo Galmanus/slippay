@@ -7,16 +7,16 @@ import { useEffect, useState } from "react";
 import { FaceScan } from "./FaceScan.tsx";
 
 type Lang = "pt" | "en";
-const YELLOW = "#FDDA24";
+const KLEIN = "#002FA7";
 const GOLD = "#cabfb0";
 const DARK_BG = "linear-gradient(160deg,#15151a 0%,#0a0a0c 55%,#101013 100%)";
-const WALLET = "CA6K…VSRHP";
-const TO = "GCEY…242P";
-const TX = "5da9741f";
+const WALLET = "0xB714…2242";
+const TO = "0xf632…104a";
+const TX = "0xb9127859";
 
 const T = {
   pt: {
-    badge: "sua conta, ao vivo · ~10s",
+    badge: "sua conta, ao vivo · na Arc",
     title: "Conta em dólar", sub: "em segundos", btn: "Criar com biometria", alt: "ou Google",
     authing: "Autenticando · biometria", authed: "Autenticado", created: "Conta criada",
     hi: "sua conta", since: "desde 06/06/2026", balLabel: "saldo em dólar",
@@ -28,7 +28,7 @@ const T = {
     rAmount: "Valor", rTo: "Para", rFrom: "De", rFromV: "sua conta", rNet: "Comprovante", rNetV: "nº " + TX,
   },
   en: {
-    badge: "your account, live · ~10s",
+    badge: "your account, live · on Arc",
     title: "Dollar account", sub: "in seconds", btn: "Create with biometrics", alt: "or Google",
     authing: "Authenticating · biometrics", authed: "Authenticated", created: "Account created",
     hi: "your account", since: "since 06/06/2026", balLabel: "dollar balance",
@@ -94,9 +94,9 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
             <div key={step} className="absolute inset-0 px-7 pt-[58px] pb-9 text-[#0a0a0a]">
               {(step === "intro" || step === "tap") && (
                 <div className="h-full flex flex-col items-center acct-stagger">
-                  <div className="text-[15px] lowercase tracking-[-0.03em]" style={{ fontWeight: 800 }}>slippay<span style={{ color: YELLOW }}>.</span></div>
+                  <div className="text-[15px] lowercase tracking-[-0.03em]" style={{ fontWeight: 800 }}>slippay<span style={{ color: KLEIN }}>.</span></div>
                   <div className="mt-auto w-full">
-                    <div className={"w-full rounded-2xl text-[#0a0a0a] py-4 flex items-center justify-center gap-2.5 text-[13px] font-semibold transition-transform duration-150 " + (step === "tap" ? "scale-[0.95]" : "")} style={{ background: YELLOW }}>
+                    <div className={"w-full rounded-2xl text-white py-4 flex items-center justify-center gap-2.5 text-[13px] font-semibold transition-transform duration-150 " + (step === "tap" ? "scale-[0.95]" : "")} style={{ background: KLEIN }}>
                       <FaceGlyph /> {t.btn}
                     </div>
                     <div className={"mt-3 text-center " + lblL}>{t.alt}</div>
@@ -107,7 +107,7 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
               {(step === "scan" || step === "done") && (
                 <div className="h-full flex flex-col items-center justify-center">
                   <div className="relative grid place-items-center">
-                    {step === "done" && <span className="absolute w-[120px] h-[120px] rounded-full acct-ring" style={{ border: `2px solid ${YELLOW}` }} />}
+                    {step === "done" && <span className="absolute w-[120px] h-[120px] rounded-full acct-ring" style={{ border: `2px solid ${KLEIN}` }} />}
                     <FaceScan state={step === "done" ? "done" : "scanning"} />
                   </div>
                   <div className="mt-6 font-mono text-[11px] uppercase tracking-[0.2em] text-[#0a0a0a]/60">{step === "done" ? t.authed : t.authing}</div>
@@ -116,7 +116,7 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
 
               {step === "created" && (
                 <div className="h-full flex flex-col items-center justify-center acct-stagger">
-                  <Check c={YELLOW} />
+                  <Check c={KLEIN} />
                   <div className="mt-5 text-[15px] font-bold tracking-[-0.02em]">{t.created}</div>
                   <div className={"mt-4 " + lblL}>{t.balLabel}</div>
                   <div className="text-[42px] font-black tracking-[-0.03em] tabular-nums leading-none">$0.00</div>
@@ -127,7 +127,7 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
                 <div className="h-full flex flex-col acct-stagger">
                   <div className="flex items-center justify-between">
                     <span className={lblL}>{t.hi}</span>
-                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full" style={{ background: YELLOW }} />{t.live}</span>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#0a0a0a]/40 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full" style={{ background: KLEIN }} />{t.live}</span>
                   </div>
                   <div className="mt-4 font-mono text-[11px] text-[#0a0a0a]/55 tracking-tight">{WALLET}</div>
                   <div className="mt-5">
@@ -136,10 +136,10 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
                     <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-[#0a0a0a]/35">{t.since}</div>
                   </div>
                   <div className="mt-auto flex flex-col gap-2.5">
-                    <div className="w-full rounded-2xl text-[#0a0a0a] py-3.5 text-center text-[12px] font-semibold" style={{ background: YELLOW }}>{t.add}</div>
+                    <div className="w-full rounded-2xl text-white py-3.5 text-center text-[12px] font-semibold" style={{ background: KLEIN }}>{t.add}</div>
                     <div className="grid grid-cols-2 gap-2.5">
                       <div className="rounded-2xl bg-[#0a0a0a] text-[#f1eee7] py-3 text-center text-[11px] font-semibold">{t.pay}</div>
-                      <div className="rounded-2xl py-3 text-center text-[11px] font-semibold text-[#0a0a0a]" style={{ background: YELLOW }}>{t.receive}</div>
+                      <div className="rounded-2xl py-3 text-center text-[11px] font-semibold text-white" style={{ background: KLEIN }}>{t.receive}</div>
                       <div className="rounded-2xl border border-[#0a0a0a]/25 py-3 text-center text-[11px] font-semibold">{t.withdraw}</div>
                       <div className="rounded-2xl border border-[#0a0a0a]/25 py-3 text-center text-[11px] font-semibold">{t.live}</div>
                     </div>
@@ -153,7 +153,7 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
                     <div className={lblL}>{t.confirmL}</div>
                     <div className="mt-3 text-[44px] font-black tracking-[-0.03em] tabular-nums leading-none">$200</div>
                     <div className="mt-3 font-mono text-[11px] text-[#0a0a0a]/55">{t.to} {TO}</div>
-                    <div className="mt-6 w-full rounded-full text-[#0a0a0a] py-3.5 flex items-center justify-center gap-2 text-[12px] font-semibold acct-breathe" style={{ background: YELLOW }}>
+                    <div className="mt-6 w-full rounded-full text-white py-3.5 flex items-center justify-center gap-2 text-[12px] font-semibold acct-breathe" style={{ background: KLEIN }}>
                       <FaceGlyph /> {t.authorize}
                     </div>
                     <div className={"mt-2 text-center " + lblL}>{t.cancel}</div>
@@ -164,7 +164,7 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
               {(step === "authorizing" || step === "paid") && (
                 <div className="h-full flex flex-col text-[#f1eee7]">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#f1eee7]/55 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: YELLOW }} />{t.secure}</span>
+                    <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#f1eee7]/55 flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: KLEIN }} />{t.secure}</span>
                     <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#f1eee7]/40">{t.net}</span>
                   </div>
 
@@ -209,7 +209,7 @@ export function AccountDemo({ lang = "pt" }: { lang?: Lang }) {
         @keyframes acctRise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
         @keyframes acctRing{from{opacity:.6;transform:scale(.55)}to{opacity:0;transform:scale(1.25)}}
         @keyframes acctPop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
-        @keyframes acctBreathe{0%,100%{box-shadow:0 0 0 0 rgba(253,218,36,0)}50%{box-shadow:0 0 0 7px rgba(253,218,36,0.28)}}
+        @keyframes acctBreathe{0%,100%{box-shadow:0 0 0 0 rgba(0,47,167,0)}50%{box-shadow:0 0 0 7px rgba(0,47,167,0.28)}}
         .acct-stagger>*{opacity:0;animation:acctRise .55s cubic-bezier(.2,.7,.2,1) forwards}
         .acct-stagger>*:nth-child(1){animation-delay:.05s}.acct-stagger>*:nth-child(2){animation-delay:.13s}
         .acct-stagger>*:nth-child(3){animation-delay:.21s}.acct-stagger>*:nth-child(4){animation-delay:.29s}

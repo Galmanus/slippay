@@ -40,7 +40,7 @@ export default function EnterpriseSolanaDashboard() {
               className={[
                 "py-4 px-6 text-[10px] uppercase tracking-[0.18em] border-b-2 transition-colors",
                 activeTab === tab
-                  ? "border-[#FDDA24] text-[#0a0a0a]"
+                  ? "border-[#002FA7] text-[#0a0a0a]"
                   : "border-transparent text-[#0a0a0a]/45 hover:text-[#0a0a0a]/70",
               ].join(" ")}
             >
@@ -54,7 +54,7 @@ export default function EnterpriseSolanaDashboard() {
       <main className="flex-1 flex items-start">
         <div className="max-w-[1400px] w-full mx-auto px-8 md:px-12 py-16 grid md:grid-cols-12 gap-8 md:gap-16">
           <div className="md:col-span-3 text-xs uppercase tracking-[0.18em] text-[#0a0a0a]/55">
-            <span className="inline-block w-3 h-3 bg-[#FDDA24] mr-2 align-middle" />
+            <span className="inline-block w-3 h-3 bg-[#002FA7] mr-2 align-middle" />
             {activeTab === "Saldo" && "001. Saldo"}
             {activeTab === "Enviar" && "002. Enviar"}
             {activeTab === "Câmbio" && "003. Câmbio"}

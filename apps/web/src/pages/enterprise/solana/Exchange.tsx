@@ -245,16 +245,16 @@ function BuyPanel({ address, email: initialEmail }: { address: string; email: st
             {copied ? "Copiado" : "Copiar codigo Pix"}
           </button>
           <div className="flex items-center gap-2 text-xs text-[#0a0a0a]/55">
-            <span className="inline-block h-2 w-2 bg-[#FDDA24] animate-pulse" />
+            <span className="inline-block h-2 w-2 bg-[#002FA7] animate-pulse" />
             Aguardando pagamento... ({orderStatus})
           </div>
         </div>
       )}
 
       {step === "done" && (
-        <div className="border-l-2 border-[#FDDA24] pl-4">
+        <div className="border-l-2 border-[#002FA7] pl-4">
           <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-            <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Pagamento confirmado
+            <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" /> Pagamento confirmado
           </div>
           <p className="text-sm text-[#0a0a0a]/70 mt-2">
             O {asset} esta sendo enviado para a sua carteira na rede {chain}.
@@ -577,7 +577,7 @@ function SellPanel({ address, signTransaction }: {
         {step === "sending" && (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-xs text-[#0a0a0a]/55">
-              <span className="inline-block h-2 w-2 bg-[#FDDA24] animate-pulse" />
+              <span className="inline-block h-2 w-2 bg-[#002FA7] animate-pulse" />
               Confirmando com a 4P... ({orderStatus})
             </div>
             {sig && (
@@ -599,9 +599,9 @@ function SellPanel({ address, signTransaction }: {
         )}
 
         {step === "done" && (
-          <div className="border-l-2 border-[#FDDA24] pl-4">
+          <div className="border-l-2 border-[#002FA7] pl-4">
             <div className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-[#FDDA24]" /> Liquidacao confirmada
+              <span className="inline-block w-1.5 h-1.5 bg-[#002FA7]" /> Liquidacao confirmada
             </div>
             <p className="text-sm text-[#0a0a0a]/70 mt-2">
               O Pix sera enviado para a chave {pixKey}. Status final: {orderStatus}.

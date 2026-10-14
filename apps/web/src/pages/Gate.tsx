@@ -66,7 +66,7 @@ export default function Gate() {
   return (
     <div className="min-h-screen bg-[#f1eee7] text-[#0a0a0a] overflow-x-hidden">
       <header className="px-6 md:px-12 py-7 flex items-center justify-between border-b border-[#0a0a0a]/10">
-        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#FDDA24]">.</span></Link>
+        <Link to="/" className="text-xl font-bold tracking-[-0.06em] lowercase" style={display}>slippay<span className="text-[#002FA7]">.</span></Link>
         <div className="flex items-center gap-6">
           <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/50">
             <button onClick={() => setLang("pt")} className={lang === "pt" ? "text-[#0a0a0a]" : "hover:opacity-80"}>PT</button>
@@ -124,7 +124,7 @@ export default function Gate() {
         <p className="mt-4 text-[16px] md:text-[17px] leading-relaxed max-w-[58ch] text-[#0a0a0a]/55">{t.honest}</p>
 
         <div className="mt-20 flex flex-wrap items-center gap-7">
-          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a]">{t.cta}</Link>
+          <Link to="/account" className="lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white">{t.cta}</Link>
           <a href={xc("contract", CONTRACT)} target="_blank" rel="noreferrer" className="text-[12px] uppercase tracking-[0.18em] text-[#6f6862] hover:text-[#0a0a0a] border-b border-[#0a0a0a]/20 pb-1">{t.seeContract}</a>
         </div>
       </main>

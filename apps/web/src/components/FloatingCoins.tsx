@@ -18,7 +18,7 @@ function Coin({ size, blur }: { size: number; blur: number }) {
     <div
       style={{
         width: size, height: size, borderRadius: "50%",
-        background: "radial-gradient(circle at 32% 26%, #fff7d6 0%, #FDDA24 46%, #cf9f14 100%)",
+        background: "radial-gradient(circle at 32% 26%, #fff7d6 0%, #002FA7 46%, #cf9f14 100%)",
         boxShadow:
           "inset 0 -7px 16px rgba(150,104,8,0.45), inset 0 5px 12px rgba(255,255,255,0.7), 0 14px 34px rgba(207,159,20,0.30)",
         filter: blur ? `blur(${blur}px)` : undefined,

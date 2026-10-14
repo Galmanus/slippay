@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/auth.tsx";
 
-const ACCENT = "#FDDA24";
+const ACCENT = "#002FA7";
 
 const T = {
   pt: { ph: "seu melhor email", btn: "entrar na lista", sending: "entrando…", done: "você está na lista. a gente te avisa.", bad: "confere o email" },
@@ -56,7 +56,7 @@ export function Waitlist({ source, lang }: { source: string; lang: "pt" | "en" }
       <button
         type="submit"
         disabled={state === "loading"}
-        className="lift inline-flex items-center justify-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#FDDA24] text-[#0a0a0a] font-semibold disabled:opacity-60"
+        className="lift inline-flex items-center justify-center rounded-full px-8 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white font-semibold disabled:opacity-60"
       >{state === "loading" ? t.sending : t.btn}</button>
     </form>
   );
