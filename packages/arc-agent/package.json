@@ -16,7 +16,8 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "metrics": "node scripts/arc-metrics.mjs"
   },
   "dependencies": {
     "@noble/post-quantum": "0.7.1",

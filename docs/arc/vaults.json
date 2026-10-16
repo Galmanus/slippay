@@ -1,0 +1,10 @@
+[
+  {
+    "network": "testnet",
+    "address": "0x9FF0A12cc3cD4654150527040Cc6481DED01C8F2",
+    "fromBlock": 67019314,
+    "owner": "0x1cDB3F62257De815DDdAd3176e37Ff1F1916A735",
+    "label": "slippay-e2e",
+    "external": false
+  }
+]
