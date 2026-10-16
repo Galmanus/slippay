@@ -1,6 +1,7 @@
-// Landing — Slippay identity system. Positioning: "the Arc dollar, in Pix": a
-// non-custodial dollar account (USDC on Arc) that moves in and out by Pix, for
-// people and for their AI agents (sub-wallets with limits and identity).
+// Landing — Slippay identity system. Positioning (2026-10-16): the dollar account
+// for Brazilian companies that import and export. Non-custodial USDC on Arc that
+// moves in and out by Pix; idle balance earns; AI agents pay bills inside limits.
+// Companies only: there is no retail (pessoa física) product.
 // Helvetica-brutalist (Inter), monumental caps, mono index labels, International
 // Klein Blue #002FA7 as the only accent (#5B82FF on dark surfaces). Bilingual.
 // Register: a normal bank. Arc and Circle are named (declared ally); no other
@@ -23,60 +24,62 @@ type Lang = "pt" | "en";
 
 const COPY = {
   en: {
-    nav: { pay: "Pay", receive: "Receive", agents: "Agents", enterprise: "Enterprise", login: "Sign in", tryFree: "Open your account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "dollar account · on Arc", h1: "The Arc dollar, in Pix.", sub: "Send a Pix and hold digital dollars (USDC) in an account that is only yours. For you, and for your AI agents.", cta: "Open your account", note: "no card · 2 minutes · just your fingerprint", metrics: [["Pix", "in and out, in reais"], ["US$", "balance in USDC"], ["R$ 0", "monthly fee"]] as [string, string][] },
-    yours: { n: "001", stamp: "yours", h: "Yours. For real.", items: [
-      ["Only your fingerprint opens it", "Your face or fingerprint approves every move. No password, no codes to memorize. No one else."],
-      ["We never hold it", "The money stays with you, never parked inside a bank or inside Slippay. We can't block it, hold it, or take it."],
-      ["Real dollars, in hand", "A dollar balance that's yours. Withdraw, send, or spend anytime. Nothing is locked."],
+    nav: { pay: "Pay", receive: "Receive", agents: "Agents", enterprise: "Enterprise", login: "Sign in", tryFree: "Open a company account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
+    hero: { eyebrow: "dollar account for companies · on Arc", h1: "The dollar account for foreign trade.", sub: "A digital-dollar account (USDC, issued by Circle) for the Brazilian company that buys and sells abroad. Reais come in and go out by Pix. Idle dollars earn. And your AI agents pay the bills, inside the limits you set.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][] },
+    yours: { n: "001", stamp: "yours", h: "The company's. For real.", items: [
+      ["Only the company moves it", "Every payment is approved by the people you authorize. Not by a bank, and not by us."],
+      ["We never hold it", "The dollars stay in the company's own account, never parked inside Slippay. We can't block them, hold them, or take them."],
+      ["Real dollars, ready to use", "Pay a supplier in Asia, receive from a client in Europe, or bring it back to reais. Nothing is locked."],
     ] as [string, string][] },
-    how: { n: "002", stamp: "how", h: "From Pix to dollars.", steps: [
-      ["Send a Pix", "In reais, as always."],
-      ["It becomes dollars", "USDC, straight into your account."],
-      ["Ready to use", "Save it, send it, or give your agent a budget."],
-    ] as [string, string][], foot: "~1.9% vs ~5% at a bank. The rest stays yours." },
-    control: { n: "003", stamp: "agents", h: "A wallet for your AI agent.", body: "Connect Claude, ChatGPT or your company's bot to a dollar sub-wallet. You set the limit and who it can pay; past that, it locks on its own. Each agent gets its own identity, and every payment is on the record.", gateLink: "How the limits work →", agentsLink: "Connect an agent →" },
-    business: { n: "004", stamp: "for business", h: "For your company.", body: "Dollars in Pix for your treasury, and agents that pay suppliers, subscriptions and tools on their own, inside the limits you set. Nothing above the limit goes out, and every payment has a receipt anyone can check.", cta: "Talk to us →" },
-    open: { n: "005", stamp: "on Arc", h: "Built on Arc, the network of Circle's dollar.", body: "Your balance is USDC, the digital dollar issued by Circle, on Arc, the network Circle built for money. Every payment leaves a public receipt anyone can verify, without asking us.", btnReal: "See an agent payment (test network) ↗" },
+    how: { n: "002", stamp: "how", h: "From Pix to dollars, and back.", steps: [
+      ["Send a Pix", "From the company's bank account, in reais, as always."],
+      ["It becomes dollars", "USDC, straight into the company's account."],
+      ["Use it abroad", "Pay suppliers, receive from clients, or bring it back by Pix."],
+    ] as [string, string][], foot: "~1.9% to turn reais into dollars, vs ~5% at a bank. The rest stays with the company." },
+    control: { n: "003", stamp: "agents", h: "Agents that pay the bills.", body: "Give an AI agent its own dollar sub-wallet with a limit and a list of who it may pay: freight, SaaS, a supplier's invoice. Past the limit, it locks on its own. Each agent has an identity, and every payment is on the record for your accountant.", gateLink: "How the limits work →", agentsLink: "Connect an agent →" },
+    business: { n: "004", stamp: "yield", h: "Idle dollars earn.", body: "Money waiting for the next shipment doesn't have to sit still. From the account, the company moves idle dollars into a yield position on Arc and takes them back when it needs them. The position stays in the company's own account, with the rate and the earnings shown as they are on the network.", cta: "Talk to us →" },
+    open: { n: "005", stamp: "on Arc", h: "Built on Arc, the network of Circle's dollar.", body: "The balance is USDC, the digital dollar issued by Circle, on Arc, the network Circle built for money. Every payment leaves a public receipt anyone can verify, without asking us.", btnReal: "See an agent payment (test network) ↗" },
     faq: { n: "006", stamp: "questions", h: "Before you ask.", items: [
-      ["How much does it cost?", "~1.9% when your reais become dollars, everything included. No monthly fee. No hidden fees. If a fee ever exists, it shows up before you confirm, never after."],
-      ["Is Slippay a bank?", "No, and that's by design. A bank keeps your money; Slippay doesn't. The money stays with you, and currency exchange runs through partners licensed by the Central Bank."],
-      ["What is Arc?", "Arc is the network Circle, the company that issues USDC, built to move digital dollars. Your balance lives there, in your name, not ours."],
+      ["How much does it cost?", "~1.9% when reais become dollars, everything included. No monthly fee. No hidden fees. If a fee ever exists, it shows up before you confirm, never after."],
+      ["Is Slippay a bank?", "No, and that's by design. A bank keeps your money; Slippay doesn't. The dollars stay with the company, and currency exchange runs through partners licensed by the Central Bank."],
+      ["Who is it for?", "Companies that import, export, or pay and receive abroad. There is no personal account."],
+      ["Can we pay a supplier abroad?", "Yes. The balance is real dollars and it's the company's. Send it to any supplier that accepts USDC, anywhere, anytime."],
+      ["How does the yield work?", "The company moves idle dollars into a lending vault on Arc, through Circle's Earn, and takes them back when it wants. The position lives in the company's own account. The rate and the earnings shown are the network's numbers, not ours."],
       ["How does an agent's wallet work?", "You create a sub-wallet, set a limit and who it can pay, and paste a connection code into your agent. It pays on its own inside the limit; anything above it is blocked."],
-      ["Can I withdraw in dollars?", "Yes. The balance is real dollars and it's yours. Send it or move it anywhere, anytime. Nothing is locked."],
-      ["I have a large amount. Can I use it?", "Yes. The money stays in your hands, never ours. For large deposits and withdrawals, conversion routes through a Central Bank–licensed partner, with identity checks and full FX compliance."],
-      ["Can Slippay freeze my money?", "No. Slippay never holds your money, so there's nothing for us, or a bank, to freeze. Like every digital dollar, USDC follows the compliance rules of Circle, its issuer."],
+      ["We move large amounts. Can we use it?", "Yes. The money stays in the company's hands, never ours. For large deposits and withdrawals, conversion routes through a Central Bank–licensed partner, with company identity checks and full FX compliance."],
+      ["Can Slippay freeze our money?", "No. Slippay never holds it, so there's nothing for us, or a bank, to freeze. Like every digital dollar, USDC follows the compliance rules of Circle, its issuer."],
     ] as [string, string][] },
-    cta: { n: "007", stamp: "start", h: "Start now.", lines: ["From a Pix to dollars, in an account that's yours.", "For you and for your agents."], btn: "Open your account", note: "No card · 2 minutes · just your fingerprint",
-      footer: "slippay · the Arc dollar, in Pix" },
+    cta: { n: "007", stamp: "start", h: "Start now.", lines: ["From a Pix to dollars, in an account that's the company's.", "For the business and for its agents."], btn: "Open a company account", note: "No bank branch · the money stays with the company",
+      footer: "slippay · the dollar account for foreign trade" },
   },
   pt: {
-    nav: { pay: "Pagar", receive: "Receber", agents: "Agentes", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "conta em dólar · na Arc", h1: "O dólar da Arc, no Pix.", sub: "Faça um Pix e tenha dólar digital (USDC) numa conta que é só sua. Pra você e pros seus agentes de IA.", cta: "Abrir conta", note: "sem cartão · 2 minutos · só a sua digital", metrics: [["Pix", "entra e sai em reais"], ["US$", "saldo em USDC"], ["R$ 0", "de mensalidade"]] as [string, string][] },
-    yours: { n: "001", stamp: "é seu", h: "É seu. De verdade.", items: [
-      ["Só a sua digital abre", "O seu rosto ou digital aprova cada movimento. Sem senha e sem código pra decorar. Mais ninguém."],
-      ["A gente não segura", "O dinheiro fica com você, nunca parado dentro de um banco ou da Slippay. A gente não consegue bloquear, segurar nem tomar."],
-      ["Dólar de verdade, na mão", "Um saldo em dólar que é seu. Saque, envie ou gaste quando quiser. Nada fica preso."],
+    nav: { pay: "Pagar", receive: "Receber", agents: "Agentes", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta da empresa", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
+    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "A conta em dólar do comércio exterior.", sub: "Uma conta em dólar digital (USDC, emitido pela Circle) para a empresa brasileira que compra e vende lá fora. O real entra e sai por Pix. O dólar parado rende. E os seus agentes de IA pagam as contas, dentro do limite que você define.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][] },
+    yours: { n: "001", stamp: "é da empresa", h: "É da empresa. De verdade.", items: [
+      ["Só a empresa movimenta", "Cada pagamento é aprovado por quem você autorizar. Não por um banco, nem pela gente."],
+      ["A gente não segura", "O dólar fica na conta da própria empresa, nunca parado dentro da Slippay. A gente não consegue bloquear, segurar nem tomar."],
+      ["Dólar de verdade, pronto pra usar", "Pague um fornecedor na Ásia, receba de um cliente na Europa ou traga de volta pra real. Nada fica preso."],
     ] as [string, string][] },
-    how: { n: "002", stamp: "como", h: "Do Pix ao dólar.", steps: [
-      ["Faça um Pix", "Em reais, como sempre."],
-      ["Vira dólar", "USDC, direto na sua conta."],
-      ["Pronto pra usar", "Guarde, envie ou dê um orçamento pro seu agente."],
-    ] as [string, string][], foot: "~1,9% contra ~5% de banco. O resto fica com você." },
-    control: { n: "003", stamp: "agentes", h: "Uma carteira pro seu agente de IA.", body: "Conecte o Claude, o ChatGPT ou o bot da sua empresa a uma sub-carteira em dólar. Você define o limite e quem ele pode pagar; passou disso, trava sozinho. Cada agente tem identidade própria e todo gasto fica registrado.", gateLink: "Como os limites funcionam →", agentsLink: "Conectar um agente →" },
-    business: { n: "004", stamp: "para empresas", h: "Para a sua empresa.", body: "Dólar no Pix pro caixa da empresa e agentes que pagam fornecedores, assinaturas e ferramentas sozinhos, dentro dos limites que você define. Nada acima do limite sai, e todo pagamento tem comprovante que qualquer um confere.", cta: "Falar com a gente →" },
-    open: { n: "005", stamp: "na Arc", h: "Feito na Arc, a rede do dólar da Circle.", body: "O seu saldo é USDC, o dólar digital emitido pela Circle, na Arc, a rede que a Circle construiu para dinheiro. Cada pagamento deixa um comprovante público que qualquer pessoa confere, sem pedir nada pra gente.", btnReal: "Ver um pagamento de agente (rede de teste) ↗" },
+    how: { n: "002", stamp: "como", h: "Do Pix ao dólar, e de volta.", steps: [
+      ["Faça um Pix", "Da conta da empresa, em reais, como sempre."],
+      ["Vira dólar", "USDC, direto na conta da empresa."],
+      ["Use lá fora", "Pague fornecedores, receba de clientes ou traga de volta por Pix."],
+    ] as [string, string][], foot: "~1,9% pra virar dólar, contra ~5% de banco. O resto fica com a empresa." },
+    control: { n: "003", stamp: "agentes", h: "Agentes que pagam as contas.", body: "Dê a um agente de IA uma sub-carteira em dólar com limite e lista de quem ele pode pagar: frete, SaaS, a fatura de um fornecedor. Passou do limite, trava sozinho. Cada agente tem identidade própria, e todo pagamento fica registrado pro seu contador.", gateLink: "Como os limites funcionam →", agentsLink: "Conectar um agente →" },
+    business: { n: "004", stamp: "rendimento", h: "Dólar parado rende.", body: "O dinheiro que espera o próximo embarque não precisa ficar parado. Da própria conta, a empresa coloca o dólar ocioso numa posição de rendimento na Arc e tira quando precisar. A posição fica na conta da empresa, com a taxa e o rendimento mostrados como estão na rede.", cta: "Falar com a gente →" },
+    open: { n: "005", stamp: "na Arc", h: "Feito na Arc, a rede do dólar da Circle.", body: "O saldo é USDC, o dólar digital emitido pela Circle, na Arc, a rede que a Circle construiu para dinheiro. Cada pagamento deixa um comprovante público que qualquer pessoa confere, sem pedir nada pra gente.", btnReal: "Ver um pagamento de agente (rede de teste) ↗" },
     faq: { n: "006", stamp: "perguntas", h: "Antes de perguntar.", items: [
-      ["Quanto custa?", "~1,9% quando o seu real vira dólar, com tudo dentro. Sem mensalidade. Sem taxa escondida. Se algum dia existir uma taxa, ela aparece antes de você confirmar, nunca depois."],
-      ["A Slippay é um banco?", "Não, e é de propósito. Banco guarda o seu dinheiro; a Slippay não guarda. O dinheiro fica com você, e o câmbio passa por parceiros licenciados pelo Banco Central."],
-      ["O que é a Arc?", "A Arc é a rede que a Circle, empresa que emite o USDC, construiu para mover dólar digital. O seu saldo fica lá, no seu nome, não no nosso."],
+      ["Quanto custa?", "~1,9% quando o real vira dólar, com tudo dentro. Sem mensalidade. Sem taxa escondida. Se algum dia existir uma taxa, ela aparece antes de você confirmar, nunca depois."],
+      ["A Slippay é um banco?", "Não, e é de propósito. Banco guarda o seu dinheiro; a Slippay não guarda. O dólar fica com a empresa, e o câmbio passa por parceiros licenciados pelo Banco Central."],
+      ["Pra quem é?", "Empresas que importam, exportam ou pagam e recebem lá fora. Não existe conta pra pessoa física."],
+      ["Dá pra pagar fornecedor lá fora?", "Dá. O saldo é dólar de verdade e é da empresa. Envie pra qualquer fornecedor que aceite USDC, em qualquer lugar, quando quiser."],
+      ["Como funciona o rendimento?", "A empresa coloca o dólar parado num cofre de empréstimo na Arc, pelo Earn da Circle, e tira quando quiser. A posição fica na conta da própria empresa. A taxa e o rendimento mostrados são os números da rede, não os nossos."],
       ["Como funciona a carteira do agente?", "Você cria uma sub-carteira, define o limite e quem ele pode pagar, e cola um código de conexão no seu agente. Ele paga sozinho dentro do limite; passou disso, é bloqueado."],
-      ["Posso sacar em dólar?", "Pode. O saldo é dólar de verdade e é seu. Envie ou leve pra onde quiser, quando quiser. Nada fica preso."],
-      ["Tenho um valor alto. Posso usar?", "Pode. O dinheiro fica na sua mão, nunca na nossa. Para entradas e saídas grandes, a conversão passa por um parceiro licenciado pelo Banco Central, com verificação de identidade e câmbio em conformidade."],
-      ["A Slippay pode congelar meu dinheiro?", "Não. A Slippay nunca segura o seu dinheiro, então não há o que nós, ou um banco, congelar. Como todo dólar digital, o USDC segue as regras de conformidade da Circle, que o emite."],
+      ["Movimentamos valores altos. Dá pra usar?", "Dá. O dinheiro fica na mão da empresa, nunca na nossa. Para entradas e saídas grandes, a conversão passa por um parceiro licenciado pelo Banco Central, com verificação da empresa e câmbio em conformidade."],
+      ["A Slippay pode congelar o nosso dinheiro?", "Não. A Slippay nunca segura o dinheiro, então não há o que nós, ou um banco, congelar. Como todo dólar digital, o USDC segue as regras de conformidade da Circle, que o emite."],
     ] as [string, string][] },
-    cta: { n: "007", stamp: "comece", h: "Comece agora.", lines: ["Do Pix ao dólar, numa conta só sua.", "Pra você e pros seus agentes."], btn: "Abrir conta", note: "Sem cartão · 2 minutos · só a sua digital",
-      footer: "slippay · o dólar da Arc, no Pix" },
+    cta: { n: "007", stamp: "comece", h: "Comece agora.", lines: ["Do Pix ao dólar, numa conta que é da empresa.", "Pro negócio e pros agentes dele."], btn: "Abrir conta da empresa", note: "Sem agência · o dinheiro fica com a empresa",
+      footer: "slippay · a conta em dólar do comércio exterior" },
   },
 } as const;
 
