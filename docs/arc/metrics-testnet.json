@@ -1,0 +1,102 @@
+{
+  "schema": "slippay.arc-metrics/1",
+  "network": "testnet",
+  "chainId": 5042002,
+  "rpc": "https://rpc.testnet.arc.io",
+  "explorer": "https://explorer.testnet.arc.io",
+  "generatedAt": "2026-10-16T12:22:15.700Z",
+  "latestBlock": "67498302",
+  "source": {
+    "event": "AgentSpend",
+    "topic0": [
+      "0x9ea5d6476f343b4e6156c9888553bf6c5c6cc7bc3da0f648a0b8bba450c013a8",
+      "0xb23766a70bdcd5c077e8109059bcb7d83253800574f0306b6f7d954160830602"
+    ],
+    "getLogsChunkBlocks": 10000,
+    "registry": "docs/arc/vaults.json"
+  },
+  "vaults": [
+    {
+      "network": "testnet",
+      "address": "0x9FF0A12cc3cD4654150527040Cc6481DED01C8F2",
+      "fromBlock": 67019314,
+      "owner": "0x1cDB3F62257De815DDdAd3176e37Ff1F1916A735",
+      "label": "slippay-e2e",
+      "external": false
+    }
+  ],
+  "metrics": {
+    "payments": 2,
+    "activeWallets": 1,
+    "activeWallets28d": 1,
+    "activeDays": 1,
+    "volumeUsdc": "2.5",
+    "volumeBaseUnits": "2500000",
+    "externalPayments": 0,
+    "external": {
+      "payments": 0,
+      "activeWallets": 0,
+      "activeWallets28d": 0,
+      "activeDays": 0,
+      "volumeUsdc": "0",
+      "volumeBaseUnits": "0"
+    },
+    "days": [
+      "2026-10-13"
+    ],
+    "window28d": {
+      "from": "2026-09-18T12:22:15.700Z",
+      "to": "2026-10-16T12:22:15.700Z"
+    },
+    "unregisteredEvents": 0,
+    "perVault": [
+      {
+        "address": "0x9FF0A12cc3cD4654150527040Cc6481DED01C8F2",
+        "label": "slippay-e2e",
+        "owner": "0x1cDB3F62257De815DDdAd3176e37Ff1F1916A735",
+        "external": false,
+        "payments": 2,
+        "volumeUsdc": "2.5",
+        "activeDays": 1,
+        "days": [
+          "2026-10-13"
+        ],
+        "activeIn28d": true,
+        "firstSpendAt": "2026-10-13T16:48:09.000Z",
+        "lastSpendAt": "2026-10-13T16:48:14.000Z"
+      }
+    ]
+  },
+  "payments": [
+    {
+      "vault": "0x9FF0A12cc3cD4654150527040Cc6481DED01C8F2",
+      "label": "slippay-e2e",
+      "external": false,
+      "txHash": "0x8cb9df02fc39a4733f861ae30c22a2cc783806a6e2de44832d1fe50427aa5bbb",
+      "logIndex": 28,
+      "blockNumber": "67019327",
+      "time": "2026-10-13T16:48:09.000Z",
+      "agentSigner": "0x422E911cb36090CbEba21CDEa73d0c454287606A",
+      "agentId": "897273",
+      "to": "0xb83a837083100c0A99bfc44693c177Ba0b31b393",
+      "amountUsdc": "0.5",
+      "orderId": "0xfcf9e38fa945ab7062eb4d7173398fbf1d80c71d1527f7b880f394b0f1415504",
+      "explorer": "https://explorer.testnet.arc.io/tx/0x8cb9df02fc39a4733f861ae30c22a2cc783806a6e2de44832d1fe50427aa5bbb"
+    },
+    {
+      "vault": "0x9FF0A12cc3cD4654150527040Cc6481DED01C8F2",
+      "label": "slippay-e2e",
+      "external": false,
+      "txHash": "0x4c10777d86b8093d26e01905de7e4ce203912dd1e731989f27cd427f52ee9691",
+      "logIndex": 12,
+      "blockNumber": "67019337",
+      "time": "2026-10-13T16:48:14.000Z",
+      "agentSigner": "0x422E911cb36090CbEba21CDEa73d0c454287606A",
+      "agentId": "897273",
+      "to": "0xb83a837083100c0A99bfc44693c177Ba0b31b393",
+      "amountUsdc": "2",
+      "orderId": "0x1dd3962e2e821fd0492aa3f50ed9988ab7b9f8b28a6cb06158fdb6517979c84b",
+      "explorer": "https://explorer.testnet.arc.io/tx/0x4c10777d86b8093d26e01905de7e4ce203912dd1e731989f27cd427f52ee9691"
+    }
+  ]
+}
