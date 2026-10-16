@@ -25,7 +25,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { pay: "Pay", receive: "Receive", agents: "Agents", enterprise: "Enterprise", login: "Sign in", tryFree: "Open a company account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "dollar account for companies · on Arc", h1: "Dollars to import and export.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][], circle: "Built on Arc, by Circle.", circleNote: "Arc Acceleration Season · 2026" },
+    hero: { eyebrow: "cross-border payments · on Arc", h1: "Cross-border payments, in dollars.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][], circle: "Built on Arc, by Circle.", circleNote: "Arc Acceleration Season · 2026" },
     yours: { n: "001", stamp: "yours", h: "The company's. For real.", items: [
       ["Only the company moves it", "Every payment is approved by the people you authorize. Not by a bank, and not by us."],
       ["We never hold it", "The dollars stay in the company's own account, never parked inside Slippay. We can't block them, hold them, or take them."],
@@ -42,7 +42,7 @@ const COPY = {
     faq: { n: "006", stamp: "questions", h: "Before you ask.", items: [
       ["How much does it cost?", "~1.9% when reais become dollars, everything included. No monthly fee. No hidden fees. If a fee ever exists, it shows up before you confirm, never after."],
       ["Is Slippay a bank?", "No, and that's by design. A bank keeps your money; Slippay doesn't. The dollars stay with the company, and currency exchange runs through partners licensed by the Central Bank."],
-      ["Who is it for?", "Companies that import, export, or pay and receive abroad. There is no personal account."],
+      ["Who is it for?", "Companies that import, export, or make cross-border payments. There is no personal account."],
       ["Can we pay a supplier abroad?", "Yes. The balance is real dollars and it's the company's. Send it to any supplier that accepts USDC, anywhere, anytime."],
       ["How does the yield work?", "The company moves idle dollars into a lending vault on Arc, through Circle's Earn, and takes them back when it wants. The position lives in the company's own account. The rate and the earnings shown are the network's numbers, not ours."],
       ["How does an agent's wallet work?", "You create a sub-wallet, set a limit and who it can pay, and paste a connection code into your agent. It pays on its own inside the limit; anything above it is blocked."],
@@ -50,7 +50,7 @@ const COPY = {
       ["Can Slippay freeze our money?", "No. Slippay never holds it, so there's nothing for us, or a bank, to freeze. Like every digital dollar, USDC follows the compliance rules of Circle, its issuer."],
     ] as [string, string][] },
     cta: { n: "007", stamp: "start", h: "Start now.", lines: ["From a Pix to dollars, in an account that's the company's.", "For the business and for its agents."], btn: "Open a company account", note: "No bank branch · the money stays with the company",
-      footer: "slippay · the dollar account for foreign trade" },
+      footer: "slippay · cross-border payments, in dollars" },
   },
   pt: {
     nav: { pay: "Pagar", receive: "Receber", agents: "Agentes", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta da empresa", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
