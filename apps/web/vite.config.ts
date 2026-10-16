@@ -27,6 +27,10 @@ export default defineConfig({
       // version incompatible with the one @solana-program/token pins, so it's a
       // dependency dead-end — stubbed. See src/stubs/solana-program-memo.ts.
       "@solana-program/memo": resolve(__dirname, "src/stubs/solana-program-memo.ts"),
+      // The Arc agent SDK is consumed from source (constants, AgentVault ABI, SLH-DSA keygen) so
+      // the web flow and the MCP server can never disagree on addresses or ABI. Mirrored in
+      // tsconfig.json "paths"; the Dockerfile copies packages/arc-agent for the same reason.
+      "@slippay/arc-agent": resolve(__dirname, "../../packages/arc-agent/src/index.ts"),
     },
   },
   server: {

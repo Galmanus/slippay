@@ -10,6 +10,7 @@ const Builders = lazy(() => import("./pages/Builders.tsx"));
 const Verify = lazy(() => import("./pages/Verify.tsx"));
 const Home = lazy(() => import("./pages/Home.tsx"));
 const Agents = lazy(() => import("./pages/Agents.tsx"));
+const AgentsNew = lazy(() => import("./pages/AgentsNew.tsx"));
 const Comprovante = lazy(() => import("./pages/Comprovante.tsx"));
 const Checkout = lazy(() => import("./pages/Checkout.tsx"));
 const Sub = lazy(() => import("./pages/Sub.tsx"));
@@ -75,6 +76,7 @@ export default function App() {
         <Route path="/human" element={<Home />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/agents" element={<Agents />} />
+        <Route path="/agents/new" element={<AgentsNew />} />
         <Route path="/comprovante/:txhash" element={<Comprovante />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />

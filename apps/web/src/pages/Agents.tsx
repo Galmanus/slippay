@@ -143,7 +143,7 @@ export default function Agents() {
         <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,8vw,5.5rem)] max-w-[15ch]" style={display}>{t.hero.h1}</h1>
         <p className="mt-6 text-lg md:text-xl text-[#0a0a0a]/70 max-w-[52ch] leading-relaxed">{t.hero.sub}</p>
         <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <Link to="/account" className={btn}>{t.hero.cta}</Link>
+          <Link to="/agents/new" className={btn}>{t.hero.cta}</Link>
           <a href={tx(PROOFS.spend)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 border-[#002FA7] pb-1 hover:opacity-70">{t.hero.proof}</a>
         </div>
         </div>
@@ -223,7 +223,7 @@ export default function Agents() {
       {/* CTA */}
       <section className={sec}><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
         <h2 className={`${h2} text-[clamp(2.75rem,9vw,7rem)] max-w-[14ch]`} style={display}>{t.cta.h}</h2>
-        <div className="mt-12"><Link to="/account" className={btn}>{t.cta.btn}</Link></div>
+        <div className="mt-12"><Link to="/agents/new" className={btn}>{t.cta.btn}</Link></div>
         <div className="mt-16 font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/30">{t.cta.footer}</div>
       </div></section>
     </div>
