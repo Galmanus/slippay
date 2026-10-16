@@ -142,7 +142,7 @@ export default function LandingV2() {
 
       {/* HEADER — transparent over the hero image, solid bone on scroll */}
       <header className={"fixed top-0 left-0 right-0 z-40 px-6 md:px-12 py-4 flex items-center justify-between transition-colors duration-300 " + (scrolled ? "backdrop-blur-md bg-white/85 border-b border-[#0a0a0a]/8" : "bg-transparent")}>
-        <Link to="/" className="text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}>slippay<span className="text-[#002FA7]">.</span></Link>
+        <Link to="/" className="inline-flex items-center gap-2.5 text-2xl md:text-3xl lowercase text-[#0a0a0a]" style={{ ...display, fontWeight: 800, letterSpacing: "-0.04em" }}><img src="/mark.png" alt="" width={30} height={30} className="block w-[26px] h-[26px] md:w-[30px] md:h-[30px]" />slippay<span className="text-[#002FA7]">.</span></Link>
         <nav className="flex items-center gap-5 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/55">
           {NAV.map(([label, href]) => <Link key={href} to={href} className={(href === "/enterprise" ? "inline" : "hidden md:inline") + " transition-opacity hover:opacity-70"}>{label}</Link>)}
           <span className="hidden md:inline"><LangToggle /></span>
