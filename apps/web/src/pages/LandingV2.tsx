@@ -25,7 +25,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { pay: "Pay", receive: "Receive", agents: "Agents", enterprise: "Enterprise", login: "Sign in", tryFree: "Open a company account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "dollar account for companies · on Arc", h1: "Dollars to import and export.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][] },
+    hero: { eyebrow: "dollar account for companies · on Arc", h1: "Dollars to import and export.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][], circle: "Built on Arc, by Circle.", circleNote: "Arc Acceleration Season · 2026" },
     yours: { n: "001", stamp: "yours", h: "The company's. For real.", items: [
       ["Only the company moves it", "Every payment is approved by the people you authorize. Not by a bank, and not by us."],
       ["We never hold it", "The dollars stay in the company's own account, never parked inside Slippay. We can't block them, hold them, or take them."],
@@ -54,7 +54,7 @@ const COPY = {
   },
   pt: {
     nav: { pay: "Pagar", receive: "Receber", agents: "Agentes", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta da empresa", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "Dólar pra importar e exportar.", sub: "O dólar digital da Circle (USDC) na conta da própria empresa. Entra e sai por Pix. Rende parado. Seus agentes de IA pagam as contas.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][] },
+    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "Dólar pra importar e exportar.", sub: "O dólar digital da Circle (USDC) na conta da própria empresa. Entra e sai por Pix. Rende parado. Seus agentes de IA pagam as contas.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][], circle: "Na Arc, a rede da Circle.", circleNote: "Arc Acceleration Season · 2026" },
     yours: { n: "001", stamp: "é da empresa", h: "É da empresa. De verdade.", items: [
       ["Só a empresa movimenta", "Cada pagamento é aprovado por quem você autorizar. Não por um banco, nem pela gente."],
       ["A gente não segura", "O dólar fica na conta da própria empresa, nunca parado dentro da Slippay. A gente não consegue bloquear, segurar nem tomar."],
@@ -197,6 +197,13 @@ export default function LandingV2() {
           <div className="mx-auto md:mx-0 max-w-[290px]">
             <AccountDemo lang={lang} />
           </div>
+        </div>
+        {/* CIRCLE — declared ally, monumental. Says "on Arc, by Circle": true today (program + network); not "backed by". */}
+        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pb-14 md:pb-20 text-center md:text-left">
+          <div className="font-black uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8.5rem)]" style={display}>
+            {t.hero.circle.split("Circle").map((part, i, arr) => <span key={i}>{part}{i < arr.length - 1 && <span className="text-[#002FA7]">Circle</span>}</span>)}
+          </div>
+          <div className="mt-5 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">{t.hero.circleNote}</div>
         </div>
         {/* Live pulse — real payment data behind the scenes, plain words in front */}
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 pb-16 md:pb-24">
