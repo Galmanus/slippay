@@ -25,7 +25,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { pay: "Pay", receive: "Receive", agents: "Agents", enterprise: "Enterprise", login: "Sign in", tryFree: "Open a company account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "dollar account for companies · on Arc", h1: "The dollar account for foreign trade.", sub: "A digital-dollar account (USDC, issued by Circle) for the Brazilian company that buys and sells abroad. Reais come in and go out by Pix. Idle dollars earn. And your AI agents pay the bills, inside the limits you set.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][] },
+    hero: { eyebrow: "dollar account for companies · on Arc", h1: "Dollars to import and export.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][] },
     yours: { n: "001", stamp: "yours", h: "The company's. For real.", items: [
       ["Only the company moves it", "Every payment is approved by the people you authorize. Not by a bank, and not by us."],
       ["We never hold it", "The dollars stay in the company's own account, never parked inside Slippay. We can't block them, hold them, or take them."],
@@ -54,7 +54,7 @@ const COPY = {
   },
   pt: {
     nav: { pay: "Pagar", receive: "Receber", agents: "Agentes", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta da empresa", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "A conta em dólar do comércio exterior.", sub: "Uma conta em dólar digital (USDC, emitido pela Circle) para a empresa brasileira que compra e vende lá fora. O real entra e sai por Pix. O dólar parado rende. E os seus agentes de IA pagam as contas, dentro do limite que você define.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][] },
+    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "Dólar pra importar e exportar.", sub: "O dólar digital da Circle (USDC) na conta da própria empresa. Entra e sai por Pix. Rende parado. Seus agentes de IA pagam as contas.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][] },
     yours: { n: "001", stamp: "é da empresa", h: "É da empresa. De verdade.", items: [
       ["Só a empresa movimenta", "Cada pagamento é aprovado por quem você autorizar. Não por um banco, nem pela gente."],
       ["A gente não segura", "O dólar fica na conta da própria empresa, nunca parado dentro da Slippay. A gente não consegue bloquear, segurar nem tomar."],
@@ -110,7 +110,7 @@ export default function LandingV2() {
   useEffect(() => { try { localStorage.setItem("slippay.lang", lang); } catch { /* */ } }, [lang]);
   const t = COPY[lang];
 
-  const NAV: [string, string][] = [[t.nav.receive, "/receber"], [t.nav.pay, "/pay"], [t.nav.agents, "/agents"], [t.nav.enterprise, "/enterprise"], [t.nav.login, "/account"]];
+  const NAV: [string, string][] = [[t.nav.agents, "/agents"], [t.nav.enterprise, "/enterprise"], [t.nav.login, "/account"]];
   const NAV_MORE: [string, string][] = [[t.nav.gate, "/gate"], [t.nav.live, "/cockpit"], [t.nav.investors, "/investors"], [t.nav.manifesto, "/manifesto"], [t.nav.builders, "/builders"]];
 
   useEffect(() => {
@@ -171,8 +171,8 @@ export default function LandingV2() {
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#002FA7" }} />{t.hero.eyebrow}
             </span>
-            <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.6rem,9vw,6rem)] max-w-[13ch]" style={display}>{t.hero.h1}</h1>
-            <p className="mt-6 text-lg md:text-xl text-[#0a0a0a]/70 max-w-[44ch] leading-relaxed">{t.hero.sub}</p>
+            <h1 className="mt-7 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(2.4rem,7.5vw,4.75rem)] max-w-[14ch]" style={display}>{t.hero.h1}</h1>
+            <p className="mt-6 text-base md:text-lg text-[#0a0a0a]/70 max-w-[40ch] leading-relaxed">{t.hero.sub}</p>
             <div className="mt-9 grid grid-cols-3 border-y-[1.5px] border-[#0a0a0a] w-full max-w-[440px]">
               {t.hero.metrics.map(([k, v], i) => (
                 <div key={k} className={"px-3 md:px-4 py-4 text-center md:text-left " + (i > 0 ? "border-l border-[#0a0a0a]/12" : "")}>
