@@ -199,11 +199,11 @@ export default function LandingV2() {
           </div>
         </div>
         {/* CIRCLE — declared ally, monumental. Says "on Arc, by Circle": true today (program + network); not "backed by". */}
-        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pb-14 md:pb-20 text-center md:text-left">
-          <div className="font-black uppercase tracking-[-0.05em] leading-[0.85] text-[clamp(2.75rem,11vw,8.5rem)]" style={display}>
+        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pb-12 md:pb-16 text-center md:text-left">
+          <div className="border-t border-[#0a0a0a]/12 pt-8 font-black uppercase tracking-[-0.04em] leading-[0.9] text-[clamp(1.5rem,4.2vw,3rem)]" style={display}>
             {t.hero.circle.split("Circle").map((part, i, arr) => <span key={i}>{part}{i < arr.length - 1 && <span className="text-[#002FA7]">Circle</span>}</span>)}
           </div>
-          <div className="mt-5 font-mono text-[11px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">{t.hero.circleNote}</div>
+          <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[#0a0a0a]/45">{t.hero.circleNote}</div>
         </div>
         {/* Live pulse — real payment data behind the scenes, plain words in front */}
         <div className="relative z-10 max-w-[1200px] mx-auto px-6 pb-16 md:pb-24">
