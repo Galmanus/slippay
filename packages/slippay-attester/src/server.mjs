@@ -28,6 +28,9 @@ import { attestArc, p256PublicKey } from "./arc.mjs";
 import { checkCounterparty, counterpartyGuard, gatewayAddress } from "./counterparty.mjs";
 
 const PORT = Number(process.env.PORT || 8790);
+// Loopback by default: /register is unauthenticated and, with the counterparty check on, every
+// /arc/attest spends from the payer's Gateway balance. Set HOST=0.0.0.0 only behind auth.
+const HOST = process.env.HOST || "127.0.0.1";
 const priv = process.env.SLIPPAY_ATTESTER_SECRET
   ? hexToBytes(process.env.SLIPPAY_ATTESTER_SECRET)
   : sha256(new TextEncoder().encode("slippay-attester-dev-seed")); // DEV ONLY
@@ -66,6 +69,6 @@ const server = createServer(async (req, res) => {
   } catch (e) { json(res, 400, { error: String(e?.message ?? e) }); }
 });
 
-server.listen(PORT, async () => {
-  process.stderr.write(`slippay-attester on :${PORT} · attester ${await publicKeyHex(priv)} · key=${process.env.SLIPPAY_ATTESTER_SECRET ? "env" : "DEV-seed"} · p256=${process.env.SLIPPAY_ATTESTER_P256_SECRET ? "env" : "DEV-seed"} · counterparty=${cpMode}${cpPayer ? ` payer ${cpPayer}` : ""}\n`);
+server.listen(PORT, HOST, async () => {
+  process.stderr.write(`slippay-attester on ${HOST}:${PORT} · attester ${await publicKeyHex(priv)} · key=${process.env.SLIPPAY_ATTESTER_SECRET ? "env" : "DEV-seed"} · p256=${process.env.SLIPPAY_ATTESTER_P256_SECRET ? "env" : "DEV-seed"} · counterparty=${cpMode}${cpPayer ? ` payer ${cpPayer}` : ""}\n`);
 });
