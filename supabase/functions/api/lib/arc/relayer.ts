@@ -25,7 +25,21 @@ export class RelayError extends Error {
   }
 }
 
-export type RelayPolicy = { rpc: ArcRpc; allowedVaults: Set<string>; gasCap: bigint; maxFeeCap: bigint };
+/** A validated spend request, as handed to the attester. */
+export type ParsedSpend = z.infer<typeof SpendRequest>;
+
+export type RelayPolicy = {
+  rpc: ArcRpc;
+  allowedVaults: Set<string>;
+  gasCap: bigint;
+  maxFeeCap: bigint;
+  /**
+   * Slippay integrity attester, asked only when the caller sent no attestation. Returns the P-256
+   * attestation, or "0x" when the session needs none for this amount; throwing refuses the spend
+   * (e.g. a counterparty DENY in enforce mode).
+   */
+  attest?: (spend: ParsedSpend) => Promise<Hex>;
+};
 export type RelayResult = { txHash: Hex; status: "success" | "reverted" | "pending"; blockNumber?: string };
 
 const GWEI = 1_000_000_000n;
@@ -64,6 +78,15 @@ export async function relaySpend(body: unknown, p: RelayPolicy): Promise<RelayRe
   }
   if (r.deadline < BigInt(Math.floor(Date.now() / 1000))) throw new RelayError("expired", "intent deadline has passed");
 
+  let attestation = r.attestation as Hex;
+  if (attestation === "0x" && p.attest) {
+    try {
+      attestation = await p.attest(r);
+    } catch (e) {
+      throw new RelayError("attestation_refused", e instanceof Error ? e.message.slice(0, 300) : "refused", 403);
+    }
+  }
+
   const to = r.vault as Hex;
   const data = encodeSpendCall(
     {
@@ -74,7 +97,7 @@ export async function relaySpend(body: unknown, p: RelayPolicy): Promise<RelayRe
       deadline: r.deadline,
       orderId: r.orderId as Hex,
     },
-    { ecdsaSig: r.ecdsaSig as Hex, slhSig: r.slhSig as Hex, attestation: r.attestation as Hex },
+    { ecdsaSig: r.ecdsaSig as Hex, slhSig: r.slhSig as Hex, attestation },
   );
 
   try {

@@ -149,3 +149,38 @@ Deno.test("arc relayer route: 503 when the network's relayer key is not configur
   assertEquals(res.status, 503);
   await res.body?.cancel();
 });
+
+Deno.test("arc relayer: without an attestation, asks the attester and puts its answer in the calldata", async () => {
+  const { rpc, sent } = fakeRpc();
+  const attestation = `0x${"bb".repeat(64)}` as Hex;
+  const asked: unknown[] = [];
+  const b = body();
+  await relaySpend(b, { rpc, ...policy, attest: async (s) => (asked.push(s), attestation) });
+  assertEquals(asked.length, 1);
+  assertEquals(
+    sent[0]!.data,
+    encodeSpendCall(
+      { agentSigner: AGENT, to: TO, amount: 1_000_000n, nonce: 0n, deadline: BigInt(b.deadline as string), orderId: ORDER },
+      { ecdsaSig: ECDSA, slhSig: "0x", attestation },
+    ),
+  );
+});
+
+Deno.test("arc relayer: an attester refusal is a 403 and nothing is broadcast", async () => {
+  const { rpc, sent } = fakeRpc();
+  const e = await assertRejects(
+    () => relaySpend(body(), { rpc, ...policy, attest: async () => { throw new Error("counterparty DENY: reputation"); } }),
+    RelayError,
+  );
+  assertEquals(e.code, "attestation_refused");
+  assertEquals(e.status, 403);
+  assertEquals(sent.length, 0);
+});
+
+Deno.test("arc relayer: an attestation supplied by the caller is used as-is (attester not asked)", async () => {
+  const { rpc, sent } = fakeRpc();
+  let asked = 0;
+  await relaySpend(body({ attestation: `0x${"aa".repeat(64)}` }), { rpc, ...policy, attest: async () => (asked++, "0x" as Hex) });
+  assertEquals(asked, 0);
+  assertEquals(sent.length, 1);
+});

@@ -8,12 +8,17 @@
 //   ARC_<NET>_RPC             optional RPC override
 //   ARC_RELAYER_GAS_CAP       default 800000 (hybrid PQ spend ~266k execution + 7.9 KB calldata)
 //   ARC_RELAYER_MAX_FEE_WEI   default 200 gwei (Arc base fee floor is 20 gwei)
+//   ARC_ATTESTER_URL          optional, e.g. http://127.0.0.1:8791 (packages/slippay-attester). When
+//                             a spend arrives without an attestation and its amount is above the
+//                             session's attestThreshold, the relayer asks the attester (which runs
+//                             the A-Identity counterparty check) and refuses if it refuses.
 import { Hono } from "hono";
 import { createPublicClient, createWalletClient, http, type Chain, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arc, arcTestnet } from "viem/chains";
+import { agentVaultAbi } from "@slippay/arc-agent";
 import { rateLimit } from "../middleware/rate_limit.ts";
-import { type ArcRpc, RelayError, relaySpend } from "../lib/arc/relayer.ts";
+import { type ArcRpc, type ParsedSpend, RelayError, relaySpend } from "../lib/arc/relayer.ts";
 
 type Net = { chain: Chain; env: "TESTNET" | "MAINNET"; rpc: string; explorer: string };
 const NETWORKS: Record<string, Net> = {
@@ -47,6 +52,34 @@ function viemRpc(net: Net, privateKey: Hex): ArcRpc {
   };
 }
 
+/** Integrity attester client (agent_id = the agent signer address, lowercase). */
+function attesterFor(net: Net): ((s: ParsedSpend) => Promise<Hex>) | undefined {
+  const url = Deno.env.get("ARC_ATTESTER_URL")?.replace(/\/$/, "");
+  if (!url) return undefined;
+  const pub = createPublicClient({ chain: net.chain, transport: http(Deno.env.get(`ARC_${net.env}_RPC`) ?? net.rpc) });
+  return async (s) => {
+    const session = await pub.readContract({
+      address: s.vault as Hex, abi: agentVaultAbi, functionName: "getSession", args: [s.agentSigner as Hex],
+    });
+    if (s.amount <= session.attestThreshold) return "0x";
+    const res = await fetch(`${url}/arc/attest`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        agent_id: s.agentSigner.toLowerCase(),
+        spend: {
+          vault: s.vault, chainId: net.chain.id, agentSigner: s.agentSigner, to: s.to, amount: s.amount.toString(),
+          nonce: session.nonce.toString(), deadline: s.deadline.toString(), orderId: s.orderId,
+        },
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.ok) throw new Error(j.reason ?? `attester HTTP ${res.status}`);
+    return j.attestation as Hex;
+  };
+}
+
 const r = new Hono();
 
 // Unauthenticated (agents may not hold an API key) → strict per-IP limiter, like /v1/relayer.
@@ -70,6 +103,7 @@ r.post("/:network/spend", async (c) => {
       allowedVaults,
       gasCap: BigInt(Deno.env.get("ARC_RELAYER_GAS_CAP") ?? "800000"),
       maxFeeCap: BigInt(Deno.env.get("ARC_RELAYER_MAX_FEE_WEI") ?? "200000000000"),
+      attest: attesterFor(net),
     });
     return c.json({ ...res, explorerUrl: `${net.explorer}/tx/${res.txHash}` });
   } catch (e) {
