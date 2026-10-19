@@ -6,7 +6,7 @@
 //
 // Run:  node src/counterparty.test.mjs
 import {
-  AID_PAYTO, GATEWAY_NETWORKS, checkCounterparty, counterpartyGate, gatewayAddress,
+  AID_PAYTO, GATEWAY_NETWORKS, checkCounterparty, counterpartyGate, counterpartyGuard, gatewayAddress,
   gatewayAuthorizationDigest, signGatewayAuthorization,
 } from "./counterparty.mjs";
 
@@ -154,6 +154,20 @@ const main = async () => {
   let threw = false;
   try { counterpartyGate({ decision: "ALLOW" }, "off-ish"); } catch { threw = true; }
   ok(threw, "unknown gate mode throws (misconfig is loud)");
+
+  console.log("guard (what the attester calls)");
+  {
+    const boom = async () => { throw new Error("rpc down"); };
+    const w = await counterpartyGuard({ mode: "warn", check: boom })({ counterparty: "0xabc", amountUsd: 1 });
+    ok(w.decision === "UNVERIFIABLE" && w.block === false && /rpc down/.test(w.error ?? ""), "warn: a throwing check becomes UNVERIFIABLE, not a block");
+    const e = await counterpartyGuard({ mode: "enforce", check: boom })({ counterparty: "0xabc", amountUsd: 1 });
+    ok(e.decision === "UNVERIFIABLE" && e.block === true, "enforce: a throwing check blocks");
+    const d = await counterpartyGuard({ mode: "enforce", check: async () => ({ decision: "DENY", reasons: ["x"] }) })({ counterparty: "0xabc", amountUsd: 1 });
+    ok(d.block === true && d.reasons[0] === "x", "enforce: verdict passes through with block = true on DENY");
+    let early = false;
+    try { counterpartyGuard({ mode: "enforced", check: boom }); } catch { early = true; }
+    ok(early, "bad mode rejected when the guard is built (at startup, not on the first payment)");
+  }
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

@@ -15,10 +15,17 @@
 //
 // Keys: SLIPPAY_ATTESTER_SECRET (ed25519, 64-hex) and SLIPPAY_ATTESTER_P256_SECRET (P-256 for
 // Arc, 64-hex). If unset, demo keys are derived from fixed seeds (DEV ONLY — set real secrets).
+//
+// Counterparty check on /arc/attest (A-Identity risk_check, paid with Gateway nanopayments):
+//   SLIPPAY_COUNTERPARTY_MODE      off (default) | warn (verdict logged + returned, never blocks)
+//                                  | enforce (DENY and UNVERIFIABLE refuse the attestation)
+//   SLIPPAY_COUNTERPARTY_KEY_FILE  payer EOA with a Gateway balance on Arc mainnet
 import { createServer } from "node:http";
+import { readFileSync } from "node:fs";
 import { sha256 } from "@noble/hashes/sha256";
 import { commitSurface, attest, verifyAttestation, publicKeyHex, hexToBytes } from "./oracle.mjs";
 import { attestArc, p256PublicKey } from "./arc.mjs";
+import { checkCounterparty, counterpartyGuard, gatewayAddress } from "./counterparty.mjs";
 
 const PORT = Number(process.env.PORT || 8790);
 const priv = process.env.SLIPPAY_ATTESTER_SECRET
@@ -28,6 +35,16 @@ const p256Priv = process.env.SLIPPAY_ATTESTER_P256_SECRET
   ? hexToBytes(process.env.SLIPPAY_ATTESTER_P256_SECRET)
   : sha256(new TextEncoder().encode("slippay-attester-p256-dev-seed")); // DEV ONLY
 
+const cpMode = process.env.SLIPPAY_COUNTERPARTY_MODE ?? "off";
+let counterparty, cpPayer;
+if (cpMode !== "off") {
+  const keyFile = process.env.SLIPPAY_COUNTERPARTY_KEY_FILE?.replace(/^~/, process.env.HOME ?? "~");
+  if (!keyFile) throw new Error(`SLIPPAY_COUNTERPARTY_MODE=${cpMode} needs SLIPPAY_COUNTERPARTY_KEY_FILE`);
+  const payerKey = readFileSync(keyFile, "utf8").trim();
+  cpPayer = gatewayAddress(payerKey);
+  counterparty = counterpartyGuard({ mode: cpMode, check: (q) => checkCounterparty(q, { privKey: payerKey }) });
+}
+
 const body = (req) => new Promise((res) => { let d = ""; req.on("data", (c) => (d += c)); req.on("end", () => { try { res(d ? JSON.parse(d) : {}); } catch { res({}); } }); });
 const json = (r, code, obj) => { r.writeHead(code, { "content-type": "application/json", "access-control-allow-origin": "*" }); r.end(JSON.stringify(obj)); };
 
@@ -35,7 +52,8 @@ const server = createServer(async (req, res) => {
   try {
     if (req.method === "GET" && req.url === "/pubkey") return json(res, 200, { pubkey: await publicKeyHex(priv), p256: p256PublicKey(p256Priv) });
     if (req.method === "POST" && req.url === "/arc/attest") {
-      const v = await attestArc(await body(req), p256Priv);
+      const v = await attestArc(await body(req), p256Priv, { counterparty });
+      if (v.counterparty) process.stderr.write(`counterparty ${v.counterparty.decision}${v.counterparty.block ? " BLOCKED" : ""} · ${(v.counterparty.reasons ?? []).join("; ") || v.counterparty.error || ""}\n`);
       return json(res, v.ok ? 200 : 403, v);
     }
     if (req.method === "POST" && req.url === "/register") return json(res, 200, { commitment: commitSurface(await body(req)) });
@@ -49,5 +67,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, async () => {
-  process.stderr.write(`slippay-attester on :${PORT} · attester ${await publicKeyHex(priv)} · key=${process.env.SLIPPAY_ATTESTER_SECRET ? "env" : "DEV-seed"} · p256=${process.env.SLIPPAY_ATTESTER_P256_SECRET ? "env" : "DEV-seed"}\n`);
+  process.stderr.write(`slippay-attester on :${PORT} · attester ${await publicKeyHex(priv)} · key=${process.env.SLIPPAY_ATTESTER_SECRET ? "env" : "DEV-seed"} · p256=${process.env.SLIPPAY_ATTESTER_P256_SECRET ? "env" : "DEV-seed"} · counterparty=${cpMode}${cpPayer ? ` payer ${cpPayer}` : ""}\n`);
 });

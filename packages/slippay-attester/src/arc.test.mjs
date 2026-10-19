@@ -8,6 +8,7 @@ import { p256 } from "@noble/curves/p256";
 import { sha256 } from "@noble/hashes/sha256";
 import { commitSurface } from "./oracle.mjs";
 import { arcAttestationHash, arcSpendDigest, attestArc, p256PublicKey, verifyArc } from "./arc.mjs";
+import { counterpartyGuard } from "./counterparty.mjs";
 
 let pass = 0, fail = 0;
 const ok = (c, m) => { if (c) { pass++; console.log("  ✓", m); } else { fail++; console.log("  ✗", m); } };
@@ -60,6 +61,23 @@ const main = async () => {
   ok(far.ok === false && /deadline/.test(far.reason), "deadline too far in the future refused (bounded validity)");
   const late = await attestArc({ agent_id: "arc-agent-1", spend: VECTOR }, priv, { now: 1_900_000_001 });
   ok(late.ok === false && /deadline/.test(late.reason), "already-expired intent refused");
+
+  // Counterparty check (A-Identity over Gateway nanopayments), injected: no network in this test.
+  ok(!("counterparty" in good), "no counterparty guard configured → result shape unchanged");
+  const asked = [];
+  const guard = (decision, mode) => counterpartyGuard({ mode, check: async (q) => { asked.push(q); return { decision, risk: "high", reasons: ["r1"], paymentSent: true }; } });
+  const warnDeny = await attestArc({ agent_id: "arc-agent-1", spend: VECTOR }, priv, { now: NOW, counterparty: guard("DENY", "warn") });
+  ok(warnDeny.ok === true && /^0x[0-9a-f]{128}$/.test(warnDeny.attestation ?? "") && warnDeny.counterparty?.decision === "DENY", "warn: DENY is reported and the spend is still attested");
+  ok(asked[0]?.counterparty === VECTOR.to && asked[0]?.amountUsd === 12.345678, "check asks about the spend's own recipient and its USDC amount");
+  const enfDeny = await attestArc({ agent_id: "arc-agent-1", spend: VECTOR }, priv, { now: NOW, counterparty: guard("DENY", "enforce") });
+  ok(enfDeny.ok === false && /counterparty DENY/.test(enfDeny.reason ?? "") && !enfDeny.attestation, "enforce: DENY refuses the attestation");
+  const enfAllow = await attestArc({ agent_id: "arc-agent-1", spend: VECTOR }, priv, { now: NOW, counterparty: guard("ALLOW", "enforce") });
+  ok(enfAllow.ok === true && enfAllow.counterparty?.decision === "ALLOW", "enforce: ALLOW is attested");
+  asked.length = 0;
+  const offPaid = await attestArc({ agent_id: "arc-agent-1", spend: { ...VECTOR, to: "0x000000000000000000000000000000000000dEaD" } }, priv, { now: NOW, counterparty: guard("ALLOW", "warn") });
+  ok(offPaid.ok === false && asked.length === 0, "off-surface spend refused before any paid check");
+  const thrown = await attestArc({ agent_id: "arc-agent-1", spend: VECTOR }, priv, { now: NOW, counterparty: async () => { throw new Error("boom"); } });
+  ok(thrown.ok === false && /counterparty/.test(thrown.reason ?? ""), "a guard that throws fails closed");
 
   console.log(`\n${pass} passed, ${fail} failed`);
   process.exit(fail ? 1 : 0);

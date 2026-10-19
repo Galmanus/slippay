@@ -72,7 +72,10 @@ export function p256PublicKey(priv) {
 /**
  * Attest one AgentVault spend. Runs the integrity check (surface + velocity) against the spend's
  * own recipient/amount, refuses expired or far-future deadlines, then signs. Fail-closed.
- * Returns { ok, digest, attestation_hash, attestation: 0x r‖s, pubkey } or { ok:false, reason }.
+ * opts.counterparty (counterpartyGuard from counterparty.mjs) asks A-Identity about the recipient
+ * after the integrity check passes, so refused spends never pay for a check; `block` refuses, and
+ * the verdict rides along in the result either way. A guard that throws refuses.
+ * Returns { ok, digest, attestation_hash, attestation: 0x r‖s, pubkey, counterparty? } or { ok:false, reason }.
  */
 export async function attestArc({ agent_id, spend, tools_used }, p256Priv, opts = {}) {
   const now = opts.now ?? Math.floor(Date.now() / 1000);
@@ -87,11 +90,24 @@ export async function attestArc({ agent_id, spend, tools_used }, p256Priv, opts 
   );
   if (!chk.ok) return chk;
 
+  let counterparty;
+  if (opts.counterparty) {
+    try {
+      counterparty = await opts.counterparty({ counterparty: spend.to, amountUsd: Number(spend.amount) / 1e6 });
+    } catch (e) {
+      return { ok: false, reason: `counterparty check failed: ${e?.message ?? e}` };
+    }
+    if (counterparty.block) {
+      const why = counterparty.reasons?.length ? counterparty.reasons.join("; ") : counterparty.error ?? "no reason given";
+      return { ok: false, reason: `counterparty ${counterparty.decision}: ${why}`, counterparty };
+    }
+  }
+
   const digest = arcSpendDigest(spend);
   const h = arcAttestationHash(digest);
   const sig = p256.sign(h.slice(2), p256Priv, { prehash: false, lowS: true });
   noteCharge(agent_id, now);
-  return { ok: true, digest, attestation_hash: h, attestation: "0x" + sig.toCompactHex(), pubkey: p256PublicKey(p256Priv) };
+  return { ok: true, digest, attestation_hash: h, attestation: "0x" + sig.toCompactHex(), pubkey: p256PublicKey(p256Priv), ...(counterparty && { counterparty }) };
 }
 
 /** Off-chain mirror of the vault's on-chain check. */

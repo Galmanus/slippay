@@ -173,3 +173,21 @@ export function counterpartyGate({ decision }, mode) {
   if (mode === "enforce") return { block: decision !== "ALLOW" && decision !== "WARN", decision };
   throw new Error(`counterparty gate mode must be "warn" or "enforce", got ${JSON.stringify(mode)}`);
 }
+
+/**
+ * What attestArc calls (opts.counterparty): check + gate in one function returning the verdict
+ * with `block`. A check that throws becomes UNVERIFIABLE, so warn mode never blocks on it. The
+ * mode is validated here, at startup, not on the first payment.
+ */
+export function counterpartyGuard({ mode, check }) {
+  counterpartyGate({ decision: "ALLOW" }, mode);
+  return async (q) => {
+    let v;
+    try {
+      v = await check(q);
+    } catch (e) {
+      v = { decision: "UNVERIFIABLE", risk: null, reasons: [], paymentSent: false, error: String(e?.message ?? e) };
+    }
+    return { ...v, block: counterpartyGate(v, mode).block };
+  };
+}
