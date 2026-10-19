@@ -9,11 +9,12 @@
   "exports": {
     ".": "./src/oracle.mjs",
     "./x402": "./src/x402.mjs",
-    "./arc": "./src/arc.mjs"
+    "./arc": "./src/arc.mjs",
+    "./counterparty": "./src/counterparty.mjs"
   },
   "scripts": {
     "start": "node src/server.mjs",
-    "test": "node src/oracle.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-x402-test.json node src/x402.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-arc-test.json node src/arc.test.mjs"
+    "test": "node src/oracle.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-x402-test.json node src/x402.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-arc-test.json node src/arc.test.mjs && node src/counterparty.test.mjs"
   },
   "dependencies": {
     "@noble/curves": "1.9.7",

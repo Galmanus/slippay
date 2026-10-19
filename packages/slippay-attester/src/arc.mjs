@@ -42,6 +42,8 @@ function b32(h) {
   if (b.length !== 32) throw new Error("bytes32 expected");
   return b;
 }
+// Shared with counterparty.mjs (EIP-3009 over Circle Gateway).
+export { keccak, word, addr, b32, toHex };
 
 const DOMAIN_TYPEHASH = keccak(enc.encode("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"));
 const NAME_HASH = keccak(enc.encode("SlippayAgentVault"));
