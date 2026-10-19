@@ -1,0 +1,87 @@
+{
+  "schema": "slippay.arc-metrics/1",
+  "network": "mainnet",
+  "chainId": 5042,
+  "rpc": "https://rpc.mainnet.arc.io",
+  "explorer": "https://explorer.arc.io",
+  "generatedAt": "2026-10-19T20:48:48.151Z",
+  "latestBlock": "26831932",
+  "source": {
+    "event": "AgentSpend",
+    "topic0": [
+      "0x9ea5d6476f343b4e6156c9888553bf6c5c6cc7bc3da0f648a0b8bba450c013a8",
+      "0xb23766a70bdcd5c077e8109059bcb7d83253800574f0306b6f7d954160830602"
+    ],
+    "getLogsChunkBlocks": 10000,
+    "registry": "docs/arc/vaults.json"
+  },
+  "vaults": [
+    {
+      "network": "mainnet",
+      "address": "0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8",
+      "fromBlock": 26831568,
+      "owner": "0xbB2822AcaF9196dAD98E24e4AaA6cFCb915c8F2c",
+      "label": "slippay-mainnet-pilot",
+      "external": false
+    }
+  ],
+  "metrics": {
+    "payments": 1,
+    "activeWallets": 1,
+    "activeWallets28d": 1,
+    "activeDays": 1,
+    "volumeUsdc": "0.1",
+    "volumeBaseUnits": "100000",
+    "externalPayments": 0,
+    "external": {
+      "payments": 0,
+      "activeWallets": 0,
+      "activeWallets28d": 0,
+      "activeDays": 0,
+      "volumeUsdc": "0",
+      "volumeBaseUnits": "0"
+    },
+    "days": [
+      "2026-10-19"
+    ],
+    "window28d": {
+      "from": "2026-09-21T20:48:48.151Z",
+      "to": "2026-10-19T20:48:48.151Z"
+    },
+    "unregisteredEvents": 0,
+    "perVault": [
+      {
+        "address": "0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8",
+        "label": "slippay-mainnet-pilot",
+        "owner": "0xbB2822AcaF9196dAD98E24e4AaA6cFCb915c8F2c",
+        "external": false,
+        "payments": 1,
+        "volumeUsdc": "0.1",
+        "activeDays": 1,
+        "days": [
+          "2026-10-19"
+        ],
+        "activeIn28d": true,
+        "firstSpendAt": "2026-10-19T20:47:57.000Z",
+        "lastSpendAt": "2026-10-19T20:47:57.000Z"
+      }
+    ]
+  },
+  "payments": [
+    {
+      "vault": "0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8",
+      "label": "slippay-mainnet-pilot",
+      "external": false,
+      "txHash": "0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b",
+      "logIndex": 0,
+      "blockNumber": "26831834",
+      "time": "2026-10-19T20:47:57.000Z",
+      "agentSigner": "0x57df927eA0c60B26304BF5369B517771d4650Ab6",
+      "agentId": "2579",
+      "to": "0xe8BaF2DE286bbef788A97Bd30B34DD927683D239",
+      "amountUsdc": "0.1",
+      "orderId": "0x75d04566add4a571fe6e6f163e5b4c327527c33cf207ac50b6465dda2e6f608d",
+      "explorer": "https://explorer.arc.io/tx/0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b"
+    }
+  ]
+}
