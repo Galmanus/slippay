@@ -4,9 +4,15 @@
 // the proof links are real Arc transactions: mainnet (docs/arc/metrics.md, the commit messages of
 // 78bf61e and dae4278) and the testnet post-quantum spend (contracts-evm/README.md). The attack
 // section links the read-only mainnet red-team report. Plain words first, the technical name after.
+// The live modules (vault card, payment ledger, attack lab) read Arc mainnet from the visitor's
+// browser: every number is the chain's, at the block they print. They live here, not on the home
+// page, which speaks to companies.
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { LiveVaultCard } from "../components/LiveVaultCard.tsx";
+import { RealLedger } from "../components/RealLedger.tsx";
+import { AttackLab } from "../components/AttackLab.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -23,7 +29,6 @@ const PROOFS = {
 } as const;
 // Arc testnet, 2026-10-13 (contracts-evm/README.md): the post-quantum leg is proven there only.
 const SPEND_PQ_TESTNET = "0x4c10777d86b8093d26e01905de7e4ce203912dd1e731989f27cd427f52ee9691";
-const REDTEAM_REPORT = "https://github.com/Galmanus/slippay/blob/04ac66c94eff879b065f522bbc28ebb2699b4d30/docs/arc/redteam-mainnet.md";
 
 const COPY = {
   pt: {
@@ -56,7 +61,7 @@ const COPY = {
       ["A carteira de troco deposita no Gateway da Circle e paga por chamada", PROOFS.floatDeposit, "main"],
       ["Pagamento de $2,00 com assinatura pós-quântica (rede de teste)", SPEND_PQ_TESTNET, "test"],
     ] as [string, string, Net][] },
-    attack: { n: "005", stamp: "ataque", h: "Roubamos a chave do agente. De propósito.", body: "Com a chave do agente na mão, disparamos dez ataques contra o cofre na rede principal: pagar a nós mesmos, passar do teto, pular o atestado, forjar o atestado com outra chave, mudar o valor no caminho, reaproveitar uma ordem antiga. Os dez foram recusados: oito pelo próprio contrato, dois pelo atestador. Nos testes do contrato o atacante tem também a chave do atestador, e mesmo assim nada sai para fora da lista, acima dos tetos, depois de revogado ou depois de vencer.", link: "Ler o relatório do ataque ↗" },
+    more: "Mais provas na rede:",
     dev: { n: "006", stamp: "pra quem constrói", h: "Uma ferramenta, não uma integração.", body: "O agente usa quatro ferramentas pelo nosso servidor MCP: ver o saldo e os limites, pagar, comprar um serviço pago por chamada (x402) e ler os próprios recibos na rede. Toda recusa acontece antes de assinar, e a rede confere de novo.", tools: ["slippay_arc_session", "slippay_arc_pay", "slippay_arc_x402_fetch", "slippay_arc_receipts"] },
     cta: { h: "Dê um orçamento ao seu agente.", btn: "Conectar um agente", footer: "slippay · o dólar da Arc, no Pix" },
   },
@@ -90,7 +95,7 @@ const COPY = {
       ["The change wallet deposits into Circle Gateway and pays per call", PROOFS.floatDeposit, "main"],
       ["$2.00 payment with a post-quantum signature (test network)", SPEND_PQ_TESTNET, "test"],
     ] as [string, string, Net][] },
-    attack: { n: "005", stamp: "attack", h: "We stole the agent's key. On purpose.", body: "With the agent's key in hand, we ran ten attacks against the vault on mainnet: pay ourselves, go over the cap, skip the attestation, forge it with another key, change the amount in flight, reuse an old order. All ten were refused: eight by the contract itself, two by the attester. In the contract tests the attacker also holds the attester's key, and still nothing leaves for anyone off the list, above the caps, after revocation or after expiry.", link: "Read the attack report ↗" },
+    more: "More proof on the network:",
     dev: { n: "006", stamp: "for builders", h: "A tool, not an integration.", body: "The agent uses four tools from our MCP server: read its balance and limits, pay, buy a pay-per-call service (x402) and read its own receipts on-chain. Every refusal happens before signing, and the network checks again.", tools: ["slippay_arc_session", "slippay_arc_pay", "slippay_arc_x402_fetch", "slippay_arc_receipts"] },
     cta: { h: "Give your agent a budget.", btn: "Connect an agent", footer: "slippay · the Arc dollar, in Pix" },
   },
@@ -130,7 +135,8 @@ export default function Agents() {
       </header>
 
       {/* HERO */}
-      <section className="max-w-[1100px] mx-auto px-6 md:px-12 pt-20 md:pt-28 pb-20 md:pb-28">
+      <section className="max-w-[1200px] mx-auto px-6 md:px-12 pt-20 md:pt-28 pb-28 md:pb-36 grid md:grid-cols-[1fr_420px] gap-16 md:gap-20 items-center">
+        <div>
         <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
           <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-[#002FA7]" />{t.hero.eyebrow}
         </span>
@@ -140,6 +146,8 @@ export default function Agents() {
           <Link to="/account" className={btn}>{t.hero.cta}</Link>
           <a href={tx(PROOFS.spend)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 border-[#002FA7] pb-1 hover:opacity-70">{t.hero.proof}</a>
         </div>
+        </div>
+        <div className="w-full pb-24 md:pb-16"><LiveVaultCard lang={lang} /></div>
       </section>
 
       {/* 001 · HOW */}
@@ -180,28 +188,24 @@ export default function Agents() {
         <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">{t.identity.tech}</div>
       </div></section>
 
-      {/* 004 · PROOFS — real Arc transactions (mainnet, plus the testnet post-quantum spend) */}
-      <section className="px-4 md:px-6 py-2"><div className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-20 md:py-32">
-        <Stamp n={t.proofs.n} label={t.proofs.stamp} dark />
+      {/* 004 · PROOFS — the agent's real payment ledger (rows re-checked on Arc mainnet on load) */}
+      <section className={sec}><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-20 md:py-32">
+        <Stamp n={t.proofs.n} label={t.proofs.stamp} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6vw,4.5rem)] max-w-[16ch]`} style={display}>{t.proofs.h}</h2>
-        <p className="mt-8 text-lg md:text-xl text-[#f1eee7]/70 leading-relaxed max-w-[52ch]">{t.proofs.body}</p>
-        <div className="mt-10 flex flex-col">
-          {t.proofs.items.map(([label, hash, net]) => (
-            <a key={hash} href={tx(hash, net)} target="_blank" rel="noreferrer"
-              className="group flex flex-col md:flex-row md:items-center justify-between gap-2 border-t border-[#f1eee7]/12 py-5 hover:bg-[#f1eee7]/[0.03] transition-colors">
-              <span className="text-lg md:text-xl font-semibold tracking-[-0.01em]">{label}</span>
-              <span className="font-mono text-[11px] text-[#f1eee7]/50 group-hover:text-[#5B82FF] transition-colors">{hash.slice(0, 10)}…{hash.slice(-4)} ↗</span>
-            </a>
+        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[52ch]">{t.proofs.body}</p>
+        <div className="mt-12"><RealLedger lang={lang} /></div>
+        <div className="mt-8 flex flex-wrap items-baseline gap-x-6 gap-y-2 text-[13px]">
+          <span className="text-[#0a0a0a]/50">{t.more}</span>
+          {t.proofs.items.filter(([, hash]) => hash !== PROOFS.spend && hash !== PROOFS.floatTopUp).map(([label, hash, net]) => (
+            <a key={hash} href={tx(hash, net)} target="_blank" rel="noreferrer" className="text-[#0a0a0a]/75 hover:text-[#002FA7] border-b border-[#0a0a0a]/15 hover:border-[#002FA7]">{label} ↗</a>
           ))}
         </div>
       </div></section>
 
-      {/* 005 · ATTACK — the read-only mainnet red-team (docs/arc/redteam-mainnet.md) */}
-      <section className={sec}><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-20 md:py-32">
-        <Stamp n={t.attack.n} label={t.attack.stamp} />
-        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6vw,4.5rem)] max-w-[16ch]`} style={display}>{t.attack.h}</h2>
-        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[58ch]">{t.attack.body}</p>
-        <a href={REDTEAM_REPORT} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 border-[#002FA7] pb-1 hover:opacity-70">{t.attack.link}</a>
+      {/* 005 · ATTACK — the visitor attacks the live vault (eth_call, nothing broadcast) */}
+      <section id="ataque" className="px-4 md:px-6 py-2 scroll-mt-24"><div className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-20 md:py-32 relative overflow-hidden">
+        <div aria-hidden className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-[#002FA7]/30 blur-3xl" />
+        <div className="relative"><AttackLab lang={lang} n="005" /></div>
       </div></section>
 
       {/* 006 · BUILDERS — the MCP tools */}
