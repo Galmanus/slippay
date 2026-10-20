@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {AgentVault} from "../src/AgentVault.sol";
+import {AgentVaultCore} from "../src/AgentVaultCore.sol";
 import {AgentVaultV2} from "../src/AgentVaultV2.sol";
 import {MockUSDC, MockPQ, MockIdentity} from "./mocks/Mocks.sol";
 
@@ -43,11 +43,11 @@ contract AgentVaultV2Test is Test {
 
     // ---------- helpers ----------
 
-    function _cfg() internal view returns (AgentVault.SessionConfig memory c) {
+    function _cfg() internal view returns (AgentVaultCore.SessionConfig memory c) {
         address[] memory allow = new address[](1);
         allow[0] = merchant;
         (uint256 x, uint256 y) = vm.publicKeyP256(ATTESTER_PK);
-        c = AgentVault.SessionConfig({
+        c = AgentVaultCore.SessionConfig({
             agentId: 42,
             slhVk: bytes32(0),
             perTxCap: 100e6,
@@ -178,14 +178,14 @@ contract AgentVaultV2Test is Test {
 
     function test_hold_rejectsPayeeOffTheAllowlist() public {
         AgentVaultV2.HoldRequest memory r = _req(stranger, 5e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
-        vm.expectRevert(AgentVault.RecipientNotAllowed.selector);
+        vm.expectRevert(AgentVaultCore.RecipientNotAllowed.selector);
         vault.hold(r);
     }
 
     function test_hold_rejectsAbovePerTxCap() public {
         AgentVaultV2.HoldRequest memory r =
             _req(merchant, 100e6 + 1, uint64(block.timestamp + 1 days), keccak256("o"), true);
-        vm.expectRevert(AgentVault.AmountExceedsCap.selector);
+        vm.expectRevert(AgentVaultCore.AmountExceedsCap.selector);
         vault.hold(r);
     }
 
@@ -195,21 +195,21 @@ contract AgentVaultV2Test is Test {
         _hold(100e6);
         AgentVaultV2.HoldRequest memory r =
             _req(merchant, 1e6, uint64(block.timestamp + 1 days), keccak256("4th"), false);
-        vm.expectRevert(AgentVault.WindowCapExceeded.selector);
+        vm.expectRevert(AgentVaultCore.WindowCapExceeded.selector);
         vault.hold(r);
     }
 
     function test_hold_rejectsAnotherSigner() public {
         AgentVaultV2.HoldRequest memory r = _req(merchant, 5e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
         r.ecdsaSig = _ecdsa(0xBAD, _holdDigest(merchant, 5e6, 0, r.deadline, r.releaseBy, r.orderId));
-        vm.expectRevert(AgentVault.BadSignature.selector);
+        vm.expectRevert(AgentVaultCore.BadSignature.selector);
         vault.hold(r);
     }
 
     function test_hold_rejectsMissingAttestationAboveThreshold() public {
         AgentVaultV2.HoldRequest memory r =
             _req(merchant, 20e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
-        vm.expectRevert(AgentVault.BadAttestation.selector);
+        vm.expectRevert(AgentVaultCore.BadAttestation.selector);
         vault.hold(r);
     }
 
@@ -217,7 +217,7 @@ contract AgentVaultV2Test is Test {
         AgentVaultV2.HoldRequest memory r =
             _req(merchant, 20e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
         r.attestation = _attest(0xBAD5, _holdDigest(merchant, 20e6, 0, r.deadline, r.releaseBy, r.orderId));
-        vm.expectRevert(AgentVault.BadAttestation.selector);
+        vm.expectRevert(AgentVaultCore.BadAttestation.selector);
         vault.hold(r);
     }
 
@@ -251,21 +251,21 @@ contract AgentVaultV2Test is Test {
         vm.prank(owner);
         vault.revokeSession(agent);
         AgentVaultV2.HoldRequest memory r = _req(merchant, 5e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
-        vm.expectRevert(AgentVault.SessionIsRevoked.selector);
+        vm.expectRevert(AgentVaultCore.SessionIsRevoked.selector);
         vault.hold(r);
     }
 
     function test_hold_rejectsExpiredSession() public {
         vm.warp(block.timestamp + 30 days);
         AgentVaultV2.HoldRequest memory r = _req(merchant, 5e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
-        vm.expectRevert(AgentVault.SessionExpired.selector);
+        vm.expectRevert(AgentVaultCore.SessionExpired.selector);
         vault.hold(r);
     }
 
     function test_hold_rejectsExpiredDeadline() public {
         AgentVaultV2.HoldRequest memory r = _req(merchant, 5e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
         vm.warp(block.timestamp + 301);
-        vm.expectRevert(AgentVault.Expired.selector);
+        vm.expectRevert(AgentVaultCore.Expired.selector);
         vault.hold(r);
     }
 
@@ -289,14 +289,14 @@ contract AgentVaultV2Test is Test {
             "",
             ""
         );
-        vm.expectRevert(AgentVault.BadSignature.selector);
+        vm.expectRevert(AgentVaultCore.BadSignature.selector);
         vault.hold(r);
     }
 
     function test_hold_cannotBeSubmittedTwice() public {
         AgentVaultV2.HoldRequest memory r = _req(merchant, 5e6, uint64(block.timestamp + 1 days), keccak256("o"), false);
         vault.hold(r);
-        vm.expectRevert(AgentVault.BadSignature.selector); // the nonce moved on
+        vm.expectRevert(AgentVaultCore.BadSignature.selector); // the nonce moved on
         vault.hold(r);
     }
 
@@ -338,14 +338,14 @@ contract AgentVaultV2Test is Test {
         bytes32 d = _releaseDigest(id);
         bytes memory sig = _ecdsa(0xBAD, d);
         bytes memory att = _attest(ATTESTER_PK, d);
-        vm.expectRevert(AgentVault.BadSignature.selector);
+        vm.expectRevert(AgentVaultCore.BadSignature.selector);
         vault.release(id, sig, att);
     }
 
     function test_release_aboveThresholdNeedsTheAttester() public {
         bytes32 id = _hold(50e6);
         bytes memory sig = _ecdsa(AGENT_PK, _releaseDigest(id));
-        vm.expectRevert(AgentVault.BadAttestation.selector);
+        vm.expectRevert(AgentVaultCore.BadAttestation.selector);
         vault.release(id, sig, "");
     }
 
@@ -354,7 +354,7 @@ contract AgentVaultV2Test is Test {
         AgentVaultV2.HoldRequest memory r = _req(merchant, 50e6, releaseBy, keccak256("o"), true);
         bytes32 id = vault.hold(r);
         bytes memory sig = _ecdsa(AGENT_PK, _releaseDigest(id));
-        vm.expectRevert(AgentVault.BadAttestation.selector);
+        vm.expectRevert(AgentVaultCore.BadAttestation.selector);
         vault.release(id, sig, r.attestation); // the hold's attestation signed the hold digest, not the release
     }
 
@@ -371,7 +371,7 @@ contract AgentVaultV2Test is Test {
         bytes32 d = _releaseDigest(id);
         bytes memory sig = _ecdsa(AGENT_PK, d);
         bytes memory att = _attest(ATTESTER_PK, d);
-        vm.expectRevert(AgentVault.SessionIsRevoked.selector);
+        vm.expectRevert(AgentVaultCore.SessionIsRevoked.selector);
         vault.release(id, sig, att);
     }
 
@@ -380,7 +380,7 @@ contract AgentVaultV2Test is Test {
         bytes32 id = vault.hold(_req(merchant, 5e6, uint64(block.timestamp + 30 days), keccak256("o"), false));
         vm.warp(vault.getSession(agent).expiresAt);
         bytes memory sig = _ecdsa(AGENT_PK, _releaseDigest(id));
-        vm.expectRevert(AgentVault.SessionExpired.selector);
+        vm.expectRevert(AgentVaultCore.SessionExpired.selector);
         vault.release(id, sig, "");
     }
 
@@ -501,6 +501,6 @@ contract AgentVaultV2Test is Test {
             )
         );
         vm.expectRevert(AgentVaultV2.InsufficientFreeBalance.selector);
-        vault.spend(AgentVault.SpendRequest(agent, merchant, 6e6, deadline, bytes32(0), _ecdsa(AGENT_PK, d), "", ""));
+        vault.spend(AgentVaultCore.SpendRequest(agent, merchant, 6e6, deadline, bytes32(0), _ecdsa(AGENT_PK, d), "", ""));
     }
 }

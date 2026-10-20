@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {AgentVault} from "./AgentVault.sol";
+import {AgentVaultCore} from "./AgentVaultCore.sol";
 
-/// @title AgentVaultV2 — AgentVault plus pay-on-delivery holds
+/// @title AgentVaultV2 — AgentVaultCore plus pay-on-delivery holds
 /// @notice An agent can pay into a hold instead of straight to the payee. The hold is authorized
 ///         exactly like a spend (agent ECDSA over an EIP-712 digest that binds every term, SLH-DSA
 ///         above pqThreshold, the integrity attester above attestThreshold, per-tx cap, window cap,
@@ -18,7 +18,7 @@ import {AgentVault} from "./AgentVault.sol";
 ///         refund: by anyone from `releaseBy` on, or by the payee at any time (waiving is always
 ///         safe). The owner cannot refund early: that would let the buyer cancel after delivery.
 ///         A refund returns the funds to the free balance; the window budget is not restored.
-contract AgentVaultV2 is AgentVault {
+contract AgentVaultV2 is AgentVaultCore {
     enum HoldStatus {
         None,
         Open,
@@ -76,7 +76,7 @@ contract AgentVaultV2 is AgentVault {
     uint256 public totalHeld;
 
     constructor(address owner_, address usdc_, address identity_, uint256 maxAbsolutePerTx_)
-        AgentVault(owner_, usdc_, identity_, maxAbsolutePerTx_)
+        AgentVaultCore(owner_, usdc_, identity_, maxAbsolutePerTx_)
     {}
 
     // ------------------------------------------------------------------ holds

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {AgentVault} from "../src/AgentVault.sol";
+import {AgentVaultCore} from "../src/AgentVaultCore.sol";
 import {AgentVaultV2} from "../src/AgentVaultV2.sol";
 import {MockUSDC, MockPQ, MockIdentity} from "./mocks/Mocks.sol";
 
@@ -158,7 +158,7 @@ contract HoldAttacker is Test {
         uint64 deadline = uint64(block.timestamp + 300);
         bytes32 orderId = keccak256(abi.encode("spend", seed, amount, block.timestamp));
         bytes32 d = vault.spendDigest(agent, to, amount, nonce, deadline, orderId);
-        try vault.spend(AgentVault.SpendRequest(agent, to, amount, deadline, orderId, _sig(d), "", _att(d))) {
+        try vault.spend(AgentVaultCore.SpendRequest(agent, to, amount, deadline, orderId, _sig(d), "", _att(d))) {
             if (to != merchant) offListPaid = true;
             _commit(amount);
         } catch {}
@@ -212,7 +212,7 @@ contract AgentVaultV2CompromiseTest is Test {
         address[] memory allow = new address[](1);
         allow[0] = merchant;
         (uint256 x, uint256 y) = vm.publicKeyP256(ATTESTER_PK);
-        AgentVault.SessionConfig memory c = AgentVault.SessionConfig({
+        AgentVaultCore.SessionConfig memory c = AgentVaultCore.SessionConfig({
             agentId: 2579,
             slhVk: bytes32(0),
             perTxCap: uint128(PER_TX),

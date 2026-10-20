@@ -105,8 +105,9 @@ contract AgentVault {
     uint256 public constant MAX_WINDOW_MULTIPLIER = 100;
     uint64 public constant MIN_WINDOW_SECONDS = 60;
 
-    bytes32 public constant SPEND_TYPEHASH =
-        keccak256("Spend(address agentSigner,address to,uint256 amount,uint64 nonce,uint64 deadline,bytes32 orderId)");
+    bytes32 public constant SPEND_TYPEHASH = keccak256(
+        "Spend(address agentSigner,address to,uint256 amount,uint64 nonce,uint64 deadline,bytes32 orderId)"
+    );
     bytes32 private constant DOMAIN_TYPEHASH =
         keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
     bytes32 private constant NAME_HASH = keccak256("SlippayAgentVault");
@@ -251,43 +252,22 @@ contract AgentVault {
         view
         returns (uint64 nonce, bool pq, bool attested)
     {
-        _checkTerms(s, r.agentSigner, r.to, r.amount, r.deadline);
-        nonce = s.nonce;
-        bytes32 digest = spendDigest(r.agentSigner, r.to, r.amount, nonce, r.deadline, r.orderId);
-        (pq, attested) = _checkSignatures(s, r.agentSigner, digest, r.amount, r.ecdsaSig, r.slhSig, r.attestation);
-    }
-
-    /// Session state and the request's terms: live session, fresh deadline, amount within the
-    /// per-tx cap, recipient on the allowlist. Shared by every agent-authorized money movement.
-    function _checkTerms(Session storage s, address agentSigner, address to, uint256 amount, uint64 deadline)
-        internal
-        view
-    {
         if (!s.exists) revert NoSession();
         if (s.revoked) revert SessionIsRevoked();
         if (s.expiresAt != 0 && block.timestamp >= s.expiresAt) revert SessionExpired();
-        if (block.timestamp > deadline) revert Expired();
-        if (amount == 0) revert InvalidConfig();
-        if (amount > s.perTxCap) revert AmountExceedsCap();
-        if (!allowed[agentSigner][to]) revert RecipientNotAllowed();
-    }
+        if (block.timestamp > r.deadline) revert Expired();
+        if (r.amount == 0) revert InvalidConfig();
+        if (r.amount > s.perTxCap) revert AmountExceedsCap();
+        if (!allowed[r.agentSigner][r.to]) revert RecipientNotAllowed();
 
-    /// The agent's ECDSA signature over `digest`, plus SLH-DSA above pqThreshold and the integrity
-    /// attester's P-256 attestation above attestThreshold.
-    function _checkSignatures(
-        Session storage s,
-        address agentSigner,
-        bytes32 digest,
-        uint256 amount,
-        bytes calldata ecdsaSig,
-        bytes calldata slhSig,
-        bytes calldata attestation
-    ) internal view returns (bool pq, bool attested) {
-        if (_recover(digest, ecdsaSig) != agentSigner) revert BadSignature();
-        pq = amount > s.pqThreshold;
-        if (pq && !_verifySlh(s.slhVk, digest, slhSig)) revert BadPqSignature();
-        attested = amount > s.attestThreshold;
-        if (attested && !_verifyAttestation(s.attesterX, s.attesterY, digest, attestation)) revert BadAttestation();
+        nonce = s.nonce;
+        bytes32 digest = spendDigest(r.agentSigner, r.to, r.amount, nonce, r.deadline, r.orderId);
+        if (_recover(digest, r.ecdsaSig) != r.agentSigner) revert BadSignature();
+
+        pq = r.amount > s.pqThreshold;
+        if (pq && !_verifySlh(s.slhVk, digest, r.slhSig)) revert BadPqSignature();
+        attested = r.amount > s.attestThreshold;
+        if (attested && !_verifyAttestation(s.attesterX, s.attesterY, digest, r.attestation)) revert BadAttestation();
     }
 
     // ------------------------------------------------------------------ views
@@ -378,7 +358,7 @@ contract AgentVault {
         return ok && ret.length == 32 && uint256(bytes32(ret)) == 1;
     }
 
-    function _pay(address to, uint256 amount) internal virtual {
+    function _pay(address to, uint256 amount) internal {
         if (!usdc.transfer(to, amount)) revert TransferFailed();
     }
 }
