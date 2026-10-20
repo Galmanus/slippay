@@ -124,8 +124,12 @@ const payments = [...events]
       txHash: e.txHash, logIndex: e.logIndex, blockNumber: e.blockNumber.toString(),
       time: iso(e.blockTimestamp), agentSigner: e.agentSigner, agentId: e.agentId.toString(), to: e.to,
       amountUsdc: formatUnits(e.amount, USDC_DECIMALS), orderId: e.orderId, explorer: txUrl(e.txHash),
+      internal: (v.internalRecipients ?? []).some((r) => r.toLowerCase() === e.to.toLowerCase()),
     };
   });
+const internal = payments.filter((p) => p.internal);
+const internalUsdc = formatUnits(events.filter((e) => (byVault.get(e.vault.toLowerCase()).internalRecipients ?? [])
+  .some((r) => r.toLowerCase() === e.to.toLowerCase())).reduce((n, e) => n + e.amount, 0n), USDC_DECIMALS);
 
 const report = {
   schema: "slippay.arc-metrics/1",
@@ -152,6 +156,7 @@ const md = [
   `| active wallets, last ${ACTIVE_WINDOW_DAYS} days | ${m.activeWallets28d} | ${m.external.activeWallets28d} |`,
   `| active days (distinct UTC dates with >= 1 payment) | ${m.activeDays} | ${m.external.activeDays} |`,
   `| volume (USDC) | ${m.volumeUsdc} | ${m.external.volumeUsdc} |`,
+  ...(internal.length ? ["", `Of these, ${internal.length} payment(s), ${internalUsdc} USDC, went to a vault's own wallet (the agent's x402 float, \`internalRecipients\` in the registry): internal transfers, not payments to a counterparty.`] : []),
   "",
   `${ACTIVE_WINDOW_DAYS}-day window: ${m.window28d.from} to ${m.window28d.to}. Active UTC dates: ${m.days.join(", ") || "none"}.`,
   "",
@@ -167,7 +172,7 @@ const md = [
   payments.length ? "| time (UTC) | vault | tx | log | block | agentId | to | USDC |" : "No AgentSpend events yet.",
   ...(payments.length ? ["|---|---|---|---:|---:|---:|---|---:|"] : []),
   ...payments.map((p) =>
-    `| ${p.time} | ${p.label} | [\`${p.txHash.slice(0, 10)}…${p.txHash.slice(-4)}\`](${p.explorer}) | ${p.logIndex} | ${p.blockNumber} | ${p.agentId} | \`${p.to}\` | ${p.amountUsdc} |`),
+    `| ${p.time} | ${p.label} | [\`${p.txHash.slice(0, 10)}…${p.txHash.slice(-4)}\`](${p.explorer}) | ${p.logIndex} | ${p.blockNumber} | ${p.agentId} | \`${p.to}\`${p.internal ? " (agent's float, internal)" : ""} | ${p.amountUsdc} |`),
   "",
   "## Method",
   "",

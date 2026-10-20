@@ -13,6 +13,9 @@
     "fromBlock": 26831568,
     "owner": "0xbB2822AcaF9196dAD98E24e4AaA6cFCb915c8F2c",
     "label": "slippay-mainnet-pilot",
-    "external": false
+    "external": false,
+    "internalRecipients": [
+      "0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1"
+    ]
   }
 ]

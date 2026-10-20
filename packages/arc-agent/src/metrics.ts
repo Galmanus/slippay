@@ -47,6 +47,11 @@ export interface VaultMeta {
   label: string;
   /** true only for pilot users who are not Slippay (not Manuel, Mário, Bluewave AI). */
   external: boolean;
+  /**
+   * The vault's own wallets (e.g. the agent's x402 float). Spends to them still count as
+   * AgentSpend events; the report labels them so they are not read as payments to a counterparty.
+   */
+  internalRecipients?: Address[];
 }
 
 export interface Totals {
@@ -100,7 +105,14 @@ export function parseVaultRegistry(raw: unknown): VaultMeta[] {
     if (typeof e.fromBlock !== "number" || !Number.isSafeInteger(e.fromBlock) || e.fromBlock < 0) throw bad("fromBlock", "must be a non-negative integer");
     if (typeof e.label !== "string" || e.label.trim() === "") throw bad("label", "must be a non-empty string");
     if (typeof e.external !== "boolean") throw bad("external", "must be true or false (JSON boolean)");
-    return { network: e.network, address: e.address, fromBlock: e.fromBlock, owner: e.owner, label: e.label, external: e.external };
+    const internal = e.internalRecipients;
+    if (internal !== undefined && (!Array.isArray(internal) || !internal.every((a) => typeof a === "string" && isAddress(a)))) {
+      throw bad("internalRecipients", "must be a list of 20-byte hex addresses");
+    }
+    return {
+      network: e.network, address: e.address, fromBlock: e.fromBlock, owner: e.owner, label: e.label, external: e.external,
+      ...(internal !== undefined && { internalRecipients: internal as Address[] }),
+    };
   });
 }
 

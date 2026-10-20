@@ -291,4 +291,16 @@ describe("parseVaultRegistry", () => {
   it("rejects a registry that is not an array", () => {
     expect(() => parseVaultRegistry({ vaults: [good] })).toThrow(/array/);
   });
+
+  it("accepts internalRecipients: the vault's own wallets (e.g. the agent's x402 float)", () => {
+    const float = "0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1";
+    expect(parseVaultRegistry([{ ...good, internalRecipients: [float] }])[0]!.internalRecipients).toEqual([float]);
+  });
+
+  it.each([
+    ["not a list", { ...good, internalRecipients: "0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1" }],
+    ["a bad address in the list", { ...good, internalRecipients: ["0x1234"] }],
+  ])("rejects internalRecipients that is %s", (_n, entry) => {
+    expect(() => parseVaultRegistry([entry])).toThrow(/internalRecipients/);
+  });
 });

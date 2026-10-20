@@ -1,6 +1,6 @@
 # Arc agent payments: on-chain metrics (mainnet)
 
-Generated 2026-10-20T12:23:20.220Z from Arc mainnet (chain 5042) at block 26942535.
+Generated 2026-10-20T16:17:52.801Z from Arc mainnet (chain 5042) at block 26970296.
 Every number is derived from `AgentSpend` events of the vaults in `docs/arc/vaults.json`.
 Reproduce: `node packages/arc-agent/scripts/arc-metrics.mjs --network mainnet`.
 
@@ -14,7 +14,9 @@ Reproduce: `node packages/arc-agent/scripts/arc-metrics.mjs --network mainnet`.
 | active days (distinct UTC dates with >= 1 payment) | 2 | 0 |
 | volume (USDC) | 0.22 | 0 |
 
-28-day window: 2026-09-22T12:23:20.220Z to 2026-10-20T12:23:20.220Z. Active UTC dates: 2026-10-19, 2026-10-20.
+Of these, 1 payment(s), 0.12 USDC, went to a vault's own wallet (the agent's x402 float, `internalRecipients` in the registry): internal transfers, not payments to a counterparty.
+
+28-day window: 2026-09-22T16:17:52.801Z to 2026-10-20T16:17:52.801Z. Active UTC dates: 2026-10-19, 2026-10-20.
 
 ## Per vault
 
@@ -27,7 +29,7 @@ Reproduce: `node packages/arc-agent/scripts/arc-metrics.mjs --network mainnet`.
 | time (UTC) | vault | tx | log | block | agentId | to | USDC |
 |---|---|---|---:|---:|---:|---|---:|
 | 2026-10-19T20:47:57.000Z | slippay-mainnet-pilot | [`0xd4fb46df…ac7b`](https://explorer.arc.io/tx/0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b) | 0 | 26831834 | 2579 | `0xe8BaF2DE286bbef788A97Bd30B34DD927683D239` | 0.1 |
-| 2026-10-20T12:21:34.000Z | slippay-mainnet-pilot | [`0xf822f25c…f49f`](https://explorer.arc.io/tx/0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f) | 3 | 26942327 | 2579 | `0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1` | 0.12 |
+| 2026-10-20T12:21:34.000Z | slippay-mainnet-pilot | [`0xf822f25c…f49f`](https://explorer.arc.io/tx/0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f) | 3 | 26942327 | 2579 | `0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1` (agent's float, internal) | 0.12 |
 
 ## Method
 
