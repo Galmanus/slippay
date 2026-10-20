@@ -16,10 +16,10 @@ import { LiveProof } from "../components/LiveProof.tsx";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
-// AgentVault spend on Arc testnet (0.5 USDC, inside the session limit). Swap for a
-// mainnet payment once the Arc account flow is live.
-const REAL_TX = "0x8cb9df02fc39a4733f861ae30c22a2cc783806a6e2de44832d1fe50427aa5bbb";
-const xurl = (id: string) => `https://explorer.testnet.arc.io/tx/${id}`;
+// AgentVault spend on Arc mainnet, 2026-10-19: 0.10 USDC to the pilot merchant, inside the
+// session limit, cleared by the integrity attester (docs/arc/metrics.md).
+const REAL_TX = "0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b";
+const xurl = (id: string) => `https://explorer.arc.io/tx/${id}`;
 type Lang = "pt" | "en";
 
 const COPY = {
@@ -38,7 +38,7 @@ const COPY = {
     ] as [string, string][], foot: "~1.9% to turn reais into dollars, vs ~5% at a bank. The rest stays with the company." },
     control: { n: "003", stamp: "agents", h: "Agents that pay the bills.", body: "Give an AI agent its own dollar sub-wallet with a limit and a list of who it may pay: freight, SaaS, a supplier's invoice. Past the limit, it locks on its own. Each agent has an identity, and every payment is on the record for your accountant.", gateLink: "How the limits work →", agentsLink: "Connect an agent →" },
     business: { n: "004", stamp: "yield", h: "Idle dollars earn.", body: "Money waiting for the next shipment doesn't have to sit still. From the account, the company moves idle dollars into a yield position on Arc and takes them back when it needs them. The position stays in the company's own account, with the rate and the earnings shown as they are on the network.", cta: "Talk to us →" },
-    open: { n: "005", stamp: "on Arc", h: "Built on Arc, the network of Circle's dollar.", body: "The balance is USDC, the digital dollar issued by Circle, on Arc, the network Circle built for money. Every payment leaves a public receipt anyone can verify, without asking us.", btnReal: "See an agent payment (test network) ↗" },
+    open: { n: "005", stamp: "on Arc", h: "Built on Arc, the network of Circle's dollar.", body: "The balance is USDC, the digital dollar issued by Circle, on Arc, the network Circle built for money. Every payment leaves a public receipt anyone can verify, without asking us.", btnReal: "See a real agent payment on Arc ↗" },
     faq: { n: "006", stamp: "questions", h: "Before you ask.", items: [
       ["How much does it cost?", "~1.9% when reais become dollars, everything included. No monthly fee. No hidden fees. If a fee ever exists, it shows up before you confirm, never after."],
       ["Is Slippay a bank?", "No, and that's by design. A bank keeps your money; Slippay doesn't. The dollars stay with the company, and currency exchange runs through partners licensed by the Central Bank."],
@@ -67,7 +67,7 @@ const COPY = {
     ] as [string, string][], foot: "~1,9% pra virar dólar, contra ~5% de banco. O resto fica com a empresa." },
     control: { n: "003", stamp: "agentes", h: "Agentes que pagam as contas.", body: "Dê a um agente de IA uma sub-carteira em dólar com limite e lista de quem ele pode pagar: frete, SaaS, a fatura de um fornecedor. Passou do limite, trava sozinho. Cada agente tem identidade própria, e todo pagamento fica registrado pro seu contador.", gateLink: "Como os limites funcionam →", agentsLink: "Conectar um agente →" },
     business: { n: "004", stamp: "rendimento", h: "Dólar parado rende.", body: "O dinheiro que espera o próximo embarque não precisa ficar parado. Da própria conta, a empresa coloca o dólar ocioso numa posição de rendimento na Arc e tira quando precisar. A posição fica na conta da empresa, com a taxa e o rendimento mostrados como estão na rede.", cta: "Falar com a gente →" },
-    open: { n: "005", stamp: "na Arc", h: "Feito na Arc, a rede do dólar da Circle.", body: "O saldo é USDC, o dólar digital emitido pela Circle, na Arc, a rede que a Circle construiu para dinheiro. Cada pagamento deixa um comprovante público que qualquer pessoa confere, sem pedir nada pra gente.", btnReal: "Ver um pagamento de agente (rede de teste) ↗" },
+    open: { n: "005", stamp: "na Arc", h: "Feito na Arc, a rede do dólar da Circle.", body: "O saldo é USDC, o dólar digital emitido pela Circle, na Arc, a rede que a Circle construiu para dinheiro. Cada pagamento deixa um comprovante público que qualquer pessoa confere, sem pedir nada pra gente.", btnReal: "Ver um pagamento real de agente na Arc ↗" },
     faq: { n: "006", stamp: "perguntas", h: "Antes de perguntar.", items: [
       ["Quanto custa?", "~1,9% quando o real vira dólar, com tudo dentro. Sem mensalidade. Sem taxa escondida. Se algum dia existir uma taxa, ela aparece antes de você confirmar, nunca depois."],
       ["A Slippay é um banco?", "Não, e é de propósito. Banco guarda o seu dinheiro; a Slippay não guarda. O dólar fica com a empresa, e o câmbio passa por parceiros licenciados pelo Banco Central."],

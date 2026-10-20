@@ -3,8 +3,8 @@
 // looping each cycle, accumulating against a limit — and STOPPING when the limit
 // is reached (the safety, shown not told). Plain language, bilingual. Honors
 // reduced-motion (renders the finished state, no animation). The link at the
-// bottom is a real AgentVault spend on Arc testnet (0.5 USDC, 112,671 gas, inside
-// the session limit); the cycling above illustrates the mechanism — labelled
+// bottom is a real AgentVault spend on Arc mainnet (0.10 USDC, 2026-10-19, inside
+// the session limit, attested); the cycling above illustrates the mechanism — labelled
 // "demo" so it's never mistaken for live settlement.
 
 import { useEffect, useState } from "react";
@@ -15,7 +15,7 @@ const T = {
   pt: {
     tag: "pagamento que se repete · demo", atCap: "no limite", active: "ativo", running: "rodando…",
     spent: "gasto no período", reached: "limite atingido, não tira nem mais um centavo ✓",
-    cycle: (n: number) => `ciclo ${n} · dentro do limite`, real: "pagamento real de agente · rede de teste · $0,50", replay: "clique pra repetir",
+    cycle: (n: number) => `ciclo ${n} · dentro do limite`, real: "pagamento real de agente · rede principal · $0,10", replay: "clique pra repetir",
     steps: [
       ["Aprove com um toque", "uma vez · sem senha · você define o limite"],
       ["Ele cobra sozinho", "tira $0,05 · sem te pedir de novo"],
@@ -26,7 +26,7 @@ const T = {
   en: {
     tag: "recurring payment · demo", atCap: "at limit", active: "active", running: "running…",
     spent: "spent this period", reached: "limit reached, won't pull another cent ✓",
-    cycle: (n: number) => `cycle ${n} · within limit`, real: "real agent payment · test network · $0.50", replay: "click to replay",
+    cycle: (n: number) => `cycle ${n} · within limit`, real: "real agent payment · mainnet · $0.10", replay: "click to replay",
     steps: [
       ["Approve with one touch", "once · no password · you set the limit"],
       ["It charges itself", "pulls $0.05 · never asks again"],
@@ -38,7 +38,7 @@ const T = {
 
 const CAP = 0.2;
 const CHARGE = 0.05;
-const TX = "https://explorer.testnet.arc.io/tx/0x8cb9df02fc39a4733f861ae30c22a2cc783806a6e2de44832d1fe50427aa5bbb";
+const TX = "https://explorer.arc.io/tx/0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b";
 const GOLD = "#6f6862";
 
 const reduceMotion = () =>

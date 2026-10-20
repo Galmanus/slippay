@@ -1,25 +1,29 @@
 // Agents — the AI-agent wallet on Arc. Same identity system as the landing
 // (Inter, monumental caps, mono index labels, Klein blue #002FA7; #5B82FF on dark).
 // Every claim maps to a live AgentVault feature (contracts-evm/src/AgentVault.sol);
-// the proof links are the real Arc testnet transactions recorded in
-// contracts-evm/README.md. Plain words first, the technical name in mono after.
+// the proof links are real Arc transactions: mainnet (docs/arc/metrics.md, the commit messages of
+// 78bf61e and dae4278) and the testnet post-quantum spend (contracts-evm/README.md). The attack
+// section links the read-only mainnet red-team report. Plain words first, the technical name after.
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
-const tx = (h: string) => `https://explorer.testnet.arc.io/tx/${h}`;
+type Net = "main" | "test";
+const tx = (h: string, net: Net = "main") => `https://explorer${net === "test" ? ".testnet" : ""}.arc.io/tx/${h}`;
 type Lang = "pt" | "en";
 
-// Arc testnet, 2026-10-13 (contracts-evm/README.md).
+// Arc mainnet, 2026-10-19/20 (pilot vault 0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8).
 const PROOFS = {
-  deploy: "0x01d19dde48353526b67677fbf41bc54c40d394c1db8ac5fb2f5f921de797211a",
-  identity: "0xa30b233af756a1f27310ddad8fc66cb96a1454bf170836530ac01dac2e3e7ea9",
-  session: "0x6f0fed429f3e8653cbe6614f4a14892eea938c4e0f929d562d82c7074a75d71e",
-  spend: "0x8cb9df02fc39a4733f861ae30c22a2cc783806a6e2de44832d1fe50427aa5bbb",
-  spendPq: "0x4c10777d86b8093d26e01905de7e4ce203912dd1e731989f27cd427f52ee9691",
+  spend: "0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b",
+  session2: "0x4d7bb8761eeaa18a6b3de52ec50878a69a6a5bd34fd786dac6d25ba11cffc8ec",
+  floatTopUp: "0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f",
+  floatDeposit: "0xfb68a2fc6a6a948c3252232fc38c6498041e9413c2130b34ed2a318d19d09f08",
 } as const;
+// Arc testnet, 2026-10-13 (contracts-evm/README.md): the post-quantum leg is proven there only.
+const SPEND_PQ_TESTNET = "0x4c10777d86b8093d26e01905de7e4ce203912dd1e731989f27cd427f52ee9691";
+const REDTEAM_REPORT = "https://github.com/Galmanus/slippay/blob/04ac66c94eff879b065f522bbc28ebb2699b4d30/docs/arc/redteam-mainnet.md";
 
 const COPY = {
   pt: {
@@ -28,7 +32,7 @@ const COPY = {
       eyebrow: "carteira de agente · na Arc",
       h1: "Dólar pro seu agente. Com limite.",
       sub: "Cada agente de IA ganha uma sub-carteira em dólar (USDC na Arc), com identidade própria e um limite que ele não consegue passar, nem se for enganado.",
-      cta: "Conectar um agente", proof: "Ver um pagamento real (rede de teste) ↗",
+      cta: "Conectar um agente", proof: "Ver um pagamento real na Arc ↗",
     },
     how: { n: "001", stamp: "como", h: "Três passos.", steps: [
       ["Crie a sub-carteira", "Defina quanto ele pode gastar por pagamento e por período, até quando, e quem pode receber."],
@@ -42,13 +46,18 @@ const COPY = {
       ["Validade e revogação", "A carteira do agente expira na data que você escolher, e você corta o acesso na hora que quiser."],
       ["Sem repetição", "Cada ordem de pagamento vale uma vez só. Ninguém reaproveita uma assinatura antiga."],
       ["Dupla checagem nos valores altos", "Acima de um valor, o pagamento exige uma segunda assinatura pós-quântica e um atestado de que o agente não foi comprometido."],
-    ] as [string, string][], tech: "AgentVault · EIP-712 · SLH-DSA (precompile da Arc) · P-256" },
+      ["Serviços pagos por chamada", "O agente compra APIs cobradas por uso (x402, nanopagamentos da Circle) com uma carteira de troco que só o cofre abastece. Tudo o que ela recebe passou pelos limites."],
+    ] as [string, string][], tech: "AgentVault · EIP-712 · SLH-DSA (precompile da Arc) · P-256 · x402" },
     identity: { n: "003", stamp: "identidade", h: "Cada agente tem nome e sobrenome.", body: "Todo agente recebe uma identidade registrada na Arc. Cada gasto fica ligado a ela, então dá pra saber qual agente pagou o quê, de quem ele é e dentro de qual regra.", tech: "registro ERC-8004 na Arc" },
-    proofs: { n: "004", stamp: "provas", h: "Não é promessa. Está na rede.", body: "O fluxo inteiro já rodou na rede de teste da Arc. Qualquer pessoa confere:", items: [
-      ["Cofre criado", PROOFS.deploy], ["Identidade do agente registrada", PROOFS.identity], ["Limites instalados", PROOFS.session],
-      ["Pagamento de $0,50 dentro do limite", PROOFS.spend], ["Pagamento de $2,00 com assinatura pós-quântica", PROOFS.spendPq],
-    ] as [string, string][] },
-    dev: { n: "005", stamp: "pra quem constrói", h: "Uma ferramenta, não uma integração.", body: "O agente usa duas ferramentas pelo nosso servidor MCP: uma pra ver o saldo e os limites, outra pra pagar. Toda recusa acontece antes de assinar, e a rede confere de novo.", tools: ["slippay_arc_session", "slippay_arc_pay"] },
+    proofs: { n: "004", stamp: "provas", h: "Não é promessa. Está na rede.", body: "O cofre roda na rede principal da Arc e já pagou com dinheiro de verdade. Qualquer pessoa confere:", items: [
+      ["Pagamento de $0,10 a um comerciante, liberado pelo atestador", PROOFS.spend, "main"],
+      ["Limites de um segundo agente instalados", PROOFS.session2, "main"],
+      ["O cofre abastece a carteira de troco do agente ($0,12, atestado)", PROOFS.floatTopUp, "main"],
+      ["A carteira de troco deposita no Gateway da Circle e paga por chamada", PROOFS.floatDeposit, "main"],
+      ["Pagamento de $2,00 com assinatura pós-quântica (rede de teste)", SPEND_PQ_TESTNET, "test"],
+    ] as [string, string, Net][] },
+    attack: { n: "005", stamp: "ataque", h: "Roubamos a chave do agente. De propósito.", body: "Com a chave do agente na mão, disparamos dez ataques contra o cofre na rede principal: pagar a nós mesmos, passar do teto, pular o atestado, forjar o atestado com outra chave, mudar o valor no caminho, reaproveitar uma ordem antiga. Os dez foram recusados: oito pelo próprio contrato, dois pelo atestador. Nos testes do contrato o atacante tem também a chave do atestador, e mesmo assim nada sai para fora da lista, acima dos tetos, depois de revogado ou depois de vencer.", link: "Ler o relatório do ataque ↗" },
+    dev: { n: "006", stamp: "pra quem constrói", h: "Uma ferramenta, não uma integração.", body: "O agente usa quatro ferramentas pelo nosso servidor MCP: ver o saldo e os limites, pagar, comprar um serviço pago por chamada (x402) e ler os próprios recibos na rede. Toda recusa acontece antes de assinar, e a rede confere de novo.", tools: ["slippay_arc_session", "slippay_arc_pay", "slippay_arc_x402_fetch", "slippay_arc_receipts"] },
     cta: { h: "Dê um orçamento ao seu agente.", btn: "Conectar um agente", footer: "slippay · o dólar da Arc, no Pix" },
   },
   en: {
@@ -57,7 +66,7 @@ const COPY = {
       eyebrow: "agent wallet · on Arc",
       h1: "Dollars for your agent. With a limit.",
       sub: "Each AI agent gets a dollar sub-wallet (USDC on Arc), with its own identity and a limit it cannot pass, even if it gets tricked.",
-      cta: "Connect an agent", proof: "See a real payment (test network) ↗",
+      cta: "Connect an agent", proof: "See a real payment on Arc ↗",
     },
     how: { n: "001", stamp: "how", h: "Three steps.", steps: [
       ["Create the sub-wallet", "Set how much it can spend per payment and per period, until when, and who can receive."],
@@ -71,13 +80,18 @@ const COPY = {
       ["Expiry and revocation", "The agent's wallet expires on the date you choose, and you can cut access at any moment."],
       ["No replays", "Each payment order is good once. Nobody can reuse an old signature."],
       ["Double check on large amounts", "Above a set amount, a payment needs a second, post-quantum signature and an attestation that the agent wasn't compromised."],
-    ] as [string, string][], tech: "AgentVault · EIP-712 · SLH-DSA (Arc precompile) · P-256" },
+      ["Pay-per-call services", "The agent buys usage-priced APIs (x402, Circle nanopayments) from a change wallet only the vault can fill. Everything it ever receives went through the limits."],
+    ] as [string, string][], tech: "AgentVault · EIP-712 · SLH-DSA (Arc precompile) · P-256 · x402" },
     identity: { n: "003", stamp: "identity", h: "Every agent has a name.", body: "Each agent gets an identity registered on Arc. Every payment is tied to it, so you can tell which agent paid what, who it belongs to and under which rule.", tech: "ERC-8004 registry on Arc" },
-    proofs: { n: "004", stamp: "proof", h: "Not a promise. It's on the network.", body: "The whole flow already ran on the Arc test network. Anyone can check:", items: [
-      ["Vault created", PROOFS.deploy], ["Agent identity registered", PROOFS.identity], ["Limits installed", PROOFS.session],
-      ["$0.50 payment inside the limit", PROOFS.spend], ["$2.00 payment with a post-quantum signature", PROOFS.spendPq],
-    ] as [string, string][] },
-    dev: { n: "005", stamp: "for builders", h: "A tool, not an integration.", body: "The agent uses two tools from our MCP server: one to read its balance and limits, one to pay. Every refusal happens before signing, and the network checks again.", tools: ["slippay_arc_session", "slippay_arc_pay"] },
+    proofs: { n: "004", stamp: "proof", h: "Not a promise. It's on the network.", body: "The vault runs on Arc mainnet and has already paid with real money. Anyone can check:", items: [
+      ["$0.10 payment to a merchant, cleared by the attester", PROOFS.spend, "main"],
+      ["A second agent's limits installed", PROOFS.session2, "main"],
+      ["The vault fills the agent's change wallet ($0.12, attested)", PROOFS.floatTopUp, "main"],
+      ["The change wallet deposits into Circle Gateway and pays per call", PROOFS.floatDeposit, "main"],
+      ["$2.00 payment with a post-quantum signature (test network)", SPEND_PQ_TESTNET, "test"],
+    ] as [string, string, Net][] },
+    attack: { n: "005", stamp: "attack", h: "We stole the agent's key. On purpose.", body: "With the agent's key in hand, we ran ten attacks against the vault on mainnet: pay ourselves, go over the cap, skip the attestation, forge it with another key, change the amount in flight, reuse an old order. All ten were refused: eight by the contract itself, two by the attester. In the contract tests the attacker also holds the attester's key, and still nothing leaves for anyone off the list, above the caps, after revocation or after expiry.", link: "Read the attack report ↗" },
+    dev: { n: "006", stamp: "for builders", h: "A tool, not an integration.", body: "The agent uses four tools from our MCP server: read its balance and limits, pay, buy a pay-per-call service (x402) and read its own receipts on-chain. Every refusal happens before signing, and the network checks again.", tools: ["slippay_arc_session", "slippay_arc_pay", "slippay_arc_x402_fetch", "slippay_arc_receipts"] },
     cta: { h: "Give your agent a budget.", btn: "Connect an agent", footer: "slippay · the Arc dollar, in Pix" },
   },
 } as const;
@@ -166,14 +180,14 @@ export default function Agents() {
         <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/40">{t.identity.tech}</div>
       </div></section>
 
-      {/* 004 · PROOFS — real Arc testnet transactions */}
+      {/* 004 · PROOFS — real Arc transactions (mainnet, plus the testnet post-quantum spend) */}
       <section className="px-4 md:px-6 py-2"><div className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-20 md:py-32">
         <Stamp n={t.proofs.n} label={t.proofs.stamp} dark />
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6vw,4.5rem)] max-w-[16ch]`} style={display}>{t.proofs.h}</h2>
         <p className="mt-8 text-lg md:text-xl text-[#f1eee7]/70 leading-relaxed max-w-[52ch]">{t.proofs.body}</p>
         <div className="mt-10 flex flex-col">
-          {t.proofs.items.map(([label, hash]) => (
-            <a key={hash} href={tx(hash)} target="_blank" rel="noreferrer"
+          {t.proofs.items.map(([label, hash, net]) => (
+            <a key={hash} href={tx(hash, net)} target="_blank" rel="noreferrer"
               className="group flex flex-col md:flex-row md:items-center justify-between gap-2 border-t border-[#f1eee7]/12 py-5 hover:bg-[#f1eee7]/[0.03] transition-colors">
               <span className="text-lg md:text-xl font-semibold tracking-[-0.01em]">{label}</span>
               <span className="font-mono text-[11px] text-[#f1eee7]/50 group-hover:text-[#5B82FF] transition-colors">{hash.slice(0, 10)}…{hash.slice(-4)} ↗</span>
@@ -182,7 +196,15 @@ export default function Agents() {
         </div>
       </div></section>
 
-      {/* 005 · BUILDERS — the two MCP tools */}
+      {/* 005 · ATTACK — the read-only mainnet red-team (docs/arc/redteam-mainnet.md) */}
+      <section className={sec}><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-20 md:py-32">
+        <Stamp n={t.attack.n} label={t.attack.stamp} />
+        <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6vw,4.5rem)] max-w-[16ch]`} style={display}>{t.attack.h}</h2>
+        <p className="mt-8 text-lg md:text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[58ch]">{t.attack.body}</p>
+        <a href={REDTEAM_REPORT} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b-2 border-[#002FA7] pb-1 hover:opacity-70">{t.attack.link}</a>
+      </div></section>
+
+      {/* 006 · BUILDERS — the MCP tools */}
       <section className={sec}><div className="max-w-[1100px] mx-auto px-6 md:px-12 py-20 md:py-32">
         <Stamp n={t.dev.n} label={t.dev.stamp} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6vw,4.5rem)] max-w-[16ch]`} style={display}>{t.dev.h}</h2>
