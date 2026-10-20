@@ -145,7 +145,7 @@ export function MandateDemo({ lang = "pt" }: { lang?: Lang }) {
         className="mt-5 flex items-center justify-between border-t border-[#0a0a0a]/10 pt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/55 hover:text-[#0a0a0a]"
       >
         <span>{t.real}</span>
-        <span>tx 0x8cb9df02 ↗</span>
+        <span>tx {TX.slice(TX.lastIndexOf("/") + 1, TX.lastIndexOf("/") + 11)} ↗</span>
       </span>
 
       <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.18em] text-[#0a0a0a]/30">{t.replay}</div>

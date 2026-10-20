@@ -5,14 +5,17 @@
 // Helvetica-brutalist (Inter), monumental caps, mono index labels, International
 // Klein Blue #002FA7 as the only accent (#5B82FF on dark surfaces). Bilingual.
 // Register: a normal bank. Arc and Circle are named (declared ally); no other
-// network is.
+// network is. The live modules (vault card, ledger, attack lab) read Arc mainnet from the
+// visitor's browser: every number they show is the chain's, at the block they print.
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { AccountDemo } from "../components/AccountDemo.tsx";
-import { MandateDemo } from "../components/MandateDemo.tsx";
 import { GoldWaves } from "../components/GoldWaves.tsx";
 import { LiveProof } from "../components/LiveProof.tsx";
+import { LiveVaultCard } from "../components/LiveVaultCard.tsx";
+import { RealLedger } from "../components/RealLedger.tsx";
+import { AttackLab } from "../components/AttackLab.tsx";
+import { addrUrl, VAULT } from "../lib/arcLive.ts";
 
 const display = { fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" } as const;
 const GRAY = "#6f6862";
@@ -25,7 +28,7 @@ type Lang = "pt" | "en";
 const COPY = {
   en: {
     nav: { pay: "Pay", receive: "Receive", agents: "Agents", enterprise: "Enterprise", login: "Sign in", tryFree: "Open a company account", gate: "The rules", live: "Live", investors: "Investors", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "cross-border payments · on Arc", h1: "Cross-border payments, in dollars.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][], circle: "Built on Arc, by Circle.", circleNote: "Arc Acceleration Season · 2026" },
+    hero: { eyebrow: "cross-border payments · on Arc", h1: "Cross-border payments, in dollars.", sub: "Circle's digital dollar (USDC) in your company's own account. In and out by Pix. Earns while idle. Your AI agents pay the bills.", cta: "Open a company account", note: "no bank branch · the money stays with the company", metrics: [["US$", "the company's own balance"], ["Pix", "in and out, in reais"], ["Earns", "while it waits"]] as [string, string][], circle: "Built on Arc, by Circle.", circleNote: "Arc Acceleration Season · 2026", pill: "Agent vault live on Arc mainnet", pillCta: "see it ↗" },
     yours: { n: "001", stamp: "yours", h: "The company's. For real.", items: [
       ["Only the company moves it", "Every payment is approved by the people you authorize. Not by a bank, and not by us."],
       ["We never hold it", "The dollars stay in the company's own account, never parked inside Slippay. We can't block them, hold them, or take them."],
@@ -36,10 +39,10 @@ const COPY = {
       ["It becomes dollars", "USDC, straight into the company's account."],
       ["Use it abroad", "Pay suppliers, receive from clients, or bring it back by Pix."],
     ] as [string, string][], foot: "~1.9% to turn reais into dollars, vs ~5% at a bank. The rest stays with the company." },
-    control: { n: "003", stamp: "agents", h: "Agents that pay the bills.", body: "Give an AI agent its own dollar sub-wallet with a limit and a list of who it may pay: freight, SaaS, a supplier's invoice. Past the limit, it locks on its own. Each agent has an identity, and every payment is on the record for your accountant.", gateLink: "How the limits work →", agentsLink: "Connect an agent →" },
-    business: { n: "004", stamp: "yield", h: "Idle dollars earn.", body: "Money waiting for the next shipment doesn't have to sit still. From the account, the company moves idle dollars into a yield position on Arc and takes them back when it needs them. The position stays in the company's own account, with the rate and the earnings shown as they are on the network.", cta: "Talk to us →" },
-    open: { n: "005", stamp: "on Arc", h: "Built on Arc, the network of Circle's dollar.", body: "The balance is USDC, the digital dollar issued by Circle, on Arc, the network Circle built for money. Every payment leaves a public receipt anyone can verify, without asking us.", btnReal: "See a real agent payment on Arc ↗" },
-    faq: { n: "006", stamp: "questions", h: "Before you ask.", items: [
+    control: { n: "004", stamp: "agents", h: "Agents that pay the bills.", body: "Give an AI agent its own dollar sub-wallet with a limit and a list of who it may pay: freight, SaaS, a supplier's invoice. Past the limit, it locks on its own. Each agent has an identity, and every payment is on the record for your accountant. Below is the real record.", gateLink: "How the limits work →", agentsLink: "Connect an agent →" },
+    business: { n: "003", stamp: "yield", h: "Idle dollars earn.", body: "Money waiting for the next shipment doesn't have to sit still. From the account, the company moves idle dollars into a yield position on Arc and takes them back when it needs them. The position stays in the company's own account, with the rate and the earnings shown as they are on the network.", cta: "Talk to us →" },
+    open: { n: "006", stamp: "on Arc", h: "Built on Arc, the network of Circle's dollar.", body: "The balance is USDC, the digital dollar issued by Circle, on Arc, the network Circle built for money. Every payment leaves a public receipt anyone can verify, without asking us.", btnReal: "See a real agent payment on Arc ↗" },
+    faq: { n: "007", stamp: "questions", h: "Before you ask.", items: [
       ["How much does it cost?", "~1.9% when reais become dollars, everything included. No monthly fee. No hidden fees. If a fee ever exists, it shows up before you confirm, never after."],
       ["Is Slippay a bank?", "No, and that's by design. A bank keeps your money; Slippay doesn't. The dollars stay with the company, and currency exchange runs through partners licensed by the Central Bank."],
       ["Who is it for?", "Companies that import, export, or make cross-border payments. There is no personal account."],
@@ -49,12 +52,12 @@ const COPY = {
       ["We move large amounts. Can we use it?", "Yes. The money stays in the company's hands, never ours. For large deposits and withdrawals, conversion routes through a Central Bank–licensed partner, with company identity checks and full FX compliance."],
       ["Can Slippay freeze our money?", "No. Slippay never holds it, so there's nothing for us, or a bank, to freeze. Like every digital dollar, USDC follows the compliance rules of Circle, its issuer."],
     ] as [string, string][] },
-    cta: { n: "007", stamp: "start", h: "Start now.", lines: ["From a Pix to dollars, in an account that's the company's.", "For the business and for its agents."], btn: "Open a company account", note: "No bank branch · the money stays with the company",
-      footer: "slippay · cross-border payments, in dollars" },
+    cta: { n: "008", stamp: "start", h: "Start now.", lines: ["From a Pix to dollars, in an account that's the company's.", "For the business and for its agents."], btn: "Open a company account", note: "No bank branch · the money stays with the company",
+      footer: "slippay · cross-border payments, in dollars", askAi: "Ask an AI about Slippay:", aiQ: "What is Slippay (slippay.cc), the dollar account for companies on Circle's Arc network, and how do its AI agent wallets work?", manifest: "This site speaks agent too: machine-readable summary" },
   },
   pt: {
     nav: { pay: "Pagar", receive: "Receber", agents: "Agentes", enterprise: "Enterprise", login: "Entrar", tryFree: "Abrir conta da empresa", gate: "As regras", live: "Ao vivo", investors: "Investidores", manifesto: "Manifesto", builders: "Builders" },
-    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "Dólar pra importar e exportar.", sub: "O dólar digital da Circle (USDC) na conta da própria empresa. Entra e sai por Pix. Rende parado. Seus agentes de IA pagam as contas.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][], circle: "Na Arc, a rede da Circle.", circleNote: "Arc Acceleration Season · 2026" },
+    hero: { eyebrow: "conta em dólar para empresas · na Arc", h1: "Dólar pra importar e exportar.", sub: "O dólar digital da Circle (USDC) na conta da própria empresa. Entra e sai por Pix. Rende parado. Seus agentes de IA pagam as contas.", cta: "Abrir conta da empresa", note: "sem agência · o dinheiro fica com a empresa", metrics: [["US$", "saldo da própria empresa"], ["Pix", "entra e sai em reais"], ["Rende", "enquanto espera"]] as [string, string][], circle: "Na Arc, a rede da Circle.", circleNote: "Arc Acceleration Season · 2026", pill: "Cofre de agentes ao vivo na Arc mainnet", pillCta: "ver ↗" },
     yours: { n: "001", stamp: "é da empresa", h: "É da empresa. De verdade.", items: [
       ["Só a empresa movimenta", "Cada pagamento é aprovado por quem você autorizar. Não por um banco, nem pela gente."],
       ["A gente não segura", "O dólar fica na conta da própria empresa, nunca parado dentro da Slippay. A gente não consegue bloquear, segurar nem tomar."],
@@ -65,10 +68,10 @@ const COPY = {
       ["Vira dólar", "USDC, direto na conta da empresa."],
       ["Use lá fora", "Pague fornecedores, receba de clientes ou traga de volta por Pix."],
     ] as [string, string][], foot: "~1,9% pra virar dólar, contra ~5% de banco. O resto fica com a empresa." },
-    control: { n: "003", stamp: "agentes", h: "Agentes que pagam as contas.", body: "Dê a um agente de IA uma sub-carteira em dólar com limite e lista de quem ele pode pagar: frete, SaaS, a fatura de um fornecedor. Passou do limite, trava sozinho. Cada agente tem identidade própria, e todo pagamento fica registrado pro seu contador.", gateLink: "Como os limites funcionam →", agentsLink: "Conectar um agente →" },
-    business: { n: "004", stamp: "rendimento", h: "Dólar parado rende.", body: "O dinheiro que espera o próximo embarque não precisa ficar parado. Da própria conta, a empresa coloca o dólar ocioso numa posição de rendimento na Arc e tira quando precisar. A posição fica na conta da empresa, com a taxa e o rendimento mostrados como estão na rede.", cta: "Falar com a gente →" },
-    open: { n: "005", stamp: "na Arc", h: "Feito na Arc, a rede do dólar da Circle.", body: "O saldo é USDC, o dólar digital emitido pela Circle, na Arc, a rede que a Circle construiu para dinheiro. Cada pagamento deixa um comprovante público que qualquer pessoa confere, sem pedir nada pra gente.", btnReal: "Ver um pagamento real de agente na Arc ↗" },
-    faq: { n: "006", stamp: "perguntas", h: "Antes de perguntar.", items: [
+    control: { n: "004", stamp: "agentes", h: "Agentes que pagam as contas.", body: "Dê a um agente de IA uma sub-carteira em dólar com limite e lista de quem ele pode pagar: frete, SaaS, a fatura de um fornecedor. Passou do limite, trava sozinho. Cada agente tem identidade própria, e todo pagamento fica registrado pro seu contador. Abaixo, o registro de verdade.", gateLink: "Como os limites funcionam →", agentsLink: "Conectar um agente →" },
+    business: { n: "003", stamp: "rendimento", h: "Dólar parado rende.", body: "O dinheiro que espera o próximo embarque não precisa ficar parado. Da própria conta, a empresa coloca o dólar ocioso numa posição de rendimento na Arc e tira quando precisar. A posição fica na conta da empresa, com a taxa e o rendimento mostrados como estão na rede.", cta: "Falar com a gente →" },
+    open: { n: "006", stamp: "na Arc", h: "Feito na Arc, a rede do dólar da Circle.", body: "O saldo é USDC, o dólar digital emitido pela Circle, na Arc, a rede que a Circle construiu para dinheiro. Cada pagamento deixa um comprovante público que qualquer pessoa confere, sem pedir nada pra gente.", btnReal: "Ver um pagamento real de agente na Arc ↗" },
+    faq: { n: "007", stamp: "perguntas", h: "Antes de perguntar.", items: [
       ["Quanto custa?", "~1,9% quando o real vira dólar, com tudo dentro. Sem mensalidade. Sem taxa escondida. Se algum dia existir uma taxa, ela aparece antes de você confirmar, nunca depois."],
       ["A Slippay é um banco?", "Não, e é de propósito. Banco guarda o seu dinheiro; a Slippay não guarda. O dólar fica com a empresa, e o câmbio passa por parceiros licenciados pelo Banco Central."],
       ["Pra quem é?", "Empresas que importam, exportam ou pagam e recebem lá fora. Não existe conta pra pessoa física."],
@@ -78,8 +81,8 @@ const COPY = {
       ["Movimentamos valores altos. Dá pra usar?", "Dá. O dinheiro fica na mão da empresa, nunca na nossa. Para entradas e saídas grandes, a conversão passa por um parceiro licenciado pelo Banco Central, com verificação da empresa e câmbio em conformidade."],
       ["A Slippay pode congelar o nosso dinheiro?", "Não. A Slippay nunca segura o dinheiro, então não há o que nós, ou um banco, congelar. Como todo dólar digital, o USDC segue as regras de conformidade da Circle, que o emite."],
     ] as [string, string][] },
-    cta: { n: "007", stamp: "comece", h: "Comece agora.", lines: ["Do Pix ao dólar, numa conta que é da empresa.", "Pro negócio e pros agentes dele."], btn: "Abrir conta da empresa", note: "Sem agência · o dinheiro fica com a empresa",
-      footer: "slippay · a conta em dólar do comércio exterior" },
+    cta: { n: "008", stamp: "comece", h: "Comece agora.", lines: ["Do Pix ao dólar, numa conta que é da empresa.", "Pro negócio e pros agentes dele."], btn: "Abrir conta da empresa", note: "Sem agência · o dinheiro fica com a empresa",
+      footer: "slippay · a conta em dólar do comércio exterior", askAi: "Pergunte a uma IA sobre a Slippay:", aiQ: "O que é a Slippay (slippay.cc), a conta em dólar para empresas na rede Arc da Circle, e como funcionam as carteiras de agentes de IA dela?", manifest: "Este site também fala com agentes: resumo legível por máquina" },
   },
 } as const;
 
@@ -166,8 +169,14 @@ export default function LandingV2() {
           GoldWaves drift behind the content (pointer-events off, z-0); content z-10. */}
       <section className="relative overflow-hidden bg-white text-[#0a0a0a]">
         <GoldWaves className="pointer-events-none absolute inset-0 z-0 opacity-40" />
-        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pt-32 md:pt-40 pb-16 md:pb-24 grid md:grid-cols-[1fr_auto] gap-10 md:gap-20 items-center">
+        <div className="relative z-10 max-w-[1200px] mx-auto px-6 pt-32 md:pt-40 pb-24 md:pb-32 grid md:grid-cols-[1fr_420px] gap-16 md:gap-20 items-center">
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <a href={addrUrl(VAULT)} target="_blank" rel="noreferrer" className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-[#0a0a0a]/10 bg-white/80 backdrop-blur pl-1.5 pr-4 py-1.5 text-[12px] shadow-[0_8px_24px_-12px_rgba(0,47,167,.35)] hover:border-[#002FA7]/40 transition-colors">
+              <img src="/mark.png" alt="" width={22} height={22} className="w-[22px] h-[22px] rounded-full" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#137a46] animate-pulse" />
+              <span className="font-medium text-[#0a0a0a]/80">{t.hero.pill}</span>
+              <span className="font-semibold text-[#002FA7]">{t.hero.pillCta}</span>
+            </a>
             <span className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.24em] text-[#0a0a0a]/55">
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#002FA7" }} />{t.hero.eyebrow}
             </span>
@@ -194,8 +203,8 @@ export default function LandingV2() {
             </div>
             <span className="mt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#0a0a0a]/45">{t.hero.note}</span>
           </div>
-          <div className="mx-auto md:mx-0 max-w-[290px]">
-            <AccountDemo lang={lang} />
+          <div className="w-full pb-24 md:pb-16">
+            <LiveVaultCard lang={lang} />
           </div>
         </div>
         {/* CIRCLE — declared ally, monumental. Says "on Arc, by Circle": true today (program + network); not "backed by". */}
@@ -242,21 +251,7 @@ export default function LandingV2() {
         <p className="mt-8 text-lg md:text-xl font-medium tracking-[-0.01em]">{t.how.foot}</p>
       </div></section>
 
-      {/* 003 · AGENTS — a dollar sub-wallet per AI agent, with a limit it cannot pass */}
-      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-        <div>
-          <Stamp n={t.control.n} label={t.control.stamp} />
-          <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6.5vw,4.5rem)] max-w-[15ch]`} style={display}>{t.control.h}</h2>
-          <p className="mt-6 text-lg md:text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[46ch]">{t.control.body}</p>
-          <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
-            <Link to="/agents" className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white font-semibold">{t.control.agentsLink}</Link>
-            <Link to="/gate" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.control.gateLink}</Link>
-          </div>
-        </div>
-        <div className="w-full max-w-[440px] mx-auto md:justify-self-end"><MandateDemo lang={lang} /></div>
-      </div></section>
-
-      {/* 004 · BUSINESS — for companies: an assistant that pays your bills */}
+      {/* 003 · YIELD — idle dollars earn */}
       <section className="px-4 md:px-6 py-2"><div data-reveal className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-24 md:py-36">
         <div className="flex items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.3em] text-[#f1eee7]/40">
           <span className="text-[#5B82FF]">{t.business.n}</span><span className="h-px w-8 bg-[#f1eee7]/30" /><span>{t.business.stamp}</span>
@@ -266,7 +261,31 @@ export default function LandingV2() {
         <Link to="/builders" className="mt-10 lift inline-flex items-center rounded-full px-9 py-4 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white font-semibold">{t.business.cta}</Link>
       </div></section>
 
-      {/* 005 · ON ARC — declared ally: USDC by Circle, on Arc; every payment has a public receipt */}
+      {/* 004 · AGENTS — a dollar sub-wallet per AI agent; the ledger below is real (Arc mainnet) */}
+      <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
+        <div className="grid md:grid-cols-[1.1fr_.9fr] gap-10 md:gap-16 items-end">
+          <div>
+            <Stamp n={t.control.n} label={t.control.stamp} />
+            <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,6.5vw,4.5rem)] max-w-[15ch]`} style={display}>{t.control.h}</h2>
+          </div>
+          <div>
+            <p className="text-lg md:text-xl text-[#0a0a0a]/70 leading-relaxed max-w-[46ch]">{t.control.body}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Link to="/agents" className="lift inline-flex items-center rounded-full px-7 py-3.5 text-[11px] uppercase tracking-[0.22em] bg-[#002FA7] text-white font-semibold">{t.control.agentsLink}</Link>
+              <Link to="/gate" className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.18em] border-b border-[#0a0a0a]/20 hover:border-[#0a0a0a] pb-1" style={{ color: GRAY }}>{t.control.gateLink}</Link>
+            </div>
+          </div>
+        </div>
+        <div className="mt-14"><RealLedger lang={lang} /></div>
+      </div></section>
+
+      {/* 005 · ATTACK — the visitor attacks the live vault (eth_call, nothing broadcast) */}
+      <section id="ataque" className="px-4 md:px-6 py-2 scroll-mt-24"><div data-reveal className="bg-[#0a0a0a] text-[#f1eee7] rounded-[1.75rem] md:rounded-[2.5rem] max-w-[1200px] mx-auto px-6 md:px-14 py-24 md:py-32 relative overflow-hidden">
+        <div aria-hidden className="absolute -top-40 -right-40 w-[520px] h-[520px] rounded-full bg-[#002FA7]/30 blur-3xl" />
+        <div className="relative"><AttackLab lang={lang} n="005" /></div>
+      </div></section>
+
+      {/* 006 · ON ARC — declared ally: USDC by Circle, on Arc; every payment has a public receipt */}
       <section className={sec}><div data-reveal className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36">
         <Stamp n={t.open.n} label={t.open.stamp} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,5rem)] max-w-[18ch]`} style={display}>{t.open.h}</h2>
@@ -276,7 +295,7 @@ export default function LandingV2() {
         </div>
       </div></section>
 
-      {/* 006 · FAQ — the objections that block the first deposit */}
+      {/* 007 · FAQ — the objections that block the first deposit */}
       <section className={sec}><div data-reveal className="max-w-[900px] mx-auto px-6 md:px-12 py-24 md:py-36">
         <Stamp n={t.faq.n} label={t.faq.stamp} />
         <h2 className={`mt-10 ${h2} text-[clamp(2.25rem,7vw,4.5rem)]`} style={display}>{t.faq.h}</h2>
@@ -290,7 +309,7 @@ export default function LandingV2() {
         </div>
       </div></section>
 
-      {/* 007 · CTA */}
+      {/* 008 · CTA */}
       <section className={sec}><div className="max-w-[1200px] mx-auto px-6 md:px-12 py-28 md:py-44">
         <Stamp n={t.cta.n} label={t.cta.stamp} />
         <h2 className="mt-10 font-black uppercase tracking-[-0.055em] leading-[0.8] text-[clamp(3.5rem,16vw,12rem)] text-center md:text-left" style={display}>{t.cta.h}</h2>
@@ -302,6 +321,14 @@ export default function LandingV2() {
         <div className="mt-16 flex flex-wrap gap-x-6 gap-y-2 text-[10px] uppercase tracking-[0.2em] text-[#0a0a0a]/45">
           {NAV_MORE.map(([label, href]) => <Link key={href} to={href} className="hover:text-[#0a0a0a]">{label}</Link>)}
           <a href="https://slippay.gitbook.io/slippay-docs" target="_blank" rel="noreferrer" className="hover:text-[#0a0a0a]">Docs</a>
+        </div>
+        <div className="mt-10 border-t border-[#0a0a0a]/10 pt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12px] text-[#0a0a0a]/50">
+          <span>{t.cta.askAi}</span>
+          {([["ChatGPT", "https://chatgpt.com/?q="], ["Claude", "https://claude.ai/new?q="], ["Perplexity", "https://www.perplexity.ai/search?q="]] as [string, string][]).map(([n, u]) => (
+            <a key={n} href={u + encodeURIComponent(t.cta.aiQ)} target="_blank" rel="noreferrer" className="text-[#0a0a0a]/75 hover:text-[#002FA7]">{n}</a>
+          ))}
+          <span className="hidden md:inline opacity-30">·</span>
+          <a href="/llms.txt" className="text-[#0a0a0a]/75 hover:text-[#002FA7]">{t.cta.manifest}</a>
         </div>
         <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.28em] text-[#0a0a0a]/30">{t.cta.footer}</div>
       </div></section>

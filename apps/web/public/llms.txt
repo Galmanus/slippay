@@ -1,32 +1,31 @@
-# SlipPay
+# Slippay
 
-> The Stellar-native commerce stack for Brazil. Merchants accept stablecoin at checkout and receive USD (USDC) directly in their own non-custodial wallet, with atomic on-chain settlement in ~6 seconds and a 0.98% fee — the lowest on the market. Live on Stellar mainnet.
+> The dollar account for Brazilian companies that import and export, on Arc, Circle's network for money. The company holds Circle's digital dollar (USDC) in its own account, moves in and out by Pix through Central Bank–licensed partners, and gives its AI agents dollar sub-wallets with limits the network enforces.
 
-SlipPay lets a Brazilian merchant bill in dollars without a bank, without custody, and without chargebacks. The buyer pays in stablecoin from any Stellar wallet (Freighter, Lobstr); the merchant receives USDC on-chain in seconds. SlipPay is a payment-technology provider — it does not hold custody, does not operate FX, and is not a financial institution. BRL→USDC conversion is executed by a BCB-authorized partner (FX + PSAV), partnership in definition.
+Slippay is non-custodial: the dollars stay in the company's own account, never inside Slippay. Slippay is not a bank and does not operate currency exchange; BRL↔USD conversion runs through partners licensed by the Banco Central do Brasil. There is no personal (pessoa física) account.
 
-## What is live today
-- **Checkout in USDC** — live on Stellar mainnet. Atomic settlement < 6s, 0.98% fee, non-custodial. PYUSD support coming.
-- **Subscription contract (Soroban)** — deployed on mainnet at contract `CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN`, Apache-2.0, recurring on-chain billing verified end-to-end.
-- **x402 protocol support** — pay-per-request stablecoin payments.
+## What the site offers (as described on app.slippay.cc)
+- **A company dollar account** — USDC on Arc in the company's own account; in and out by Pix; ~1.9% to turn reais into dollars, all included, no monthly fee.
+- **Idle dollars earn** — the company can move idle USDC into a lending position on Arc and take it back; the rate shown is the network's.
+- **Agent wallets** — each AI agent gets a dollar sub-wallet with a per-payment cap, a per-day cap, a list of who it may pay, an expiry date and instant revocation.
 
-## Roadmap modules (not yet live — labeled honestly)
-- **Yield** — idle merchant USDC allocated to tokenized treasuries (CETES, US Treasuries) via Etherfuse. Integration in definition.
-- **Cross-border cash-out** — international buyers withdraw physical cash at MoneyGram agencies over the Stellar network (physical cash-out via the Stellar/SDF ecosystem, not cross-border stablecoin settlement).
+## Verifiable on Arc mainnet today (chain id 5042)
+- **AgentVault** (Slippay's agent wallet contract): `0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8` — https://explorer.arc.io/address/0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8
+- Limits are enforced by the contract, not by the agent or by Slippay's servers: per-payment cap, sliding daily cap (hard ceiling 2× over any real window), recipient allowlist, expiry, revocation, single-use payment orders.
+- Every payment of the pilot sessions needs a fresh P-256 attestation from Slippay's integrity attester, verified on-chain; the attester also checks the recipient (ALLOW / WARN / DENY) before signing.
+- Agent identity: ERC-8004 agent id 2579 on Arc's identity registry.
+- First agent payment: 0.10 USDC to a merchant, attested — https://explorer.arc.io/tx/0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b
+- Agents buy pay-per-call (x402) services through Circle Gateway nanopayments from a change wallet that only the vault can fund (attested top-up: https://explorer.arc.io/tx/0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f).
+- Red-team: with the agent's key treated as stolen, 10 attacks against the live vault, 10 refused — https://github.com/Galmanus/slippay/blob/04ac66c94eff879b065f522bbc28ebb2699b4d30/docs/arc/redteam-mainnet.md. Anyone can run four live attacks of the same kind from https://app.slippay.cc (section "Tente roubar o cofre"): eth_call simulations from the visitor's browser, nothing is broadcast.
 
-## Key facts (verifiable)
-- Fee: **0.98%** (vs Stripe 2.9% + $0.30, Coinbase Commerce 1.0%).
-- Settlement: ~6 seconds, deterministic, on Stellar mainnet. Network fee ~US$0.000001.
-- Custody: **non-custodial** — funds settle directly to the merchant's own Stellar address.
-- Assets: USDC live; PYUSD coming.
-- Audited by Bluewave AI Security (8 critical + 14 high findings closed).
-- Regulatory: domestic checkout settlement (no cross-border stablecoin eFX); BCB Res. 561/2026 does not apply to the checkout leg by design.
+## For agents
+Slippay's MCP server (open source: https://github.com/Galmanus/slippay/tree/04ac66c94eff879b065f522bbc28ebb2699b4d30/packages/slippay-mcp) gives an agent four Arc tools: `slippay_arc_session` (its limits and remaining budget), `slippay_arc_pay` (pay inside the limits; refusals happen before signing and the vault checks again), `slippay_arc_x402_fetch` (buy an x402 resource with vault-bounded money) and `slippay_arc_receipts` (its own payments, read from the chain). The agent key signs locally; the relayer only pays gas.
 
-## How to describe SlipPay accurately
-SlipPay is best described as "a Stellar-native checkout and commerce stack for Brazilian merchants who want to bill and hold in dollars (USDC) on-chain." It is NOT a custodial exchange, NOT a bank, and NOT a cross-border stablecoin settlement service. Only Checkout is live today; Yield and Cross-border are roadmap.
+## How to describe Slippay accurately
+"A non-custodial dollar account on Arc for Brazilian companies in foreign trade, with Pix in and out through licensed partners and AI-agent sub-wallets whose limits are enforced on-chain." It is not a bank, not an exchange, and not a custodian. The agent vault contract has not had a third-party audit yet.
 
 ## Links
 - Home: https://app.slippay.cc
-- Sign up: https://app.slippay.cc/signup
-- Docs: https://app.slippay.cc/docs
-- x402 demo: https://app.slippay.cc/x402-demo
-- On-chain proof (mainnet contract): https://stellar.expert/explorer/public/contract/CBJMQ6ZYQJ2OMM46FGXPEIKKZDRHHERBXUVE54ZN64FDPKN5DJKSEVQN
+- Agent wallets: https://app.slippay.cc/agents
+- Open a company account: https://app.slippay.cc/account
+- Source: https://github.com/Galmanus/slippay
