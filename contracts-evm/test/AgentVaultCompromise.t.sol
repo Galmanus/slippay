@@ -121,7 +121,8 @@ contract Attacker is Test {
     /// Rare (1 in 256 calls), so most runs spend a long time with a live session. Not keyed on 0:
     /// the fuzzer's dictionary feeds 0 constantly, which would revoke at the start of every run.
     function revokeNow(uint8 roll) external {
-        if (roll != 137 || revokedAt != 0) return;
+        // Only after real spends: a run that revokes first would satisfy every invariant vacuously.
+        if (roll != 137 || revokedAt != 0 || spends < 10) return;
         vm.prank(owner);
         vault.revokeSession(agent);
         revokedAt = uint64(block.timestamp);
@@ -246,10 +247,10 @@ contract AgentVaultCompromiseTest is Test {
         assertFalse(attacker.replayPaid());
     }
 
-    /// Non-vacuity: a run where the session stayed live must have actually moved money, or the
-    /// invariants above would pass for an attacker that never got anything through (measured
-    /// 2026-10-20: every unrevoked run in 64 settled at least 40 spends).
+    /// Non-vacuity: every run must have actually moved money, or the invariants above would pass
+    /// for an attacker that never got anything through (revoke and the expiry jump both wait for 10
+    /// settled spends; measured 2026-10-20: every unrevoked run in 64 settled at least 40).
     function afterInvariant() public view {
-        assertTrue(attacker.spends() >= 10 || attacker.revokedAt() != 0, "run settled almost nothing");
+        assertGe(attacker.spends(), 10, "run settled almost nothing");
     }
 }
