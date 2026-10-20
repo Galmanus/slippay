@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { keccak256, stringToHex, type Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { slhKeygen } from "@slippay/arc-agent";
+import { slhKeygen, x402Fetch } from "@slippay/arc-agent";
+import { recoverTypedDataAddress } from "viem";
 import {
   arcPay, arcReceipts, arcX402Fetch, formatUsdc, parseUsdc, remainingWindowBudget,
   type ArcDeps, type ArcSessionView, type SpendLog, type X402ToolDeps,
@@ -212,13 +213,76 @@ describe("arcReceipts — the on-chain record of what the agent paid", () => {
     const at = [95_000n, 71_000n, 70_500n, 40_000n];
     const spendLogs = vi.fn(async (_a: string, from: bigint, to: bigint) => at.filter((b) => b >= from && b <= to).map(log));
     const r = await arcReceipts({ latestBlock: async () => 100_000n, spendLogs }, { agent: AGENT, floorBlock: 0n, chunk: 10_000n }, 2);
-    expect(r.map((x) => x.block)).toEqual(["95000", "71000"]);
+    expect(r.receipts.map((x) => x.block)).toEqual(["95000", "71000"]);
     expect(spendLogs).toHaveBeenCalledTimes(3); // 90001..100000, 80001..90000, 70001..80000
-    expect(r[0]).toMatchObject({ to: MERCHANT, amountUsdc: "0.1", attested: true });
+    expect(r.receipts[0]).toMatchObject({ to: MERCHANT, amountUsdc: "0.1", attested: true });
+    expect(r.searched).toEqual({ fromBlock: "70001", toBlock: "100000", complete: false });
   });
   it("never reads below the floor block", async () => {
     const spendLogs = vi.fn(async () => [] as SpendLog[]);
-    await arcReceipts({ latestBlock: async () => 100_000n, spendLogs }, { agent: AGENT, floorBlock: 85_000n, chunk: 10_000n }, 5);
+    const r = await arcReceipts({ latestBlock: async () => 100_000n, spendLogs }, { agent: AGENT, floorBlock: 85_000n, chunk: 10_000n }, 5);
     expect(spendLogs.mock.calls.map((c) => [c[1], c[2]])).toEqual([[90_001n, 100_000n], [85_000n, 90_000n]]);
+    expect(r.searched).toEqual({ fromBlock: "85000", toBlock: "100000", complete: true }); // reached the floor
+  });
+});
+
+describe("arcX402Fetch end to end — the real x402 buyer, a fake seller", () => {
+  const FLOAT = privateKeyToAccount("0x00000000000000000000000000000000000000000000000000000000000f10a7");
+  const GATEWAY = "0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE";
+  const option = (amount: string) => ({
+    scheme: "exact", network: "eip155:5042", asset: "0x3600000000000000000000000000000000000000", amount,
+    payTo: MERCHANT, maxTimeoutSeconds: 3600,
+    extra: { name: "GatewayWalletBatched", version: "1", verifyingContract: GATEWAY },
+  });
+  function seller(amount: string) {
+    const calls: RequestInit[] = [];
+    const fetch = (async (_u: string, init: RequestInit = {}) => {
+      calls.push(init);
+      if (calls.length === 1) {
+        const c = { x402Version: 2, resource: { url: "https://s.test/r" }, accepts: [option(amount)] };
+        return new Response("{}", { status: 402, headers: { "PAYMENT-REQUIRED": Buffer.from(JSON.stringify(c)).toString("base64") } });
+      }
+      return new Response('{"decision":"ALLOW"}', { status: 200 });
+    }) as unknown as typeof globalThis.fetch;
+    return { fetch, calls };
+  }
+  const deps = (s: ReturnType<typeof seller>, order: string[]) => ({
+    isAllowed: async () => true,
+    readSession: async () => session(),
+    now: () => NOW,
+    x402: ((u: string, i: { method?: string; body?: string }, o: Parameters<typeof x402Fetch>[2]) =>
+      x402Fetch(u, i, { ...o, fetch: ((url: string, init: RequestInit) => { order.push(init.headers && new Headers(init.headers).has("payment-signature") ? "paid-request" : "request"); return s.fetch(url, init); }) as typeof globalThis.fetch })) as X402ToolDeps["x402"],
+    ensureFloat: async (need: bigint) => { order.push(`fund ${need}`); return { gatewayBefore: 0n, gatewayAfter: 100_000n, depositTx: "0xdep" }; },
+  });
+  const xcfg = { vault: VAULT, chainId: 5042, account, floatAccount: FLOAT, maxPerCall: 50_000n };
+
+  it("funds the float with the seller's price before signing, and the signature is the float's", async () => {
+    const s = seller("5000");
+    const order: string[] = [];
+    const r = await arcX402Fetch(deps(s, order), xcfg, { url: "https://s.test/r" });
+    expect(order).toEqual(["request", "fund 5000", "paid-request"]);
+    expect(r).toMatchObject({ status: 200, ok: true, paid: { amountUsdc: "0.005", from: FLOAT.address } });
+    const p = JSON.parse(Buffer.from(new Headers(s.calls[1]!.headers).get("payment-signature")!, "base64").toString());
+    const a = p.payload.authorization;
+    const signer = await recoverTypedDataAddress({
+      domain: { name: "GatewayWalletBatched", version: "1", chainId: 5042, verifyingContract: GATEWAY },
+      types: { TransferWithAuthorization: [
+        { name: "from", type: "address" }, { name: "to", type: "address" }, { name: "value", type: "uint256" },
+        { name: "validAfter", type: "uint256" }, { name: "validBefore", type: "uint256" }, { name: "nonce", type: "bytes32" },
+      ] },
+      primaryType: "TransferWithAuthorization",
+      message: { ...a, value: BigInt(a.value), validAfter: BigInt(a.validAfter), validBefore: BigInt(a.validBefore) },
+      signature: p.payload.signature,
+    });
+    expect(signer).toBe(FLOAT.address);
+  });
+
+  it("a price above the cap is refused before the float is funded or anything is signed", async () => {
+    const s = seller("50001");
+    const order: string[] = [];
+    const r = await arcX402Fetch(deps(s, order), xcfg, { url: "https://s.test/r" });
+    expect(order).toEqual(["request"]);
+    expect(r).toMatchObject({ ok: false, paid: null });
+    expect(r.error).toMatch(/above cap/);
   });
 });

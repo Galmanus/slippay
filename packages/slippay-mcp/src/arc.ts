@@ -213,19 +213,29 @@ export type ReceiptDeps = {
   spendLogs(agent: Address, fromBlock: bigint, toBlock: bigint): Promise<SpendLog[]>;
 };
 
-/** Newest-first AgentSpend records for this agent, read back from `latest` one chunk at a time. */
+/**
+ * Newest-first AgentSpend records for this agent, read back from `latest` one chunk at a time.
+ * `searched` says which blocks were read; `complete` is true when the walk reached the floor, so
+ * an empty or short list over an incomplete range is not mistaken for "no payments".
+ */
 export async function arcReceipts(d: ReceiptDeps, cfg: { agent: Address; floorBlock: bigint; chunk?: bigint }, limit = 10) {
   const chunk = cfg.chunk ?? 10_000n;
   const found: SpendLog[] = [];
-  for (let to = await d.latestBlock(); to >= cfg.floorBlock && found.length < limit; to -= chunk) {
+  const latest = await d.latestBlock();
+  let lowest = latest + 1n;
+  for (let to = latest; to >= cfg.floorBlock && found.length < limit; to -= chunk) {
     const from = to - chunk + 1n > cfg.floorBlock ? to - chunk + 1n : cfg.floorBlock;
     const logs = await d.spendLogs(cfg.agent, from, to);
     found.push(...logs.sort((a, b) => (a.blockNumber < b.blockNumber ? 1 : -1)));
+    lowest = from;
   }
-  return found.slice(0, limit).map((l) => ({
-    txHash: l.txHash, block: l.blockNumber.toString(), to: l.to, amountUsdc: formatUsdc(l.amount),
-    orderId: l.orderId, attested: l.attested, pq: l.pq,
-  }));
+  return {
+    searched: { fromBlock: lowest.toString(), toBlock: latest.toString(), complete: lowest <= cfg.floorBlock },
+    receipts: found.slice(0, limit).map((l) => ({
+      txHash: l.txHash, block: l.blockNumber.toString(), to: l.to, amountUsdc: formatUsdc(l.amount),
+      orderId: l.orderId, attested: l.attested, pq: l.pq,
+    })),
+  };
 }
 
 /** Live wiring from env (used by the MCP tools). Throws a clear message for missing config. */
