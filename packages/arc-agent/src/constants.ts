@@ -24,3 +24,11 @@ export const ARC_NETWORKS = {
 } as const;
 
 export type ArcNetwork = keyof typeof ARC_NETWORKS;
+
+/** Circle Gateway on Arc (nanopayments): the wallet that holds deposits and the balances API. */
+export const ARC_GATEWAY = {
+  mainnet: { wallet: "0x77777777Dcc4d5A8B6E418Fd04D8997ef11000eE" as Address, api: "https://gateway-api.circle.com/v1" },
+  testnet: { wallet: "0x0077777d7EBA4688BDeF3E311b846F25870A19B9" as Address, api: "https://gateway-api-testnet.circle.com/v1" },
+} as const;
+/** Gateway's domain id for Arc (in /balances queries). */
+export const ARC_GATEWAY_DOMAIN = 26;
