@@ -36,7 +36,7 @@ const COPY = {
     net: {
       testnet: "Rede de teste da Arc. O dinheiro aqui não é de verdade.",
       faucet: "USDC de teste grátis em faucet.circle.com (escolha Arc Testnet).",
-      mainnet: "Rede principal da Arc. Aqui o dinheiro é de verdade.",
+      mainnet: "Rede principal da Arc. Aqui o dinheiro é de verdade, e o contrato do cofre ainda não tem auditoria externa: comece com valores pequenos.",
       toMainnet: "Usar a rede principal", toTestnet: "Usar a rede de teste",
     },
     status: { done: "feito", now: "agora", later: "" },
@@ -145,7 +145,7 @@ const COPY = {
     net: {
       testnet: "Arc test network. The money here isn't real.",
       faucet: "Free test USDC at faucet.circle.com (pick Arc Testnet).",
-      mainnet: "Arc main network. This is real money.",
+      mainnet: "Arc main network. This is real money, and the vault contract has no third-party audit yet: start with small amounts.",
       toMainnet: "Use the main network", toTestnet: "Use the test network",
     },
     status: { done: "done", now: "now", later: "" },

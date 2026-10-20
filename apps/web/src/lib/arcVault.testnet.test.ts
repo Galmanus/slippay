@@ -82,7 +82,7 @@ describe.skipIf(!keyFile)("arcVault actions on Arc testnet (live)", () => {
     // resume paths: receipt lost (only nonce known) → found; rejected signature (no code, nonce unused) → none
     expect(await resolveDeploy({ network: "testnet", owner, vaultNonce: predicted!.nonce, reader })).toEqual({ status: "deployed", vault });
     const nextNonce = await reader.getTransactionCount({ address: owner });
-    expect(await resolveDeploy({ network: "testnet", owner, vaultNonce: nextNonce, reader })).toEqual({ status: "none" });
+    expect(await resolveDeploy({ network: "testnet", owner, vaultNonce: nextNonce, reader })).toEqual({ status: "none", stale: false });
     // a contract that is not an AgentVault is never adopted
     expect((await readVaultState({ network: "testnet", vault: NET.identityRegistry, owner, reader })).exists).toBe(false);
 
