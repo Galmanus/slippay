@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { ensureGatewayFloat, type FloatDeps } from "./float.ts";
+import { ensureGatewayFloat, parseGatewayBalance, type FloatDeps } from "./float.ts";
 
-/** In-memory float: a wallet balance, a Gateway balance, and a deposit Gateway credits after `creditAfterPolls` reads. */
+/**
+ * In-memory float: a wallet balance, the Gateway API balance, and the Gateway Wallet's on-chain
+ * balance. A deposit lands on-chain at once; the API credits it after `creditAfterPolls` reads.
+ */
 function fake(s: { wallet: bigint; gateway: bigint; creditAfterPolls?: number }) {
   const log: string[] = [];
   let pending = 0n;
   let reads = 0;
+  let onchain = s.gateway;
   const deps: FloatDeps = {
+    depositedOnChain: async () => onchain,
     gatewayBalance: async () => {
       if (pending && ++reads > (s.creditAfterPolls ?? 0)) {
         s.gateway += pending;
@@ -25,6 +30,7 @@ function fake(s: { wallet: bigint; gateway: bigint; creditAfterPolls?: number })
       if (amount > s.wallet) throw new Error("wallet short");
       s.wallet -= amount;
       pending += amount;
+      onchain += amount;
       return "0xdeposit";
     },
     sleep: async () => {},
@@ -76,9 +82,35 @@ describe("ensureGatewayFloat", () => {
     expect(r.gatewayAfter).toBe(100_000n);
   });
 
+  it("a retry while Gateway still has not credited deposits nothing new (one top-up, one deposit in total)", async () => {
+    const f = fake({ wallet: 0n, gateway: 0n, creditAfterPolls: 999 });
+    await expect(ensureGatewayFloat(5_000n, f.deps, O)).rejects.toThrow(/not credited/);
+    await expect(ensureGatewayFloat(5_000n, f.deps, O)).rejects.toThrow(/not credited|has credited only/);
+    await expect(ensureGatewayFloat(5_000n, f.deps, O)).rejects.toThrow(/not credited|has credited only/);
+    expect(f.log).toEqual(["topUp 120000", "deposit 100000"]);
+  });
+
   it("throws after maxPolls without crediting, having deposited exactly once", async () => {
     const f = fake({ wallet: 200_000n, gateway: 0n, creditAfterPolls: 99 });
     await expect(ensureGatewayFloat(5_000n, f.deps, O)).rejects.toThrow(/deposit 0xdeposit mined; Gateway has not credited it yet/);
     expect(f.log).toEqual(["deposit 100000"]);
+  });
+});
+
+describe("parseGatewayBalance", () => {
+  const F = "0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1";
+  it("reads the depositor's balance as 6-decimal units", () => {
+    expect(parseGatewayBalance({ balances: [{ domain: 26, depositor: F, balance: "0.095000" }] }, F)).toBe(95_000n);
+  });
+  it("an empty balances list means nothing deposited yet", () => {
+    expect(parseGatewayBalance({ balances: [] }, F)).toBe(0n);
+  });
+  it.each([
+    ["no balances field", {}],
+    ["balances is not a list", { balances: "0" }],
+    ["an entry without a balance", { balances: [{ domain: 26, depositor: F }] }],
+    ["a non-numeric balance", { balances: [{ domain: 26, depositor: F, balance: "lots" }] }],
+  ])("throws on a malformed response: %s", (_n, j) => {
+    expect(() => parseGatewayBalance(j, F)).toThrow(/Gateway/);
   });
 });
