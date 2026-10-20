@@ -104,6 +104,16 @@ contract Attacker is Test {
         } catch {}
     }
 
+    /// Once the attacker has settled real spends, jump to an hour before expiry, so the run keeps
+    /// attacking across the expiry boundary (12h warps alone rarely get 30 days out).
+    function jumpNearExpiry() external {
+        if (jumped || spends < 10 || block.timestamp + 1 hours >= expiresAt) return;
+        jumped = true;
+        vm.warp(expiresAt - 1 hours);
+    }
+
+    bool public jumped;
+
     function warp(uint32 dt) external {
         vm.warp(block.timestamp + _bound(dt, 1, 12 hours));
     }
@@ -185,12 +195,13 @@ contract AgentVaultCompromiseTest is Test {
 
         attacker = new Attacker(vault, usdc, owner, merchant, AGENT_PK, ATTESTER_PK, expiresAt, WINDOW);
         targetContract(address(attacker));
-        bytes4[] memory sel = new bytes4[](5);
+        bytes4[] memory sel = new bytes4[](6);
         sel[0] = Attacker.drainMerchant.selector;
         sel[1] = Attacker.spendTo.selector;
         sel[2] = Attacker.replayLast.selector;
         sel[3] = Attacker.warp.selector;
         sel[4] = Attacker.revokeNow.selector;
+        sel[5] = Attacker.jumpNearExpiry.selector;
         targetSelector(FuzzSelector({addr: address(attacker), selectors: sel}));
     }
 
@@ -199,6 +210,17 @@ contract AgentVaultCompromiseTest is Test {
     function test_attackerKeysAreValid() public {
         attacker.drainMerchant(5e6);
         assertEq(usdc.balanceOf(merchant), 5e6);
+    }
+
+    /// Deterministic: at expiry, both stolen keys together move nothing.
+    function test_expiredSessionRefusesWithBothKeys() public {
+        attacker.drainMerchant(5e6);
+        assertEq(usdc.balanceOf(merchant), 5e6);
+        vm.warp(attacker.expiresAt());
+        attacker.drainMerchant(5e6);
+        attacker.replayLast();
+        assertEq(usdc.balanceOf(merchant), 5e6);
+        assertEq(attacker.spends(), 1);
     }
 
     function invariant_onlyAllowlistedEverPaid() public view {
