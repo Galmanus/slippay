@@ -142,11 +142,12 @@ if (session.nonce > 0n) {
 await attack("deadline in the past", "Expired", async () =>
   simulate((await forged({ deadline: now - 1n })).req));
 if (opt["settled-tx"]) {
-  await attack(`byte-for-byte replay of settled tx ${opt["settled-tx"].slice(0, 10)}…`, "Expired", async () => {
-    const tx = await pub.getTransaction({ hash: opt["settled-tx"] });
-    const { args } = decodeFunctionData({ abi: agentVaultAbi, data: tx.input });
-    return simulate(args[0]);
-  });
+  // The vault checks the deadline before the signature: an old tx dies on Expired, a recent one
+  // (deadline still ahead) on BadSignature, because its nonce is already used.
+  const tx = await pub.getTransaction({ hash: opt["settled-tx"] });
+  const { args } = decodeFunctionData({ abi: agentVaultAbi, data: tx.input });
+  const expected = now > args[0].deadline ? "Expired" : "BadSignature";
+  await attack(`byte-for-byte replay of settled tx ${opt["settled-tx"].slice(0, 10)}…`, expected, async () => simulate(args[0]));
 }
 
 if (opt.relayer) {

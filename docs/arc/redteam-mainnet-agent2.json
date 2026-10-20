@@ -1,0 +1,81 @@
+{
+  "network": "mainnet",
+  "chainId": 5042,
+  "block": "26942496",
+  "at": "2026-10-20T12:22:59.000Z",
+  "vault": "0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8",
+  "agentSigner": "0xE4C31bA5cEb9229A9dc365D15bc6d75c681565fF",
+  "merchant": "0xe8BaF2DE286bbef788A97Bd30B34DD927683D239",
+  "session": {
+    "perTxCap": "200000",
+    "windowCap": "300000",
+    "attestThreshold": "0",
+    "nonce": "1"
+  },
+  "attacks": [
+    {
+      "name": "stolen agent key pays the attacker",
+      "expected": "RecipientNotAllowed",
+      "observed": "RecipientNotAllowed",
+      "pass": true
+    },
+    {
+      "name": "stolen agent key, one unit above the per-tx cap",
+      "expected": "AmountExceedsCap",
+      "observed": "AmountExceedsCap",
+      "pass": true
+    },
+    {
+      "name": "stolen agent key, valid spend to the merchant, no attestation",
+      "expected": "BadAttestation",
+      "observed": "BadAttestation",
+      "pass": true
+    },
+    {
+      "name": "stolen agent key, valid P-256 attestation from the attacker's own key",
+      "expected": "BadAttestation",
+      "observed": "BadAttestation",
+      "pass": true
+    },
+    {
+      "name": "tampered amount on a validly signed request (relayer or MITM)",
+      "expected": "BadSignature",
+      "observed": "BadSignature",
+      "pass": true
+    },
+    {
+      "name": "re-signed with a used nonce and a fresh deadline",
+      "expected": "BadSignature",
+      "observed": "BadSignature",
+      "pass": true
+    },
+    {
+      "name": "deadline in the past",
+      "expected": "Expired",
+      "observed": "Expired",
+      "pass": true
+    },
+    {
+      "name": "byte-for-byte replay of settled tx 0xf822f25c…",
+      "expected": "BadSignature",
+      "observed": "BadSignature",
+      "pass": true
+    },
+    {
+      "name": "stolen agent key asks the production relayer to pay the attacker",
+      "expected": "HTTP 403 attestation_refused",
+      "observed": "HTTP 403 attestation_refused",
+      "detail": "recipient 0xeebe19f9… is outside the committed surface",
+      "pass": true
+    },
+    {
+      "name": "stolen agent key asks the production relayer for more than the cap",
+      "expected": "HTTP 403 attestation_refused",
+      "observed": "HTTP 403 attestation_refused",
+      "detail": "amount 200001 exceeds the committed cap 200000",
+      "pass": true
+    }
+  ],
+  "passed": 10,
+  "total": 10
+}

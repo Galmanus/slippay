@@ -1,6 +1,6 @@
 # Arc agent payments: on-chain metrics (mainnet)
 
-Generated 2026-10-19T20:48:48.151Z from Arc mainnet (chain 5042) at block 26831932.
+Generated 2026-10-20T12:23:20.220Z from Arc mainnet (chain 5042) at block 26942535.
 Every number is derived from `AgentSpend` events of the vaults in `docs/arc/vaults.json`.
 Reproduce: `node packages/arc-agent/scripts/arc-metrics.mjs --network mainnet`.
 
@@ -8,25 +8,26 @@ Reproduce: `node packages/arc-agent/scripts/arc-metrics.mjs --network mainnet`.
 
 | metric | all registered vaults | external (pilot) vaults |
 |---|---:|---:|
-| agent payments (AgentSpend events) | 1 | 0 |
+| agent payments (AgentSpend events) | 2 | 0 |
 | active wallets (vaults with >= 1 payment, all time) | 1 | 0 |
 | active wallets, last 28 days | 1 | 0 |
-| active days (distinct UTC dates with >= 1 payment) | 1 | 0 |
-| volume (USDC) | 0.1 | 0 |
+| active days (distinct UTC dates with >= 1 payment) | 2 | 0 |
+| volume (USDC) | 0.22 | 0 |
 
-28-day window: 2026-09-21T20:48:48.151Z to 2026-10-19T20:48:48.151Z. Active UTC dates: 2026-10-19.
+28-day window: 2026-09-22T12:23:20.220Z to 2026-10-20T12:23:20.220Z. Active UTC dates: 2026-10-19, 2026-10-20.
 
 ## Per vault
 
 | vault | label | external | owner | payments | volume (USDC) | active days | first payment | last payment |
 |---|---|---|---|---:|---:|---:|---|---|
-| [`0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8`](https://explorer.arc.io/address/0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8) | slippay-mainnet-pilot | no | `0xbB2822AcaF9196dAD98E24e4AaA6cFCb915c8F2c` | 1 | 0.1 | 1 | 2026-10-19T20:47:57.000Z | 2026-10-19T20:47:57.000Z |
+| [`0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8`](https://explorer.arc.io/address/0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8) | slippay-mainnet-pilot | no | `0xbB2822AcaF9196dAD98E24e4AaA6cFCb915c8F2c` | 2 | 0.22 | 2 | 2026-10-19T20:47:57.000Z | 2026-10-20T12:21:34.000Z |
 
 ## Payments
 
 | time (UTC) | vault | tx | log | block | agentId | to | USDC |
 |---|---|---|---:|---:|---:|---|---:|
 | 2026-10-19T20:47:57.000Z | slippay-mainnet-pilot | [`0xd4fb46df…ac7b`](https://explorer.arc.io/tx/0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b) | 0 | 26831834 | 2579 | `0xe8BaF2DE286bbef788A97Bd30B34DD927683D239` | 0.1 |
+| 2026-10-20T12:21:34.000Z | slippay-mainnet-pilot | [`0xf822f25c…f49f`](https://explorer.arc.io/tx/0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f) | 3 | 26942327 | 2579 | `0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1` | 0.12 |
 
 ## Method
 

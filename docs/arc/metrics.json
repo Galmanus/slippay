@@ -4,8 +4,8 @@
   "chainId": 5042,
   "rpc": "https://rpc.mainnet.arc.io",
   "explorer": "https://explorer.arc.io",
-  "generatedAt": "2026-10-19T20:48:48.151Z",
-  "latestBlock": "26831932",
+  "generatedAt": "2026-10-20T12:23:20.220Z",
+  "latestBlock": "26942535",
   "source": {
     "event": "AgentSpend",
     "topic0": [
@@ -26,12 +26,12 @@
     }
   ],
   "metrics": {
-    "payments": 1,
+    "payments": 2,
     "activeWallets": 1,
     "activeWallets28d": 1,
-    "activeDays": 1,
-    "volumeUsdc": "0.1",
-    "volumeBaseUnits": "100000",
+    "activeDays": 2,
+    "volumeUsdc": "0.22",
+    "volumeBaseUnits": "220000",
     "externalPayments": 0,
     "external": {
       "payments": 0,
@@ -42,11 +42,12 @@
       "volumeBaseUnits": "0"
     },
     "days": [
-      "2026-10-19"
+      "2026-10-19",
+      "2026-10-20"
     ],
     "window28d": {
-      "from": "2026-09-21T20:48:48.151Z",
-      "to": "2026-10-19T20:48:48.151Z"
+      "from": "2026-09-22T12:23:20.220Z",
+      "to": "2026-10-20T12:23:20.220Z"
     },
     "unregisteredEvents": 0,
     "perVault": [
@@ -55,15 +56,16 @@
         "label": "slippay-mainnet-pilot",
         "owner": "0xbB2822AcaF9196dAD98E24e4AaA6cFCb915c8F2c",
         "external": false,
-        "payments": 1,
-        "volumeUsdc": "0.1",
-        "activeDays": 1,
+        "payments": 2,
+        "volumeUsdc": "0.22",
+        "activeDays": 2,
         "days": [
-          "2026-10-19"
+          "2026-10-19",
+          "2026-10-20"
         ],
         "activeIn28d": true,
         "firstSpendAt": "2026-10-19T20:47:57.000Z",
-        "lastSpendAt": "2026-10-19T20:47:57.000Z"
+        "lastSpendAt": "2026-10-20T12:21:34.000Z"
       }
     ]
   },
@@ -82,6 +84,21 @@
       "amountUsdc": "0.1",
       "orderId": "0x75d04566add4a571fe6e6f163e5b4c327527c33cf207ac50b6465dda2e6f608d",
       "explorer": "https://explorer.arc.io/tx/0xd4fb46dfe0d5322ef0274709208bee79ecbf3dfeee7928fbb86f225e1565ac7b"
+    },
+    {
+      "vault": "0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8",
+      "label": "slippay-mainnet-pilot",
+      "external": false,
+      "txHash": "0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f",
+      "logIndex": 3,
+      "blockNumber": "26942327",
+      "time": "2026-10-20T12:21:34.000Z",
+      "agentSigner": "0xE4C31bA5cEb9229A9dc365D15bc6d75c681565fF",
+      "agentId": "2579",
+      "to": "0xe75D597f414EBa88Bf4226a3Ad8e0FAe46B1edC1",
+      "amountUsdc": "0.12",
+      "orderId": "0x17e7a11c5836eef93ba1b93444c6b0c0dc939aff86d58329ce5501a50152e41e",
+      "explorer": "https://explorer.arc.io/tx/0xf822f25c3cfd611ffac1f42f6f9f8853d85753ef869f926e848e5d12b41ff49f"
     }
   ]
 }

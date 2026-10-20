@@ -10,7 +10,9 @@
 //   node packages/arc-agent/scripts/arc-mainnet-setup.mjs --yes-mainnet \
 //     --owner-key-file ~/.slippay/arc-mainnet-deployer.key --agent-key-file ~/.slippay/arc-mainnet-agent.key \
 //     --merchant 0x… --attester-x 0x… --attester-y 0x… \
-//     [--fund 0.40] [--per-tx 0.20] [--window 0.30] [--max-abs 1]
+//     [--fund 0.40] [--per-tx 0.20] [--window 0.30] [--max-abs 1] [--allow 0x…,0x…]
+//   Add a session to a vault that already exists (no deploy, no ERC-8004 register, no funding):
+//     … --vault 0x… --agent-id N [--allow merchant,float]
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,6 +36,9 @@ const { values: opt } = parseArgs({
     "per-tx": { type: "string", default: "0.20" },
     window: { type: "string", default: "0.30" },
     "max-abs": { type: "string", default: "1" },
+    vault: { type: "string" },
+    "agent-id": { type: "string" },
+    allow: { type: "string" },
   },
 });
 if (!opt["yes-mainnet"]) {
@@ -45,6 +50,9 @@ const addr = /^0x[0-9a-fA-F]{40}$/;
 for (const [k, re] of [["merchant", addr], ["attester-x", hex32], ["attester-y", hex32]]) {
   if (!re.test(opt[k] ?? "")) throw new Error(`--${k} missing or malformed`);
 }
+const allowRecipients = opt.allow ? opt.allow.split(",").map((a) => a.trim()) : [opt.merchant];
+if (!allowRecipients.every((a) => addr.test(a))) throw new Error("--allow must be comma-separated addresses");
+if (opt.vault && (!addr.test(opt.vault) || !/^\d+$/.test(opt["agent-id"] ?? ""))) throw new Error("--vault needs a valid address and --agent-id N");
 const readKey = (f) => {
   const k = readFileSync(f.replace(/^~/, process.env.HOME ?? "~"), "utf8").trim();
   return k.startsWith("0x") ? k : "0x" + k;
@@ -75,11 +83,19 @@ async function mined(hash, label) {
 
 console.error(`owner ${owner.address} · ${formatUnits(await pub.getBalance({ address: owner.address }), 18)} USDC · agent ${agent.address}`);
 
+let vault, agentId, deployHash, fundHash;
+if (opt.vault) {
+  vault = opt.vault;
+  agentId = BigInt(opt["agent-id"]);
+  const vaultOwner = await pub.readContract({ address: vault, abi: agentVaultAbi, functionName: "owner" });
+  if (vaultOwner.toLowerCase() !== owner.address.toLowerCase()) throw new Error(`vault owner is ${vaultOwner}, not ${owner.address}`);
+  console.error(`existing vault ${vault} · agentId ${agentId} · installing a session only`);
+} else {
 // 1. deploy (owner = funded key; absolute per-tx ceiling baked in as an immutable)
 const artifact = JSON.parse(readFileSync(`${ROOT}/contracts-evm/out/AgentVault.sol/AgentVault.json`, "utf8"));
 const deployArgs = [owner.address, ARC_USDC, NET.identityRegistry, usdc6(opt["max-abs"])];
-const deployHash = await wallet.deployContract({ abi: artifact.abi, bytecode: artifact.bytecode.object, args: deployArgs, ...fees });
-const vault = (await mined(deployHash, "deploy AgentVault")).contractAddress;
+deployHash = await wallet.deployContract({ abi: artifact.abi, bytecode: artifact.bytecode.object, args: deployArgs, ...fees });
+vault = (await mined(deployHash, "deploy AgentVault")).contractAddress;
 
 // 2. ERC-8004 identity for the agent
 const identityAbi = parseAbi([
@@ -89,21 +105,22 @@ const identityAbi = parseAbi([
 const regArgs = { address: NET.identityRegistry, abi: identityAbi, functionName: "register", args: ["https://slippay.cc/agents/arc-mainnet-pilot.json"] };
 await pub.simulateContract({ account: owner, ...regArgs });
 const regReceipt = await mined(await wallet.writeContract({ ...regArgs, ...fees }), "ERC-8004 register");
-const agentId = regReceipt.logs
+agentId = regReceipt.logs
   .filter((l) => l.address.toLowerCase() === NET.identityRegistry.toLowerCase())
   .map((l) => { try { return decodeEventLog({ abi: identityAbi, ...l }); } catch { return null; } })
   .find((e) => e?.eventName === "Transfer").args.tokenId;
 
 // 3. fund the vault (Arc: native and ERC-20 USDC are one balance)
-const fundHash = await wallet.sendTransaction({ to: vault, value: parseUnits(opt.fund, 18), ...fees });
+fundHash = await wallet.sendTransaction({ to: vault, value: parseUnits(opt.fund, 18), ...fees });
 await mined(fundHash, `fund vault ${opt.fund} USDC`);
+}
 
 // 4. session gated by the production attester on every spend
 const expiresAt = BigInt(Math.floor(Date.now() / 1000) + 30 * 86_400);
 const session = {
   agentId, slhVk: `0x${"00".repeat(32)}`, perTxCap: usdc6(opt["per-tx"]), windowCap: usdc6(opt.window),
   windowSeconds: 86_400n, expiresAt, pqThreshold: (1n << 128n) - 1n, policyHash: toHex(randomBytes(32)),
-  allowRecipients: [opt.merchant], attesterX: opt["attester-x"], attesterY: opt["attester-y"], attestThreshold: 0n,
+  allowRecipients, attesterX: opt["attester-x"], attesterY: opt["attester-y"], attestThreshold: 0n,
 };
 const sessArgs = { address: vault, abi: agentVaultAbi, functionName: "installSession", args: [agent.address, session] };
 await pub.simulateContract({ account: owner, ...sessArgs });
@@ -112,6 +129,6 @@ await mined(await wallet.writeContract({ ...sessArgs, ...fees }), "install sessi
 const vaultBal = await pub.readContract({ address: ARC_USDC, abi: parseAbi(["function balanceOf(address) view returns (uint256)"]), functionName: "balanceOf", args: [vault] });
 console.log(JSON.stringify({
   network: "mainnet", chainId: NET.chainId, vault, owner: owner.address, agentSigner: agent.address, agentId: agentId.toString(),
-  merchant: opt.merchant, vaultUsdc: formatUnits(vaultBal, 6), perTxCap: opt["per-tx"], windowCap: opt.window,
+  merchant: opt.merchant, allowRecipients, vaultUsdc: formatUnits(vaultBal, 6), perTxCap: opt["per-tx"], windowCap: opt.window,
   expiresAt: expiresAt.toString(), attestThreshold: "0", deployTx: deployHash, fundTx: fundHash,
 }, null, 2));
