@@ -4,3 +4,4 @@ export { agentVaultAbi } from "./abi.ts";
 export * from "./metrics.ts";
 export * from "./x402.ts";
 export * from "./float.ts";
+export * from "./stablefx.ts";
