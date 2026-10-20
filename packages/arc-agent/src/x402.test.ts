@@ -82,6 +82,15 @@ describe("selectGatewayOption", () => {
   ])("refuses %s", (_name, opt, reason) => {
     expect(() => selectGatewayOption(challenge([opt]), MAINNET)).toThrow(reason);
   });
+  it.each([
+    ["Infinity (JSON 1e309)", Infinity],
+    ["1e30 seconds", 1e30],
+    ["a fraction", 3600.5],
+    ["a negative number", -1],
+    ["more than 30 days", 30 * 86400 + 1],
+  ])("refuses a seller-chosen maxTimeoutSeconds of %s", (_name, t) => {
+    expect(() => selectGatewayOption(challenge([option({ maxTimeoutSeconds: t })]), MAINNET)).toThrow(/maxTimeoutSeconds/);
+  });
   it("refuses when the seller does not offer the policy's network", () => {
     expect(() => selectGatewayOption(challenge([option({ network: "eip155:8453" })]), MAINNET)).toThrow(/not offered/);
   });
@@ -145,6 +154,30 @@ describe("x402Fetch", () => {
     expect(r).toMatchObject({ ok: false, paid: null });
     expect(r.error).toMatch(/credited/);
     expect(s.calls).toHaveLength(1);
+  });
+
+  it("refuses an absurd maxTimeoutSeconds before funding (beforePay never runs)", async () => {
+    const big = { ...challenge([option()]), accepts: [{ ...option(), maxTimeoutSeconds: "__INF__" }] };
+    const headerJson = JSON.stringify(big).replace('"__INF__"', "1e309");
+    let before = 0;
+    const fetch = (async () =>
+      new Response("{}", { status: 402, headers: { "PAYMENT-REQUIRED": Buffer.from(headerJson).toString("base64") } })) as unknown as typeof globalThis.fetch;
+    const r = await x402Fetch(URL_, {}, { account: ACCOUNT, policy: MAINNET, fetch, beforePay: async () => void before++ });
+    expect(before).toBe(0);
+    expect(r).toMatchObject({ ok: false, paid: null });
+    expect(r.error).toMatch(/maxTimeoutSeconds/);
+  });
+
+  it("a lost answer after payment is reported as paid with status 0 and a do-not-retry error", async () => {
+    let n = 0;
+    const s = seller();
+    const fetch = (async (url: string, init: RequestInit) => {
+      if (++n === 2) throw new TypeError("fetch failed");
+      return s.fetch(url, init);
+    }) as unknown as typeof globalThis.fetch;
+    const r = await x402Fetch(URL_, {}, { account: ACCOUNT, policy: MAINNET, fetch });
+    expect(r).toMatchObject({ status: 0, ok: false, paid: { amount: 5000n } });
+    expect(r.error).toMatch(/do not retry/);
   });
 
   it("never pays twice: a second 402 after payment is reported, not retried", async () => {

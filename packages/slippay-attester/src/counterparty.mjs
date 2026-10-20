@@ -32,6 +32,7 @@ export const AID_PAYTO = "0xd305607510e0db2c95807173c7a05bea53c1ed36";
 export const RISK_CHECK_URL = "https://a-identity-backend.onrender.com/api/x402/gateway/tools/risk_check";
 const RISK_CHECK_PRICE = 5000n; // 0.005 USDC, 6 decimals — the price A-Identity serves on Arc mainnet
 const GATEWAY_VALIDITY_SECONDS = 7 * 24 * 60 * 60 + 100; // Gateway minimum + the SDK's buffer
+const MAX_TIMEOUT_SECONDS = 30 * 24 * 60 * 60; // the seller's maxTimeoutSeconds sets how long our signature lives
 const DECISIONS = new Set(["ALLOW", "WARN", "DENY"]);
 
 const DOMAIN_TYPEHASH = keccak(enc.encode("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"));
@@ -78,6 +79,10 @@ function rejectReason(o, policy) {
   if (lower(o.payTo) !== lower(policy.payTo)) return `payTo ${o.payTo} is not the pinned payee ${policy.payTo}`;
   if (!/^\d+$/.test(String(o.amount))) return `bad amount ${o.amount}`;
   if (BigInt(o.amount) > policy.maxAmount) return `price ${o.amount} above cap ${policy.maxAmount}`;
+  const t = o.maxTimeoutSeconds;
+  if (t !== undefined && t !== null && !(Number.isInteger(t) && t >= 0 && t <= MAX_TIMEOUT_SECONDS)) {
+    return `maxTimeoutSeconds ${t} out of range (0..${MAX_TIMEOUT_SECONDS})`;
+  }
   return null;
 }
 

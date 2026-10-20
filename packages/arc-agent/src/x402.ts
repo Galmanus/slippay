@@ -52,6 +52,8 @@ export type X402Result = {
 
 /** Gateway's minimum validity (7 days) plus the Circle SDK's buffer. */
 const GATEWAY_VALIDITY_SECONDS = 7 * 24 * 60 * 60 + 100;
+/** Longest validity a seller may ask for: its maxTimeoutSeconds sets how long our signature lives. */
+const MAX_TIMEOUT_SECONDS = 30 * 24 * 60 * 60;
 
 const NETWORK_OF: Record<X402Network, ArcNetwork> = {
   [`eip155:${ARC_NETWORKS.mainnet.chainId}`]: "mainnet",
@@ -105,6 +107,10 @@ function rejectReason(o: GatewayOption, policy: X402Policy): string | null {
   if (policy.payTo && !policy.payTo.some((a) => lower(a) === lower(o.payTo))) return `payTo ${o.payTo} is not an allowed payee`;
   if (!/^\d{1,39}$/.test(String(o.amount))) return `bad amount ${o.amount}`;
   if (BigInt(o.amount) > policy.maxAmount) return `price ${o.amount} above cap ${policy.maxAmount}`;
+  const t = o.maxTimeoutSeconds;
+  if (t !== undefined && t !== null && !(Number.isInteger(t) && t >= 0 && t <= MAX_TIMEOUT_SECONDS)) {
+    return `maxTimeoutSeconds ${t} out of range (0..${MAX_TIMEOUT_SECONDS})`;
+  }
   return null;
 }
 
@@ -201,6 +207,9 @@ export async function x402Fetch(
     return { status: res.status, ok: res.ok, body: await res.text(), paid };
   } catch (e) {
     const msg = e instanceof Error ? (e.name === "TimeoutError" ? `timeout after ${timeoutMs}ms` : e.message) : String(e);
-    return { status, ok: false, body: "", paid, error: msg };
+    if (!paid) return { status, ok: false, body: "", paid, error: msg };
+    // The authorization left this process; the seller may already have been paid. Never report
+    // the challenge's 402 here, or a caller would read "not paid" and pay again.
+    return { status: 0, ok: false, body: "", paid, error: `${msg}: a payment authorization for ${paid.amount} was sent; do not retry, check with the seller` };
   }
 }

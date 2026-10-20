@@ -115,6 +115,8 @@ const main = async () => {
     ["different payee", [arcOption({ payTo: "0x000000000000000000000000000000000000dEaD" })], /payTo|payee/i],
     ["network not offered", [arcOption({ network: "eip155:8453" })], /network/i],
     ["not a Gateway batching option", [arcOption({ extra: { ...arcOption().extra, name: "USD Coin" } })], /batch|gateway/i],
+    ["maxTimeoutSeconds of 1e30 (a near-eternal signature)", [arcOption({ maxTimeoutSeconds: 1e30 })], /maxTimeoutSeconds/],
+    ["maxTimeoutSeconds above 30 days", [arcOption({ maxTimeoutSeconds: 30 * 86400 + 1 })], /maxTimeoutSeconds/],
   ]) {
     const s = seller({ accepts });
     const r = await run(s.fetch);
