@@ -17,7 +17,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { reverifyCert } from "./verify.ts";
 import * as chain from "./chain.ts";
-import { arcFromEnv, arcPay, formatUsdc, remainingWindowBudget } from "./arc.ts";
+import { arcFromEnv, arcPay, arcReceipts, arcX402Fetch, formatUsdc, receiptsFromEnv, remainingWindowBudget, x402FromEnv } from "./arc.ts";
 
 const server = new McpServer({ name: "slippay", version: "0.2.0" });
 
@@ -205,7 +205,7 @@ server.registerTool(
         windowCapUsdc: formatUsdc(s.windowCap),
         windowHours: Number(s.windowSeconds) / 3600,
         remainingWindowUsdc: formatUsdc(remainingWindowBudget(s, deps.now())),
-        postQuantumAboveUsdc: formatUsdc(s.pqThreshold),
+        postQuantumAboveUsdc: s.pqThreshold === (1n << 128n) - 1n ? null : formatUsdc(s.pqThreshold), // null = PQ leg off
         slhKeyLoaded: Boolean(cfg.slhSecretKey),
         expiresAt: s.expiresAt === 0n ? null : new Date(Number(s.expiresAt) * 1000).toISOString(),
         revoked: s.revoked,
@@ -233,6 +233,50 @@ server.registerTool(
     run(async () => {
       const { deps, cfg } = arcFromEnv();
       return arcPay(deps, cfg, { to: to as `0x${string}`, amount, orderId });
+    }),
+);
+
+// Agents buy x402 services (A-Identity checks, Aomi tasks, any Arc Gateway seller) with money
+// the vault bounds: the float that signs the nanopayment is funded only by attested vault spends.
+server.registerTool(
+  "slippay_arc_x402_fetch",
+  {
+    title: "Buy an x402 resource on Arc with vault-bounded USDC",
+    description:
+      "Fetch a URL; if the seller answers 402 (x402, Circle Gateway nanopayment on Arc), pay it from the " +
+      "agent's float and replay once. The float is funded only by ordinary AgentVault spends, so every " +
+      "dollar is inside the vault's on-chain caps. The price is capped (SLIPPAY_ARC_X402_MAX_USDC; maxUsdc " +
+      "can only lower it), the seller can't pick the network, token or Gateway contract, and a call is " +
+      "never paid twice. Returns the response body and what was paid.",
+    inputSchema: {
+      url: z.string().url().describe("The x402 resource."),
+      method: z.enum(["GET", "POST"]).optional().describe("HTTP method (default GET)."),
+      body: z.string().optional().describe("JSON request body for POST."),
+      maxUsdc: z.string().optional().describe('Highest price you accept for this call, e.g. "0.01".'),
+    },
+  },
+  async (a) =>
+    run(async () => {
+      const { d, cfg } = x402FromEnv();
+      return arcX402Fetch(d, cfg, a);
+    }),
+);
+
+server.registerTool(
+  "slippay_arc_receipts",
+  {
+    title: "Read this agent's payments on Arc from the chain",
+    description:
+      "Read-only: the latest AgentSpend events of this agent on its AgentVault — tx hash, block, recipient, " +
+      "amount, order id, whether the integrity attester cleared it and whether it was post-quantum signed. " +
+      "Straight from Arc logs; anyone can re-derive them.",
+    inputSchema: { limit: z.number().int().min(1).max(50).optional().describe("How many (default 10).") },
+  },
+  async ({ limit }) =>
+    run(async () => {
+      const { d, agent, floor } = receiptsFromEnv();
+      const latest = await d.latestBlock();
+      return arcReceipts(d, { agent, floorBlock: floor ?? (latest > 200_000n ? latest - 200_000n : 0n) }, limit ?? 10);
     }),
 );
 

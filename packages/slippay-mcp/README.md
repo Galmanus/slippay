@@ -65,6 +65,8 @@ hatch and no setup verbs.
 | `slippay_arm_gate` | no | yes | Bind an ed25519 attester public key to a subscription (`set_attester`). |
 | `slippay_arc_session` | yes | yes | Arc: read this agent's AgentVault session — caps, remaining window budget, post-quantum threshold, expiry, ERC-8004 agent id. No transaction. |
 | `slippay_arc_pay` | yes | yes | Arc: pay USDC from the AgentVault inside its on-chain bounds. Signs locally (ECDSA, plus SLH-DSA above the PQ threshold) and sends the intent to the SlipPay relayer, which pays gas only. |
+| `slippay_arc_x402_fetch` | yes | yes | Arc: buy an x402 resource (Circle Gateway nanopayment) with vault-bounded USDC. The float EOA that signs is funded only by AgentVault spends; price capped, paid at most once. |
+| `slippay_arc_receipts` | yes | yes | Arc: this agent's latest AgentSpend events from the chain (tx, recipient, amount, attested, PQ). No transaction. |
 
 ### Arc rail
 
@@ -75,6 +77,14 @@ precompile) above the session's threshold. Env: `SLIPPAY_ARC_VAULT`, `SLIPPAY_AR
 (`testnet`|`mainnet`), `SLIPPAY_ARC_RELAYER_URL`, `SLIPPAY_ARC_RPC_URL`.
 `scripts/arc-e2e-testnet.mjs` runs the whole flow (deploy, ERC-8004 identity, fund, session,
 classical + post-quantum spend) from one funded testnet key.
+
+**x402 on Arc.** Circle Gateway nanopayments need an EOA signature and the vault is a contract, so
+the session allowlists one float EOA. When its Gateway balance can't cover a call, the vault tops
+it up with an ordinary attested spend and the float deposits into Gateway. Every dollar the float
+holds came through the vault's caps. Env: `SLIPPAY_ARC_FLOAT_KEY`, `SLIPPAY_ARC_X402_MAX_USDC`
+(per-call ceiling, default `0.05`), `SLIPPAY_ARC_FLOAT_TOPUP_USDC` (default `0.10`),
+`SLIPPAY_ARC_FROM_BLOCK` (vault deploy block, floor for receipts).
+`scripts/arc-mcp-call.mjs <tool> '<json>' …` calls any tool over stdio, like an MCP client.
 
 The membrane is a surface restriction enforced by this server process, not a
 chain-level guarantee. The hard guarantee for attested charges is the contract's
