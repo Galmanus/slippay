@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "node src/server.mjs",
-    "test": "node src/oracle.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-x402-test.json node src/x402.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-arc-test.json node src/arc.test.mjs && node src/counterparty.test.mjs"
+    "test": "node src/oracle.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-x402-test.json node src/x402.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-arc-test.json node src/arc.test.mjs && SLIPPAY_ATTESTER_DATA=/tmp/slippay-arc-holds-test.json node src/arc-holds.test.mjs && node src/counterparty.test.mjs"
   },
   "dependencies": {
     "@noble/curves": "1.9.7",

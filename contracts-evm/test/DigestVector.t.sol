@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {AgentVault} from "../src/AgentVault.sol";
+import {AgentVaultV2} from "../src/AgentVaultV2.sol";
 
 /// Cross-language vector: the TS SDK (packages/arc-agent) must produce this exact EIP-712 digest
 /// for the same inputs. If either side changes the typed data, one of the two tests breaks.
@@ -28,5 +29,23 @@ contract DigestVectorTest is Test {
         console2.logBytes32(d);
         assertEq(d, EXPECTED);
         assertEq(AgentVault(payable(VAULT)).attestationHash(d), EXPECTED_AIA);
+    }
+
+    /// The same vector through AgentVaultV2's hold and release digests (attester: arc.test.mjs).
+    function test_vector_v2Holds_arcTestnet() public {
+        vm.chainId(5042002);
+        deployCodeTo(
+            "AgentVaultV2.sol:AgentVaultV2",
+            abi.encode(address(0xB0B), 0x3600000000000000000000000000000000000000, address(0), 1_000e6),
+            VAULT
+        );
+        AgentVaultV2 v = AgentVaultV2(payable(VAULT));
+        bytes32 holdId =
+            v.holdDigest(vm.addr(AGENT_PK), TO, 12_345_678, 7, 1_900_000_000, 1_900_086_400, keccak256("order-vector-1"));
+        bytes32 rel = v.releaseDigest(holdId);
+        assertEq(holdId, 0xb04ffadd0f2b3c55ecbc57bfabbacc5a8dae773a01417acab27da981fedc1a5b);
+        assertEq(v.attestationHash(holdId), 0x027548357c046d257924df42860857823f531c32016c13c223202f1c197227db);
+        assertEq(rel, 0x8d6096d59dc1785da38620be71b09df28f78d33e6ce39da41fc217c3567d6568);
+        assertEq(v.attestationHash(rel), 0x6b533e750f9d35ff1c963a497a064717a9bdf53db0dd3a45058420d1aeb47f16);
     }
 }

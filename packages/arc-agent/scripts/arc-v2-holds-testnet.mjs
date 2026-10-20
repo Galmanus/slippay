@@ -8,14 +8,17 @@
 //   refused (eth_call): owner withdrawing held funds, a forged release signature, a release with
 //   no attestation, an early refund by the owner, a second release, a hold longer than 30 days.
 //
-// The agent, payee, stranger and attester keys are throwaway and live only in this process. The attester is
-// a local P-256 key standing in for the integrity attester: the production attester signs spend
-// digests only, not hold or release digests. Each transaction is simulated before it is sent;
-// any unexpected outcome stops the run. Prints a JSON summary on stdout.
+// The agent, payee and stranger keys are throwaway and live only in this process. With
+// --attester-url the hold and release attestations come from a running slippay-attester
+// (/arc/attest-hold, /arc/attest-release): the script registers the agent's surface there and
+// pins the attester's P-256 key in the session. Without it, a throwaway local P-256 key stands in.
+// Each transaction is simulated before it is sent; any unexpected outcome stops the run. Prints
+// a JSON summary on stdout.
 //
 // usage (Node >= 22.18, run from the repo root, after `forge build` in contracts-evm):
 //   node packages/arc-agent/scripts/arc-v2-holds-testnet.mjs \
-//     --owner-key-file ~/.slippay/arc-testnet-deployer.key --vault 0x… [--agent-id N] [--fund 0.20]
+//     --owner-key-file ~/.slippay/arc-testnet-deployer.key --vault 0x… [--agent-id N] [--fund 0.20] \
+//     [--attester-url http://127.0.0.1:8790]
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -39,6 +42,7 @@ const { values: opt } = parseArgs({
     vault: { type: "string" },
     "agent-id": { type: "string" },
     fund: { type: "string", default: "0.20" },
+    "attester-url": { type: "string" },
   },
 });
 const addr = /^0x[0-9a-fA-F]{40}$/;
@@ -53,8 +57,6 @@ const agent = privateKeyToAccount(generatePrivateKey());
 const payeeKey = generatePrivateKey();
 const payee = privateKeyToAccount(payeeKey);
 const stranger = privateKeyToAccount(generatePrivateKey());
-const attesterPriv = p256.utils.randomPrivateKey();
-const attesterPub = p256.getPublicKey(attesterPriv, false); // 0x04 ‖ x ‖ y
 
 const NET = ARC_NETWORKS.testnet;
 const chain = defineChain({
@@ -137,23 +139,53 @@ await mined(await walletOf(owner).sendTransaction({ to: vault, value: parseUnits
 await mined(await walletOf(owner).sendTransaction({ to: payee.address, value: parseUnits("0.01", 18), ...fees }), "payee gas 0.01");
 await mined(await walletOf(owner).sendTransaction({ to: stranger.address, value: parseUnits("0.01", 18), ...fees }), "stranger gas 0.01");
 
-// 3. session: 0.10/tx, 0.30/day, payee only, attester on every hold and every agent release
+// 3. attester: the running service, or a throwaway local P-256 key
+const AIA_DOMAIN = keccak256(toHex("SlippayAIA.arc.v1"));
+const attesterAgentId = `v2-holds-${agent.address.toLowerCase()}`;
+async function attesterCall(path, payload) {
+  const r = await fetch(`${opt["attester-url"]}${path}`, {
+    method: payload ? "POST" : "GET", headers: { "content-type": "application/json" },
+    body: payload ? JSON.stringify(payload, (_, v) => (typeof v === "bigint" ? v.toString() : v)) : undefined,
+  });
+  const out = await r.json();
+  if (!r.ok || out.ok === false) throw new Error(`attester ${path}: ${r.status} ${out.reason ?? out.error ?? ""}`);
+  return out;
+}
+let attesterKey, signLocal;
+if (opt["attester-url"]) {
+  attesterKey = (await attesterCall("/pubkey")).p256;
+  await attesterCall("/register", { agent_id: attesterAgentId, allowed_recipients: [payee.address.toLowerCase()], max_amount: usdc6("0.10").toString() });
+  console.error(`attester ${opt["attester-url"]} · surface ${attesterAgentId} registered`);
+} else {
+  const priv = p256.utils.randomPrivateKey();
+  const pubKey = p256.getPublicKey(priv, false); // 0x04 ‖ x ‖ y
+  attesterKey = { x: toHex(pubKey.slice(1, 33)), y: toHex(pubKey.slice(33, 65)) };
+  signLocal = (digest) => {
+    const h = keccak256(encodePacked(["bytes32", "bytes32"], [AIA_DOMAIN, digest]));
+    return "0x" + p256.sign(h.slice(2), priv, { prehash: false, lowS: true }).toCompactHex();
+  };
+}
+/** Attestation for a hold (kind "hold") or for its release; the service must land on our digest. */
+async function attest(kind, terms, digest) {
+  if (signLocal) return signLocal(digest);
+  const out = await attesterCall(kind === "hold" ? "/arc/attest-hold" : "/arc/attest-release", { agent_id: attesterAgentId, hold: terms });
+  if (out.digest !== digest) throw new Error(`attester ${kind} digest ${out.digest} != vault ${digest}`);
+  return out.attestation;
+}
+
+// 4. session: 0.10/tx, 0.30/day, payee only, attester on every hold and every agent release
 const now = () => BigInt(Math.floor(Date.now() / 1000));
 const session = {
   agentId, slhVk: `0x${"00".repeat(32)}`, perTxCap: usdc6("0.10"), windowCap: usdc6("0.30"),
   windowSeconds: 86_400n, expiresAt: now() + 86_400n, pqThreshold: (1n << 128n) - 1n, policyHash: toHex(randomBytes(32)),
-  allowRecipients: [payee.address], attesterX: toHex(attesterPub.slice(1, 33)), attesterY: toHex(attesterPub.slice(33, 65)),
+  allowRecipients: [payee.address], attesterX: attesterKey.x, attesterY: attesterKey.y,
   attestThreshold: 0n,
 };
 await send(owner, "installSession", [agent.address, session], "install session");
 
 // signing: the agent signs EIP-712 typed data; each digest is checked against the vault's own view
 const domain = { name: "SlippayAgentVault", version: "1", chainId: NET.chainId, verifyingContract: vault };
-const AIA_DOMAIN = keccak256(toHex("SlippayAIA.arc.v1"));
-const attest = (digest) => {
-  const h = keccak256(encodePacked(["bytes32", "bytes32"], [AIA_DOMAIN, digest]));
-  return "0x" + p256.sign(h.slice(2), attesterPriv, { prehash: false, lowS: true }).toCompactHex();
-};
+const holdTerms = new Map(); // holdId -> the terms the attester recomputes it from
 async function makeHold(amount, releaseBy, label) {
   const { nonce } = await read("getSession", [agent.address]);
   const deadline = now() + 300n;
@@ -170,9 +202,11 @@ async function makeHold(amount, releaseBy, label) {
   const digest = hashTypedData(typed);
   const onchain = await read("holdDigest", [agent.address, payee.address, amount, nonce, deadline, releaseBy, orderId]);
   if (digest !== onchain) throw new Error(`hold digest mismatch: local ${digest}, vault ${onchain}`);
+  const terms = { vault, chainId: NET.chainId, ...message };
+  holdTerms.set(digest, terms);
   const req = {
     agentSigner: agent.address, payee: payee.address, amount, deadline, releaseBy, orderId,
-    ecdsaSig: await agent.signTypedData(typed), slhSig: "0x", attestation: attest(digest),
+    ecdsaSig: await agent.signTypedData(typed), slhSig: "0x", attestation: await attest("hold", terms, digest),
   };
   await send(owner, "hold", [req], label);
   return digest; // holdId
@@ -182,12 +216,12 @@ async function releaseSigs(holdId, signer = agent) {
   const d = hashTypedData(typed);
   const onchain = await read("releaseDigest", [holdId]);
   if (d !== onchain) throw new Error(`release digest mismatch: local ${d}, vault ${onchain}`);
-  return { ecdsaSig: await signer.signTypedData(typed), attestation: attest(d) };
+  return { ecdsaSig: await signer.signTypedData(typed), attestation: await attest("release", holdTerms.get(holdId), d) };
 }
 const status = async (holdId) => ["None", "Open", "Released", "Refunded"][(await read("getHold", [holdId])).status];
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
 
-// 4. hold A: 0.05, released by the agent
+// 5. hold A: 0.05, released by the agent
 const a = usdc6("0.05");
 const holdA = await makeHold(a, now() + 3_600n, "hold A 0.05");
 const bal = await usdcOf(vault);
@@ -210,13 +244,13 @@ await expectRevert(owner, "hold", [{
   orderId: toHex(randomBytes(32)), ecdsaSig: "0x", slhSig: "0x", attestation: "0x",
 }], "BadReleaseWindow", "hold longer than 30 days");
 
-// 5. hold B: 0.04, refunded early by the payee
+// 6. hold B: 0.04, refunded early by the payee
 const b = usdc6("0.04");
 const holdB = await makeHold(b, now() + 3_600n, "hold B 0.04");
 await send(payee, "refund", [holdB], "refund B (payee, early)");
 expect((await status(holdB)) === "Refunded", "hold B status");
 
-// 6. hold C: 0.03, refunded by a stranger once releaseBy has passed
+// 7. hold C: 0.03, refunded by a stranger once releaseBy has passed
 const c = usdc6("0.03");
 const releaseByC = now() + 45n;
 const holdC = await makeHold(c, releaseByC, "hold C 0.03");

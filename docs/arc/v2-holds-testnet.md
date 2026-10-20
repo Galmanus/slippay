@@ -16,8 +16,8 @@ outside audit.
 | session | 0.10 USDC per hold, 0.30 per day, attester on every hold and every agent release |
 
 The agent, payee, stranger and attester keys were throwaway, generated in the script's process.
-The attester was a local P-256 key, signed with the same library as the production attester:
-the production attester only signs spend digests today, not hold or release digests.
+In this first run the attester was a local P-256 key, signed with the same library as the
+production attester (the service had no hold or release route yet; see the second run).
 
 ## Transactions
 
@@ -57,9 +57,37 @@ to the vault but not the day's budget, by design.
 | hold longer than 30 days | `BadReleaseWindow` |
 | stranger refunds C before releaseBy | `HoldNotExpired` |
 
+## Second run: attestations from the attester service
+
+The same cycle, with every hold and release attestation issued by `slippay-attester` itself
+(`POST /arc/attest-hold`, `POST /arc/attest-release`), run locally on loopback with a development
+P-256 key and the counterparty check off. The script registered the agent's surface (payee only,
+0.10 cap) and pinned the service's P-256 key in the session; the live vault accepted the
+service's signatures. Same agent identity (897402), fresh agent key
+`0x7375062B519F9F198Bbe3f370937b71019793e4E`, payee `0x41473C6747cF83b126BB431469e6ffb1eCaf9678`. All seven refusals repeated.
+
+| step | tx | block |
+| --- | --- | --- |
+| fund vault 0.20 | [`0xc4079091…775b`](https://explorer.testnet.arc.io/tx/0xc407909126f5a11a1ed81efee5b18c82255fc7c40016089d7c4a5bbc824b775b) | 68224216 |
+| payee gas 0.01 | [`0x48834126…a03e`](https://explorer.testnet.arc.io/tx/0x488341261499bb8947bcc25dc692b8d88914201f4114c3092ad75fee3f6ea03e) | 68224218 |
+| stranger gas 0.01 | [`0x9c6d77da…5f18`](https://explorer.testnet.arc.io/tx/0x9c6d77daab58d06b467850057b1fbff58d4414b32b4b76193768d028cf605f18) | 68224220 |
+| install session | [`0x9775a789…c614`](https://explorer.testnet.arc.io/tx/0x9775a789713b998528fd0dd8602f1afc19e16592a22ca94f74e5510b3266c614) | 68224223 |
+| hold A 0.05 | [`0x2ca81039…2753`](https://explorer.testnet.arc.io/tx/0x2ca81039c842ca707ed645206abac30da626b07c48f71e7e5a160dfec1e72753) | 68224226 |
+| release A (agent-signed) | [`0x2e69538d…f607`](https://explorer.testnet.arc.io/tx/0x2e69538db614408e9281020d460876ae9fccd847654059b0756d9b9bbe9ff607) | 68224241 |
+| hold B 0.04 | [`0xce6127ee…705c`](https://explorer.testnet.arc.io/tx/0xce6127ee52ec6e757d8e74ff0ea28e411357285086ee1f1dbc56b153a81f705c) | 68224246 |
+| refund B (payee, early) | [`0x6b026a22…ed86`](https://explorer.testnet.arc.io/tx/0x6b026a2259a91458c7e6f35ee90a641e01889fa7ad9391e9141f1cfaa355ed86) | 68224248 |
+| hold C 0.03 | [`0x0d84d4d3…e93c`](https://explorer.testnet.arc.io/tx/0x0d84d4d354addcdd204901f4853a489f9ead15a45635b8c104f0794b9d82e93c) | 68224252 |
+| refund C (stranger, after releaseBy) | [`0xf7147cc3…9ad4`](https://explorer.testnet.arc.io/tx/0xf7147cc35e8a1ad6aab442d3c304a9ab3912d1332c9fa41686d133e28d129ad4) | 68224344 |
+
+The attester recomputes holdId from the hold's terms and refuses a bare holdId, so it always knows
+the payee and the amount it clears. A release is checked against the payee's surface and the
+counterparty again, but not against velocity and not counted: the hold was.
+
 ## Not covered here
 
-- The production attester does not sign hold or release digests yet; a V2 session gated by it
-  would need that endpoint first.
+- The production attester (Arc mainnet, on the server) still runs the code without these two
+  routes until it is redeployed.
+- A release attestation stays usable until the hold's releaseBy: the vault's Release digest
+  carries no deadline.
 - The owner release path and the release refusal after revoke or expiry are covered by the unit
   tests (`contracts-evm/test/AgentVaultV2.t.sol`), not by this run.

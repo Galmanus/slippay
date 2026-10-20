@@ -12,11 +12,17 @@
 //   POST /arc/attest {agent_id, spend:{vault, chainId, agentSigner, to, amount, nonce, deadline, orderId}}
 //                                     → { ok, attestation (P-256 r‖s), digest, pubkey:{x,y} } | 403
 //                                       (AgentVault on Arc; the attester recomputes the digest)
+//   POST /arc/attest-hold {agent_id, hold:{vault, chainId, agentSigner, payee, amount, nonce, deadline, releaseBy, orderId}}
+//                                     → { ok, holdId, attestation, digest, pubkey } | 403  (AgentVaultV2)
+//   POST /arc/attest-release {agent_id, hold:{…the same terms}}
+//                                     → { ok, holdId, attestation, digest (release), pubkey } | 403
+//                                       (the hold's terms, never a bare holdId: the payee is checked)
 //
 // Keys: SLIPPAY_ATTESTER_SECRET (ed25519, 64-hex) and SLIPPAY_ATTESTER_P256_SECRET (P-256 for
 // Arc, 64-hex). If unset, demo keys are derived from fixed seeds (DEV ONLY — set real secrets).
 //
-// Counterparty check on /arc/attest (A-Identity risk_check, paid with Gateway nanopayments):
+// Counterparty check on /arc/attest, /arc/attest-hold and /arc/attest-release (A-Identity
+// risk_check, paid with Gateway nanopayments; asked again at release):
 //   SLIPPAY_COUNTERPARTY_MODE      off (default) | warn (verdict logged + returned, never blocks)
 //                                  | enforce (DENY and UNVERIFIABLE refuse the attestation)
 //   SLIPPAY_COUNTERPARTY_KEY_FILE  payer EOA with a Gateway balance on Arc mainnet
@@ -24,7 +30,7 @@ import { createServer } from "node:http";
 import { readFileSync } from "node:fs";
 import { sha256 } from "@noble/hashes/sha256";
 import { commitSurface, attest, verifyAttestation, publicKeyHex, hexToBytes } from "./oracle.mjs";
-import { attestArc, p256PublicKey } from "./arc.mjs";
+import { attestArc, attestArcHold, attestArcRelease, p256PublicKey } from "./arc.mjs";
 import { checkCounterparty, counterpartyGuard, gatewayAddress } from "./counterparty.mjs";
 
 const PORT = Number(process.env.PORT || 8790);
@@ -54,9 +60,10 @@ const json = (r, code, obj) => { r.writeHead(code, { "content-type": "applicatio
 const server = createServer(async (req, res) => {
   try {
     if (req.method === "GET" && req.url === "/pubkey") return json(res, 200, { pubkey: await publicKeyHex(priv), p256: p256PublicKey(p256Priv) });
-    if (req.method === "POST" && req.url === "/arc/attest") {
-      const v = await attestArc(await body(req), p256Priv, { counterparty });
-      if (v.counterparty) process.stderr.write(`counterparty ${v.counterparty.decision}${v.counterparty.block ? " BLOCKED" : ""} · ${(v.counterparty.reasons ?? []).join("; ") || v.counterparty.error || ""}\n`);
+    const arcRoute = { "/arc/attest": attestArc, "/arc/attest-hold": attestArcHold, "/arc/attest-release": attestArcRelease }[req.url];
+    if (req.method === "POST" && arcRoute) {
+      const v = await arcRoute(await body(req), p256Priv, { counterparty });
+      if (v.counterparty) process.stderr.write(`${req.url} counterparty ${v.counterparty.decision}${v.counterparty.block ? " BLOCKED" : ""} · ${(v.counterparty.reasons ?? []).join("; ") || v.counterparty.error || ""}\n`);
       return json(res, v.ok ? 200 : 403, v);
     }
     if (req.method === "POST" && req.url === "/register") return json(res, 200, { commitment: commitSurface(await body(req)) });
