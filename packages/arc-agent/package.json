@@ -1,9 +1,27 @@
 {
   "name": "@slippay/arc-agent",
   "version": "0.1.0",
-  "description": "Agent-side SDK for Slippay AgentVault on Arc: EIP-712 spend intents, hybrid ECDSA + SLH-DSA-SHA2-128s signing, calldata.",
+  "description": "Agent-side SDK for Slippay's AgentVault on Arc (Circle's L1): EIP-712 spend intents with hybrid ECDSA + SLH-DSA signing, an x402 buyer over Circle Gateway nanopayments, and the vault-funded x402 float.",
   "type": "module",
   "license": "MIT",
+  "author": "Manuel Galmanus <manuel@bluewaveai.online>",
+  "homepage": "https://app.slippay.cc/agents",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Galmanus/slippay.git",
+    "directory": "packages/arc-agent"
+  },
+  "keywords": [
+    "arc",
+    "circle",
+    "usdc",
+    "agent-payments",
+    "x402",
+    "eip-712",
+    "post-quantum",
+    "slh-dsa",
+    "agentvault"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -12,7 +30,16 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",

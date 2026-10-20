@@ -19,7 +19,7 @@ import { reverifyCert } from "./verify.ts";
 import * as chain from "./chain.ts";
 import { arcFromEnv, arcPay, arcReceipts, arcX402Fetch, formatUsdc, receiptsFromEnv, remainingWindowBudget, x402FromEnv } from "./arc.ts";
 
-const server = new McpServer({ name: "slippay", version: "0.2.0" });
+const server = new McpServer({ name: "slippay", version: "0.3.0" });
 
 // The membrane principle (Wave, 2026-06-03): an agent's surface must be minimal
 // and capability-HONEST, not additive. More tools = more injection paths. The
@@ -285,6 +285,6 @@ server.registerTool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  process.stderr.write(`slippay-mcp 0.2.0 ready · role=${PRINCIPAL ? "principal" : "agent (membrane)"} · net=${chain.IS_PUBLIC ? "public" : "testnet"} · signer=${process.env.SLIPPAY_SIGNER_SECRET ? "set" : "unset"} · contract=${process.env.SLIPPAY_CONTRACT ? "set" : "unset"}\n`);
+  process.stderr.write(`slippay-mcp 0.3.0 ready · role=${PRINCIPAL ? "principal" : "agent (membrane)"} · net=${chain.IS_PUBLIC ? "public" : "testnet"} · signer=${process.env.SLIPPAY_SIGNER_SECRET ? "set" : "unset"} · contract=${process.env.SLIPPAY_CONTRACT ? "set" : "unset"}\n`);
 }
 main().catch((e) => { process.stderr.write(`slippay-mcp fatal: ${(e as Error).stack ?? e}\n`); process.exit(1); });

@@ -1,7 +1,7 @@
 {
   "name": "@slippay/mcp",
-  "version": "0.2.0",
-  "description": "Give your agent's checkout a limit it can prove. SlipPay MCP server: pay, re-verify the bound, check status.",
+  "version": "0.3.0",
+  "description": "Give your agent's checkout a limit it can prove. SlipPay MCP server: pay inside on-chain limits on Arc (Circle's L1), buy x402 services with vault-bounded money, read receipts, and the Stellar subscription rail.",
   "type": "module",
   "license": "MIT",
   "author": "Manuel Galmanus <manuel@bluewaveai.online>",
@@ -11,7 +11,9 @@
     "url": "git+https://github.com/Galmanus/slippay.git",
     "directory": "packages/slippay-mcp"
   },
-  "bugs": { "url": "https://github.com/Galmanus/slippay/issues" },
+  "bugs": {
+    "url": "https://github.com/Galmanus/slippay/issues"
+  },
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -21,14 +23,26 @@
     "agentic-commerce",
     "proof-carrying",
     "spending-limit",
-    "x402"
+    "x402",
+    "arc",
+    "circle",
+    "usdc"
   ],
-  "bin": { "slippay-mcp": "./dist/index.js" },
+  "bin": {
+    "slippay-mcp": "./dist/index.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md"],
-  "engines": { "node": ">=18" },
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
