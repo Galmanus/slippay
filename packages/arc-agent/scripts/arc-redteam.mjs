@@ -12,6 +12,8 @@
 //     [--relayer https://api.slippay.cc/api/v1/arc] [--out docs/arc/redteam-mainnet]
 import { createECDH, randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import {
   BaseError, ContractFunctionRevertedError, concatHex, createPublicClient, decodeFunctionData, defineChain, http, toHex,
@@ -171,8 +173,13 @@ if (opt.relayer) {
     ["stolen agent key asks the production relayer to pay the attacker", await forged({ to: thief, amount: 1n })],
     ["stolen agent key asks the production relayer for more than the cap", await forged({ amount: session.perTxCap + 1n })],
   ]) {
+    // Positive guard: relay only requests the vault itself refuses before any signature or
+    // attestation check (allowlist, per-tx cap). Anything else (e.g. BadAttestation on an
+    // in-bounds request) could settle once the production attester signs it.
     const sim = await simulate(f.req);
-    if (sim === "SETTLES") throw new Error(`refusing to relay "${name}": it would settle`);
+    if (sim !== "RecipientNotAllowed" && sim !== "AmountExceedsCap") {
+      throw new Error(`refusing to relay "${name}": the vault answers ${sim}, not an allowlist/cap refusal`);
+    }
     const r = await relay(f);
     const pass = r.label === "HTTP 403 attestation_refused" && !r.txHash;
     attacks.push({ name, expected: "HTTP 403 attestation_refused", observed: r.label, detail: r.message, pass });
@@ -187,7 +194,10 @@ const report = {
   session: { perTxCap: session.perTxCap.toString(), windowCap: session.windowCap.toString(), attestThreshold: session.attestThreshold.toString(), nonce: session.nonce.toString() },
   attacks, passed, total: attacks.length,
 };
-const out = opt.out ?? `docs/arc/redteam-${network}`;
+// Reports live in the repo's docs/arc whatever the cwd; a relative --out is taken from the repo root.
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const outArg = opt.out ?? `docs/arc/redteam-${network}`;
+const out = isAbsolute(outArg) ? outArg : resolve(ROOT, outArg);
 writeFileSync(`${out}.json`, JSON.stringify(report, null, 2) + "\n");
 const usdc = (v) => (Number(v) / 1e6).toFixed(2);
 writeFileSync(`${out}.md`, [

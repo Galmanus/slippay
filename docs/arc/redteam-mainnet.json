@@ -1,8 +1,8 @@
 {
   "network": "mainnet",
   "chainId": 5042,
-  "block": "26942506",
-  "at": "2026-10-20T12:23:04.000Z",
+  "block": "26969725",
+  "at": "2026-10-20T16:13:03.000Z",
   "vault": "0x5316Aa47C7C8Ef468E6bc248184b0F35878772b8",
   "agentSigner": "0x57df927eA0c60B26304BF5369B517771d4650Ab6",
   "merchant": "0xe8BaF2DE286bbef788A97Bd30B34DD927683D239",
@@ -65,7 +65,7 @@
       "name": "stolen agent key asks the production relayer to pay the attacker",
       "expected": "HTTP 403 attestation_refused",
       "observed": "HTTP 403 attestation_refused",
-      "detail": "recipient 0xd0a0fa97… is outside the committed surface",
+      "detail": "recipient 0x199eb394… is outside the committed surface",
       "pass": true
     },
     {
