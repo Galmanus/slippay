@@ -65,7 +65,7 @@ hatch and no setup verbs.
 | `slippay_arm_gate` | no | yes | Bind an ed25519 attester public key to a subscription (`set_attester`). |
 | `slippay_arc_session` | yes | yes | Arc: read this agent's AgentVault session — caps, remaining window budget, post-quantum threshold, expiry, ERC-8004 agent id. No transaction. |
 | `slippay_arc_pay` | yes | yes | Arc: pay USDC from the AgentVault inside its on-chain bounds. Signs locally (ECDSA, plus SLH-DSA above the PQ threshold) and sends the intent to the SlipPay relayer, which pays gas only. |
-| `slippay_arc_x402_fetch` | yes | yes | Arc: buy an x402 resource (Circle Gateway nanopayment) with vault-bounded USDC. The float EOA that signs is funded only by AgentVault spends; price capped, paid at most once. |
+| `slippay_arc_x402_fetch` | yes | yes | Arc: buy an x402 resource (Circle Gateway nanopayment) with vault-bounded USDC. The float EOA that signs is funded only by AgentVault spends; price and payees capped by this server, paid at most once. |
 | `slippay_arc_receipts` | yes | yes | Arc: this agent's latest AgentSpend events from the chain (tx, recipient, amount, attested, PQ). No transaction. |
 
 ### Arc rail
@@ -81,9 +81,15 @@ classical + post-quantum spend) from one funded testnet key.
 **x402 on Arc.** Circle Gateway nanopayments need an EOA signature and the vault is a contract, so
 the session allowlists one float EOA. When its Gateway balance can't cover a call, the vault tops
 it up with an ordinary attested spend and the float deposits into Gateway. Every dollar the float
-holds came through the vault's caps. Env: `SLIPPAY_ARC_FLOAT_KEY`, `SLIPPAY_ARC_X402_MAX_USDC`
-(per-call ceiling, default `0.05`), `SLIPPAY_ARC_FLOAT_TOPUP_USDC` (default `0.10`),
-`SLIPPAY_ARC_FROM_BLOCK` (vault deploy block, floor for receipts).
+holds came through the vault's caps: that total is the on-chain guarantee. The per-call price
+cap, the optional payee allowlist and the "session still live" check are enforced by this server
+(Gateway balances already deposited can't be revoked on-chain). Exposure at any moment is the float
+wallet plus its Gateway balance, normally at most one top-up plus the gas reserve. Deposits are
+decided from the Gateway Wallet contract's on-chain balance, so a deposit the Gateway API has not
+credited yet is never repeated. Env: `SLIPPAY_ARC_FLOAT_KEY`, `SLIPPAY_ARC_X402_MAX_USDC` (per-call
+ceiling, default `0.05`), `SLIPPAY_ARC_X402_PAYTO` (optional comma-separated payees),
+`SLIPPAY_ARC_FLOAT_TOPUP_USDC` (default `0.10`), `SLIPPAY_ARC_FROM_BLOCK` (vault deploy block,
+floor for receipts).
 `scripts/arc-mcp-call.mjs <tool> '<json>' …` calls any tool over stdio, like an MCP client.
 
 The membrane is a surface restriction enforced by this server process, not a

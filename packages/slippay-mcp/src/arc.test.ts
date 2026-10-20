@@ -129,13 +129,21 @@ describe("arcPay relays a signed intent", () => {
 describe("arcX402Fetch — agents buy x402 services with vault-bounded money", () => {
   const FLOAT = privateKeyToAccount("0x00000000000000000000000000000000000000000000000000000000000f10a7");
   const xcfg = { vault: VAULT, chainId: 5042, account, floatAccount: FLOAT, maxPerCall: 50_000n };
-  function xdeps(o: { allowed?: boolean; amount?: bigint } = {}) {
+  function xdeps(o: { allowed?: boolean; amount?: bigint; session?: ArcSessionView; paidButLost?: boolean } = {}) {
     const ensureFloat = vi.fn(async () => ({ gatewayBefore: 0n, gatewayAfter: 100_000n, topUpTx: "0xtop", depositTx: "0xdep" }));
     const x402 = vi.fn(async (_url: string, _init: unknown, opts: { policy: { maxAmount: bigint }; beforePay?: (a: bigint) => Promise<void> }) => {
       await opts.beforePay?.(o.amount ?? 5_000n);
-      return { status: 200, ok: true, body: '{"decision":"ALLOW"}', paid: { amount: o.amount ?? 5_000n, payTo: MERCHANT, network: "eip155:5042" } };
+      const paid = { amount: o.amount ?? 5_000n, payTo: MERCHANT, network: "eip155:5042" };
+      if (o.paidButLost) return { status: 0, ok: false, body: "", paid, error: "fetch failed: do not retry" };
+      return { status: 200, ok: true, body: '{"decision":"ALLOW"}', paid };
     });
-    const d: X402ToolDeps = { isAllowed: vi.fn(async () => o.allowed ?? true), x402: x402 as unknown as X402ToolDeps["x402"], ensureFloat };
+    const d: X402ToolDeps = {
+      isAllowed: vi.fn(async () => o.allowed ?? true),
+      readSession: async () => o.session ?? session({ windowCap: 300_000n, perTxCap: 200_000n }),
+      now: () => NOW,
+      x402: x402 as unknown as X402ToolDeps["x402"],
+      ensureFloat,
+    };
     return { d, x402, ensureFloat };
   }
 
@@ -150,6 +158,30 @@ describe("arcX402Fetch — agents buy x402 services with vault-bounded money", (
     await expect(arcX402Fetch(d, xcfg, { url: "https://s.test" })).rejects.toThrow(/allowlist/);
     expect(x402).not.toHaveBeenCalled();
     expect(d.isAllowed).toHaveBeenCalledWith(VAULT, account.address, FLOAT.address);
+  });
+
+  for (const [name, s, re] of [
+    ["revoked", session({ revoked: true }), /revoked/],
+    ["expired", session({ expiresAt: BigInt(NOW - 1) }), /expired/],
+    ["missing", session({ exists: false }), /no AgentVault session/],
+  ] as const) {
+    it(`refuses when the session is ${name}, before any request (the float's Gateway balance is not spendable after revocation)`, async () => {
+      const { d, x402 } = xdeps({ session: s });
+      await expect(arcX402Fetch(d, xcfg, { url: "https://s.test" })).rejects.toThrow(re);
+      expect(x402).not.toHaveBeenCalled();
+    });
+  }
+
+  it("passes the configured payee allowlist to the x402 policy", async () => {
+    const { d, x402 } = xdeps();
+    await arcX402Fetch(d, { ...xcfg, payTo: [MERCHANT] }, { url: "https://s.test" });
+    expect((x402.mock.calls[0]![2] as { policy: { payTo?: string[] } }).policy.payTo).toEqual([MERCHANT]);
+  });
+
+  it("flags doNotRetry when the payment went out but the answer was lost", async () => {
+    const { d } = xdeps({ paidButLost: true });
+    const r = await arcX402Fetch(d, xcfg, { url: "https://s.test" });
+    expect(r).toMatchObject({ ok: false, doNotRetry: true, paid: { amountUsdc: "0.005" } });
   });
 
   it("caps the price at min(env cap, caller cap); a caller can lower the cap, never raise it", async () => {

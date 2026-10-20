@@ -244,10 +244,12 @@ server.registerTool(
     title: "Buy an x402 resource on Arc with vault-bounded USDC",
     description:
       "Fetch a URL; if the seller answers 402 (x402, Circle Gateway nanopayment on Arc), pay it from the " +
-      "agent's float and replay once. The float is funded only by ordinary AgentVault spends, so every " +
-      "dollar is inside the vault's on-chain caps. The price is capped (SLIPPAY_ARC_X402_MAX_USDC; maxUsdc " +
-      "can only lower it), the seller can't pick the network, token or Gateway contract, and a call is " +
-      "never paid twice. Returns the response body and what was paid.",
+      "agent's float and replay once. The float is funded only by ordinary AgentVault spends, so the total " +
+      "it can ever receive is bounded on-chain by the vault. This server also enforces, per call: a live " +
+      "session, a price cap (SLIPPAY_ARC_X402_MAX_USDC; maxUsdc can only lower it), an optional payee " +
+      "allowlist (SLIPPAY_ARC_X402_PAYTO), and a seller that can't pick the network, token, Gateway contract " +
+      "or an over-long signature validity. A call is never paid twice: if the answer is lost after paying, " +
+      "the result says doNotRetry. Returns the response body and what was paid.",
     inputSchema: {
       url: z.string().url().describe("The x402 resource."),
       method: z.enum(["GET", "POST"]).optional().describe("HTTP method (default GET)."),

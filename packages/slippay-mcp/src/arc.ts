@@ -137,6 +137,8 @@ export async function arcPay(
 
 export type X402ToolDeps = {
   isAllowed: ArcDeps["isAllowed"];
+  readSession: ArcDeps["readSession"];
+  now: ArcDeps["now"];
   x402: typeof x402Fetch;
   /** Make the float's Gateway balance cover `need` (6-decimal units), topping up from the vault. */
   ensureFloat(need: bigint): Promise<FloatFunding>;
@@ -146,16 +148,29 @@ const BODY_LIMIT = 20_000;
 
 /**
  * Buy an x402 resource with vault money. The float EOA signs the Gateway nanopayment; it must be
- * on the session allowlist, because its only funding is an ordinary bounded vault spend. Price is
- * capped at min(SLIPPAY_ARC_X402_MAX_USDC, maxUsdc): a caller (the agent) can lower it, not raise it.
+ * on the session allowlist, because its only funding is an ordinary bounded vault spend.
+ *
+ * What is on-chain and what is not: the TOTAL the float can ever receive is bounded by the vault
+ * (every top-up is an attested AgentSpend inside perTxCap and the window cap). The per-call price
+ * cap, min(SLIPPAY_ARC_X402_MAX_USDC, maxUsdc), and the optional payee allowlist
+ * (SLIPPAY_ARC_X402_PAYTO) are enforced by this process. So is "the session is still live":
+ * Gateway balances already deposited can't be revoked on-chain, hence the session check here.
+ * Exposure at any moment = float wallet + float Gateway balance (normally <= topUp + gas reserve).
  */
 export async function arcX402Fetch(
   d: X402ToolDeps,
-  cfg: { vault: Address; chainId: number; account: LocalAccount; floatAccount?: LocalAccount; maxPerCall: bigint },
+  cfg: {
+    vault: Address; chainId: number; account: LocalAccount; floatAccount?: LocalAccount; maxPerCall: bigint;
+    payTo?: readonly Address[];
+  },
   input: { url: string; method?: string; body?: string; maxUsdc?: string },
 ) {
   const float = cfg.floatAccount;
   if (!float) throw new Error("SLIPPAY_ARC_FLOAT_KEY not set — the x402 float key (an EOA on this session's allowlist).");
+  const s = await d.readSession(cfg.vault, cfg.account.address);
+  if (!s.exists) throw new Error(`no AgentVault session for agent ${cfg.account.address} on vault ${cfg.vault}`);
+  if (s.revoked) throw new Error("session revoked by the vault owner: the float may not spend for it any more");
+  if (s.expiresAt !== 0n && BigInt(d.now()) >= s.expiresAt) throw new Error("session expired: the float may not spend for it any more");
   if (!(await d.isAllowed(cfg.vault, cfg.account.address, float.address))) {
     throw new Error(`float ${float.address} is not on this session's allowlist, so the vault can't fund it`);
   }
@@ -164,7 +179,7 @@ export async function arcX402Fetch(
   let funding: FloatFunding | undefined;
   const r = await d.x402(input.url, { method: input.method, body: input.body }, {
     account: float,
-    policy: { network: `eip155:${cfg.chainId}` as X402Network, maxAmount },
+    policy: { network: `eip155:${cfg.chainId}` as X402Network, maxAmount, ...(cfg.payTo?.length && { payTo: cfg.payTo }) },
     beforePay: async (amount) => {
       funding = await d.ensureFloat(amount);
     },
@@ -178,6 +193,7 @@ export async function arcX402Fetch(
     ...(funding && {
       funding: { topUpTx: funding.topUpTx, depositTx: funding.depositTx, gatewayUsdc: formatUsdc(funding.gatewayAfter) },
     }),
+    ...(r.paid && !r.ok && { doNotRetry: true }),
     ...(r.error && { error: r.error }),
   };
 }
@@ -263,6 +279,9 @@ export function arcFromEnv() {
   };
 }
 
+/** Serializes float funding inside this process (see x402FromEnv). */
+let floatQueue: Promise<unknown> = Promise.resolve();
+
 /** x402 wiring from env: the float signs, the vault funds it through the relayer (arcPay). */
 export function x402FromEnv() {
   const base = arcFromEnv();
@@ -270,25 +289,34 @@ export function x402FromEnv() {
   const floatAccount = floatKey ? privateKeyToAccount(floatKey) : undefined;
   const maxPerCall = parseUsdc(process.env.SLIPPAY_ARC_X402_MAX_USDC ?? "0.05");
   const topUp = parseUsdc(process.env.SLIPPAY_ARC_FLOAT_TOPUP_USDC ?? "0.10");
+  const payTo = (process.env.SLIPPAY_ARC_X402_PAYTO ?? "").split(",").map((a) => a.trim()).filter(Boolean) as Address[];
   const d: X402ToolDeps = {
     isAllowed: base.deps.isAllowed,
+    readSession: base.deps.readSession,
+    now: base.deps.now,
     x402: x402Fetch,
+    // One funding at a time per process: two calls in flight must not both top up and deposit.
     ensureFloat: (need) => {
-      if (!floatAccount) throw new Error("SLIPPAY_ARC_FLOAT_KEY not set");
-      const fd = liveFloatDeps({
-        network: base.network,
-        floatAccount,
-        rpcUrl: process.env.SLIPPAY_ARC_RPC_URL,
-        topUpFromVault: async (amount) => {
-          const r = await arcPay(base.deps, base.cfg, { to: floatAccount.address, amount: formatUsdc(amount), orderId: `x402-float-topup-${Date.now()}` });
-          if (r.status !== "success") throw new Error(`vault top-up of the float did not settle: ${r.status} ${r.txHash}`);
-          return r.txHash;
-        },
-      });
-      return ensureGatewayFloat(need, fd, { topUp, gasReserve: parseUsdc("0.02") });
+      const run = floatQueue.then(() => fund(need));
+      floatQueue = run.catch(() => {});
+      return run;
     },
   };
-  return { d, cfg: { ...base.cfg, floatAccount, maxPerCall } };
+  const fund = (need: bigint) => {
+    if (!floatAccount) throw new Error("SLIPPAY_ARC_FLOAT_KEY not set");
+    const fd = liveFloatDeps({
+      network: base.network,
+      floatAccount,
+      rpcUrl: process.env.SLIPPAY_ARC_RPC_URL,
+      topUpFromVault: async (amount) => {
+        const r = await arcPay(base.deps, base.cfg, { to: floatAccount.address, amount: formatUsdc(amount), orderId: `x402-float-topup-${Date.now()}` });
+        if (r.status !== "success") throw new Error(`vault top-up of the float did not settle: ${r.status} ${r.txHash}`);
+        return r.txHash;
+      },
+    });
+    return ensureGatewayFloat(need, fd, { topUp, gasReserve: parseUsdc("0.02") });
+  };
+  return { d, cfg: { ...base.cfg, floatAccount, maxPerCall, payTo } };
 }
 
 /** Receipts wiring from env: AgentSpend logs of this agent on the vault, paced for public RPCs. */
